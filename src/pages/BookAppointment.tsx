@@ -90,7 +90,7 @@ const BookAppointment = () => {
   const sanitizeCity = (val: string) => val.slice(0, 20);
   const sanitizeProfession = (val: string) => val.slice(0, 20);
   const sanitizeAddress = (val: string) => val.slice(0, 100);
-  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.(com|in|org|net|co|io|edu|gov|info)$/i.test(email);
 
   const handleSubmit = () => {
     if (!form.fullName || form.fullName.length < 2) {
