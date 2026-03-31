@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { SEEKERS } from '@/data/mockData';
+import { JOURNEY_STAGES } from '@/types';
+import type { JourneyStage } from '@/types';
 
 const milestones = [
   { label: 'Enrolled in LGT Program', date: '15/09/2024', status: 'done', icon: '🎯' },
@@ -16,12 +19,12 @@ const milestones = [
 
 const breakthroughs = [
   { text: 'First time admitted fear of failure in Session 5', date: '10/11/2024' },
-  { text: 'Connected father\'s work ethic to own burnout pattern', date: '15/12/2024' },
+  { text: "Connected father's work ethic to own burnout pattern", date: '15/12/2024' },
   { text: 'Set boundaries with a difficult client for the first time', date: '24/03/2025' },
 ];
 
 const visionBoard = [
-  { area: '💼 Career', vision: 'India\'s leading spiritual business coach by 2030' },
+  { area: '💼 Career', vision: "India's leading spiritual business coach by 2030" },
   { area: '👨‍👩‍👧 Family', vision: 'Quality time every Sunday, no-phone dinner rule' },
   { area: '❤️ Health', vision: 'Run a half-marathon, daily yoga practice' },
   { area: '💰 Wealth', vision: '₹1 Cr annual revenue, 6 months emergency fund' },
@@ -31,23 +34,129 @@ const visionBoard = [
 
 const SeekerJourney = () => {
   const seeker = SEEKERS[0];
+  const currentStage: JourneyStage = seeker.journey_stage || 'tapasya';
+  const currentStageIndex = JOURNEY_STAGES.findIndex(j => j.key === currentStage);
+
+  // Identity data
+  const identity = {
+    old: seeker.identity_old || {
+      story: "I'm a hard-working but burnt-out businessman who can't delegate",
+      beliefs: ["Nobody can do it like me", "Rest is lazy", "Money = worth"],
+      habits: ["Working 16hr days", "Skipping health", "Avoiding family"],
+      results: "₹50L revenue but no peace, strained marriage, health issues",
+    },
+    new: seeker.identity_new || {
+      story: "I am a conscious leader who builds through teams and lives with purpose",
+      beliefs: ["Delegation is growth", "Rest is productive", "I am enough"],
+      habits: ["Morning meditation", "Delegating daily", "Family dinner every night"],
+      results: "₹80L revenue, team handling 70% work, sleeping 7 hours, family vacations",
+    },
+    progress: seeker.transformation_progress || 45,
+  };
 
   return (
     <div className="p-4 space-y-6 max-w-lg mx-auto">
       <h1 className="text-xl font-bold text-foreground">My Journey</h1>
 
+      {/* Journey Stage Progress */}
+      <div className="bg-card rounded-xl p-5 border-2 border-primary/20 shadow-sm">
+        <h3 className="text-sm font-semibold text-foreground mb-4">🧭 Transformation Path</h3>
+        
+        {/* Stage Dots */}
+        <div className="flex items-center justify-between mb-4 px-2">
+          {JOURNEY_STAGES.map((stage, i) => (
+            <div key={stage.key} className="flex flex-col items-center relative">
+              {i > 0 && (
+                <div className={`absolute right-full top-3 w-full h-0.5 ${i <= currentStageIndex ? 'bg-primary' : 'bg-border'}`} style={{ width: '100%', transform: 'translateX(50%)' }} />
+              )}
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs z-10 ${
+                i < currentStageIndex ? 'bg-primary text-primary-foreground' :
+                i === currentStageIndex ? 'bg-primary text-primary-foreground ring-4 ring-primary/20 animate-pulse' :
+                'bg-muted text-muted-foreground'
+              }`}>
+                {i < currentStageIndex ? '✓' : stage.emoji}
+              </div>
+              <p className={`text-[8px] mt-1 text-center ${i === currentStageIndex ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                {stage.name}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Current Stage Detail */}
+        <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
+          <p className="text-xs text-primary font-semibold">
+            {JOURNEY_STAGES[currentStageIndex]?.emoji} YOU ARE HERE: {JOURNEY_STAGES[currentStageIndex]?.name} ({JOURNEY_STAGES[currentStageIndex]?.sanskrit})
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-1">"{JOURNEY_STAGES[currentStageIndex]?.metaphor}"</p>
+          <p className="text-[10px] text-muted-foreground mt-1">{JOURNEY_STAGES[currentStageIndex]?.description}</p>
+        </div>
+      </div>
+
+      {/* Identity Transformation Card */}
+      <div className="bg-card rounded-xl p-5 border border-border shadow-sm">
+        <h3 className="text-sm font-semibold text-foreground mb-4 text-center">🔄 Who I Was → Who I'm Becoming</h3>
+        
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          {/* Old Identity */}
+          <div className="bg-muted/50 rounded-lg p-3 border border-border opacity-70">
+            <p className="text-[10px] font-semibold text-muted-foreground mb-1">OLD STORY</p>
+            <p className="text-xs text-foreground italic mb-2">"{identity.old.story}"</p>
+            <p className="text-[10px] font-semibold text-muted-foreground mb-1">OLD BELIEFS</p>
+            <div className="flex flex-wrap gap-1 mb-2">
+              {identity.old.beliefs.map(b => (
+                <span key={b} className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{b}</span>
+              ))}
+            </div>
+            <p className="text-[10px] font-semibold text-muted-foreground mb-1">OLD HABITS</p>
+            <div className="flex flex-wrap gap-1">
+              {identity.old.habits.map(h => (
+                <span key={h} className="text-[9px] px-1.5 py-0.5 rounded bg-destructive/10 text-destructive">{h}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* New Identity */}
+          <div className="bg-primary/5 rounded-lg p-3 border border-primary/20">
+            <p className="text-[10px] font-semibold text-primary mb-1">NEW STORY</p>
+            <p className="text-xs text-foreground italic mb-2">"{identity.new.story}"</p>
+            <p className="text-[10px] font-semibold text-primary mb-1">NEW BELIEFS</p>
+            <div className="flex flex-wrap gap-1 mb-2">
+              {identity.new.beliefs.map(b => (
+                <span key={b} className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">{b}</span>
+              ))}
+            </div>
+            <p className="text-[10px] font-semibold text-primary mb-1">NEW HABITS</p>
+            <div className="flex flex-wrap gap-1">
+              {identity.new.habits.map(h => (
+                <span key={h} className="text-[9px] px-1.5 py-0.5 rounded bg-dharma-green/10 text-dharma-green">{h}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Transformation Progress */}
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground mb-1">Transformation Progress</p>
+          <div className="w-full bg-muted rounded-full h-3 relative overflow-hidden">
+            <div className="h-full rounded-full bg-gradient-to-r from-muted-foreground to-primary transition-all" style={{ width: `${identity.progress}%` }} />
+          </div>
+          <p className="text-lg font-bold text-primary mt-1">{identity.progress}%</p>
+        </div>
+      </div>
+
       {/* Transformation Snapshot */}
       <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
         <h3 className="text-sm font-semibold text-foreground mb-3">Transformation Snapshot</h3>
         <div className="grid grid-cols-2 gap-3">
-          <div className="text-center p-3 rounded-lg bg-red-500/5 border border-red-500/20">
+          <div className="text-center p-3 rounded-lg bg-destructive/5 border border-destructive/20">
             <p className="text-xs text-muted-foreground">Where I Started</p>
-            <p className="text-2xl font-bold text-red-500">45%</p>
+            <p className="text-2xl font-bold text-destructive">45%</p>
             <p className="text-[10px] text-muted-foreground">Overall Score</p>
           </div>
-          <div className="text-center p-3 rounded-lg bg-green-500/5 border border-green-500/20">
+          <div className="text-center p-3 rounded-lg bg-dharma-green/5 border border-dharma-green/20">
             <p className="text-xs text-muted-foreground">Where I Am Now</p>
-            <p className="text-2xl font-bold text-green-500">72%</p>
+            <p className="text-2xl font-bold text-dharma-green">72%</p>
             <p className="text-[10px] text-muted-foreground">Overall Score</p>
           </div>
         </div>
@@ -61,7 +170,7 @@ const SeekerJourney = () => {
           {milestones.map((m, i) => (
             <div key={i} className="relative flex items-start gap-4 pb-4 last:pb-0">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm z-10 flex-shrink-0 ${
-                m.status === 'done' ? 'bg-green-500 text-white' :
+                m.status === 'done' ? 'bg-dharma-green text-primary-foreground' :
                 m.status === 'current' ? 'bg-primary text-primary-foreground ring-4 ring-primary/20 animate-pulse' :
                 'bg-muted text-muted-foreground'
               }`}>{m.icon}</div>
@@ -69,7 +178,7 @@ const SeekerJourney = () => {
                 <p className={`text-sm font-medium ${m.status === 'done' ? 'text-foreground' : m.status === 'current' ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>{m.label}</p>
                 <p className="text-[10px] text-muted-foreground">{m.date}</p>
               </div>
-              {m.status === 'done' && <span className="text-green-500 text-xs">✅</span>}
+              {m.status === 'done' && <span className="text-dharma-green text-xs">✅</span>}
               {m.status === 'current' && <span className="text-primary text-xs">🔵 Current</span>}
             </div>
           ))}

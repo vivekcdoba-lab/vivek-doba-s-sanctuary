@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, CalendarDays, Clock, IndianRupee, Video, MapPin, Plus, PhoneCall, Bell, Target, TrendingUp, TrendingDown, ExternalLink, ClipboardList } from 'lucide-react';
+import { Users, CalendarDays, Clock, IndianRupee, Video, MapPin, Plus, PhoneCall, Bell, Target, TrendingUp, TrendingDown, ExternalLink, ClipboardList, AlertTriangle, Clipboard } from 'lucide-react';
 import { SEEKERS, SESSIONS, ASSIGNMENTS, PAYMENTS, MOTIVATIONAL_QUOTES, formatINR, getGreeting, getHealthColor } from '@/data/mockData';
+import { calculateRiskScore, getRiskEmoji } from '@/lib/riskEngine';
+import { JOURNEY_STAGES } from '@/types';
 
 const CountUp = ({ end, prefix = '' }: { end: number; prefix?: string }) => {
   const [count, setCount] = useState(0);
@@ -49,6 +51,10 @@ const AdminDashboard = () => {
   const quote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
   const overdueAssignments = ASSIGNMENTS.filter((a) => a.status === 'overdue');
   const pendingPayments = PAYMENTS.filter((p) => p.status === 'pending' || p.status === 'overdue');
+  const atRiskSeekers = SEEKERS
+    .filter(s => s.enrollment?.status === 'active')
+    .map(s => ({ ...s, risk: calculateRiskScore(s) }))
+    .filter(s => s.risk.level === 'high' || s.risk.level === 'critical');
 
   return (
     <div className="space-y-6 stagger-children">
@@ -58,6 +64,9 @@ const AdminDashboard = () => {
         <h1 className="text-2xl lg:text-3xl font-bold">{getGreeting()}, Vivek Sir</h1>
         <p className="text-primary-foreground/70 mt-1">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
         <p className="text-sm text-primary-foreground/60 mt-3 italic">"{quote.text}" — {quote.author}</p>
+        <Link to="/coach-day" className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-xl bg-primary-foreground/20 text-primary-foreground text-sm font-medium hover:bg-primary-foreground/30 transition-colors">
+          <Clipboard className="w-4 h-4" /> 📋 My Day
+        </Link>
       </div>
 
       {/* Stat Cards */}
@@ -144,6 +153,29 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Risk Alerts */}
+      {atRiskSeekers.length > 0 && (
+        <div className="bg-destructive/5 rounded-xl p-5 border border-destructive/20">
+          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-destructive" /> ⚠️ Risk Alerts ({atRiskSeekers.length})
+          </h3>
+          <div className="space-y-2">
+            {atRiskSeekers.map(s => (
+              <Link key={s.id} to={`/seekers/${s.id}`} className="flex items-center justify-between p-2.5 rounded-lg bg-card border border-destructive/10 hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">{getRiskEmoji(s.risk.level)}</span>
+                  <span className="text-sm font-medium text-foreground">{s.full_name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-destructive font-medium">{s.risk.level.toUpperCase()} ({s.risk.score})</span>
+                  <span className="text-xs text-muted-foreground">{s.risk.factors[0]}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div>

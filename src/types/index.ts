@@ -1,7 +1,7 @@
 export type UserRole = 'admin' | 'seeker';
 export type EnrollmentStatus = 'active' | 'paused' | 'completed' | 'dropped';
 export type CourseTier = 'standard' | 'premium' | 'platinum' | 'chakravartin';
-export type SessionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled';
+export type SessionStatus = 'requested' | 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'missed' | 'rescheduled' | 'cancelled';
 export type AssignmentStatus = 'assigned' | 'in_progress' | 'submitted' | 'under_review' | 'reviewed' | 'overdue' | 'revision_requested';
 export type LeadStage = 'new' | 'contacted' | 'discovery' | 'proposal' | 'negotiating' | 'converted' | 'lost';
 export type LeadPriority = 'hot' | 'warm' | 'cold';
@@ -9,6 +9,8 @@ export type PaymentMethod = 'cash' | 'bank_transfer' | 'upi' | 'razorpay' | 'che
 export type PaymentStatus = 'received' | 'pending' | 'overdue' | 'refunded' | 'void';
 export type HealthStatus = 'green' | 'yellow' | 'red';
 export type FollowUpStatus = 'pending' | 'completed' | 'overdue' | 'rescheduled';
+export type JourneyStage = 'awakening' | 'tapasya' | 'sangharsh' | 'bodh' | 'vistar' | 'siddhi';
+export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 
 export interface Profile {
   id: string;
@@ -76,6 +78,26 @@ export interface Session {
   key_insights?: string;
   seeker_mood?: string;
   engagement_score?: number;
+  reschedule_reason?: string;
+  reschedule_details?: string;
+  preferred_date?: string;
+  preferred_time?: string;
+  alt_date?: string;
+  alt_time?: string;
+  missed_reason?: string;
+  missed_contact_attempted?: boolean;
+  session_notes?: string;
+  breakthroughs?: string;
+  stories_used?: string[];
+  coach_private_notes?: string;
+  post_session_feedback?: {
+    rating: number;
+    takeaway: string;
+    commitment: number;
+    clarity: number;
+    feelings: string[];
+    comments: string;
+  };
 }
 
 export interface Assignment {
@@ -135,6 +157,23 @@ export interface SeekerWithDetails extends Profile {
   last_session_date?: string;
   last_log_date?: string;
   overdue_assignments: number;
+  journey_stage?: JourneyStage;
+  journey_stage_date?: string;
+  risk_score?: number;
+  risk_level?: RiskLevel;
+  identity_old?: {
+    story: string;
+    beliefs: string[];
+    habits: string[];
+    results: string;
+  };
+  identity_new?: {
+    story: string;
+    beliefs: string[];
+    habits: string[];
+    results: string;
+  };
+  transformation_progress?: number;
 }
 
 export interface Resource {
@@ -180,3 +219,34 @@ export interface CalendarEvent {
   end_time: string;
   color: string;
 }
+
+export interface Story {
+  id: string;
+  title: string;
+  source: 'ramayana' | 'mahabharata' | 'other';
+  theme: string;
+  description?: string;
+  times_used: number;
+  effective_with?: string;
+  last_used_seeker?: string;
+  last_used_session?: string;
+}
+
+export interface AutomationRule {
+  id: string;
+  label: string;
+  description: string;
+  enabled: boolean;
+  trigger: string;
+  channel: 'whatsapp' | 'email' | 'sms' | 'in_app' | 'dashboard';
+  message_template?: string;
+}
+
+export const JOURNEY_STAGES: { key: JourneyStage; emoji: string; name: string; sanskrit: string; metaphor: string; description: string }[] = [
+  { key: 'awakening', emoji: '🌅', name: 'Awakening', sanskrit: 'जागृति', metaphor: "Rama Leaves the Palace", description: 'Initial assessments, first 1-3 sessions, onboarding' },
+  { key: 'tapasya', emoji: '🔥', name: 'Tapasya', sanskrit: 'तपस्या', metaphor: "Building the Bridge", description: 'Regular practice established, daily tracking >60%' },
+  { key: 'sangharsh', emoji: '⚡', name: 'Sangharsh', sanskrit: 'संघर्ष', metaphor: "The Battle of Lanka", description: 'Deep resistance surfacing, limiting beliefs confronted' },
+  { key: 'bodh', emoji: '🌟', name: 'Bodh', sanskrit: 'बोध', metaphor: "The Moment of Truth", description: 'Major breakthrough, identity shift beginning' },
+  { key: 'vistar', emoji: '🦅', name: 'Vistar', sanskrit: 'विस्तार', metaphor: "Expanding the Kingdom", description: 'New habits solidified, real-life results showing' },
+  { key: 'siddhi', emoji: '👑', name: 'Siddhi', sanskrit: 'सिद्धि', metaphor: "The Return Home", description: 'Transformation complete, ready for alumni/mentor' },
+];

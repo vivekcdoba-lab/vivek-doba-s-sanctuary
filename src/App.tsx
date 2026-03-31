@@ -31,6 +31,7 @@ import CalendarPage from "./pages/admin/CalendarPage";
 import DailyTrackingPage from "./pages/admin/DailyTrackingPage";
 import GrowthMatrixPage from "./pages/admin/GrowthMatrixPage";
 import ApplicationsPage from "./pages/admin/ApplicationsPage";
+import CoachDayView from "./pages/admin/CoachDayView";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -64,6 +65,7 @@ const App = () => (
           {/* Admin Routes */}
           <Route element={<AuthGuard requiredRole="admin"><AdminLayout /></AuthGuard>}>
             <Route path="/dashboard" element={<AdminDashboard />} />
+            <Route path="/coach-day" element={<CoachDayView />} />
             <Route path="/seekers" element={<SeekersPage />} />
             <Route path="/seekers/:id" element={<SeekerDetailPage />} />
             <Route path="/leads" element={<LeadsPage />} />
