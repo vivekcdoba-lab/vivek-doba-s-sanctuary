@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Search, Plus, Filter, Grid3X3, List, Flame } from 'lucide-react';
 import { SEEKERS, getHealthColor, getTierBadgeClass } from '@/data/mockData';
 import { Input } from '@/components/ui/input';
+import { calculateRiskScore, getRiskEmoji, getRiskColor } from '@/lib/riskEngine';
+import { JOURNEY_STAGES } from '@/types';
 
 const SeekersPage = () => {
   const [search, setSearch] = useState('');
