@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { Eye, EyeOff, Mail, Lock, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -119,14 +120,58 @@ const LoginPage = () => {
             </button>
           </div>
 
-          <div className="text-center space-y-2">
-            <Link to="/register" className="text-sm text-primary hover:underline font-medium">
-              New here? Begin Your Journey →
-            </Link>
-            <br />
+          <div className="text-center">
             <button className="text-xs text-muted-foreground hover:text-foreground">
               Forgot Password?
             </button>
+          </div>
+
+          {/* Begin Your Journey - 3 Forms */}
+          <div className="pt-4 border-t border-border">
+            <p className="text-center text-sm font-semibold text-foreground mb-3">Begin Your Journey</p>
+            <div className="space-y-2">
+              <Link
+                to="/book-appointment"
+                className="flex items-center justify-between w-full p-3 rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all group bg-card"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">📞</span>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-foreground">Book a Discovery Call</p>
+                    <p className="text-xs text-muted-foreground">Free 45-min call with Vivek Sir</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </Link>
+
+              <Link
+                to="/register-workshop"
+                className="flex items-center justify-between w-full p-3 rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all group bg-card"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">🎯</span>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-foreground">Register for Workshop</p>
+                    <p className="text-xs text-muted-foreground">One-day transformation · From ₹5,000</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </Link>
+
+              <Link
+                to="/apply-lgt"
+                className="flex items-center justify-between w-full p-3 rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all group bg-card"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">👑</span>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-foreground">Apply for LGT Program</p>
+                    <p className="text-xs text-muted-foreground">6-12 month premier transformation</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
