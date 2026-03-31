@@ -87,10 +87,18 @@ const SeekersPage = () => {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
                   <span>Sessions: {seeker.sessions_completed}/{seeker.total_sessions}</span>
                   <span>Growth: {seeker.growth_score}%</span>
                   {seeker.streak > 0 && <span className="flex items-center gap-0.5"><Flame className="w-3 h-3 text-saffron" />{seeker.streak}</span>}
+                </div>
+                <div className="flex items-center gap-2 mb-4 text-xs">
+                  {(() => { const risk = calculateRiskScore(seeker); return (
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${getRiskColor(risk.level)}`}>{getRiskEmoji(risk.level)} {risk.level}</span>
+                  ); })()}
+                  {(() => { const stage = JOURNEY_STAGES.find(j => j.key === (seeker.journey_stage || 'awakening')); return stage ? (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary">{stage.emoji} {stage.name}</span>
+                  ) : null; })()}
                 </div>
 
                 <Link to={`/seekers/${seeker.id}`} className="block text-center py-2 rounded-lg border border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-colors">
