@@ -10,6 +10,17 @@ const TEAM_SIZES = ['Solo / Individual','2-5','6-15','16-50','51-200','200+'];
 const PURPOSES = ['Personal Growth & Clarity','Business Growth & Strategy','Leadership Development','Work-Life Balance','Spiritual Guidance','Relationship Improvement','Team Building Advice','Career Transition','Stress & Burnout Management','Exploring Coaching Programs','Other'];
 const SOURCES = ['Website','Instagram','YouTube','LinkedIn','Facebook','Referral from Friend/Colleague','Attended a Workshop/Event','Google Search','Newspaper/Magazine','Other'];
 
+const COUNTRY_CODES = [
+  { code: '+91', label: '🇮🇳 +91 India', short: '🇮🇳 +91' },
+  { code: '+1', label: '🇺🇸 +1 USA', short: '🇺🇸 +1' },
+  { code: '+44', label: '🇬🇧 +44 UK', short: '🇬🇧 +44' },
+  { code: '+971', label: '🇦🇪 +971 UAE', short: '🇦🇪 +971' },
+  { code: '+65', label: '🇸🇬 +65 Singapore', short: '🇸🇬 +65' },
+  { code: '+61', label: '🇦🇺 +61 Australia', short: '🇦🇺 +61' },
+  { code: '+49', label: '🇩🇪 +49 Germany', short: '🇩🇪 +49' },
+  { code: '+81', label: '🇯🇵 +81 Japan', short: '🇯🇵 +81' },
+];
+
 const generateSlots = () => {
   const slots: string[] = [];
   const hours = [9,9.75,10.5,11.25,14,14.75,15.5,16.25,17];
@@ -33,11 +44,21 @@ const getNext14Days = () => {
     days.push({
       date: d,
       label: d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }),
-      available: dow !== 0, // not Sunday
+      available: dow !== 0,
     });
   }
   return days;
 };
+
+// Field component defined OUTSIDE to prevent re-creation on each render
+const Field = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
+  <div>
+    <label className="block text-sm font-medium text-foreground mb-1">{label}{required && <span className="text-destructive ml-1">*</span>}</label>
+    {children}
+  </div>
+);
+
+const inputCls = "w-full px-3 py-2.5 rounded-lg border border-border bg-background text-foreground text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-colors";
 
 const BookAppointment = () => {
   const { toast } = useToast();
@@ -45,6 +66,7 @@ const BookAppointment = () => {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     fullName: '', mobile: '', email: '', whatsapp: '', sameWhatsapp: true, city: '', address: '',
+    countryCode: '+91', whatsappCountryCode: '+91',
     profession: '', company: '', industry: '', revenue: '', teamSize: '',
     purposes: [] as string[], challenge: '', source: '', referredBy: '',
     interestedCourses: [] as string[],
@@ -54,17 +76,36 @@ const BookAppointment = () => {
 
   const days = useMemo(getNext14Days, []);
   const slots = useMemo(generateSlots, []);
-  const bookedSlots = ['10:30 AM', '2:00 PM']; // mock
+  const bookedSlots = ['10:30 AM', '2:00 PM'];
 
   const set = (key: string, val: any) => setForm(p => ({ ...p, [key]: val }));
   const togglePurpose = (p: string) => set('purposes', form.purposes.includes(p) ? form.purposes.filter(x => x !== p) : [...form.purposes, p]);
   const toggleCourse = (id: string) => set('interestedCourses', form.interestedCourses.includes(id) ? form.interestedCourses.filter(x => x !== id) : [...form.interestedCourses, id]);
   const [coursesOpen, setCoursesOpen] = useState(false);
 
+  // Validation helpers
+  const sanitizeName = (val: string) => val.replace(/[^a-zA-Z\s]/g, '').slice(0, 60);
+  const sanitizeDigits = (val: string) => val.replace(/[^0-9]/g, '').slice(0, 10);
+  const sanitizeEmail = (val: string) => val.slice(0, 60);
+  const sanitizeCity = (val: string) => val.slice(0, 20);
+  const sanitizeAddress = (val: string) => val.slice(0, 100);
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleSubmit = () => {
-    if (!form.fullName || !form.mobile || !form.email || !form.city || !form.profession || !form.industry || !form.challenge || !form.source || !form.selectedDate || !form.selectedSlot || !form.consent || form.purposes.length === 0) {
-      toast({ title: 'Please fill all required fields', variant: 'destructive' });
-      return;
+    if (!form.fullName || form.fullName.length < 2) {
+      toast({ title: 'Please enter a valid full name (min 2 characters)', variant: 'destructive' }); return;
+    }
+    if (form.mobile.length !== 10) {
+      toast({ title: 'Please enter a valid 10-digit mobile number', variant: 'destructive' }); return;
+    }
+    if (!form.email || !isValidEmail(form.email)) {
+      toast({ title: 'Please enter a valid email (e.g. xyz@abc.com)', variant: 'destructive' }); return;
+    }
+    if (!form.city) {
+      toast({ title: 'Please enter your city', variant: 'destructive' }); return;
+    }
+    if (!form.profession || !form.industry || !form.challenge || !form.source || !form.selectedDate || !form.selectedSlot || !form.consent || form.purposes.length === 0) {
+      toast({ title: 'Please fill all required fields', variant: 'destructive' }); return;
     }
     setLoading(true);
     setTimeout(() => { setLoading(false); setSubmitted(true); }, 1500);
@@ -95,15 +136,6 @@ const BookAppointment = () => {
     );
   }
 
-  const Field = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
-    <div>
-      <label className="block text-sm font-medium text-foreground mb-1">{label}{required && <span className="text-destructive ml-1">*</span>}</label>
-      {children}
-    </div>
-  );
-
-  const inputCls = "w-full px-3 py-2.5 rounded-lg border border-border bg-background text-foreground text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-colors";
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -120,18 +152,54 @@ const BookAppointment = () => {
         <div className="bg-card rounded-xl border-l-4 p-6 shadow-sm" style={{ borderLeftColor: '#2196F3' }}>
           <h3 className="font-semibold text-foreground mb-4">Your Details</h3>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Full Name" required><input className={inputCls} value={form.fullName} onChange={e => set('fullName', e.target.value)} placeholder="Your full name" /></Field>
-            <Field label="Mobile Number" required><input className={inputCls} type="tel" value={form.mobile} onChange={e => set('mobile', e.target.value)} placeholder="10-digit mobile number" maxLength={10} /></Field>
-            <Field label="Email Address" required><input className={inputCls} type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="your.email@example.com" /></Field>
+            <Field label="Full Name" required>
+              <input className={inputCls} value={form.fullName} onChange={e => set('fullName', sanitizeName(e.target.value))} placeholder="Your full name (letters only)" maxLength={60} />
+              <p className="text-xs text-muted-foreground mt-1">{form.fullName.length}/60 characters</p>
+            </Field>
+            <Field label="Mobile Number" required>
+              <div className="flex gap-1.5">
+                <select
+                  className="px-2 py-2.5 rounded-lg border border-border bg-background text-foreground text-xs focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none w-[100px] flex-shrink-0"
+                  value={form.countryCode}
+                  onChange={e => set('countryCode', e.target.value)}
+                >
+                  {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.short}</option>)}
+                </select>
+                <input className={inputCls} type="tel" value={form.mobile} onChange={e => set('mobile', sanitizeDigits(e.target.value))} placeholder="10-digit number" maxLength={10} />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{form.mobile.length}/10 digits</p>
+            </Field>
+            <Field label="Email Address" required>
+              <input className={inputCls} type="email" value={form.email} onChange={e => set('email', sanitizeEmail(e.target.value))} placeholder="xyz@abc.com" maxLength={60} />
+              {form.email && !isValidEmail(form.email) && <p className="text-xs text-destructive mt-1">Enter a valid email (e.g. xyz@abc.com)</p>}
+              <p className="text-xs text-muted-foreground mt-1">{form.email.length}/60 characters</p>
+            </Field>
             <Field label="WhatsApp Number">
               <div className="flex items-center gap-2 mb-1.5">
                 <input type="checkbox" checked={form.sameWhatsapp} onChange={e => set('sameWhatsapp', e.target.checked)} className="rounded" />
                 <span className="text-xs text-muted-foreground">Same as mobile</span>
               </div>
-              {!form.sameWhatsapp && <input className={inputCls} value={form.whatsapp} onChange={e => set('whatsapp', e.target.value)} placeholder="WhatsApp number" />}
+              {!form.sameWhatsapp && (
+                <div className="flex gap-1.5">
+                  <select
+                    className="px-2 py-2.5 rounded-lg border border-border bg-background text-foreground text-xs focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none w-[100px] flex-shrink-0"
+                    value={form.whatsappCountryCode}
+                    onChange={e => set('whatsappCountryCode', e.target.value)}
+                  >
+                    {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.short}</option>)}
+                  </select>
+                  <input className={inputCls} value={form.whatsapp} onChange={e => set('whatsapp', sanitizeDigits(e.target.value))} placeholder="WhatsApp number" maxLength={10} />
+                </div>
+              )}
             </Field>
-            <Field label="City" required><input className={inputCls} value={form.city} onChange={e => set('city', e.target.value)} placeholder="Which city are you from?" /></Field>
-            <Field label="Full Address"><textarea className={inputCls} rows={2} value={form.address} onChange={e => set('address', e.target.value)} placeholder="Your complete address (optional)" /></Field>
+            <Field label="City" required>
+              <input className={inputCls} value={form.city} onChange={e => set('city', sanitizeCity(e.target.value))} placeholder="Your city" maxLength={20} />
+              <p className="text-xs text-muted-foreground mt-1">{form.city.length}/20 characters</p>
+            </Field>
+            <Field label="Full Address">
+              <textarea className={inputCls} rows={2} value={form.address} onChange={e => set('address', sanitizeAddress(e.target.value))} placeholder="Your complete address (optional)" maxLength={100} />
+              <p className="text-xs text-muted-foreground mt-1">{form.address.length}/100 characters</p>
+            </Field>
           </div>
         </div>
 
