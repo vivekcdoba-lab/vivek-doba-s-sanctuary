@@ -157,7 +157,7 @@ const DailyTrackingPage = () => {
 
       {reminderSeeker && (
         <SendReminderModal
-          isOpen={!!reminderSeeker}
+          open={!!reminderSeeker}
           onClose={() => setReminderSeeker(null)}
           seekerName={reminderSeeker.full_name}
           seekerPhone={reminderSeeker.phone}

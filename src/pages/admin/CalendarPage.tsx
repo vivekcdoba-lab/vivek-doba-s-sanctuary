@@ -11,7 +11,7 @@ const CalendarPage = () => {
   const [selectedDay, setSelectedDay] = useState<number | null>(31);
   const [events, setEvents] = useState(CALENDAR_EVENTS);
   const [showAdd, setShowAdd] = useState(false);
-  const [newEvent, setNewEvent] = useState({ title: '', type: 'session', date: '', start_time: '10:00', end_time: '11:00', seeker_id: '' });
+  const [newEvent, setNewEvent] = useState({ title: '', type: 'session' as CalendarEvent['type'], date: '', start_time: '10:00', end_time: '11:00', seeker_id: '' });
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
