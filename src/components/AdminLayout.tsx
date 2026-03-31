@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Target, BookOpen, CalendarDays, Calendar,
   ClipboardList, BarChart3, Sun, TrendingUp, RefreshCw, IndianRupee,
   MessageSquare, FolderOpen, PieChart, Settings, LogOut, Moon,
-  Menu, X, Bell, Search, ChevronRight
+  Menu, X, Bell, Search, ChevronRight, Inbox
 } from 'lucide-react';
 import { NOTIFICATIONS } from '@/data/mockData';
 
@@ -15,6 +15,7 @@ const navGroups = [
       { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
       { icon: Users, label: 'Seekers', path: '/seekers' },
       { icon: Target, label: 'Leads', path: '/leads' },
+      { icon: Inbox, label: 'Applications', path: '/applications', badge: true },
     ]
   },
   {
