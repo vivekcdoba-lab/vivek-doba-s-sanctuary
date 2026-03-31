@@ -58,6 +58,8 @@ const BookAppointment = () => {
 
   const set = (key: string, val: any) => setForm(p => ({ ...p, [key]: val }));
   const togglePurpose = (p: string) => set('purposes', form.purposes.includes(p) ? form.purposes.filter(x => x !== p) : [...form.purposes, p]);
+  const toggleCourse = (id: string) => set('interestedCourses', form.interestedCourses.includes(id) ? form.interestedCourses.filter(x => x !== id) : [...form.interestedCourses, id]);
+  const [coursesOpen, setCoursesOpen] = useState(false);
 
   const handleSubmit = () => {
     if (!form.fullName || !form.mobile || !form.email || !form.city || !form.profession || !form.industry || !form.challenge || !form.source || !form.selectedDate || !form.selectedSlot || !form.consent || form.purposes.length === 0) {
