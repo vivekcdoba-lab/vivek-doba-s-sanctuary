@@ -14,7 +14,145 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agreements: {
+        Row: {
+          client_id: string
+          coach_id: string
+          created_at: string
+          fields_json: Json | null
+          id: string
+          pdf_url: string | null
+          signed_at: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          coach_id: string
+          created_at?: string
+          fields_json?: Json | null
+          id?: string
+          pdf_url?: string | null
+          signed_at?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          coach_id?: string
+          created_at?: string
+          fields_json?: Json | null
+          id?: string
+          pdf_url?: string | null
+          signed_at?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreements_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessments: {
+        Row: {
+          analysis_text: string | null
+          client_id: string
+          coach_id: string
+          created_at: string
+          id: string
+          language: string | null
+          scores_json: Json | null
+          taken_at: string
+        }
+        Insert: {
+          analysis_text?: string | null
+          client_id: string
+          coach_id: string
+          created_at?: string
+          id?: string
+          language?: string | null
+          scores_json?: Json | null
+          taken_at?: string
+        }
+        Update: {
+          analysis_text?: string | null
+          client_id?: string
+          coach_id?: string
+          created_at?: string
+          id?: string
+          language?: string | null
+          scores_json?: Json | null
+          taken_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          coach_id: string
+          course: string | null
+          created_at: string
+          dob: string | null
+          education: string | null
+          email: string | null
+          gender: string | null
+          id: string
+          income: string | null
+          mobile: string | null
+          name: string
+          personal_history_json: Json | null
+          sessions_committed: number | null
+          signature_data: string | null
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          course?: string | null
+          created_at?: string
+          dob?: string | null
+          education?: string | null
+          email?: string | null
+          gender?: string | null
+          id?: string
+          income?: string | null
+          mobile?: string | null
+          name: string
+          personal_history_json?: Json | null
+          sessions_committed?: number | null
+          signature_data?: string | null
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          course?: string | null
+          created_at?: string
+          dob?: string | null
+          education?: string | null
+          email?: string | null
+          gender?: string | null
+          id?: string
+          income?: string | null
+          mobile?: string | null
+          name?: string
+          personal_history_json?: Json | null
+          sessions_committed?: number | null
+          signature_data?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
