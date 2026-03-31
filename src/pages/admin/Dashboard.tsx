@@ -51,6 +51,10 @@ const AdminDashboard = () => {
   const quote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
   const overdueAssignments = ASSIGNMENTS.filter((a) => a.status === 'overdue');
   const pendingPayments = PAYMENTS.filter((p) => p.status === 'pending' || p.status === 'overdue');
+  const atRiskSeekers = SEEKERS
+    .filter(s => s.enrollment?.status === 'active')
+    .map(s => ({ ...s, risk: calculateRiskScore(s) }))
+    .filter(s => s.risk.level === 'high' || s.risk.level === 'critical');
 
   return (
     <div className="space-y-6 stagger-children">
