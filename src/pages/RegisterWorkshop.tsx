@@ -26,6 +26,7 @@ const RegisterWorkshop = () => {
     dob: '', gender: '', city: '', state: '', pincode: '',
     profession: '', company: '', industry: '', experience: '', revenue: '', teamSize: '', linkedin: '',
     goals: '', challenge: '', priorPrograms: 'no', priorDetails: '', source: '', referredBy: '',
+    interestedCourses: [] as string[],
     paymentMode: 'pay_now', companyInvoice: '', gstNumber: '', specialReqs: '',
     consent1: false, consent2: false,
   });
