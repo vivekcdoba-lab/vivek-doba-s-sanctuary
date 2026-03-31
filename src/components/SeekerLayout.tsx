@@ -80,7 +80,7 @@ function SeekerSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup defaultOpen>
+        <SidebarGroup>
           <SidebarGroupLabel>📋 More</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
