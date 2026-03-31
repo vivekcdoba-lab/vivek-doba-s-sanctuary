@@ -47,6 +47,7 @@ const BookAppointment = () => {
     fullName: '', mobile: '', email: '', whatsapp: '', sameWhatsapp: true, city: '', address: '',
     profession: '', company: '', industry: '', revenue: '', teamSize: '',
     purposes: [] as string[], challenge: '', source: '', referredBy: '',
+    interestedCourses: [] as string[],
     selectedDate: null as Date | null, selectedSlot: '',
     consent: false,
   });
