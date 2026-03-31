@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useAuthStore } from "@/store/authStore";
 
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -12,11 +11,16 @@ import SeekerLayout from "./components/SeekerLayout";
 
 import AdminDashboard from "./pages/admin/Dashboard";
 import SeekersPage from "./pages/admin/SeekersPage";
+import SeekerDetailPage from "./pages/admin/SeekerDetailPage";
 import CoursesPage from "./pages/admin/CoursesPage";
 import LeadsPage from "./pages/admin/LeadsPage";
 import SessionsPage from "./pages/admin/SessionsPage";
 import AssignmentsPage from "./pages/admin/AssignmentsPage";
 import PaymentsPage from "./pages/admin/PaymentsPage";
+import ResourcesPage from "./pages/admin/ResourcesPage";
+import FollowUpsPage from "./pages/admin/FollowUpsPage";
+import MessagesPage from "./pages/admin/MessagesPage";
+import ReportsPage from "./pages/admin/ReportsPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
@@ -40,20 +44,20 @@ const App = () => (
           <Route element={<AuthGuard requiredRole="admin"><AdminLayout /></AuthGuard>}>
             <Route path="/dashboard" element={<AdminDashboard />} />
             <Route path="/seekers" element={<SeekersPage />} />
-            <Route path="/seekers/:id" element={<PlaceholderPage />} />
+            <Route path="/seekers/:id" element={<SeekerDetailPage />} />
             <Route path="/leads" element={<LeadsPage />} />
             <Route path="/courses" element={<CoursesPage />} />
             <Route path="/sessions" element={<SessionsPage />} />
             <Route path="/assignments" element={<AssignmentsPage />} />
             <Route path="/payments" element={<PaymentsPage />} />
+            <Route path="/follow-ups" element={<FollowUpsPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/resources" element={<ResourcesPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/calendar" element={<PlaceholderPage />} />
             <Route path="/assessments" element={<PlaceholderPage />} />
             <Route path="/daily-tracking" element={<PlaceholderPage />} />
             <Route path="/growth-matrix" element={<PlaceholderPage />} />
-            <Route path="/follow-ups" element={<PlaceholderPage />} />
-            <Route path="/messages" element={<PlaceholderPage />} />
-            <Route path="/resources" element={<PlaceholderPage />} />
-            <Route path="/reports" element={<PlaceholderPage />} />
             <Route path="/settings" element={<PlaceholderPage />} />
           </Route>
 
