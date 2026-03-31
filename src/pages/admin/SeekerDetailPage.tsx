@@ -465,9 +465,21 @@ const SeekerDetailPage = () => {
             {/* LGT */}
             <div className="bg-card rounded-xl p-5 shadow-sm border-l-4 border-l-saffron border border-border card-hover">
               <div className="flex items-center gap-2 mb-2"><span className="w-8 h-8 rounded-full bg-saffron/10 flex items-center justify-center text-sm">🔺</span><h4 className="font-semibold text-foreground">Life's Golden Triangle</h4></div>
-              <p className="text-sm font-medium text-foreground mb-1">Balance: 68%</p>
-              <p className="text-xs text-muted-foreground mb-3">Personal: 7 | Professional: 6 | Spiritual: 8</p>
-              <div className="flex gap-2"><button className="text-xs px-3 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted">View</button><button className="text-xs px-3 py-1.5 rounded-lg gradient-chakravartin text-primary-foreground">New Assessment</button></div>
+              {(() => {
+                const lgtSectionScores: Record<string, number> = {};
+                LGT_SECTIONS.forEach((sec, si) => { lgtSectionScores[sec.key] = LGT_SCORES_RAHUL.slice(si * 7, si * 7 + 7).reduce((a, b) => a + b, 0); });
+                const lgtTotal = Object.values(lgtSectionScores).reduce((a, b) => a + b, 0);
+                const lgtZone = getZone(lgtTotal);
+                const balance = Math.round(100 - (Math.max(...Object.values(lgtSectionScores)) - Math.min(...Object.values(lgtSectionScores))) / 35 * 100);
+                return (
+                  <>
+                    <p className="text-lg font-bold text-foreground mb-1">{lgtTotal}/140 <span className="text-xs px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: lgtZone.color }}>{lgtZone.rank}</span></p>
+                    <p className="text-xs text-muted-foreground">D: {lgtSectionScores.dharma} | K: {lgtSectionScores.kama} | A: {lgtSectionScores.artha} | S: {lgtSectionScores.soul}</p>
+                    <p className="text-xs text-muted-foreground mb-3">Balance: {balance}% · Zone: {lgtZone.name}</p>
+                  </>
+                );
+              })()}
+              <div className="flex gap-2"><button onClick={() => setLgtModal(true)} className="text-xs px-3 py-1.5 rounded-lg gradient-chakravartin text-primary-foreground">View Full LGT</button><button className="text-xs px-3 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted">New Assessment</button></div>
             </div>
             {/* Purusharthas */}
             <div className="bg-card rounded-xl p-5 shadow-sm border-l-4 border-l-wisdom-purple border border-border card-hover">
