@@ -113,8 +113,8 @@ const SeekersPage = () => {
             </thead>
             <tbody>
               {filtered.map((s) => (
-                <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => {}}>
-                  <td className="p-3 font-medium text-foreground">{s.full_name}</td>
+                <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => window.location.href = `/seekers/${s.id}`}>
+                  <td className="p-3 font-medium text-foreground"><Link to={`/seekers/${s.id}`} className="text-primary hover:underline">{s.full_name}</Link></td>
                   <td className="p-3 text-muted-foreground">{s.course?.name?.slice(0, 25)}</td>
                   <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${getTierBadgeClass(s.enrollment?.tier || '')}`}>{s.enrollment?.tier}</span></td>
                   <td className="p-3 text-muted-foreground capitalize">{s.enrollment?.status}</td>
