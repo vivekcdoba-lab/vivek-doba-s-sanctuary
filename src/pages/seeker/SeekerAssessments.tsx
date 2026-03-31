@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import LGTAssessment from '@/components/LGTAssessment';
+import FIROBAssessment from '@/components/FIROBAssessment';
 
 // 9 Life Areas matching Vivek Doba's Wheel of Life framework
 const AREAS = [
