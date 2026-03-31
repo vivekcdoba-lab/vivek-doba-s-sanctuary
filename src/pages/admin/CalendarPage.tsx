@@ -132,7 +132,7 @@ const CalendarPage = () => {
             </div>
             <div className="space-y-3">
               <input placeholder="Title *" value={newEvent.title} onChange={e => setNewEvent(p => ({ ...p, title: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
-              <select value={newEvent.type} onChange={e => setNewEvent(p => ({ ...p, type: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm">
+              <select value={newEvent.type} onChange={e => setNewEvent(p => ({ ...p, type: e.target.value as CalendarEvent['type'] }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm">
                 <option value="session">🔵 Session</option><option value="follow_up">🟢 Follow-up</option><option value="discovery">🟣 Discovery</option><option value="blocked">⬛ Blocked</option><option value="event">🟠 Workshop</option>
               </select>
               <select value={newEvent.seeker_id} onChange={e => setNewEvent(p => ({ ...p, seeker_id: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm">
