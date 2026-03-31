@@ -59,7 +59,7 @@ const RegisterWorkshop = () => {
     fullName: '', mobile: '', email: '', whatsapp: '', sameWhatsapp: true,
     countryCode: '+91', whatsappCountryCode: '+91',
     dob: '', gender: '', city: '', state: '', pincode: '',
-    profession: '', company: '', industry: '', experience: '', revenue: '', teamSize: '', linkedin: '',
+    profession: '', company: '', industry: '', experience: '', revenue: '', teamSize: '', linkedin: '', otherState: '',
     goals: '', challenge: '', priorPrograms: 'no', priorDetails: '', source: '', referredBy: '', otherSource: '',
     interestedCourses: [] as string[],
     paymentMode: 'pay_now', companyInvoice: '', gstNumber: '', specialReqs: '',
