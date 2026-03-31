@@ -106,6 +106,7 @@ const PROGRESS_TABLE = [
 
 const SeekerAssessments = () => {
   const [selfAssessing, setSelfAssessing] = useState(false);
+  const [lgtAssessing, setLgtAssessing] = useState(false);
   const [scores, setScores] = useState<number[]>(INITIAL_SCORES);
   const [showResults, setShowResults] = useState(false);
 
