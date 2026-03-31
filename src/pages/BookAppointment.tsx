@@ -289,7 +289,8 @@ const BookAppointment = () => {
           </Field>
           <div className="mt-4">
             <Field label="Describe your current challenge or goal" required>
-              <textarea className={inputCls} rows={3} value={form.challenge} onChange={e => set('challenge', e.target.value)} placeholder="Tell Vivek Sir what you're going through..." />
+              <textarea className={inputCls} rows={3} value={form.challenge} onChange={e => set('challenge', e.target.value.slice(0, 1000))} placeholder="Tell Vivek Sir what you're going through..." maxLength={1000} />
+              <p className="text-xs text-muted-foreground mt-1">{form.challenge.length}/1000 characters</p>
             </Field>
           </div>
           <div className="grid sm:grid-cols-2 gap-4 mt-4">
