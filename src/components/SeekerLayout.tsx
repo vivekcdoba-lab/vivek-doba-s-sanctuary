@@ -25,7 +25,7 @@ const SeekerLayout = () => {
             <span className="text-xs font-bold text-primary-foreground">VD</span>
           </div>
           <span className="font-semibold text-sm text-primary">VDTS</span>
-        </div>
+          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-medium ml-2">👤 Seeker</span>
 
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 text-sm">

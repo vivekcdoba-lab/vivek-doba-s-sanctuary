@@ -167,6 +167,11 @@ const AdminLayout = () => {
 
           <div className="flex-1" />
 
+          {/* Role Badge */}
+          <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+            👤 Coach
+          </span>
+
           {/* Search */}
           <div className="hidden md:flex items-center gap-2 bg-muted rounded-lg px-3 py-1.5">
             <Search className="w-4 h-4 text-muted-foreground" />
