@@ -76,6 +76,8 @@ const ApplyLGT = () => {
   };
   const toggle = (section: string) => setOpenSections(p => ({ ...p, [section]: !p[section] }));
   const selected = PROGRAMS.find(p => p.id === f.programId);
+  const toggleCourse = (id: string) => toggleArr('interestedCourses', id);
+  const [coursesOpen, setCoursesOpen] = useState(false);
 
   const handleSubmit = () => {
     if (!f.programId || !f.fullName || !f.mobile || !f.email || !f.city || !f.consent1 || !f.consent2 || !f.consent3 || !f.consent4) {
