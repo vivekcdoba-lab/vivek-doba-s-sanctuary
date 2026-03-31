@@ -154,14 +154,25 @@ const Index = () => (
       <div className="max-w-4xl mx-auto px-4 text-center">
         <p className="font-semibold text-foreground mb-1">Vivek Doba Training Solutions | Pune, Maharashtra</p>
         <p className="text-sm text-muted-foreground mb-4">📞 9607050111 | 📧 info@vivekdoba.in | 🌐 vivekdoba.in</p>
-        <div className="flex justify-center gap-4 mb-4">
+        <div className="flex justify-center gap-3 mb-4">
           {[
-            { name: 'Instagram', url: 'https://www.instagram.com/coachvivekdoba/' },
-            { name: 'YouTube', url: 'https://www.youtube.com/@coachvivekdoba' },
-            { name: 'LinkedIn', url: 'https://www.linkedin.com/in/coachvivekdoba/' },
-            { name: 'Facebook', url: 'https://www.facebook.com/coachvivekdoba' },
+            { name: 'Instagram', url: 'https://www.instagram.com/coachvivekdoba/', icon: Instagram, hoverColor: '#E4405F' },
+            { name: 'YouTube', url: 'https://www.youtube.com/@coachvivekdoba', icon: Youtube, hoverColor: '#FF0000' },
+            { name: 'LinkedIn', url: 'https://www.linkedin.com/in/coachvivekdoba/', icon: Linkedin, hoverColor: '#0A66C2' },
+            { name: 'Facebook', url: 'https://www.facebook.com/coachvivekdoba', icon: Facebook, hoverColor: '#1877F2' },
           ].map((s) => (
-            <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary transition-colors">{s.name}</a>
+            <a
+              key={s.name}
+              href={s.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={s.name}
+              className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-white transition-all duration-200 hover:scale-110"
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = s.hoverColor)}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+            >
+              <s.icon className="w-5 h-5" />
+            </a>
           ))}
         </div>
         <p className="text-xs text-muted-foreground">Made with 🙏 for seekers of transformation</p>
