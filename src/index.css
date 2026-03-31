@@ -229,3 +229,11 @@
     animation: skeleton-pulse 1.5s ease-in-out infinite;
   }
 }
+
+/* Print styles for invoices */
+@media print {
+  body * { visibility: hidden; }
+  #invoice-printable, #invoice-printable * { visibility: visible; }
+  #invoice-printable { position: absolute; left: 0; top: 0; width: 100%; background: white; box-shadow: none; }
+  .print\\:hidden { display: none !important; }
+}
