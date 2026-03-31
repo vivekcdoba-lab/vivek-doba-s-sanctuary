@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { Eye, EyeOff, Mail, Lock, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
