@@ -559,6 +559,18 @@ const SeekerDetailPage = () => {
               <p className="text-2xl font-bold text-center mt-4">Overall: <span className="text-primary">{wheelOverall.toFixed(1)}</span> / 10</p>
             </DialogContent>
           </Dialog>
+
+          {/* LGT Modal */}
+          <Dialog open={lgtModal} onOpenChange={setLgtModal}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle className="text-xl">🔺 Life's Golden Triangle — {seeker.full_name}</DialogTitle></DialogHeader>
+              <LGTAssessment
+                onClose={() => setLgtModal(false)}
+                readOnly={true}
+                initialScores={LGT_SCORES_RAHUL}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       )}
 
