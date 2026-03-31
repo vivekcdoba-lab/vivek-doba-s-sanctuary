@@ -291,8 +291,14 @@ const RegisterWorkshop = () => {
               <CharCount current={form.challenge.length} max={1000} />
             </Field>
             <Field label="Attended any coaching program before?" required>
-              <div className="flex gap-4">{['Yes','Never','This will be my first'].map(o => <label key={o} className="flex items-center gap-1.5 text-sm"><input type="radio" name="prior" checked={form.priorPrograms === o.toLowerCase()} onChange={() => set('priorPrograms', o.toLowerCase())} />{o}</label>)}</div>
+              <div className="flex gap-4">{['Yes','Never','This will be my first'].map(o => <label key={o} className="flex items-center gap-1.5 text-sm"><input type="radio" name="prior" checked={form.priorPrograms === o.toLowerCase()} onChange={() => { set('priorPrograms', o.toLowerCase()); if (o.toLowerCase() !== 'yes') set('priorDetails', ''); }} />{o}</label>)}</div>
             </Field>
+            {form.priorPrograms === 'yes' && (
+              <Field label="Program details (brief)">
+                <Input placeholder="Name of program attended" value={form.priorDetails} onChange={e => set('priorDetails', sanitize100(e.target.value))} maxLength={100} />
+                <CharCount current={form.priorDetails.length} max={100} />
+              </Field>
+            )}
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="How did you hear about us?" required>
                 <select className={inputCls} value={form.source} onChange={e => { set('source', e.target.value); if (e.target.value !== 'Referred by' && e.target.value !== 'Other') { set('referredBy', ''); set('otherSource', ''); } }}>
