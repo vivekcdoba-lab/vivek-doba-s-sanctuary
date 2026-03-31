@@ -252,7 +252,10 @@ const BookAppointment = () => {
               <input className={inputCls} value={form.profession} onChange={e => set('profession', sanitizeProfession(e.target.value))} placeholder="e.g., Business Owner, CEO" maxLength={20} />
               <p className="text-xs text-muted-foreground mt-1">{form.profession.length}/20 characters</p>
             </Field>
-            <Field label="Company/Business Name"><input className={inputCls} value={form.company} onChange={e => set('company', e.target.value)} placeholder="Your organization name" /></Field>
+            <Field label="Company/Business Name">
+              <input className={inputCls} value={form.company} onChange={e => set('company', e.target.value.slice(0, 20))} placeholder="Your organization name" maxLength={20} />
+              <p className="text-xs text-muted-foreground mt-1">{form.company.length}/20 characters</p>
+            </Field>
             <Field label="Industry" required>
               <select className={inputCls} value={form.industry} onChange={e => set('industry', e.target.value)}>
                 <option value="">Select industry...</option>
