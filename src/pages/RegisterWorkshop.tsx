@@ -74,7 +74,7 @@ const RegisterWorkshop = () => {
     if (!form.workshopId) { toast({ title: 'Please select a workshop', variant: 'destructive' }); return; }
     if (!form.fullName || form.fullName.length < 2) { toast({ title: 'Please enter a valid full name (min 2 characters)', variant: 'destructive' }); return; }
     if (form.mobile.length !== 10) { toast({ title: 'Please enter a valid 10-digit mobile number', variant: 'destructive' }); return; }
-    if (!form.email || !isValidEmail(form.email)) { toast({ title: 'Please enter a valid email (e.g. xyz@abc.com)', variant: 'destructive' }); return; }
+    if (!form.email || !isValidEmail(form.email)) { toast({ title: 'Please enter a valid email with @ and .com (e.g. xyz@abc.com)', variant: 'destructive' }); return; }
     if (!form.city) { toast({ title: 'Please enter your city', variant: 'destructive' }); return; }
     if (!form.profession || !form.company || !form.industry || !form.goals || !form.challenge || !form.consent1) {
       toast({ title: 'Please fill all required fields', variant: 'destructive' }); return;
