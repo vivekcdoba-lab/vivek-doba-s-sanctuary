@@ -1,4 +1,4 @@
-import { Course, SeekerWithDetails, Session, Assignment, Lead, Payment, Resource, FollowUp, Message, CalendarEvent } from '@/types';
+import { Course, SeekerWithDetails, Session, Assignment, Lead, Payment, Resource, FollowUp, Message, CalendarEvent, JourneyStage } from '@/types';
 
 export const COURSES: Course[] = [
   { id: 'c1', name: 'Laws of Attraction through Ramayana', tagline: 'Manifest your destiny through ancient wisdom', duration: '1 Day', format: 'Workshop', tier: 'standard', price: 5000, max_participants: 50, gradient_colors: ['#2196F3', '#00BCD4'], is_active: true },
