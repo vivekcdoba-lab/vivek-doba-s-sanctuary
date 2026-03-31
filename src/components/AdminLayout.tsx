@@ -35,6 +35,11 @@ const navGroups = [
     ]
   },
   {
+    label: 'COACHING', items: [
+      { icon: BookOpen, label: 'Coaching Tools', path: '/coaching' },
+    ]
+  },
+  {
     label: 'OPERATIONS', items: [
       { icon: RefreshCw, label: 'Follow-ups', path: '/follow-ups' },
       { icon: IndianRupee, label: 'Payments', path: '/payments' },
