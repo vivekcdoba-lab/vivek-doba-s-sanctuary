@@ -69,11 +69,11 @@ const App = () => (
             <Route path="/seeker/home" element={<SeekerHome />} />
             <Route path="/seeker/daily-log" element={<SeekerDailyLog />} />
             <Route path="/seeker/tasks" element={<PlaceholderPage />} />
-            <Route path="/seeker/growth" element={<PlaceholderPage />} />
+            <Route path="/seeker/growth" element={<SeekerGrowth />} />
             <Route path="/seeker/sacred-space" element={<SacredSpace />} />
             <Route path="/seeker/profile" element={<PlaceholderPage />} />
             <Route path="/seeker/journey" element={<PlaceholderPage />} />
-            <Route path="/seeker/assessments" element={<PlaceholderPage />} />
+            <Route path="/seeker/assessments" element={<SeekerAssessments />} />
             <Route path="/seeker/messages" element={<PlaceholderPage />} />
             <Route path="/seeker/weekly-review" element={<PlaceholderPage />} />
             <Route path="/seeker/payments" element={<PlaceholderPage />} />
