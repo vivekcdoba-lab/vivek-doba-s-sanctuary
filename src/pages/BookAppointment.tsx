@@ -8,7 +8,7 @@ const INDUSTRIES = ['IT & Software','Manufacturing','Education','Healthcare','Re
 const REVENUE_RANGES = ['Below ₹10 Lakhs','₹10L - ₹50L','₹50L - ₹1 Crore','₹1Cr - ₹5 Crore','₹5Cr - ₹25 Crore','₹25Cr - ₹100 Crore','₹100 Crore+','Not Applicable (Salaried)','Prefer Not to Say'];
 const TEAM_SIZES = ['Solo / Individual','2-5','6-15','16-50','51-200','200+'];
 const PURPOSES = ['Personal Growth & Clarity','Business Growth & Strategy','Leadership Development','Work-Life Balance','Spiritual Guidance','Relationship Improvement','Team Building Advice','Career Transition','Stress & Burnout Management','Exploring Coaching Programs','Other'];
-const SOURCES = ['Website','Instagram','YouTube','LinkedIn','Facebook','Referral from Friend/Colleague','Attended a Workshop/Event','Google Search','Newspaper/Magazine','Other'];
+const SOURCES = ['Website','Instagram','YouTube','LinkedIn','Facebook','Referred by','Attended a Workshop/Event','Google Search','Newspaper/Magazine','Other'];
 
 const COUNTRY_CODES = [
   { code: '+91', label: '🇮🇳 +91 India', short: '🇮🇳 +91' },
@@ -300,10 +300,12 @@ const BookAppointment = () => {
                 {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </Field>
-            <Field label="Referred by">
-              <input className={inputCls} value={form.referredBy} onChange={e => set('referredBy', e.target.value.slice(0, 20))} placeholder="Name of the person" maxLength={20} />
-              <p className="text-xs text-muted-foreground mt-1">{form.referredBy.length}/20 characters</p>
-            </Field>
+            {form.source === 'Referred by' && (
+              <Field label="Referred by" required>
+                <input className={inputCls} value={form.referredBy} onChange={e => set('referredBy', e.target.value.slice(0, 20))} placeholder="Name of the person who referred you" maxLength={20} />
+                <p className="text-xs text-muted-foreground mt-1">{form.referredBy.length}/20 characters</p>
+              </Field>
+            )}
           </div>
         </div>
 
