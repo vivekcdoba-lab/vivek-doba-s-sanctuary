@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { COURSES } from '@/data/mockData';
 
 const WORKSHOPS = [
   { id: 'w1', name: 'Laws of Attraction through Ramayana', desc: 'Manifest your desires through timeless Ramayana wisdom', duration: 'Full Day (10 AM - 6 PM)', price: 5000, max: 50, gradient: 'linear-gradient(135deg, #2196F3, #00BCD4)' },
