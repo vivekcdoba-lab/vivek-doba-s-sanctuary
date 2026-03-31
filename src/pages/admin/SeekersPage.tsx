@@ -64,7 +64,7 @@ const SeekersPage = () => {
                     {seeker.full_name.split(' ').map((n) => n[0]).join('')}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-foreground truncate">{seeker.full_name}</h3>
+                    <Link to={`/seekers/${seeker.id}`} className="font-semibold text-foreground truncate hover:text-primary">{seeker.full_name}</Link>
                     <p className="text-xs text-muted-foreground">{seeker.course?.name?.slice(0, 30)}</p>
                     <p className="text-xs text-muted-foreground">{seeker.city}</p>
                   </div>
