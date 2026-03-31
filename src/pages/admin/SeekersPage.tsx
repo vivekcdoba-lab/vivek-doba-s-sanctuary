@@ -118,6 +118,8 @@ const SeekersPage = () => {
                 <th className="text-left p-3 font-medium text-muted-foreground">Tier</th>
                 <th className="text-left p-3 font-medium text-muted-foreground">Status</th>
                 <th className="text-left p-3 font-medium text-muted-foreground">Health</th>
+                <th className="text-left p-3 font-medium text-muted-foreground">Risk</th>
+                <th className="text-left p-3 font-medium text-muted-foreground">Stage</th>
                 <th className="text-left p-3 font-medium text-muted-foreground">Growth</th>
               </tr>
             </thead>
