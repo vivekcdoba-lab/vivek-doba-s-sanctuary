@@ -21,7 +21,7 @@ import ResourcesPage from "./pages/admin/ResourcesPage";
 import FollowUpsPage from "./pages/admin/FollowUpsPage";
 import MessagesPage from "./pages/admin/MessagesPage";
 import ReportsPage from "./pages/admin/ReportsPage";
-import AssessmentsPage from "./pages/admin/AssessmentsPage";
+
 import PlaceholderPage from "./pages/PlaceholderPage";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
