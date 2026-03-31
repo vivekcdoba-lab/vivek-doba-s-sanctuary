@@ -300,7 +300,10 @@ const BookAppointment = () => {
                 {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </Field>
-            <Field label="Referred by"><input className={inputCls} value={form.referredBy} onChange={e => set('referredBy', e.target.value)} placeholder="Name of the person" /></Field>
+            <Field label="Referred by">
+              <input className={inputCls} value={form.referredBy} onChange={e => set('referredBy', e.target.value.slice(0, 20))} placeholder="Name of the person" maxLength={20} />
+              <p className="text-xs text-muted-foreground mt-1">{form.referredBy.length}/20 characters</p>
+            </Field>
           </div>
         </div>
 
