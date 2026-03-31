@@ -23,7 +23,9 @@ import MessagesPage from "./pages/admin/MessagesPage";
 import ReportsPage from "./pages/admin/ReportsPage";
 import AssessmentsPage from "./pages/admin/AssessmentsPage";
 import SettingsPage from "./pages/admin/SettingsPage";
-import PlaceholderPage from "./pages/PlaceholderPage";
+import CalendarPage from "./pages/admin/CalendarPage";
+import DailyTrackingPage from "./pages/admin/DailyTrackingPage";
+import GrowthMatrixPage from "./pages/admin/GrowthMatrixPage";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -31,6 +33,11 @@ import SacredSpace from "./pages/seeker/SacredSpace";
 import SeekerGrowth from "./pages/seeker/SeekerGrowth";
 import SeekerAssessments from "./pages/seeker/SeekerAssessments";
 import SeekerPayments from "./pages/seeker/SeekerPayments";
+import SeekerTasks from "./pages/seeker/SeekerTasks";
+import SeekerProfile from "./pages/seeker/SeekerProfile";
+import SeekerJourney from "./pages/seeker/SeekerJourney";
+import SeekerMessages from "./pages/seeker/SeekerMessages";
+import SeekerWeeklyReview from "./pages/seeker/SeekerWeeklyReview";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,10 +66,10 @@ const App = () => (
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/resources" element={<ResourcesPage />} />
             <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/calendar" element={<PlaceholderPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/assessments" element={<AssessmentsPage />} />
-            <Route path="/daily-tracking" element={<PlaceholderPage />} />
-            <Route path="/growth-matrix" element={<PlaceholderPage />} />
+            <Route path="/daily-tracking" element={<DailyTrackingPage />} />
+            <Route path="/growth-matrix" element={<GrowthMatrixPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
 
@@ -70,14 +77,14 @@ const App = () => (
           <Route element={<AuthGuard requiredRole="seeker"><SeekerLayout /></AuthGuard>}>
             <Route path="/seeker/home" element={<SeekerHome />} />
             <Route path="/seeker/daily-log" element={<SeekerDailyLog />} />
-            <Route path="/seeker/tasks" element={<PlaceholderPage />} />
+            <Route path="/seeker/tasks" element={<SeekerTasks />} />
             <Route path="/seeker/growth" element={<SeekerGrowth />} />
             <Route path="/seeker/sacred-space" element={<SacredSpace />} />
-            <Route path="/seeker/profile" element={<PlaceholderPage />} />
-            <Route path="/seeker/journey" element={<PlaceholderPage />} />
+            <Route path="/seeker/profile" element={<SeekerProfile />} />
+            <Route path="/seeker/journey" element={<SeekerJourney />} />
             <Route path="/seeker/assessments" element={<SeekerAssessments />} />
-            <Route path="/seeker/messages" element={<PlaceholderPage />} />
-            <Route path="/seeker/weekly-review" element={<PlaceholderPage />} />
+            <Route path="/seeker/messages" element={<SeekerMessages />} />
+            <Route path="/seeker/weekly-review" element={<SeekerWeeklyReview />} />
             <Route path="/seeker/payments" element={<SeekerPayments />} />
           </Route>
 
