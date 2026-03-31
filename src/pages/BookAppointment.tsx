@@ -88,6 +88,7 @@ const BookAppointment = () => {
   const sanitizeDigits = (val: string) => val.replace(/[^0-9]/g, '').slice(0, 10);
   const sanitizeEmail = (val: string) => val.slice(0, 60);
   const sanitizeCity = (val: string) => val.slice(0, 20);
+  const sanitizeProfession = (val: string) => val.slice(0, 20);
   const sanitizeAddress = (val: string) => val.slice(0, 100);
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
