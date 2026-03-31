@@ -62,7 +62,7 @@ function SeekerSidebar() {
           {!collapsed && <span className="font-semibold text-sm text-primary">VDTS</span>}
         </div>
 
-        <SidebarGroup defaultOpen>
+        <SidebarGroup>
           <SidebarGroupLabel>🧭 Navigate</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
