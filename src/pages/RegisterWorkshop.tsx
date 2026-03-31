@@ -59,7 +59,7 @@ const RegisterWorkshop = () => {
     fullName: '', mobile: '', email: '', whatsapp: '', sameWhatsapp: true,
     countryCode: '+91', whatsappCountryCode: '+91',
     dob: '', gender: '', city: '', state: '', pincode: '',
-    profession: '', company: '', industry: '', experience: '', revenue: '', teamSize: '', linkedin: '',
+    profession: '', company: '', industry: '', experience: '', revenue: '', teamSize: '', linkedin: '', otherState: '',
     goals: '', challenge: '', priorPrograms: 'no', priorDetails: '', source: '', referredBy: '', otherSource: '',
     interestedCourses: [] as string[],
     paymentMode: 'pay_now', companyInvoice: '', gstNumber: '', specialReqs: '',
@@ -244,9 +244,15 @@ const RegisterWorkshop = () => {
               <CharCount current={form.city.length} max={20} />
             </Field>
             <Field label="State" required>
-              <select className={inputCls} value={form.state} onChange={e => set('state', e.target.value)}>
+              <select className={inputCls} value={form.state} onChange={e => { set('state', e.target.value); if (e.target.value !== 'Other') set('otherState', ''); }}>
                 <option value="">Select...</option>{STATES.map(s => <option key={s}>{s}</option>)}
               </select>
+              {form.state === 'Other' && (
+                <div className="mt-2">
+                  <input className={inputCls} value={form.otherState} onChange={e => set('otherState', sanitize20(e.target.value))} placeholder="Enter your state" maxLength={20} />
+                  <CharCount current={form.otherState.length} max={20} />
+                </div>
+              )}
             </Field>
           </div>
         </div>
