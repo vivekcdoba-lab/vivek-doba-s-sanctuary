@@ -64,6 +64,9 @@ const AdminDashboard = () => {
         <h1 className="text-2xl lg:text-3xl font-bold">{getGreeting()}, Vivek Sir</h1>
         <p className="text-primary-foreground/70 mt-1">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
         <p className="text-sm text-primary-foreground/60 mt-3 italic">"{quote.text}" — {quote.author}</p>
+        <Link to="/coach-day" className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-xl bg-primary-foreground/20 text-primary-foreground text-sm font-medium hover:bg-primary-foreground/30 transition-colors">
+          <Clipboard className="w-4 h-4" /> 📋 My Day
+        </Link>
       </div>
 
       {/* Stat Cards */}
