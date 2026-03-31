@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import LGTAssessment from '@/components/LGTAssessment';
+import FIROBAssessment from '@/components/FIROBAssessment';
 
 // 9 Life Areas matching Vivek Doba's Wheel of Life framework
 const AREAS = [
@@ -107,6 +108,7 @@ const PROGRESS_TABLE = [
 const SeekerAssessments = () => {
   const [selfAssessing, setSelfAssessing] = useState(false);
   const [lgtAssessing, setLgtAssessing] = useState(false);
+  const [firobAssessing, setFirobAssessing] = useState(false);
   const [scores, setScores] = useState<number[]>(INITIAL_SCORES);
   const [showResults, setShowResults] = useState(false);
 
@@ -180,6 +182,12 @@ const SeekerAssessments = () => {
           <p className="text-[10px] text-muted-foreground">Awareness: 6.5</p>
           <button className="text-xs text-primary mt-2">View Details</button>
         </div>
+        <div className="bg-card rounded-xl p-4 border-l-4 border-l-[#E91E63] border border-border">
+          <p className="text-xs text-muted-foreground">🧠 FIRO-B</p>
+          <p className="text-sm font-bold text-foreground">6 dims</p>
+          <p className="text-[10px] text-muted-foreground">Interpersonal Style</p>
+          <button onClick={() => setFirobAssessing(true)} className="text-xs text-primary mt-2 font-medium">🧠 Take FIRO-B</button>
+        </div>
       </div>
 
       {/* ═══ LGT ASSESSMENT ═══ */}
@@ -189,6 +197,17 @@ const SeekerAssessments = () => {
           onSave={(scores, sectionScores) => {
             console.log('LGT saved:', { scores, sectionScores });
             setLgtAssessing(false);
+          }}
+        />
+      )}
+
+      {/* ═══ FIRO-B ASSESSMENT ═══ */}
+      {firobAssessing && (
+        <FIROBAssessment
+          onClose={() => setFirobAssessing(false)}
+          onSave={(scores) => {
+            console.log('FIRO-B saved:', scores);
+            setFirobAssessing(false);
           }}
         />
       )}
