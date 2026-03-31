@@ -74,6 +74,9 @@ const ONBOARDING = [
   { text: 'Accountability agreement signed', done: false },
 ];
 
+// Mock LGT scores for Rahul (28 questions, 1-5 each)
+const LGT_SCORES_RAHUL = [4, 3, 3, 2, 4, 3, 4, 3, 2, 4, 3, 2, 3, 4, 3, 2, 2, 4, 3, 3, 2, 3, 2, 3, 2, 3, 3, 2];
+
 const TIMELINE_ENTRIES = [
   { icon: '🌅', text: 'Daily log submitted — Completion: 92%, Mood: 8/10', time: '2 hours ago', color: 'bg-dharma-green', type: 'daily_log' },
   { icon: '📅', text: 'Session #8 completed — Leadership Principles, Engagement: 8/10', time: '2 days ago', color: 'bg-chakra-indigo', type: 'session' },
