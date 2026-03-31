@@ -182,6 +182,17 @@ const SeekerAssessments = () => {
         </div>
       </div>
 
+      {/* ═══ LGT ASSESSMENT ═══ */}
+      {lgtAssessing && (
+        <LGTAssessment
+          onClose={() => setLgtAssessing(false)}
+          onSave={(scores, sectionScores) => {
+            console.log('LGT saved:', { scores, sectionScores });
+            setLgtAssessing(false);
+          }}
+        />
+      )}
+
       {/* ═══ WHEEL OF LIFE SELF-ASSESSMENT ═══ */}
       {selfAssessing && (
         <div className="space-y-5">
