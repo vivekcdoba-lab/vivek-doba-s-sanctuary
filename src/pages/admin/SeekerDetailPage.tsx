@@ -119,6 +119,7 @@ const SeekerDetailPage = () => {
   const [assignmentFilter, setAssignmentFilter] = useState('all');
   const [showInvoice, setShowInvoice] = useState<string | null>(null);
   const [wheelModal, setWheelModal] = useState(false);
+  const [lgtModal, setLgtModal] = useState(false);
   const [timelineFilter, setTimelineFilter] = useState('all');
 
   const seeker = SEEKERS.find((s) => s.id === id);
