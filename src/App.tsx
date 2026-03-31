@@ -1,10 +1,28 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import { useAuthStore } from "@/store/authStore";
+
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import AuthGuard from "./components/AuthGuard";
+import AdminLayout from "./components/AdminLayout";
+import SeekerLayout from "./components/SeekerLayout";
+
+import AdminDashboard from "./pages/admin/Dashboard";
+import SeekersPage from "./pages/admin/SeekersPage";
+import CoursesPage from "./pages/admin/CoursesPage";
+import LeadsPage from "./pages/admin/LeadsPage";
+import SessionsPage from "./pages/admin/SessionsPage";
+import AssignmentsPage from "./pages/admin/AssignmentsPage";
+import PaymentsPage from "./pages/admin/PaymentsPage";
+import PlaceholderPage from "./pages/PlaceholderPage";
+
+import SeekerHome from "./pages/seeker/SeekerHome";
+import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
+import SacredSpace from "./pages/seeker/SacredSpace";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -12,11 +30,48 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
+
+          {/* Admin Routes */}
+          <Route element={<AuthGuard requiredRole="admin"><AdminLayout /></AuthGuard>}>
+            <Route path="/dashboard" element={<AdminDashboard />} />
+            <Route path="/seekers" element={<SeekersPage />} />
+            <Route path="/seekers/:id" element={<PlaceholderPage />} />
+            <Route path="/leads" element={<LeadsPage />} />
+            <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/sessions" element={<SessionsPage />} />
+            <Route path="/assignments" element={<AssignmentsPage />} />
+            <Route path="/payments" element={<PaymentsPage />} />
+            <Route path="/calendar" element={<PlaceholderPage />} />
+            <Route path="/assessments" element={<PlaceholderPage />} />
+            <Route path="/daily-tracking" element={<PlaceholderPage />} />
+            <Route path="/growth-matrix" element={<PlaceholderPage />} />
+            <Route path="/follow-ups" element={<PlaceholderPage />} />
+            <Route path="/messages" element={<PlaceholderPage />} />
+            <Route path="/resources" element={<PlaceholderPage />} />
+            <Route path="/reports" element={<PlaceholderPage />} />
+            <Route path="/settings" element={<PlaceholderPage />} />
+          </Route>
+
+          {/* Seeker Routes */}
+          <Route element={<AuthGuard requiredRole="seeker"><SeekerLayout /></AuthGuard>}>
+            <Route path="/seeker/home" element={<SeekerHome />} />
+            <Route path="/seeker/daily-log" element={<SeekerDailyLog />} />
+            <Route path="/seeker/tasks" element={<PlaceholderPage />} />
+            <Route path="/seeker/growth" element={<PlaceholderPage />} />
+            <Route path="/seeker/sacred-space" element={<SacredSpace />} />
+            <Route path="/seeker/profile" element={<PlaceholderPage />} />
+            <Route path="/seeker/journey" element={<PlaceholderPage />} />
+            <Route path="/seeker/assessments" element={<PlaceholderPage />} />
+            <Route path="/seeker/messages" element={<PlaceholderPage />} />
+            <Route path="/seeker/weekly-review" element={<PlaceholderPage />} />
+            <Route path="/seeker/payments" element={<PlaceholderPage />} />
+          </Route>
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

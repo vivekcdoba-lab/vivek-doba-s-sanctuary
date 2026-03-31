@@ -2,95 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    --background: 30 100% 97%;
+    --foreground: 240 20% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 240 20% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 240 20% 10%;
+    --primary: 36 87% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 340 100% 25%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 30 30% 93%;
+    --muted-foreground: 240 10% 40%;
+    --accent: 30 100% 60%;
+    --accent-foreground: 240 20% 10%;
+    --destructive: 0 69% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 20% 88%;
+    --input: 30 20% 88%;
+    --ring: 36 87% 38%;
+    --radius: 0.75rem;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* VDTS Chakra Colors */
+    --gold: 36 87% 38%;
+    --gold-bright: 51 100% 50%;
+    --maroon: 340 100% 25%;
+    --saffron: 27 100% 60%;
+    --lotus-pink: 340 82% 52%;
+    --chakra-indigo: 231 47% 47%;
+    --dharma-green: 122 46% 33%;
+    --wisdom-purple: 282 68% 38%;
+    --sky-blue: 199 95% 42%;
+    --warning-amber: 33 100% 50%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --sidebar-background: 340 100% 25%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 36 87% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 340 80% 20%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 340 60% 30%;
+    --sidebar-ring: 36 87% 38%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Gradients as custom properties */
+    --gradient-hero: linear-gradient(135deg, hsl(36 87% 38%) 0%, hsl(27 100% 60%) 50%, hsl(340 82% 52%) 100%);
+    --gradient-saffron: linear-gradient(135deg, hsl(27 100% 60%) 0%, hsl(51 100% 50%) 100%);
+    --gradient-maroon: linear-gradient(180deg, hsl(340 100% 25%) 0%, hsl(340 100% 14%) 100%);
+    --gradient-sacred: linear-gradient(135deg, hsl(282 68% 38%) 0%, hsl(231 47% 47%) 100%);
+    --gradient-growth: linear-gradient(135deg, hsl(122 46% 33%) 0%, hsl(199 95% 42%) 100%);
+    --gradient-chakravartin: linear-gradient(135deg, hsl(51 100% 50%) 0%, hsl(27 100% 60%) 50%, hsl(36 87% 38%) 100%);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 252 60% 11%;
+    --foreground: 30 30% 93%;
+    --card: 260 50% 17%;
+    --card-foreground: 30 30% 93%;
+    --popover: 260 50% 17%;
+    --popover-foreground: 30 30% 93%;
+    --primary: 36 87% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 340 80% 30%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 260 40% 22%;
+    --muted-foreground: 30 20% 65%;
+    --accent: 30 100% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 69% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 260 30% 25%;
+    --input: 260 30% 25%;
+    --ring: 36 87% 45%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 260 50% 12%;
+    --sidebar-foreground: 30 30% 93%;
+    --sidebar-primary: 36 87% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 260 40% 18%;
+    --sidebar-accent-foreground: 30 30% 93%;
+    --sidebar-border: 260 30% 22%;
+    --sidebar-ring: 36 87% 45%;
   }
 }
 
@@ -98,8 +91,141 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
+    font-family: 'Poppins', sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+  }
+  .font-devanagari {
+    font-family: 'Noto Sans Devanagari', sans-serif;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply backdrop-blur-xl border rounded-2xl;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  .dark .glass-card {
+    background: rgba(26, 17, 69, 0.6);
+    border-color: rgba(255, 215, 0, 0.15);
+  }
+  .gold-divider {
+    @apply h-px w-full;
+    background: linear-gradient(90deg, transparent, hsl(36 87% 38% / 0.4), transparent);
+  }
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  .gradient-saffron {
+    background: var(--gradient-saffron);
+  }
+  .gradient-maroon {
+    background: var(--gradient-maroon);
+  }
+  .gradient-sacred {
+    background: var(--gradient-sacred);
+  }
+  .gradient-growth {
+    background: var(--gradient-growth);
+  }
+  .gradient-chakravartin {
+    background: var(--gradient-chakravartin);
+  }
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(51 100% 50%), hsl(36 87% 38%));
+  }
+  .mandala-border {
+    @apply relative rounded-full;
+    background: conic-gradient(from 0deg, hsl(36 87% 38%), hsl(27 100% 60%), hsl(51 100% 50%), hsl(36 87% 38%));
+    padding: 3px;
+  }
+  .mandala-border > * {
+    @apply rounded-full;
+  }
+
+  /* Shimmer animation for Chakravartin tier */
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .shimmer-gold {
+    background: linear-gradient(90deg, hsl(36 87% 38%) 0%, hsl(51 100% 50%) 25%, hsl(36 87% 38%) 50%, hsl(51 100% 50%) 75%, hsl(36 87% 38%) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+
+  /* Floating lotus animation */
+  @keyframes float-up {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.08; }
+    90% { opacity: 0.08; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  }
+  .lotus-float {
+    animation: float-up 15s linear infinite;
+  }
+
+  /* Pulse fire */
+  @keyframes pulse-fire {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .pulse-fire {
+    animation: pulse-fire 1.5s ease-in-out infinite;
+  }
+
+  /* Count up animation helper */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up {
+    animation: fade-up 0.5s ease-out forwards;
+  }
+
+  /* Staggered children */
+  .stagger-children > * {
+    animation: fade-up 0.4s ease-out forwards;
+    opacity: 0;
+  }
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+
+  /* Card hover */
+  .card-hover {
+    @apply transition-all duration-200;
+  }
+  .card-hover:hover {
+    @apply shadow-lg;
+    transform: scale(1.02);
+  }
+
+  /* Progress ring */
+  @keyframes progress-fill {
+    from { stroke-dashoffset: 283; }
+  }
+  .progress-ring {
+    animation: progress-fill 1.5s ease-out forwards;
+  }
+
+  /* Skeleton loader */
+  @keyframes skeleton-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+  }
+  .skeleton {
+    @apply rounded-lg;
+    background: hsl(var(--muted));
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
   }
 }
