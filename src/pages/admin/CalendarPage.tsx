@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CALENDAR_EVENTS, SEEKERS } from '@/data/mockData';
+import { CalendarEvent } from '@/types';
 import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 
 const eventTypeColors: Record<string, string> = {
