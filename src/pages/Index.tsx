@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Phone, MessageSquare, Lock, Star, Users, BookOpen, ChevronRight } from 'lucide-react';
+import vivekDobaPhoto from '@/assets/vivek-doba.png';
 
 const stats = [
   { value: '80,000+', label: 'Lives Transformed' },
