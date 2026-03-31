@@ -1,6 +1,8 @@
 import { PAYMENTS, SEEKERS, formatINR } from '@/data/mockData';
-import { Plus, TrendingUp } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Plus, Bell, FileText } from 'lucide-react';
+import { useState } from 'react';
+import SendReminderModal from '@/components/SendReminderModal';
+import InvoiceModal from '@/components/InvoiceModal';
 
 const PaymentsPage = () => {
   const totalRevenue = PAYMENTS.filter((p) => p.status === 'received').reduce((s, p) => s + p.total_amount, 0);
@@ -19,6 +21,32 @@ const PaymentsPage = () => {
     received: 'bg-dharma-green/10 text-dharma-green',
     pending: 'bg-warning-amber/10 text-warning-amber',
     overdue: 'bg-destructive/10 text-destructive',
+  };
+
+  const [reminder, setReminder] = useState<{ seeker: typeof SEEKERS[0]; payment: typeof PAYMENTS[0] } | null>(null);
+  const [invoice, setInvoice] = useState<any>(null);
+
+  const openInvoice = (p: typeof PAYMENTS[0], seeker: typeof SEEKERS[0]) => {
+    const course = seeker.course;
+    setInvoice({
+      invoiceNumber: p.invoice_number,
+      date: p.payment_date || p.due_date || '',
+      dueDate: p.due_date,
+      status: p.status,
+      seekerName: seeker.full_name,
+      seekerCity: seeker.city,
+      seekerState: seeker.state,
+      seekerPhone: seeker.phone,
+      seekerEmail: seeker.email,
+      courseName: course?.name || '',
+      tier: seeker.enrollment?.tier || '',
+      duration: course?.duration,
+      amount: p.amount,
+      gstAmount: p.gst_amount,
+      totalAmount: p.total_amount,
+      method: p.method,
+      transactionId: p.transaction_id,
+    });
   };
 
   return (
@@ -51,24 +79,62 @@ const PaymentsPage = () => {
             <th className="text-left p-3 font-medium text-muted-foreground">Date</th>
             <th className="text-left p-3 font-medium text-muted-foreground">Method</th>
             <th className="text-left p-3 font-medium text-muted-foreground">Status</th>
+            <th className="text-left p-3 font-medium text-muted-foreground">Actions</th>
           </tr></thead>
           <tbody>
             {PAYMENTS.map((p) => {
               const seeker = SEEKERS.find((s) => s.id === p.seeker_id);
+              if (!seeker) return null;
               return (
                 <tr key={p.id} className="border-b border-border last:border-0 hover:bg-muted/30">
                   <td className="p-3 font-medium text-foreground">{p.invoice_number}</td>
-                  <td className="p-3 text-foreground">{seeker?.full_name}</td>
+                  <td className="p-3 text-foreground">{seeker.full_name}</td>
                   <td className="p-3 font-semibold text-foreground">{formatINR(p.total_amount)}</td>
                   <td className="p-3 text-muted-foreground">{p.payment_date || p.due_date}</td>
                   <td className="p-3 text-muted-foreground capitalize">{p.method.replace('_', ' ')}</td>
                   <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[p.status] || 'bg-muted text-muted-foreground'}`}>{p.status}</span></td>
+                  <td className="p-3">
+                    <div className="flex gap-1">
+                      {p.status === 'received' && (
+                        <button onClick={() => openInvoice(p, seeker)}
+                          className="px-2 py-1 rounded-lg text-[10px] font-medium bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1">
+                          <FileText className="w-3 h-3" /> Invoice
+                        </button>
+                      )}
+                      {(p.status === 'pending' || p.status === 'overdue') && (
+                        <button onClick={() => setReminder({ seeker, payment: p })}
+                          className="px-2 py-1 rounded-lg text-[10px] font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 flex items-center gap-1">
+                          <Bell className="w-3 h-3" /> Remind
+                        </button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+
+      {reminder && (
+        <SendReminderModal
+          open={!!reminder}
+          onClose={() => setReminder(null)}
+          seekerName={reminder.seeker.full_name}
+          seekerPhone={reminder.seeker.phone}
+          seekerEmail={reminder.seeker.email}
+          context="payment"
+          contextData={{
+            amount: formatINR(reminder.payment.total_amount),
+            courseName: reminder.seeker.course?.name,
+            dueDate: reminder.payment.due_date,
+          }}
+        />
+      )}
+
+      {invoice && (
+        <InvoiceModal open={!!invoice} onClose={() => setInvoice(null)} invoice={invoice} />
+      )}
     </div>
   );
 };

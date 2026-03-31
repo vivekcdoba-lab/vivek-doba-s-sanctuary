@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { FOLLOW_UPS, SEEKERS } from '@/data/mockData';
-import { Phone, MessageSquare, Mail, Bell, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Phone, MessageSquare, Mail, Bell, CheckCircle, Clock, AlertTriangle, Send } from 'lucide-react';
+import SendReminderModal from '@/components/SendReminderModal';
 
 const filterTabs = ['All', 'Overdue', 'Due Today', 'Upcoming', 'Completed'];
 const typeIcons: Record<string, any> = { call: Phone, whatsapp: MessageSquare, email: Mail, in_app: Bell };
 
 const FollowUpsPage = () => {
   const [activeFilter, setActiveFilter] = useState('All');
+  const [reminder, setReminder] = useState<typeof SEEKERS[0] | null>(null);
 
   const today = '2025-03-31';
   const filtered = FOLLOW_UPS.filter((f) => {
@@ -72,6 +74,12 @@ const FollowUpsPage = () => {
                 </div>
                 {f.status !== 'completed' && (
                   <div className="flex gap-1">
+                    {seeker && (
+                      <button onClick={() => setReminder(seeker)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1">
+                        <Send className="w-3 h-3" /> Message
+                      </button>
+                    )}
                     <button className="px-3 py-1.5 rounded-lg text-xs font-medium bg-dharma-green/10 text-dharma-green hover:bg-dharma-green/20">Complete</button>
                     <button className="px-3 py-1.5 rounded-lg text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80">Reschedule</button>
                   </div>
@@ -87,6 +95,17 @@ const FollowUpsPage = () => {
           <span className="text-5xl block mb-4">🔄</span>
           <p className="text-muted-foreground">No follow-ups in this category.</p>
         </div>
+      )}
+
+      {reminder && (
+        <SendReminderModal
+          open={!!reminder}
+          onClose={() => setReminder(null)}
+          seekerName={reminder.full_name}
+          seekerPhone={reminder.phone}
+          seekerEmail={reminder.email}
+          context="general"
+        />
       )}
     </div>
   );
