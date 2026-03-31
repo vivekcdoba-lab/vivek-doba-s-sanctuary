@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Target, BookOpen, CalendarDays, Calendar,
   ClipboardList, BarChart3, Sun, TrendingUp, RefreshCw, IndianRupee,
   MessageSquare, FolderOpen, PieChart, Settings, LogOut, Moon,
-  Menu, X, Bell, Search, ChevronRight
+  Menu, X, Bell, Search, ChevronRight, Inbox
 } from 'lucide-react';
 import { NOTIFICATIONS } from '@/data/mockData';
 
