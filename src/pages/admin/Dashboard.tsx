@@ -154,6 +154,29 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Risk Alerts */}
+      {atRiskSeekers.length > 0 && (
+        <div className="bg-destructive/5 rounded-xl p-5 border border-destructive/20">
+          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-destructive" /> ⚠️ Risk Alerts ({atRiskSeekers.length})
+          </h3>
+          <div className="space-y-2">
+            {atRiskSeekers.map(s => (
+              <Link key={s.id} to={`/seekers/${s.id}`} className="flex items-center justify-between p-2.5 rounded-lg bg-card border border-destructive/10 hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">{getRiskEmoji(s.risk.level)}</span>
+                  <span className="text-sm font-medium text-foreground">{s.full_name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-destructive font-medium">{s.risk.level.toUpperCase()} ({s.risk.score})</span>
+                  <span className="text-xs text-muted-foreground">{s.risk.factors[0]}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Quick Actions */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-3">Quick Actions</h2>
