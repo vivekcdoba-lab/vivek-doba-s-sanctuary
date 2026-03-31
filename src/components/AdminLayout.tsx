@@ -60,7 +60,7 @@ const AdminLayout = () => {
   const SidebarContent = () => (
     <div className="flex flex-col h-full gradient-maroon text-sidebar-foreground">
       {/* Logo */}
-      <div className="p-4 flex items-center gap-3 border-b border-sidebar-border">
+      <Link to="/" className="p-4 flex items-center gap-3 border-b border-sidebar-border hover:bg-primary/10 transition-colors">
         <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mandala-border">
           <div className="w-full h-full rounded-full bg-primary/30 flex items-center justify-center">
             <span className="text-sm font-bold text-primary-foreground">VD</span>
@@ -72,7 +72,7 @@ const AdminLayout = () => {
             <p className="text-xs text-sidebar-foreground/60 truncate">Training Solutions</p>
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
