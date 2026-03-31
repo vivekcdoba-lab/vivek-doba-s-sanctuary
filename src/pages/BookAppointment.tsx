@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Check, Phone, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Check, Phone, MessageSquare, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { COURSES } from '@/data/mockData';
 
 const INDUSTRIES = ['IT & Software','Manufacturing','Education','Healthcare','Retail & E-commerce','Finance & Banking','Real Estate','Government & Politics','Legal','Agriculture','Media & Entertainment','Hospitality','Consulting','NGO/Non-Profit','Other'];
 const REVENUE_RANGES = ['Below ₹10 Lakhs','₹10L - ₹50L','₹50L - ₹1 Crore','₹1Cr - ₹5 Crore','₹5Cr - ₹25 Crore','₹25Cr - ₹100 Crore','₹100 Crore+','Not Applicable (Salaried)','Prefer Not to Say'];
@@ -46,6 +47,7 @@ const BookAppointment = () => {
     fullName: '', mobile: '', email: '', whatsapp: '', sameWhatsapp: true, city: '', address: '',
     profession: '', company: '', industry: '', revenue: '', teamSize: '',
     purposes: [] as string[], challenge: '', source: '', referredBy: '',
+    interestedCourses: [] as string[],
     selectedDate: null as Date | null, selectedSlot: '',
     consent: false,
   });
@@ -56,6 +58,8 @@ const BookAppointment = () => {
 
   const set = (key: string, val: any) => setForm(p => ({ ...p, [key]: val }));
   const togglePurpose = (p: string) => set('purposes', form.purposes.includes(p) ? form.purposes.filter(x => x !== p) : [...form.purposes, p]);
+  const toggleCourse = (id: string) => set('interestedCourses', form.interestedCourses.includes(id) ? form.interestedCourses.filter(x => x !== id) : [...form.interestedCourses, id]);
+  const [coursesOpen, setCoursesOpen] = useState(false);
 
   const handleSubmit = () => {
     if (!form.fullName || !form.mobile || !form.email || !form.city || !form.profession || !form.industry || !form.challenge || !form.source || !form.selectedDate || !form.selectedSlot || !form.consent || form.purposes.length === 0) {
@@ -129,6 +133,46 @@ const BookAppointment = () => {
             <Field label="City" required><input className={inputCls} value={form.city} onChange={e => set('city', e.target.value)} placeholder="Which city are you from?" /></Field>
             <Field label="Full Address"><textarea className={inputCls} rows={2} value={form.address} onChange={e => set('address', e.target.value)} placeholder="Your complete address (optional)" /></Field>
           </div>
+        </div>
+
+        {/* Courses Interested In */}
+        <div className="bg-card rounded-xl border-l-4 p-6 shadow-sm" style={{ borderLeftColor: '#FFD700' }}>
+          <h3 className="font-semibold text-foreground mb-4">Courses / Programs Interested In</h3>
+          <p className="text-xs text-muted-foreground mb-3">Select one or more courses you'd like to explore</p>
+          <div className="relative">
+            <button type="button" onClick={() => setCoursesOpen(!coursesOpen)} className={`${inputCls} flex items-center justify-between text-left`}>
+              <span className={form.interestedCourses.length ? 'text-foreground' : 'text-muted-foreground'}>
+                {form.interestedCourses.length ? `${form.interestedCourses.length} course(s) selected` : 'Select courses...'}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${coursesOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {coursesOpen && (
+              <div className="absolute z-20 mt-1 w-full bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {COURSES.filter(c => c.is_active).map(c => (
+                  <label key={c.id} className="flex items-start gap-3 px-3 py-2.5 hover:bg-muted/50 cursor-pointer border-b border-border/50 last:border-0">
+                    <input type="checkbox" checked={form.interestedCourses.includes(c.id)} onChange={() => toggleCourse(c.id)} className="mt-0.5 rounded accent-primary" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{c.name}</p>
+                      <p className="text-xs text-muted-foreground">{c.duration} · {c.format} · ₹{c.price.toLocaleString('en-IN')}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+          {form.interestedCourses.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {form.interestedCourses.map(id => {
+                const c = COURSES.find(x => x.id === id);
+                return c ? (
+                  <span key={id} className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                    {c.name}
+                    <button onClick={() => toggleCourse(id)} className="hover:text-destructive">×</button>
+                  </span>
+                ) : null;
+              })}
+            </div>
+          )}
         </div>
 
         {/* Section 2: About You */}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { COURSES } from '@/data/mockData';
 
 const PROGRAMS = [
   { id: 'lgt_bo', name: "Life's Golden Triangle — Business Owners", desc: 'For entrepreneurs and business owners ready to align Dharma, Artha, and Kama', duration: '6 Months', sessions: 24, format: '1-on-1', price: 250000, tier: 'Platinum', gradient: 'linear-gradient(135deg, #9E9E9E, #FFD700)' },
@@ -64,6 +65,7 @@ const ApplyLGT = () => {
     commitments: { sessions: false, dailyTracking: false, feedback: false, investment: false, meditation: false, confidential: false },
     anythingElse: '',
     paymentPref: 'full', paymentMethod: '', gstRequired: 'no', gstCompany: '', gstNumber: '',
+    interestedCourses: [] as string[],
     consent1: false, consent2: false, consent3: false, consent4: false,
   });
 
@@ -74,6 +76,8 @@ const ApplyLGT = () => {
   };
   const toggle = (section: string) => setOpenSections(p => ({ ...p, [section]: !p[section] }));
   const selected = PROGRAMS.find(p => p.id === f.programId);
+  const toggleCourse = (id: string) => toggleArr('interestedCourses', id);
+  const [coursesOpen, setCoursesOpen] = useState(false);
 
   const handleSubmit = () => {
     if (!f.programId || !f.fullName || !f.mobile || !f.email || !f.city || !f.consent1 || !f.consent2 || !f.consent3 || !f.consent4) {
@@ -181,6 +185,46 @@ const ApplyLGT = () => {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Courses Interested In */}
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
+          <h3 className="font-semibold text-foreground mb-4">Also Interested In (Other Courses)</h3>
+          <p className="text-xs text-muted-foreground mb-3">Select any additional courses you'd like to explore alongside your chosen program</p>
+          <div className="relative">
+            <button type="button" onClick={() => setCoursesOpen(!coursesOpen)} className={`${inputCls} flex items-center justify-between text-left`}>
+              <span className={f.interestedCourses.length ? 'text-foreground' : 'text-muted-foreground'}>
+                {f.interestedCourses.length ? `${f.interestedCourses.length} course(s) selected` : 'Select courses...'}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${coursesOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {coursesOpen && (
+              <div className="absolute z-20 mt-1 w-full bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {COURSES.filter(c => c.is_active).map(c => (
+                  <label key={c.id} className="flex items-start gap-3 px-3 py-2.5 hover:bg-muted/50 cursor-pointer border-b border-border/50 last:border-0">
+                    <input type="checkbox" checked={f.interestedCourses.includes(c.id)} onChange={() => toggleCourse(c.id)} className="mt-0.5 rounded accent-primary" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{c.name}</p>
+                      <p className="text-xs text-muted-foreground">{c.duration} · {c.format} · ₹{c.price.toLocaleString('en-IN')}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+          {f.interestedCourses.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {f.interestedCourses.map((id: string) => {
+                const c = COURSES.find(x => x.id === id);
+                return c ? (
+                  <span key={id} className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                    {c.name}
+                    <button onClick={() => toggleCourse(id)} className="hover:text-destructive">×</button>
+                  </span>
+                ) : null;
+              })}
+            </div>
+          )}
         </div>
 
         {/* Section A: Personal */}

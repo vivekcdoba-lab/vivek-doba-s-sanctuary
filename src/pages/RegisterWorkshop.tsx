@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { COURSES } from '@/data/mockData';
 
 const WORKSHOPS = [
   { id: 'w1', name: 'Laws of Attraction through Ramayana', desc: 'Manifest your desires through timeless Ramayana wisdom', duration: 'Full Day (10 AM - 6 PM)', price: 5000, max: 50, gradient: 'linear-gradient(135deg, #2196F3, #00BCD4)' },
@@ -25,12 +26,15 @@ const RegisterWorkshop = () => {
     dob: '', gender: '', city: '', state: '', pincode: '',
     profession: '', company: '', industry: '', experience: '', revenue: '', teamSize: '', linkedin: '',
     goals: '', challenge: '', priorPrograms: 'no', priorDetails: '', source: '', referredBy: '',
+    interestedCourses: [] as string[],
     paymentMode: 'pay_now', companyInvoice: '', gstNumber: '', specialReqs: '',
     consent1: false, consent2: false,
   });
 
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
   const selected = WORKSHOPS.find(w => w.id === form.workshopId);
+  const toggleCourse = (id: string) => set('interestedCourses', form.interestedCourses.includes(id) ? form.interestedCourses.filter((x: string) => x !== id) : [...form.interestedCourses, id]);
+  const [coursesOpen, setCoursesOpen] = useState(false);
 
   const handleSubmit = () => {
     if (!form.workshopId || !form.fullName || !form.mobile || !form.email || !form.city || !form.profession || !form.company || !form.industry || !form.goals || !form.challenge || !form.consent1) {
@@ -117,6 +121,46 @@ const RegisterWorkshop = () => {
                 <Field label="Number of Participants"><input className={inputCls} type="number" value={form.participantCount} onChange={e => set('participantCount', e.target.value)} /></Field>
                 <Field label="Contact Person"><input className={inputCls} value={form.venueContact} onChange={e => set('venueContact', e.target.value)} /></Field>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Courses Interested In */}
+        <div className="bg-card rounded-xl border-l-4 p-6 shadow-sm" style={{ borderLeftColor: '#E91E63' }}>
+          <h3 className="font-semibold text-foreground mb-4">Also Interested In (Other Courses)</h3>
+          <p className="text-xs text-muted-foreground mb-3">Select any additional courses you'd like to explore</p>
+          <div className="relative">
+            <button type="button" onClick={() => setCoursesOpen(!coursesOpen)} className={`${inputCls} flex items-center justify-between text-left`}>
+              <span className={form.interestedCourses.length ? 'text-foreground' : 'text-muted-foreground'}>
+                {form.interestedCourses.length ? `${form.interestedCourses.length} course(s) selected` : 'Select courses...'}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${coursesOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {coursesOpen && (
+              <div className="absolute z-20 mt-1 w-full bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {COURSES.filter(c => c.is_active).map(c => (
+                  <label key={c.id} className="flex items-start gap-3 px-3 py-2.5 hover:bg-muted/50 cursor-pointer border-b border-border/50 last:border-0">
+                    <input type="checkbox" checked={form.interestedCourses.includes(c.id)} onChange={() => toggleCourse(c.id)} className="mt-0.5 rounded accent-primary" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{c.name}</p>
+                      <p className="text-xs text-muted-foreground">{c.duration} · {c.format} · ₹{c.price.toLocaleString('en-IN')}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+          {form.interestedCourses.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {form.interestedCourses.map((id: string) => {
+                const c = COURSES.find(x => x.id === id);
+                return c ? (
+                  <span key={id} className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                    {c.name}
+                    <button onClick={() => toggleCourse(id)} className="hover:text-destructive">×</button>
+                  </span>
+                ) : null;
+              })}
             </div>
           )}
         </div>
