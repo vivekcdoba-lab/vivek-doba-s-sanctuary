@@ -33,6 +33,8 @@ const RegisterWorkshop = () => {
 
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
   const selected = WORKSHOPS.find(w => w.id === form.workshopId);
+  const toggleCourse = (id: string) => set('interestedCourses', form.interestedCourses.includes(id) ? form.interestedCourses.filter((x: string) => x !== id) : [...form.interestedCourses, id]);
+  const [coursesOpen, setCoursesOpen] = useState(false);
 
   const handleSubmit = () => {
     if (!form.workshopId || !form.fullName || !form.mobile || !form.email || !form.city || !form.profession || !form.company || !form.industry || !form.goals || !form.challenge || !form.consent1) {
