@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Phone, MessageSquare, Lock, Star, Users, BookOpen, ChevronRight } from 'lucide-react';
+import { Phone, MessageSquare, Lock, ChevronRight, Instagram, Youtube, Linkedin, Facebook } from 'lucide-react';
 import vivekDobaPhoto from '@/assets/vivek-doba.png';
 
 const stats = [
