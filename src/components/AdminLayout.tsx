@@ -3,10 +3,11 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import {
   LayoutDashboard, Users, Target, BookOpen, CalendarDays, Calendar,
-  ClipboardList, BarChart3, Sunrise, TrendingUp, RefreshCw, IndianRupee,
-  MessageSquare, FolderOpen, PieChart, Settings, LogOut, Sun, Moon,
+  ClipboardList, BarChart3, Sun, TrendingUp, RefreshCw, IndianRupee,
+  MessageSquare, FolderOpen, PieChart, Settings, LogOut, Moon,
   Menu, X, Bell, Search, ChevronRight
 } from 'lucide-react';
+import { NOTIFICATIONS } from '@/data/mockData';
 
 const navGroups = [
   {
@@ -27,7 +28,7 @@ const navGroups = [
     label: 'TRANSFORMATION', items: [
       { icon: ClipboardList, label: 'Assignments', path: '/assignments' },
       { icon: BarChart3, label: 'Assessments', path: '/assessments' },
-      { icon: Sunrise, label: 'Daily Tracking', path: '/daily-tracking' },
+      { icon: Sun, label: 'Daily Tracking', path: '/daily-tracking' },
       { icon: TrendingUp, label: 'Growth Matrix', path: '/growth-matrix' },
     ]
   },
@@ -46,10 +47,11 @@ const navGroups = [
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const location = useLocation();
   const { user, logout, darkMode, toggleDarkMode } = useAuthStore();
 
-  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
+  const isActive = (path: string) => location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path + '/'));
 
   const breadcrumbs = location.pathname.split('/').filter(Boolean).map((seg) => seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' '));
 
@@ -135,7 +137,7 @@ const AdminLayout = () => {
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-foreground/50" onClick={() => setSidebarOpen(false)} />
+          <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
           <div className="absolute left-0 top-0 h-full w-[260px] z-10">
             <SidebarContent />
           </div>
@@ -172,10 +174,35 @@ const AdminLayout = () => {
           </div>
 
           {/* Notifications */}
-          <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
-            <Bell className="w-5 h-5 text-muted-foreground" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive" />
-          </button>
+          <div className="relative">
+            <button onClick={() => setNotifOpen(!notifOpen)} className="relative p-2 rounded-lg hover:bg-muted transition-colors">
+              <Bell className="w-5 h-5 text-muted-foreground" />
+              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-destructive text-[9px] text-primary-foreground flex items-center justify-center font-bold">5</span>
+            </button>
+            {notifOpen && (
+              <div className="absolute right-0 top-full mt-2 w-80 bg-card rounded-xl border border-border shadow-xl z-50">
+                <div className="p-3 border-b border-border">
+                  <h4 className="font-semibold text-foreground text-sm">Notifications</h4>
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {NOTIFICATIONS.map((n) => (
+                    <div key={n.id} className="p-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                      <div className="flex items-start gap-2">
+                        <span className="text-sm">{n.icon}</span>
+                        <div>
+                          <p className="text-sm text-foreground">{n.text}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{n.time}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-3 border-t border-border">
+                  <button onClick={() => setNotifOpen(false)} className="text-xs text-primary hover:underline font-medium w-full text-center">Mark All Read</button>
+                </div>
+              </div>
+            )}
+          </div>
         </header>
 
         {/* Page Content */}
