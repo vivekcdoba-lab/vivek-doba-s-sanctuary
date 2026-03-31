@@ -21,11 +21,14 @@ import ResourcesPage from "./pages/admin/ResourcesPage";
 import FollowUpsPage from "./pages/admin/FollowUpsPage";
 import MessagesPage from "./pages/admin/MessagesPage";
 import ReportsPage from "./pages/admin/ReportsPage";
+import AssessmentsPage from "./pages/admin/AssessmentsPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
 import SacredSpace from "./pages/seeker/SacredSpace";
+import SeekerGrowth from "./pages/seeker/SeekerGrowth";
+import SeekerAssessments from "./pages/seeker/SeekerAssessments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,7 +58,7 @@ const App = () => (
             <Route path="/resources" element={<ResourcesPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/calendar" element={<PlaceholderPage />} />
-            <Route path="/assessments" element={<PlaceholderPage />} />
+            <Route path="/assessments" element={<AssessmentsPage />} />
             <Route path="/daily-tracking" element={<PlaceholderPage />} />
             <Route path="/growth-matrix" element={<PlaceholderPage />} />
             <Route path="/settings" element={<PlaceholderPage />} />
@@ -66,11 +69,11 @@ const App = () => (
             <Route path="/seeker/home" element={<SeekerHome />} />
             <Route path="/seeker/daily-log" element={<SeekerDailyLog />} />
             <Route path="/seeker/tasks" element={<PlaceholderPage />} />
-            <Route path="/seeker/growth" element={<PlaceholderPage />} />
+            <Route path="/seeker/growth" element={<SeekerGrowth />} />
             <Route path="/seeker/sacred-space" element={<SacredSpace />} />
             <Route path="/seeker/profile" element={<PlaceholderPage />} />
             <Route path="/seeker/journey" element={<PlaceholderPage />} />
-            <Route path="/seeker/assessments" element={<PlaceholderPage />} />
+            <Route path="/seeker/assessments" element={<SeekerAssessments />} />
             <Route path="/seeker/messages" element={<PlaceholderPage />} />
             <Route path="/seeker/weekly-review" element={<PlaceholderPage />} />
             <Route path="/seeker/payments" element={<PlaceholderPage />} />
