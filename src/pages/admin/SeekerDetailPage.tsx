@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import LGTAssessment, { LGT_SECTIONS, LGT_ZONES, PILLAR_COLORS, getZone, getPillarZone } from '@/components/LGTAssessment';
 
 const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Growth Matrix', 'Assignments', 'Daily Tracking', 'Payments', 'Goals & Vision', 'Private Notes 🔒', 'Timeline'];
 
@@ -73,6 +74,9 @@ const ONBOARDING = [
   { text: 'Accountability agreement signed', done: false },
 ];
 
+// Mock LGT scores for Rahul (28 questions, 1-5 each)
+const LGT_SCORES_RAHUL = [4, 3, 3, 2, 4, 3, 4, 3, 2, 4, 3, 2, 3, 4, 3, 2, 2, 4, 3, 3, 2, 3, 2, 3, 2, 3, 3, 2];
+
 const TIMELINE_ENTRIES = [
   { icon: '🌅', text: 'Daily log submitted — Completion: 92%, Mood: 8/10', time: '2 hours ago', color: 'bg-dharma-green', type: 'daily_log' },
   { icon: '📅', text: 'Session #8 completed — Leadership Principles, Engagement: 8/10', time: '2 days ago', color: 'bg-chakra-indigo', type: 'session' },
@@ -115,6 +119,7 @@ const SeekerDetailPage = () => {
   const [assignmentFilter, setAssignmentFilter] = useState('all');
   const [showInvoice, setShowInvoice] = useState<string | null>(null);
   const [wheelModal, setWheelModal] = useState(false);
+  const [lgtModal, setLgtModal] = useState(false);
   const [timelineFilter, setTimelineFilter] = useState('all');
 
   const seeker = SEEKERS.find((s) => s.id === id);
@@ -460,9 +465,21 @@ const SeekerDetailPage = () => {
             {/* LGT */}
             <div className="bg-card rounded-xl p-5 shadow-sm border-l-4 border-l-saffron border border-border card-hover">
               <div className="flex items-center gap-2 mb-2"><span className="w-8 h-8 rounded-full bg-saffron/10 flex items-center justify-center text-sm">🔺</span><h4 className="font-semibold text-foreground">Life's Golden Triangle</h4></div>
-              <p className="text-sm font-medium text-foreground mb-1">Balance: 68%</p>
-              <p className="text-xs text-muted-foreground mb-3">Personal: 7 | Professional: 6 | Spiritual: 8</p>
-              <div className="flex gap-2"><button className="text-xs px-3 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted">View</button><button className="text-xs px-3 py-1.5 rounded-lg gradient-chakravartin text-primary-foreground">New Assessment</button></div>
+              {(() => {
+                const lgtSectionScores: Record<string, number> = {};
+                LGT_SECTIONS.forEach((sec, si) => { lgtSectionScores[sec.key] = LGT_SCORES_RAHUL.slice(si * 7, si * 7 + 7).reduce((a, b) => a + b, 0); });
+                const lgtTotal = Object.values(lgtSectionScores).reduce((a, b) => a + b, 0);
+                const lgtZone = getZone(lgtTotal);
+                const balance = Math.round(100 - (Math.max(...Object.values(lgtSectionScores)) - Math.min(...Object.values(lgtSectionScores))) / 35 * 100);
+                return (
+                  <>
+                    <p className="text-lg font-bold text-foreground mb-1">{lgtTotal}/140 <span className="text-xs px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: lgtZone.color }}>{lgtZone.rank}</span></p>
+                    <p className="text-xs text-muted-foreground">D: {lgtSectionScores.dharma} | K: {lgtSectionScores.kama} | A: {lgtSectionScores.artha} | S: {lgtSectionScores.soul}</p>
+                    <p className="text-xs text-muted-foreground mb-3">Balance: {balance}% · Zone: {lgtZone.name}</p>
+                  </>
+                );
+              })()}
+              <div className="flex gap-2"><button onClick={() => setLgtModal(true)} className="text-xs px-3 py-1.5 rounded-lg gradient-chakravartin text-primary-foreground">View Full LGT</button><button className="text-xs px-3 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted">New Assessment</button></div>
             </div>
             {/* Purusharthas */}
             <div className="bg-card rounded-xl p-5 shadow-sm border-l-4 border-l-wisdom-purple border border-border card-hover">
@@ -540,6 +557,18 @@ const SeekerDetailPage = () => {
                 </div>
               </div>
               <p className="text-2xl font-bold text-center mt-4">Overall: <span className="text-primary">{wheelOverall.toFixed(1)}</span> / 10</p>
+            </DialogContent>
+          </Dialog>
+
+          {/* LGT Modal */}
+          <Dialog open={lgtModal} onOpenChange={setLgtModal}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle className="text-xl">🔺 Life's Golden Triangle — {seeker.full_name}</DialogTitle></DialogHeader>
+              <LGTAssessment
+                onClose={() => setLgtModal(false)}
+                readOnly={true}
+                initialScores={LGT_SCORES_RAHUL}
+              />
             </DialogContent>
           </Dialog>
         </div>

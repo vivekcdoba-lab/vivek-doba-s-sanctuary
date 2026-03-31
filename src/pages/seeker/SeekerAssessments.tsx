@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
+import LGTAssessment from '@/components/LGTAssessment';
 
 // 9 Life Areas matching Vivek Doba's Wheel of Life framework
 const AREAS = [
@@ -105,6 +106,7 @@ const PROGRESS_TABLE = [
 
 const SeekerAssessments = () => {
   const [selfAssessing, setSelfAssessing] = useState(false);
+  const [lgtAssessing, setLgtAssessing] = useState(false);
   const [scores, setScores] = useState<number[]>(INITIAL_SCORES);
   const [showResults, setShowResults] = useState(false);
 
@@ -158,7 +160,7 @@ const SeekerAssessments = () => {
           <p className="text-xs text-muted-foreground">🔺 LGT</p>
           <p className="text-lg font-bold text-foreground">68%</p>
           <p className="text-[10px] text-muted-foreground">Balance</p>
-          <button className="text-xs text-primary mt-2">View Details</button>
+          <button onClick={() => { setLgtAssessing(true); }} className="text-xs text-primary mt-2 font-medium">🔺 Take LGT Test</button>
         </div>
         <div className="bg-card rounded-xl p-4 border-l-4 border-l-[#7B1FA2] border border-border">
           <p className="text-xs text-muted-foreground">🕉️ Purusharthas</p>
@@ -179,6 +181,17 @@ const SeekerAssessments = () => {
           <button className="text-xs text-primary mt-2">View Details</button>
         </div>
       </div>
+
+      {/* ═══ LGT ASSESSMENT ═══ */}
+      {lgtAssessing && (
+        <LGTAssessment
+          onClose={() => setLgtAssessing(false)}
+          onSave={(scores, sectionScores) => {
+            console.log('LGT saved:', { scores, sectionScores });
+            setLgtAssessing(false);
+          }}
+        />
+      )}
 
       {/* ═══ WHEEL OF LIFE SELF-ASSESSMENT ═══ */}
       {selfAssessing && (
