@@ -12,6 +12,7 @@ import ApplyLGT from "./pages/ApplyLGT";
 import AuthGuard from "./components/AuthGuard";
 import AdminLayout from "./components/AdminLayout";
 import SeekerLayout from "./components/SeekerLayout";
+import CoachingLayout from "./components/CoachingLayout";
 
 import AdminDashboard from "./pages/admin/Dashboard";
 import SeekersPage from "./pages/admin/SeekersPage";
@@ -44,6 +45,13 @@ import SeekerProfile from "./pages/seeker/SeekerProfile";
 import SeekerJourney from "./pages/seeker/SeekerJourney";
 import SeekerMessages from "./pages/seeker/SeekerMessages";
 import SeekerWeeklyReview from "./pages/seeker/SeekerWeeklyReview";
+
+import CoachingDashboard from "./pages/coaching/CoachingDashboard";
+import ClientIntakePage from "./pages/coaching/ClientIntakePage";
+import AgreementsPage from "./pages/coaching/AgreementsPage";
+import FiroBPage from "./pages/coaching/FiroBPage";
+import PlaceholderModule from "./pages/coaching/PlaceholderModule";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -98,6 +106,18 @@ const App = () => (
             <Route path="/seeker/messages" element={<SeekerMessages />} />
             <Route path="/seeker/weekly-review" element={<SeekerWeeklyReview />} />
             <Route path="/seeker/payments" element={<SeekerPayments />} />
+          </Route>
+
+          {/* Coaching Management Routes */}
+          <Route element={<CoachingLayout />}>
+            <Route path="/coaching" element={<CoachingDashboard />} />
+            <Route path="/coaching/intake" element={<ClientIntakePage />} />
+            <Route path="/coaching/agreements" element={<AgreementsPage />} />
+            <Route path="/coaching/firo-b" element={<FiroBPage />} />
+            <Route path="/coaching/sessions" element={<PlaceholderModule />} />
+            <Route path="/coaching/planner" element={<PlaceholderModule />} />
+            <Route path="/coaching/homework" element={<PlaceholderModule />} />
+            <Route path="/coaching/progress" element={<PlaceholderModule />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
