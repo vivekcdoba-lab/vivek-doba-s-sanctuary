@@ -221,8 +221,9 @@ const RegisterWorkshop = () => {
               <CharCount current={form.mobile.length} max={10} />
             </Field>
             <Field label="Email" required>
-              <input className={inputCls} type="email" value={form.email} onChange={e => set('email', sanitizeEmail(e.target.value))} placeholder="xyz@abc.com" maxLength={60} />
+              <input className={`${inputCls} ${emailError ? 'border-destructive focus:border-destructive' : ''}`} type="email" value={form.email} onChange={e => set('email', sanitizeEmail(e.target.value).replace(/\s/g, ''))} placeholder="xyz@abc.com" maxLength={60} pattern="^[^\s@]+@[^\s@]+\.com$" title="Enter email with @ and .com (e.g. xyz@abc.com)" />
               <CharCount current={form.email.length} max={60} />
+              {emailError && <p className="text-xs text-destructive mt-1">{emailError}</p>}
             </Field>
             <Field label="WhatsApp">
               <label className="flex items-center gap-2 mb-1"><input type="checkbox" checked={form.sameWhatsapp} onChange={e => set('sameWhatsapp', e.target.checked)} className="rounded" /><span className="text-xs text-muted-foreground">Same as mobile</span></label>
