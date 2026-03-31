@@ -58,7 +58,7 @@ const CoursesPage = () => {
     const courseData = {
       name: form.name, tagline: form.tagline, duration: form.duration, format: form.format,
       tier: form.tier as any, price: Number(form.price), max_participants: Number(form.max_participants),
-      gradient_colors: GRADIENT_PRESETS[form.gradient_index], is_active: true,
+      gradient_colors: GRADIENT_PRESETS[form.gradient_index] as [string, string], is_active: true,
     };
 
     if (editId) {
