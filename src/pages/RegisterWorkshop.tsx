@@ -42,7 +42,7 @@ const sanitize20 = (val: string) => val.slice(0, 20);
 const sanitize100 = (val: string) => val.slice(0, 100);
 const sanitize1000 = (val: string) => val.slice(0, 1000);
 const sanitize40 = (val: string) => val.slice(0, 40);
-const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.(com|in|org|net|co|io|edu|gov|info)$/i.test(email);
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.com$/i.test(email.trim());
 
 const CharCount = ({ current, max }: { current: number; max: number }) => (
   <p className="text-xs text-muted-foreground mt-1">{current}/{max} characters</p>
@@ -68,13 +68,14 @@ const RegisterWorkshop = () => {
 
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
   const selected = WORKSHOPS.find(w => w.id === form.workshopId);
+  const emailError = form.email && !isValidEmail(form.email) ? 'Email must include @ and end with .com (e.g. xyz@abc.com)' : '';
   const toggleCourse = (id: string) => set('interestedCourses', form.interestedCourses.includes(id) ? form.interestedCourses.filter((x: string) => x !== id) : [...form.interestedCourses, id]);
 
   const handleSubmit = () => {
     if (!form.workshopId) { toast({ title: 'Please select a workshop', variant: 'destructive' }); return; }
     if (!form.fullName || form.fullName.length < 2) { toast({ title: 'Please enter a valid full name (min 2 characters)', variant: 'destructive' }); return; }
     if (form.mobile.length !== 10) { toast({ title: 'Please enter a valid 10-digit mobile number', variant: 'destructive' }); return; }
-    if (!form.email || !isValidEmail(form.email)) { toast({ title: 'Please enter a valid email (e.g. xyz@abc.com)', variant: 'destructive' }); return; }
+    if (!form.email || !isValidEmail(form.email)) { toast({ title: 'Please enter a valid email with @ and .com (e.g. xyz@abc.com)', variant: 'destructive' }); return; }
     if (!form.city) { toast({ title: 'Please enter your city', variant: 'destructive' }); return; }
     if (!form.profession || !form.company || !form.industry || !form.goals || !form.challenge || !form.consent1) {
       toast({ title: 'Please fill all required fields', variant: 'destructive' }); return;
@@ -221,8 +222,9 @@ const RegisterWorkshop = () => {
               <CharCount current={form.mobile.length} max={10} />
             </Field>
             <Field label="Email" required>
-              <input className={inputCls} type="email" value={form.email} onChange={e => set('email', sanitizeEmail(e.target.value))} placeholder="xyz@abc.com" maxLength={60} />
+              <input className={`${inputCls} ${emailError ? 'border-destructive focus:border-destructive' : ''}`} type="email" value={form.email} onChange={e => set('email', sanitizeEmail(e.target.value).replace(/\s/g, ''))} placeholder="xyz@abc.com" maxLength={60} pattern="^[^\s@]+@[^\s@]+\.com$" title="Enter email with @ and .com (e.g. xyz@abc.com)" />
               <CharCount current={form.email.length} max={60} />
+              {emailError && <p className="text-xs text-destructive mt-1">{emailError}</p>}
             </Field>
             <Field label="WhatsApp">
               <label className="flex items-center gap-2 mb-1"><input type="checkbox" checked={form.sameWhatsapp} onChange={e => set('sameWhatsapp', e.target.checked)} className="rounded" /><span className="text-xs text-muted-foreground">Same as mobile</span></label>
