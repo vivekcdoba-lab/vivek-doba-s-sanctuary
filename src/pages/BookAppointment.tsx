@@ -306,6 +306,12 @@ const BookAppointment = () => {
                 <p className="text-xs text-muted-foreground mt-1">{form.referredBy.length}/20 characters</p>
               </Field>
             )}
+            {form.source === 'Other' && (
+              <Field label="Please specify" required>
+                <input className={inputCls} value={form.referredBy} onChange={e => set('referredBy', e.target.value.slice(0, 40))} placeholder="How did you hear about us?" maxLength={40} />
+                <p className="text-xs text-muted-foreground mt-1">{form.referredBy.length}/40 characters</p>
+              </Field>
+            )}
           </div>
         </div>
 
