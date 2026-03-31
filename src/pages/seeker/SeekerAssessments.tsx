@@ -201,6 +201,17 @@ const SeekerAssessments = () => {
         />
       )}
 
+      {/* ═══ FIRO-B ASSESSMENT ═══ */}
+      {firobAssessing && (
+        <FIROBAssessment
+          onClose={() => setFirobAssessing(false)}
+          onSave={(scores) => {
+            console.log('FIRO-B saved:', scores);
+            setFirobAssessing(false);
+          }}
+        />
+      )}
+
       {/* ═══ WHEEL OF LIFE SELF-ASSESSMENT ═══ */}
       {selfAssessing && (
         <div className="space-y-5">
