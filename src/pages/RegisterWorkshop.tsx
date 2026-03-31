@@ -42,7 +42,7 @@ const sanitize20 = (val: string) => val.slice(0, 20);
 const sanitize100 = (val: string) => val.slice(0, 100);
 const sanitize1000 = (val: string) => val.slice(0, 1000);
 const sanitize40 = (val: string) => val.slice(0, 40);
-const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.(com|in|org|net|co|io|edu|gov|info)$/i.test(email);
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.com$/i.test(email.trim());
 
 const CharCount = ({ current, max }: { current: number; max: number }) => (
   <p className="text-xs text-muted-foreground mt-1">{current}/{max} characters</p>
