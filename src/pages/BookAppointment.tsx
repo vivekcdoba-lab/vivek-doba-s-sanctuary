@@ -248,7 +248,10 @@ const BookAppointment = () => {
         <div className="bg-card rounded-xl border-l-4 p-6 shadow-sm" style={{ borderLeftColor: '#00BCD4' }}>
           <h3 className="font-semibold text-foreground mb-4">About You</h3>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Profession/Designation" required><input className={inputCls} value={form.profession} onChange={e => set('profession', e.target.value)} placeholder="e.g., Business Owner, CEO" /></Field>
+            <Field label="Profession/Designation" required>
+              <input className={inputCls} value={form.profession} onChange={e => set('profession', sanitizeProfession(e.target.value))} placeholder="e.g., Business Owner, CEO" maxLength={20} />
+              <p className="text-xs text-muted-foreground mt-1">{form.profession.length}/20 characters</p>
+            </Field>
             <Field label="Company/Business Name"><input className={inputCls} value={form.company} onChange={e => set('company', e.target.value)} placeholder="Your organization name" /></Field>
             <Field label="Industry" required>
               <select className={inputCls} value={form.industry} onChange={e => set('industry', e.target.value)}>
