@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, CalendarDays, Clock, IndianRupee, Video, MapPin, Plus, PhoneCall, Bell, Target, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react';
+import { Users, CalendarDays, Clock, IndianRupee, Video, MapPin, Plus, PhoneCall, Bell, Target, TrendingUp, TrendingDown, ExternalLink, ClipboardList } from 'lucide-react';
 import { SEEKERS, SESSIONS, ASSIGNMENTS, PAYMENTS, MOTIVATIONAL_QUOTES, formatINR, getGreeting, getHealthColor } from '@/data/mockData';
 
 const CountUp = ({ end, prefix = '' }: { end: number; prefix?: string }) => {
