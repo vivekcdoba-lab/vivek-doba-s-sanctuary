@@ -154,8 +154,13 @@ const Index = () => (
         <p className="font-semibold text-foreground mb-1">Vivek Doba Training Solutions | Pune, Maharashtra</p>
         <p className="text-sm text-muted-foreground mb-4">📞 9607050111 | 📧 info@vivekdoba.in | 🌐 vivekdoba.in</p>
         <div className="flex justify-center gap-4 mb-4">
-          {['Instagram', 'YouTube', 'LinkedIn', 'Facebook'].map((s) => (
-            <a key={s} href="#" className="text-xs text-muted-foreground hover:text-primary transition-colors">{s}</a>
+          {[
+            { name: 'Instagram', url: 'https://www.instagram.com/coachvivekdoba/' },
+            { name: 'YouTube', url: 'https://www.youtube.com/@coachvivekdoba' },
+            { name: 'LinkedIn', url: 'https://www.linkedin.com/in/coachvivekdoba/' },
+            { name: 'Facebook', url: 'https://www.facebook.com/coachvivekdoba' },
+          ].map((s) => (
+            <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary transition-colors">{s.name}</a>
           ))}
         </div>
         <p className="text-xs text-muted-foreground">Made with 🙏 for seekers of transformation</p>
