@@ -15,6 +15,7 @@ const navGroups = [
       { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
       { icon: Users, label: 'Seekers', path: '/seekers' },
       { icon: Target, label: 'Leads', path: '/leads' },
+      { icon: Inbox, label: 'Applications', path: '/applications', badge: true },
     ]
   },
   {
