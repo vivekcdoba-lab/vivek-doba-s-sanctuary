@@ -52,8 +52,8 @@ const Index = () => (
         {'🪷 🕉️ 🪷 🕉️ 🪷 🕉️ 🪷 🕉️ 🪷 🕉️ '.repeat(3)}
       </div>
       <div className="relative z-10 max-w-4xl mx-auto px-4">
-        <div className="w-28 h-28 mx-auto rounded-full flex items-center justify-center mb-6 border-4 border-white/30 shadow-xl" style={{ background: 'radial-gradient(circle, #FFD700 0%, #B8860B 100%)' }}>
-          <span className="text-4xl font-bold text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>VD</span>
+        <div className="w-32 h-32 sm:w-36 sm:h-36 mx-auto rounded-full overflow-hidden mb-6 border-4 border-white/30 shadow-xl">
+          <img src={vivekDobaPhoto} alt="Coach Vivek Doba" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3" style={{ fontFamily: 'Poppins, sans-serif' }}>
           Vivek Doba
