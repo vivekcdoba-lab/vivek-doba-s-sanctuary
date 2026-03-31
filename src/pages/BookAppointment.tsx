@@ -135,6 +135,46 @@ const BookAppointment = () => {
           </div>
         </div>
 
+        {/* Courses Interested In */}
+        <div className="bg-card rounded-xl border-l-4 p-6 shadow-sm" style={{ borderLeftColor: '#FFD700' }}>
+          <h3 className="font-semibold text-foreground mb-4">Courses / Programs Interested In</h3>
+          <p className="text-xs text-muted-foreground mb-3">Select one or more courses you'd like to explore</p>
+          <div className="relative">
+            <button type="button" onClick={() => setCoursesOpen(!coursesOpen)} className={`${inputCls} flex items-center justify-between text-left`}>
+              <span className={form.interestedCourses.length ? 'text-foreground' : 'text-muted-foreground'}>
+                {form.interestedCourses.length ? `${form.interestedCourses.length} course(s) selected` : 'Select courses...'}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${coursesOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {coursesOpen && (
+              <div className="absolute z-20 mt-1 w-full bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {COURSES.filter(c => c.is_active).map(c => (
+                  <label key={c.id} className="flex items-start gap-3 px-3 py-2.5 hover:bg-muted/50 cursor-pointer border-b border-border/50 last:border-0">
+                    <input type="checkbox" checked={form.interestedCourses.includes(c.id)} onChange={() => toggleCourse(c.id)} className="mt-0.5 rounded accent-primary" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{c.name}</p>
+                      <p className="text-xs text-muted-foreground">{c.duration} · {c.format} · ₹{c.price.toLocaleString('en-IN')}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+          {form.interestedCourses.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {form.interestedCourses.map(id => {
+                const c = COURSES.find(x => x.id === id);
+                return c ? (
+                  <span key={id} className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                    {c.name}
+                    <button onClick={() => toggleCourse(id)} className="hover:text-destructive">×</button>
+                  </span>
+                ) : null;
+              })}
+            </div>
+          )}
+        </div>
+
         {/* Section 2: About You */}
         <div className="bg-card rounded-xl border-l-4 p-6 shadow-sm" style={{ borderLeftColor: '#00BCD4' }}>
           <h3 className="font-semibold text-foreground mb-4">About You</h3>

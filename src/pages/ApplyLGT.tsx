@@ -65,6 +65,7 @@ const ApplyLGT = () => {
     commitments: { sessions: false, dailyTracking: false, feedback: false, investment: false, meditation: false, confidential: false },
     anythingElse: '',
     paymentPref: 'full', paymentMethod: '', gstRequired: 'no', gstCompany: '', gstNumber: '',
+    interestedCourses: [] as string[],
     consent1: false, consent2: false, consent3: false, consent4: false,
   });
 
