@@ -69,6 +69,7 @@ const RegisterWorkshop = () => {
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
   const selected = WORKSHOPS.find(w => w.id === form.workshopId);
   const emailError = form.email && !isValidEmail(form.email) ? 'Email must include @ and end with .com (e.g. xyz@abc.com)' : '';
+  const toggleCourse = (id: string) => set('interestedCourses', form.interestedCourses.includes(id) ? form.interestedCourses.filter((x: string) => x !== id) : [...form.interestedCourses, id]);
 
   const handleSubmit = () => {
     if (!form.workshopId) { toast({ title: 'Please select a workshop', variant: 'destructive' }); return; }
