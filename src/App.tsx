@@ -3,8 +3,12 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+import Index from "./pages/Index";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import BookAppointment from "./pages/BookAppointment";
+import RegisterWorkshop from "./pages/RegisterWorkshop";
+import ApplyLGT from "./pages/ApplyLGT";
 import AuthGuard from "./components/AuthGuard";
 import AdminLayout from "./components/AdminLayout";
 import SeekerLayout from "./components/SeekerLayout";
@@ -26,6 +30,7 @@ import SettingsPage from "./pages/admin/SettingsPage";
 import CalendarPage from "./pages/admin/CalendarPage";
 import DailyTrackingPage from "./pages/admin/DailyTrackingPage";
 import GrowthMatrixPage from "./pages/admin/GrowthMatrixPage";
+import ApplicationsPage from "./pages/admin/ApplicationsPage";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -48,9 +53,13 @@ const App = () => (
       <Toaster />
       <BrowserRouter>
         <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Index />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/book-appointment" element={<BookAppointment />} />
+          <Route path="/register-workshop" element={<RegisterWorkshop />} />
+          <Route path="/apply-lgt" element={<ApplyLGT />} />
 
           {/* Admin Routes */}
           <Route element={<AuthGuard requiredRole="admin"><AdminLayout /></AuthGuard>}>
@@ -70,6 +79,7 @@ const App = () => (
             <Route path="/assessments" element={<AssessmentsPage />} />
             <Route path="/daily-tracking" element={<DailyTrackingPage />} />
             <Route path="/growth-matrix" element={<GrowthMatrixPage />} />
+            <Route path="/applications" element={<ApplicationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
 
