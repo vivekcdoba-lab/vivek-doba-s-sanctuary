@@ -124,16 +124,22 @@ const SeekersPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((s) => (
+              {filtered.map((s) => {
+                const risk = calculateRiskScore(s);
+                const stage = JOURNEY_STAGES.find(j => j.key === (s.journey_stage || 'awakening'));
+                return (
                 <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => window.location.href = `/seekers/${s.id}`}>
                   <td className="p-3 font-medium text-foreground"><Link to={`/seekers/${s.id}`} className="text-primary hover:underline">{s.full_name}</Link></td>
                   <td className="p-3 text-muted-foreground">{s.course?.name?.slice(0, 25)}</td>
                   <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${getTierBadgeClass(s.enrollment?.tier || '')}`}>{s.enrollment?.tier}</span></td>
                   <td className="p-3 text-muted-foreground capitalize">{s.enrollment?.status}</td>
                   <td className="p-3"><div className={`w-2.5 h-2.5 rounded-full ${getHealthColor(s.health)}`} /></td>
+                  <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${getRiskColor(risk.level)}`}>{getRiskEmoji(risk.level)}</span></td>
+                  <td className="p-3"><span className="text-xs">{stage?.emoji} {stage?.name}</span></td>
                   <td className="p-3 text-foreground font-medium">{s.growth_score}%</td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
