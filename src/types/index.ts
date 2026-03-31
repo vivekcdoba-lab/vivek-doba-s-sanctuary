@@ -8,6 +8,7 @@ export type LeadPriority = 'hot' | 'warm' | 'cold';
 export type PaymentMethod = 'cash' | 'bank_transfer' | 'upi' | 'razorpay' | 'cheque' | 'emi';
 export type PaymentStatus = 'received' | 'pending' | 'overdue' | 'refunded' | 'void';
 export type HealthStatus = 'green' | 'yellow' | 'red';
+export type FollowUpStatus = 'pending' | 'completed' | 'overdue' | 'rescheduled';
 
 export interface Profile {
   id: string;
@@ -134,4 +135,48 @@ export interface SeekerWithDetails extends Profile {
   last_session_date?: string;
   last_log_date?: string;
   overdue_assignments: number;
+}
+
+export interface Resource {
+  id: string;
+  title: string;
+  description: string;
+  type: 'pdf' | 'audio' | 'video' | 'worksheet';
+  category: string;
+  course_id?: string;
+  language: 'EN' | 'MR' | 'HI';
+  tags: string[];
+  view_count: number;
+  download_count: number;
+}
+
+export interface FollowUp {
+  id: string;
+  seeker_id: string;
+  type: 'call' | 'whatsapp' | 'email' | 'in_app';
+  due_date: string;
+  priority: 'low' | 'medium' | 'high';
+  notes: string;
+  status: FollowUpStatus;
+  completion_notes?: string;
+}
+
+export interface Message {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  type: 'session' | 'follow_up' | 'discovery' | 'blocked' | 'event';
+  seeker_id?: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  color: string;
 }
