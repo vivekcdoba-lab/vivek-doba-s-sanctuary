@@ -182,6 +182,12 @@ const SeekerAssessments = () => {
           <p className="text-[10px] text-muted-foreground">Awareness: 6.5</p>
           <button className="text-xs text-primary mt-2">View Details</button>
         </div>
+        <div className="bg-card rounded-xl p-4 border-l-4 border-l-[#E91E63] border border-border">
+          <p className="text-xs text-muted-foreground">🧠 FIRO-B</p>
+          <p className="text-sm font-bold text-foreground">6 dims</p>
+          <p className="text-[10px] text-muted-foreground">Interpersonal Style</p>
+          <button onClick={() => setFirobAssessing(true)} className="text-xs text-primary mt-2 font-medium">🧠 Take FIRO-B</button>
+        </div>
       </div>
 
       {/* ═══ LGT ASSESSMENT ═══ */}
