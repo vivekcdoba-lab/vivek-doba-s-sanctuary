@@ -168,7 +168,4 @@ const AdminDashboard = () => {
   );
 };
 
-// Need to import ClipboardList for quick actions
-import { ClipboardList as ClipboardListIcon } from 'lucide-react';
-
 export default AdminDashboard;
