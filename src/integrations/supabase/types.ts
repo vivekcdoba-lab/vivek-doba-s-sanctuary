@@ -99,6 +99,122 @@ export type Database = {
           },
         ]
       }
+      assignments: {
+        Row: {
+          category: string | null
+          course_id: string | null
+          created_at: string
+          description: string | null
+          due_date: string
+          feedback: string | null
+          id: string
+          priority: string | null
+          score: number | null
+          seeker_id: string
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          course_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date: string
+          feedback?: string | null
+          id?: string
+          priority?: string | null
+          score?: number | null
+          seeker_id: string
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          course_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          feedback?: string | null
+          id?: string
+          priority?: string | null
+          score?: number | null
+          seeker_id?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_events: {
+        Row: {
+          color: string | null
+          created_at: string
+          date: string
+          end_time: string
+          id: string
+          notes: string | null
+          seeker_id: string | null
+          start_time: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          date: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          seeker_id?: string | null
+          start_time: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          date?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          seeker_id?: string | null
+          start_time?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           coach_id: string
@@ -153,6 +269,318 @@ export type Database = {
         }
         Relationships: []
       }
+      courses: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration: string | null
+          format: string | null
+          gradient_colors: Json | null
+          id: string
+          is_active: boolean | null
+          max_participants: number | null
+          name: string
+          price: number
+          tagline: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration?: string | null
+          format?: string | null
+          gradient_colors?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          name: string
+          price?: number
+          tagline?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration?: string | null
+          format?: string | null
+          gradient_colors?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          name?: string
+          price?: number
+          tagline?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      daily_logs: {
+        Row: {
+          affirmation: string | null
+          challenges: string | null
+          created_at: string
+          energy_level: number | null
+          exercise_done: boolean | null
+          gratitude_entries: Json | null
+          id: string
+          journaling_done: boolean | null
+          log_date: string
+          meditation_done: boolean | null
+          meditation_minutes: number | null
+          mood: string | null
+          notes: string | null
+          seeker_id: string
+          wins: Json | null
+        }
+        Insert: {
+          affirmation?: string | null
+          challenges?: string | null
+          created_at?: string
+          energy_level?: number | null
+          exercise_done?: boolean | null
+          gratitude_entries?: Json | null
+          id?: string
+          journaling_done?: boolean | null
+          log_date?: string
+          meditation_done?: boolean | null
+          meditation_minutes?: number | null
+          mood?: string | null
+          notes?: string | null
+          seeker_id: string
+          wins?: Json | null
+        }
+        Update: {
+          affirmation?: string | null
+          challenges?: string | null
+          created_at?: string
+          energy_level?: number | null
+          exercise_done?: boolean | null
+          gratitude_entries?: Json | null
+          id?: string
+          journaling_done?: boolean | null
+          log_date?: string
+          meditation_done?: boolean | null
+          meditation_minutes?: number | null
+          mood?: string | null
+          notes?: string | null
+          seeker_id?: string
+          wins?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_logs_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enrollments: {
+        Row: {
+          course_id: string
+          created_at: string
+          end_date: string | null
+          id: string
+          payment_status: string
+          seeker_id: string
+          start_date: string
+          status: string
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          payment_status?: string
+          seeker_id: string
+          start_date?: string
+          status?: string
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          payment_status?: string
+          seeker_id?: string
+          start_date?: string
+          status?: string
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollments_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      follow_ups: {
+        Row: {
+          completion_notes: string | null
+          created_at: string
+          due_date: string
+          id: string
+          notes: string | null
+          priority: string | null
+          seeker_id: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          completion_notes?: string | null
+          created_at?: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          priority?: string | null
+          seeker_id: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          completion_notes?: string | null
+          created_at?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          priority?: string | null
+          seeker_id?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follow_ups_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          created_at: string
+          current_challenge: string | null
+          days_in_pipeline: number | null
+          email: string | null
+          id: string
+          interested_course_id: string | null
+          name: string
+          next_followup_date: string | null
+          notes: string | null
+          phone: string | null
+          priority: string | null
+          source: string | null
+          stage: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_challenge?: string | null
+          days_in_pipeline?: number | null
+          email?: string | null
+          id?: string
+          interested_course_id?: string | null
+          name: string
+          next_followup_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          priority?: string | null
+          source?: string | null
+          stage?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_challenge?: string | null
+          days_in_pipeline?: number | null
+          email?: string | null
+          id?: string
+          interested_course_id?: string | null
+          name?: string
+          next_followup_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          priority?: string | null
+          source?: string | null
+          stage?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_interested_course_id_fkey"
+            columns: ["interested_course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -200,6 +628,286 @@ export type Database = {
           transaction_id?: string | null
         }
         Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          blood_group: string | null
+          city: string | null
+          company: string | null
+          created_at: string
+          designation: string | null
+          dob: string | null
+          email: string
+          experience_years: number | null
+          full_name: string
+          gender: string | null
+          hometown: string | null
+          id: string
+          industry: string | null
+          linkedin_url: string | null
+          occupation: string | null
+          phone: string | null
+          pincode: string | null
+          revenue_range: string | null
+          role: string
+          state: string | null
+          team_size: number | null
+          updated_at: string
+          user_id: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          blood_group?: string | null
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          designation?: string | null
+          dob?: string | null
+          email: string
+          experience_years?: number | null
+          full_name: string
+          gender?: string | null
+          hometown?: string | null
+          id?: string
+          industry?: string | null
+          linkedin_url?: string | null
+          occupation?: string | null
+          phone?: string | null
+          pincode?: string | null
+          revenue_range?: string | null
+          role?: string
+          state?: string | null
+          team_size?: number | null
+          updated_at?: string
+          user_id?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          blood_group?: string | null
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          designation?: string | null
+          dob?: string | null
+          email?: string
+          experience_years?: number | null
+          full_name?: string
+          gender?: string | null
+          hometown?: string | null
+          id?: string
+          industry?: string | null
+          linkedin_url?: string | null
+          occupation?: string | null
+          phone?: string | null
+          pincode?: string | null
+          revenue_range?: string | null
+          role?: string
+          state?: string | null
+          team_size?: number | null
+          updated_at?: string
+          user_id?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      resources: {
+        Row: {
+          category: string | null
+          course_id: string | null
+          created_at: string
+          description: string | null
+          download_count: number | null
+          file_url: string | null
+          id: string
+          language: string | null
+          tags: Json | null
+          title: string
+          type: string
+          updated_at: string
+          view_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          course_id?: string | null
+          created_at?: string
+          description?: string | null
+          download_count?: number | null
+          file_url?: string | null
+          id?: string
+          language?: string | null
+          tags?: Json | null
+          title: string
+          type?: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          course_id?: string | null
+          created_at?: string
+          description?: string | null
+          download_count?: number | null
+          file_url?: string | null
+          id?: string
+          language?: string | null
+          tags?: Json | null
+          title?: string
+          type?: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resources_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seeker_assessments: {
+        Row: {
+          analysis_text: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          period: string | null
+          scores_json: Json | null
+          seeker_id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          analysis_text?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          period?: string | null
+          scores_json?: Json | null
+          seeker_id: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          analysis_text?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          period?: string | null
+          scores_json?: Json | null
+          seeker_id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seeker_assessments_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          attendance: string | null
+          breakthroughs: string | null
+          coach_private_notes: string | null
+          course_id: string | null
+          created_at: string
+          date: string
+          duration_minutes: number | null
+          end_time: string
+          engagement_score: number | null
+          id: string
+          key_insights: string | null
+          location_type: string | null
+          meeting_link: string | null
+          missed_reason: string | null
+          post_session_feedback: Json | null
+          reschedule_reason: string | null
+          seeker_id: string
+          seeker_mood: string | null
+          session_notes: string | null
+          session_number: number
+          start_time: string
+          status: string
+          topics_covered: Json | null
+          updated_at: string
+        }
+        Insert: {
+          attendance?: string | null
+          breakthroughs?: string | null
+          coach_private_notes?: string | null
+          course_id?: string | null
+          created_at?: string
+          date: string
+          duration_minutes?: number | null
+          end_time: string
+          engagement_score?: number | null
+          id?: string
+          key_insights?: string | null
+          location_type?: string | null
+          meeting_link?: string | null
+          missed_reason?: string | null
+          post_session_feedback?: Json | null
+          reschedule_reason?: string | null
+          seeker_id: string
+          seeker_mood?: string | null
+          session_notes?: string | null
+          session_number?: number
+          start_time: string
+          status?: string
+          topics_covered?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          attendance?: string | null
+          breakthroughs?: string | null
+          coach_private_notes?: string | null
+          course_id?: string | null
+          created_at?: string
+          date?: string
+          duration_minutes?: number | null
+          end_time?: string
+          engagement_score?: number | null
+          id?: string
+          key_insights?: string | null
+          location_type?: string | null
+          meeting_link?: string | null
+          missed_reason?: string | null
+          post_session_feedback?: Json | null
+          reschedule_reason?: string | null
+          seeker_id?: string
+          seeker_mood?: string | null
+          session_notes?: string | null
+          session_number?: number
+          start_time?: string
+          status?: string
+          topics_covered?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       submissions: {
         Row: {
