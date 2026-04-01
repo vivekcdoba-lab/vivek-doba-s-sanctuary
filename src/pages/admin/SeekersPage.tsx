@@ -1,15 +1,34 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Plus, Filter, Grid3X3, List, Flame } from 'lucide-react';
-import { SEEKERS, getHealthColor, getTierBadgeClass } from '@/data/mockData';
+import { SEEKERS, COURSES, getHealthColor, getTierBadgeClass } from '@/data/mockData';
 import { Input } from '@/components/ui/input';
 import { calculateRiskScore, getRiskEmoji, getRiskColor } from '@/lib/riskEngine';
 import { JOURNEY_STAGES } from '@/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const SeekersPage = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newSeeker, setNewSeeker] = useState({
+    full_name: '', email: '', phone: '', city: '', state: '', occupation: '', company: '', course_id: '', tier: 'standard' as string,
+  });
+
+  const handleAddSeeker = () => {
+    if (!newSeeker.full_name || !newSeeker.email || !newSeeker.phone || !newSeeker.city) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+    toast.success(`Seeker "${newSeeker.full_name}" added successfully`);
+    setShowAddDialog(false);
+    setNewSeeker({ full_name: '', email: '', phone: '', city: '', state: '', occupation: '', company: '', course_id: '', tier: 'standard' });
+  };
 
   const filtered = SEEKERS.filter((s) => {
     const matchSearch = s.full_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -27,10 +46,76 @@ const SeekersPage = () => {
           <h1 className="text-2xl font-bold text-foreground">Your Seekers</h1>
           <p className="text-sm text-muted-foreground">{SEEKERS.length} seekers in your journey</p>
         </div>
-        <button className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 hover:opacity-90">
+        <button onClick={() => setShowAddDialog(true)} className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 hover:opacity-90">
           <Plus className="w-4 h-4" /> Add New Seeker
         </button>
       </div>
+
+      {/* Add Seeker Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Seeker</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Full Name <span className="text-destructive">*</span></Label>
+              <Input maxLength={30} value={newSeeker.full_name} onChange={(e) => setNewSeeker({ ...newSeeker, full_name: e.target.value })} placeholder="Enter full name" />
+            </div>
+            <div>
+              <Label>Email <span className="text-destructive">*</span></Label>
+              <Input type="email" value={newSeeker.email} onChange={(e) => setNewSeeker({ ...newSeeker, email: e.target.value })} placeholder="xyz@abc.com" />
+            </div>
+            <div>
+              <Label>Phone <span className="text-destructive">*</span></Label>
+              <Input maxLength={10} value={newSeeker.phone} onChange={(e) => setNewSeeker({ ...newSeeker, phone: e.target.value.replace(/\D/g, '') })} placeholder="10-digit mobile" />
+            </div>
+            <div>
+              <Label>City <span className="text-destructive">*</span></Label>
+              <Input maxLength={20} value={newSeeker.city} onChange={(e) => setNewSeeker({ ...newSeeker, city: e.target.value })} placeholder="City" />
+            </div>
+            <div>
+              <Label>State</Label>
+              <Input value={newSeeker.state} onChange={(e) => setNewSeeker({ ...newSeeker, state: e.target.value })} placeholder="State" />
+            </div>
+            <div>
+              <Label>Occupation</Label>
+              <Input value={newSeeker.occupation} onChange={(e) => setNewSeeker({ ...newSeeker, occupation: e.target.value })} placeholder="Occupation" />
+            </div>
+            <div>
+              <Label>Company</Label>
+              <Input value={newSeeker.company} onChange={(e) => setNewSeeker({ ...newSeeker, company: e.target.value })} placeholder="Company name" />
+            </div>
+            <div>
+              <Label>Course</Label>
+              <Select value={newSeeker.course_id} onValueChange={(v) => setNewSeeker({ ...newSeeker, course_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Select course" /></SelectTrigger>
+                <SelectContent>
+                  {COURSES.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Tier</Label>
+              <Select value={newSeeker.tier} onValueChange={(v) => setNewSeeker({ ...newSeeker, tier: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
+                  <SelectItem value="platinum">Platinum</SelectItem>
+                  <SelectItem value="chakravartin">Chakravartin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>Cancel</Button>
+            <Button onClick={handleAddSeeker}>Add Seeker</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
