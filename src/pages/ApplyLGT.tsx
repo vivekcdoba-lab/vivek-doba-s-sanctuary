@@ -616,7 +616,7 @@ const ApplyLGT = () => {
             <textarea className={inputCls} rows={1} maxLength={100} value={f.hoursPerWeek} onChange={e => set('hoursPerWeek', sanitize(e.target.value, 100))} />
             <CharCount current={f.hoursPerWeek.length} max={100} />
           </Field>
-          <p className="text-sm font-semibold text-foreground mt-4 mb-2">Commitments (all must be checked)</p>
+          <p className="text-sm font-semibold text-foreground mt-4 mb-2">Commitments (all must be checked) <span className="text-destructive">*</span></p>
           <div className="space-y-2">
             {[
               ['sessions','Attend all sessions sincerely'],
@@ -626,8 +626,8 @@ const ApplyLGT = () => {
               ['meditation','Practice meditation and journaling daily'],
               ['confidential','Keep all coaching discussions confidential'],
             ].map(([k, text]) => (
-              <label key={k} className="flex items-start gap-2 cursor-pointer">
-                <input type="checkbox" checked={f.commitments[k]} onChange={e => set('commitments', { ...f.commitments, [k]: e.target.checked })} className="mt-1 rounded" />
+              <label key={k} className={`flex items-start gap-2 cursor-pointer ${missingFields.has(`commitment_${k}`) ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}>
+                <input type="checkbox" checked={f.commitments[k]} onChange={e => { set('commitments', { ...f.commitments, [k]: e.target.checked }); setMissingFields(p => { const n = new Set(p); n.delete(`commitment_${k}`); return n; }); }} className="mt-1 rounded" />
                 <span className="text-sm text-foreground">{text}</span>
               </label>
             ))}
