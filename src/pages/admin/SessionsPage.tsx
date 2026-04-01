@@ -386,6 +386,94 @@ const SessionsPage = () => {
           }}
         />
       )}
+
+      <Dialog open={showSchedule} onOpenChange={setShowSchedule}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>📅 Schedule New Session</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium text-foreground">Seeker *</label>
+              <select value={newSession.seeker_id} onChange={e => setNewSession(p => ({ ...p, seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="">Select Seeker</option>
+                {SEEKERS.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Course *</label>
+              <select value={newSession.course_id} onChange={e => setNewSession(p => ({ ...p, course_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="">Select Course</option>
+                {COURSES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Date *</label>
+              <input type="date" value={newSession.date} onChange={e => setNewSession(p => ({ ...p, date: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground">Start Time *</label>
+                <input type="time" value={newSession.start_time} onChange={e => setNewSession(p => ({ ...p, start_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground">End Time *</label>
+                <input type="time" value={newSession.end_time} onChange={e => setNewSession(p => ({ ...p, end_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Session Type</label>
+              <select value={newSession.session_type} onChange={e => setNewSession(p => ({ ...p, session_type: e.target.value as 'video' | 'in_person' }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="video">📹 Video Call</option>
+                <option value="in_person">🏢 In Person</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Duration (min)</label>
+              <input type="number" value={newSession.duration_minutes} onChange={e => setNewSession(p => ({ ...p, duration_minutes: Number(e.target.value) }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Notes</label>
+              <textarea value={newSession.notes} onChange={e => setNewSession(p => ({ ...p, notes: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Optional notes..." />
+            </div>
+            <button
+              onClick={() => {
+                if (!newSession.seeker_id || !newSession.course_id || !newSession.date) {
+                  toast.error('Please fill Seeker, Course and Date');
+                  return;
+                }
+                const seeker = SEEKERS.find(s => s.id === newSession.seeker_id);
+                const seekerSessions = sessions.filter(s => s.seeker_id === newSession.seeker_id);
+                const nextNum = seekerSessions.length > 0 ? Math.max(...seekerSessions.map(s => s.session_number)) + 1 : 1;
+                setSessions(prev => [...prev, {
+                  id: `sess_${Date.now()}`,
+                  seeker_id: newSession.seeker_id,
+                  course_id: newSession.course_id,
+                  session_number: nextNum,
+                  date: newSession.date,
+                  start_time: newSession.start_time,
+                  end_time: newSession.end_time,
+                  status: 'scheduled' as const,
+                  session_type: newSession.session_type,
+                  duration_minutes: newSession.duration_minutes,
+                  location: newSession.session_type === 'video' ? 'Zoom' : 'Office',
+                  topics_covered: [],
+                  key_insights: '',
+                  session_notes: newSession.notes,
+                  engagement_score: 0,
+                  seeker_confirmed: false,
+                }]);
+                toast.success(`Session scheduled for ${seeker?.full_name}`);
+                setShowSchedule(false);
+                setNewSession({ seeker_id: '', course_id: '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '' });
+              }}
+              className="w-full py-2.5 rounded-xl gradient-sacred text-primary-foreground font-medium text-sm"
+            >
+              Schedule Session
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
