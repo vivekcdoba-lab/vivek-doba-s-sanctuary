@@ -1,15 +1,34 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Plus, Filter, Grid3X3, List, Flame } from 'lucide-react';
-import { SEEKERS, getHealthColor, getTierBadgeClass } from '@/data/mockData';
+import { SEEKERS, COURSES, getHealthColor, getTierBadgeClass } from '@/data/mockData';
 import { Input } from '@/components/ui/input';
 import { calculateRiskScore, getRiskEmoji, getRiskColor } from '@/lib/riskEngine';
 import { JOURNEY_STAGES } from '@/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const SeekersPage = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newSeeker, setNewSeeker] = useState({
+    full_name: '', email: '', phone: '', city: '', state: '', occupation: '', company: '', course_id: '', tier: 'standard' as string,
+  });
+
+  const handleAddSeeker = () => {
+    if (!newSeeker.full_name || !newSeeker.email || !newSeeker.phone || !newSeeker.city) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+    toast.success(`Seeker "${newSeeker.full_name}" added successfully`);
+    setShowAddDialog(false);
+    setNewSeeker({ full_name: '', email: '', phone: '', city: '', state: '', occupation: '', company: '', course_id: '', tier: 'standard' });
+  };
 
   const filtered = SEEKERS.filter((s) => {
     const matchSearch = s.full_name.toLowerCase().includes(search.toLowerCase()) ||
