@@ -1,9 +1,9 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { NavLink } from '@/components/NavLink';
 import {
   Home, Sun, ClipboardList, TrendingUp, Sparkles, User, Bell, Flame, Moon,
-  MessageSquare, CreditCard, BookOpen, Target, CalendarDays, Menu
+  MessageSquare, CreditCard, BookOpen, Target, CalendarDays, Menu, LogOut
 } from 'lucide-react';
 import {
   Sidebar,
@@ -49,7 +49,14 @@ function SeekerSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuthStore();
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
@@ -94,6 +101,13 @@ function SeekerSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {/* Log Off */}
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleLogout} className="hover:bg-destructive/10 text-destructive cursor-pointer">
+                  <LogOut className="h-4 w-4" />
+                  {!collapsed && <span>Log Off</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
