@@ -40,8 +40,8 @@ const sanitize = (val: string, max: number) => val.slice(0, max);
 const sanitizeDigits = (val: string, max: number) => val.replace(/\D/g, '').slice(0, max);
 
 // Reusable components defined OUTSIDE the main component to prevent re-mount
-const Field = ({ label, required, children, className = '' }: { label: string; required?: boolean; children: React.ReactNode; className?: string }) => (
-  <div className={className}><label className="block text-sm font-medium text-foreground mb-1">{label}{required && <span className="text-destructive ml-1">*</span>}</label>{children}</div>
+const Field = ({ label, required, children, className = '', highlight = false }: { label: string; required?: boolean; children: React.ReactNode; className?: string; highlight?: boolean }) => (
+  <div className={`${className} ${highlight ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}><label className="block text-sm font-medium text-foreground mb-1">{label}{required && <span className="text-destructive ml-1">*</span>}</label>{children}</div>
 );
 
 const CharCount = ({ current, max }: { current: number; max: number }) => (
@@ -95,6 +95,7 @@ const ApplyLGT = () => {
   const [appId] = useState(`VDTS-APP-${Math.floor(1000 + Math.random() * 9000)}`);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ program: true, A: true });
   const [coursesOpen, setCoursesOpen] = useState(false);
+  const [missingFields, setMissingFields] = useState<Set<string>>(new Set());
 
   const [f, setF] = useState<Record<string, any>>({
     programId: '', fullName: '', preferredName: '', dob: '', gender: '', maritalStatus: '', children: 0,
@@ -133,7 +134,7 @@ const ApplyLGT = () => {
     consent1: false, consent2: false, consent3: false, consent4: false,
   });
 
-  const set = (k: string, v: any) => setF(p => ({ ...p, [k]: v }));
+  const set = (k: string, v: any) => { setF(p => ({ ...p, [k]: v })); setMissingFields(p => { const n = new Set(p); n.delete(k); return n; }); };
   const toggleArr = (k: string, v: string) => {
     const arr = f[k] as string[];
     set(k, arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
@@ -145,27 +146,14 @@ const ApplyLGT = () => {
   const emailError = f.email.length > 0 && !isValidEmail(f.email) ? 'Email must include @ and end with .com' : '';
 
   const handleSubmit = () => {
-    if (!f.programId || !f.fullName || !f.mobile || !f.email || !f.city || !f.consent1 || !f.consent2 || !f.consent3 || !f.consent4) {
-      toast({ title: 'Please fill all required fields and checkboxes', variant: 'destructive' }); return;
-    }
-    if (!isValidEmail(f.email)) {
-      toast({ title: 'Please enter a valid email (e.g. xyz@abc.com)', variant: 'destructive' }); return;
-    }
-    if (f.mobile.length !== 10) {
-      toast({ title: 'Mobile number must be 10 digits', variant: 'destructive' }); return;
-    }
-    if (f.pincode && f.pincode.length !== 6) {
-      toast({ title: 'Pincode must be 6 digits', variant: 'destructive' }); return;
-    }
-    if (f.gstRequired === 'yes' && (!f.gstCompany.trim() || !f.gstNumber.trim())) {
-      toast({ title: 'Company Name and GST Number are mandatory for corporate invoice', variant: 'destructive' }); return;
-    }
-    if (f.chronicConditions === 'yes' && !f.chronicDetails.trim()) {
-      toast({ title: 'Health condition details are mandatory when "Yes" is selected', variant: 'destructive' }); return;
-    }
-    // Check all mandatory fields
+    const missing = new Set<string>();
+    
+    // Program
+    if (!f.programId) missing.add('programId');
+    
+    // All mandatory text fields
     const mandatoryTextFields = [
-      'fullName','dob','gender','maritalStatus','bloodGroup','mobile','email','city','state','pincode','hometown',
+      'fullName','preferredName','dob','gender','maritalStatus','bloodGroup','mobile','email','city','state','pincode','hometown',
       'emergName','emergRelation','emergPhone',
       'designation','company','businessNature','yearsInBiz','website',
       'healthGoal','relGoal',
@@ -176,10 +164,59 @@ const ApplyLGT = () => {
       'successDef','failureDef','hoursPerWeek','anythingElse',
     ];
     for (const key of mandatoryTextFields) {
-      if (!f[key] || (typeof f[key] === 'string' && !f[key].trim())) {
-        toast({ title: `Please fill all mandatory fields`, variant: 'destructive' }); return;
-      }
+      if (!f[key] || (typeof f[key] === 'string' && !f[key].trim())) missing.add(key);
     }
+
+    // Commitments — all 6 must be checked
+    const commitmentKeys = ['sessions','dailyTracking','feedback','investment','meditation','confidential'];
+    for (const ck of commitmentKeys) {
+      if (!f.commitments[ck]) missing.add(`commitment_${ck}`);
+    }
+
+    // Consents
+    if (!f.consent1) missing.add('consent1');
+    if (!f.consent2) missing.add('consent2');
+    if (!f.consent3) missing.add('consent3');
+    if (!f.consent4) missing.add('consent4');
+
+    // Conditional
+    if (f.gstRequired === 'yes') {
+      if (!f.gstCompany.trim()) missing.add('gstCompany');
+      if (!f.gstNumber.trim()) missing.add('gstNumber');
+    }
+    if (f.chronicConditions === 'yes' && !f.chronicDetails.trim()) missing.add('chronicDetails');
+    if (f.state === 'Other' && !f.stateOther.trim()) missing.add('stateOther');
+    if (f.emergRelation === 'Other' && !f.emergRelOther.trim()) missing.add('emergRelOther');
+
+    // Email validation
+    if (f.email && !isValidEmail(f.email)) missing.add('email');
+    if (f.mobile && f.mobile.length !== 10) missing.add('mobile');
+    if (f.pincode && f.pincode.length !== 6) missing.add('pincode');
+
+    setMissingFields(missing);
+
+    if (missing.size > 0) {
+      toast({ title: `Please fill all ${missing.size} mandatory field(s) highlighted in red`, variant: 'destructive' });
+      // Open all sections that have errors
+      const sectionFieldMap: Record<string, string[]> = {
+        A: ['fullName','preferredName','dob','gender','maritalStatus','bloodGroup','mobile','email','city','state','stateOther','pincode','hometown','emergName','emergRelation','emergRelOther','emergPhone'],
+        B: ['designation','company','businessNature','yearsInBiz','website'],
+        C: ['healthGoal','chronicDetails'],
+        D: ['relGoal'],
+        E: ['biggestFear'],
+        F: ['lifePurpose'],
+        G: ['hobbies','favBooks','happiness','energyDrains','annoyances'],
+        H: ['challenge1','challenge2','challenge3','longTermIssues','biggestObstacle','limitingBeliefs'],
+        I: ['expectations','goalBiz','goalFinance','goalHealth','goalRelation','goalPersonal','goalSpiritual','successDef','failureDef','hoursPerWeek','anythingElse'],
+      };
+      const toOpen: Record<string, boolean> = {};
+      for (const [sec, fields] of Object.entries(sectionFieldMap)) {
+        if (fields.some(fld => missing.has(fld))) toOpen[sec] = true;
+      }
+      if (Object.keys(toOpen).length > 0) setOpenSections(p => ({ ...p, ...toOpen }));
+      return;
+    }
+
     setLoading(true);
     setTimeout(() => { setLoading(false); setSubmitted(true); }, 2000);
   };
@@ -229,7 +266,7 @@ const ApplyLGT = () => {
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-4">
         {/* Program Selector */}
         <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
-          <h3 className="font-semibold text-foreground mb-4">Select Program *</h3>
+          <h3 className={`font-semibold text-foreground mb-4 ${missingFields.has('programId') ? 'text-destructive' : ''}`}>Select Program *</h3>
           <div className="space-y-3">
             {PROGRAMS.map(p => (
               <button key={p.id} onClick={() => set('programId', p.id)} className={`w-full text-left p-4 rounded-xl border-2 transition-all ${f.programId === p.id ? 'border-primary shadow-md' : 'border-border hover:border-primary/40'}`}>
@@ -294,15 +331,15 @@ const ApplyLGT = () => {
         {/* Section A: Personal */}
         <Section id="A" title="Tell Us About Yourself" color="linear-gradient(135deg, #B8860B, #FFD700)" icon="👤" open={!!openSections.A} onToggle={() => toggle('A')}>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Full Name (as per Aadhaar/PAN)" required>
+            <Field label="Full Name (as per Aadhaar/PAN)" required highlight={missingFields.has('fullName')}>
               <input className={inputCls} maxLength={30} value={f.fullName} onChange={e => set('fullName', sanitize(e.target.value, 30))} />
               <CharCount current={f.fullName.length} max={30} />
             </Field>
-            <Field label="Preferred Name/Nickname" required>
+            <Field label="Preferred Name/Nickname" required highlight={missingFields.has('preferredName')}>
               <input className={inputCls} maxLength={20} value={f.preferredName} onChange={e => set('preferredName', sanitize(e.target.value, 20))} placeholder="What should Vivek Sir call you?" />
               <CharCount current={f.preferredName.length} max={20} />
             </Field>
-            <Field label="Date of Birth" required><input className={inputCls} type="date" value={f.dob} onChange={e => set('dob', e.target.value)} /></Field>
+            <Field label="Date of Birth" required highlight={missingFields.has('dob')}><input className={inputCls} type="date" value={f.dob} onChange={e => set('dob', e.target.value)} /></Field>
             <Field label="Gender" required>
               <div className="flex gap-3 mt-1">{['Male','Female','Other'].map(g => <label key={g} className="flex items-center gap-1.5 text-sm"><input type="radio" name="gender" checked={f.gender === g} onChange={() => set('gender', g)} />{g}</label>)}</div>
             </Field>
@@ -320,7 +357,7 @@ const ApplyLGT = () => {
               {emailError && <p className="text-[10px] text-destructive mt-0.5">{emailError}</p>}
               <CharCount current={f.email.length} max={60} />
             </Field>
-            <Field label="City" required>
+            <Field label="City" required highlight={missingFields.has('city')}>
               <input className={inputCls} maxLength={20} value={f.city} onChange={e => set('city', sanitize(e.target.value, 20))} />
               <CharCount current={f.city.length} max={20} />
             </Field>
@@ -333,10 +370,10 @@ const ApplyLGT = () => {
                 </div>
               )}
             </Field>
-            <Field label="Pincode" required>
+            <Field label="Pincode" required highlight={missingFields.has('pincode')}>
               <input className={inputCls} inputMode="numeric" maxLength={6} value={f.pincode} onChange={e => set('pincode', sanitizeDigits(e.target.value, 6))} />
             </Field>
-            <Field label="Hometown" required>
+            <Field label="Hometown" required highlight={missingFields.has('hometown')}>
               <input className={inputCls} maxLength={20} value={f.hometown} onChange={e => set('hometown', sanitize(e.target.value, 20))} />
               <CharCount current={f.hometown.length} max={20} />
             </Field>
@@ -365,26 +402,26 @@ const ApplyLGT = () => {
         {/* Section B: Professional */}
         <Section id="B" title="Your Professional World" color="linear-gradient(135deg, #800020, #B91C1C)" icon="💼" open={!!openSections.B} onToggle={() => toggle('B')}>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Designation/Title" required>
+            <Field label="Designation/Title" required highlight={missingFields.has('designation')}>
               <input className={inputCls} maxLength={20} value={f.designation} onChange={e => set('designation', sanitize(e.target.value, 20))} placeholder="CEO, Founder, Director..." />
               <CharCount current={f.designation.length} max={20} />
             </Field>
-            <Field label="Company/Business" required>
+            <Field label="Company/Business" required highlight={missingFields.has('company')}>
               <input className={inputCls} maxLength={20} value={f.company} onChange={e => set('company', sanitize(e.target.value, 20))} />
               <CharCount current={f.company.length} max={20} />
             </Field>
-            <Field label="Nature of Business" required className="sm:col-span-2">
+            <Field label="Nature of Business" required className="sm:col-span-2" highlight={missingFields.has('businessNature')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.businessNature} onChange={e => set('businessNature', sanitize(e.target.value, 100))} placeholder="Describe what your business does..." />
               <CharCount current={f.businessNature.length} max={100} />
             </Field>
             <Field label="Industry" required><select className={inputCls} value={f.industry} onChange={e => set('industry', e.target.value)}><option value="">Select...</option>{INDUSTRIES.map(i => <option key={i}>{i}</option>)}</select></Field>
-            <Field label="Years in Current Business" required>
+            <Field label="Years in Current Business" required highlight={missingFields.has('yearsInBiz')}>
               <input className={inputCls} inputMode="numeric" value={f.yearsInBiz} onChange={e => set('yearsInBiz', sanitizeDigits(e.target.value, 3))} />
             </Field>
             <Field label="Annual Business Revenue" required><select className={inputCls} value={f.annualRevenue} onChange={e => set('annualRevenue', e.target.value)}><option value="">Select...</option>{REVENUE_RANGES.map(r => <option key={r}>{r}</option>)}</select></Field>
             <Field label="Monthly self-growth investment"><select className={inputCls} value={f.monthlyInvest} onChange={e => set('monthlyInvest', e.target.value)}><option value="">Select...</option>{INVEST_MONTHLY.map(i => <option key={i}>{i}</option>)}</select></Field>
             <Field label="Team size"><select className={inputCls} value={f.teamSize} onChange={e => set('teamSize', e.target.value)}><option value="">Select...</option>{['Solo','2-5','6-15','16-50','51-200','200-500','500+'].map(t => <option key={t}>{t}</option>)}</select></Field>
-            <Field label="Website/LinkedIn" required>
+            <Field label="Website/LinkedIn" required highlight={missingFields.has('website')}>
               <input className={inputCls} maxLength={60} value={f.website} onChange={e => set('website', sanitize(e.target.value, 60))} />
               <CharCount current={f.website.length} max={60} />
             </Field>
@@ -398,7 +435,7 @@ const ApplyLGT = () => {
             <div className="flex gap-4">{['None','Yes'].map(o => <label key={o} className="flex items-center gap-1.5 text-sm"><input type="radio" name="chronic" checked={f.chronicConditions === o.toLowerCase()} onChange={() => { set('chronicConditions', o.toLowerCase()); if (o === 'None') set('chronicDetails', ''); }} />{o}</label>)}</div>
           </Field>
           {f.chronicConditions === 'yes' && (
-            <Field label="Details" required>
+            <Field label="Details" required highlight={missingFields.has('chronicDetails')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.chronicDetails} onChange={e => set('chronicDetails', sanitize(e.target.value, 100))} placeholder="Please describe your conditions..." />
               <CharCount current={f.chronicDetails.length} max={100} />
             </Field>
@@ -410,7 +447,7 @@ const ApplyLGT = () => {
             <Field label="Water intake (glasses/day)"><select className={inputCls} value={f.waterIntake} onChange={e => set('waterIntake', e.target.value)}><option value="">Select...</option>{['Less than 4','4-6','6-8','8+'].map(w => <option key={w}>{w}</option>)}</select></Field>
           </div>
           <SliderField label="Body energy level" value={f.energyLevel} onChange={v => set('energyLevel', v)} />
-          <Field label="Health goal for next 6 months" required>
+          <Field label="Health goal for next 6 months" required highlight={missingFields.has('healthGoal')}>
             <textarea className={inputCls} rows={2} maxLength={60} value={f.healthGoal} onChange={e => set('healthGoal', sanitize(e.target.value, 60))} placeholder="e.g., Lose 10 kg, manage BP..." />
             <CharCount current={f.healthGoal.length} max={60} />
           </Field>
@@ -423,7 +460,7 @@ const ApplyLGT = () => {
           <SliderField label="Relationship with children" value={f.childRelRating} onChange={v => set('childRelRating', v)} />
           <SliderField label="Social life satisfaction" value={f.socialSatisfaction} onChange={v => set('socialSatisfaction', v)} />
           <Field label="Close friends you can confide in?"><select className={inputCls} value={f.closeFriends} onChange={e => set('closeFriends', e.target.value)}><option value="">Select...</option>{['Yes, many','A few','Not really','No'].map(o => <option key={o}>{o}</option>)}</select></Field>
-          <Field label="Relationship goal for next 6 months" required>
+          <Field label="Relationship goal for next 6 months" required highlight={missingFields.has('relGoal')}>
             <textarea className={inputCls} rows={2} maxLength={100} value={f.relGoal} onChange={e => set('relGoal', sanitize(e.target.value, 100))} placeholder="e.g., Improve marriage communication..." />
             <CharCount current={f.relGoal.length} max={100} />
           </Field>
@@ -440,7 +477,7 @@ const ApplyLGT = () => {
           <Field label="Emotions you experience MOST often (select up to 5)">
             <div className="flex flex-wrap gap-2 mt-1">{EMOTIONS.map(e => <button key={e} onClick={() => toggleArr('frequentEmotions', e)} className={`px-3 py-1 rounded-full text-xs border transition-colors ${f.frequentEmotions.includes(e) ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:border-primary/50'}`}>{e}</button>)}</div>
           </Field>
-          <Field label="Your biggest fear" required>
+          <Field label="Your biggest fear" required highlight={missingFields.has('biggestFear')}>
             <textarea className={inputCls} rows={2} maxLength={100} value={f.biggestFear} onChange={e => set('biggestFear', sanitize(e.target.value, 100))} placeholder="What scares you the most?" />
             <CharCount current={f.biggestFear.length} max={100} />
           </Field>
@@ -456,7 +493,7 @@ const ApplyLGT = () => {
           <Field label="Spiritual texts you've read">
             <div className="flex flex-wrap gap-2 mt-1">{SPIRITUAL_TEXTS.map(t => <button key={t} onClick={() => toggleArr('textsRead', t)} className={`px-3 py-1 rounded-full text-xs border transition-colors ${f.textsRead.includes(t) ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}>{t}</button>)}</div>
           </Field>
-          <Field label="Your purpose of life" required>
+          <Field label="Your purpose of life" required highlight={missingFields.has('lifePurpose')}>
             <textarea className={inputCls} rows={2} maxLength={100} value={f.lifePurpose} onChange={e => set('lifePurpose', sanitize(e.target.value, 100))} placeholder="Why do you think you exist? What is your dharma?" />
             <CharCount current={f.lifePurpose.length} max={100} />
           </Field>
@@ -467,24 +504,24 @@ const ApplyLGT = () => {
 
         {/* Section G: The Real You */}
         <Section id="G" title="The Real You" color="linear-gradient(135deg, #7B1FA2, #9C27B0)" icon="🎭" open={!!openSections.G} onToggle={() => toggle('G')}>
-          <Field label="Hobbies / things you enjoy" required>
+          <Field label="Hobbies / things you enjoy" required highlight={missingFields.has('hobbies')}>
             <textarea className={inputCls} rows={2} maxLength={100} value={f.hobbies} onChange={e => set('hobbies', sanitize(e.target.value, 100))} placeholder="Reading, cricket, cooking, travel..." />
             <CharCount current={f.hobbies.length} max={100} />
           </Field>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Favorite books (top 3)" required>
+            <Field label="Favorite books (top 3)" required highlight={missingFields.has('favBooks')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.favBooks} onChange={e => set('favBooks', sanitize(e.target.value, 100))} />
               <CharCount current={f.favBooks.length} max={100} />
             </Field>
-            <Field label="What makes you genuinely happy?" required>
+            <Field label="What makes you genuinely happy?" required highlight={missingFields.has('happiness')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.happiness} onChange={e => set('happiness', sanitize(e.target.value, 100))} />
               <CharCount current={f.happiness.length} max={100} />
             </Field>
-            <Field label="What drains your energy?" required>
+            <Field label="What drains your energy?" required highlight={missingFields.has('energyDrains')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.energyDrains} onChange={e => set('energyDrains', sanitize(e.target.value, 100))} />
               <CharCount current={f.energyDrains.length} max={100} />
             </Field>
-            <Field label="Things that annoy you" required>
+            <Field label="Things that annoy you" required highlight={missingFields.has('annoyances')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.annoyances} onChange={e => set('annoyances', sanitize(e.target.value, 100))} placeholder="What triggers you?" />
               <CharCount current={f.annoyances.length} max={100} />
             </Field>
@@ -520,15 +557,15 @@ const ApplyLGT = () => {
               <Field label="Category"><select className={inputCls} value={f[`cat${n}`]} onChange={e => set(`cat${n}`, e.target.value)}><option value="">—</option>{CHALLENGE_CATS.map(c => <option key={c}>{c}</option>)}</select></Field>
             </div>
           ))}
-          <Field label="Issues you've been struggling with for a long time" required>
+          <Field label="Issues you've been struggling with for a long time" required highlight={missingFields.has('longTermIssues')}>
             <textarea className={inputCls} rows={3} maxLength={100} value={f.longTermIssues} onChange={e => set('longTermIssues', sanitize(e.target.value, 100))} placeholder="Patterns you can't break..." />
             <CharCount current={f.longTermIssues.length} max={100} />
           </Field>
-          <Field label="Biggest obstacle between you and your ideal life" required>
+          <Field label="Biggest obstacle between you and your ideal life" required highlight={missingFields.has('biggestObstacle')}>
             <textarea className={inputCls} rows={2} maxLength={100} value={f.biggestObstacle} onChange={e => set('biggestObstacle', sanitize(e.target.value, 100))} />
             <CharCount current={f.biggestObstacle.length} max={100} />
           </Field>
-          <Field label="Limiting beliefs you're aware of" required>
+          <Field label="Limiting beliefs you're aware of" required highlight={missingFields.has('limitingBeliefs')}>
             <textarea className={inputCls} rows={2} maxLength={100} value={f.limitingBeliefs} onChange={e => set('limitingBeliefs', sanitize(e.target.value, 100))} placeholder="e.g., 'I'm not good enough'..." />
             <CharCount current={f.limitingBeliefs.length} max={100} />
           </Field>
@@ -536,50 +573,50 @@ const ApplyLGT = () => {
 
         {/* Section I: Vision */}
         <Section id="I" title="Your Vision for the Next 6 Months" color="linear-gradient(135deg, #B8860B, #DAA520)" icon="🎯" open={!!openSections.I} onToggle={() => toggle('I')}>
-          <Field label="What do you expect from this program?" required>
+          <Field label="What do you expect from this program?" required highlight={missingFields.has('expectations')}>
             <textarea className={inputCls} rows={3} maxLength={100} value={f.expectations} onChange={e => set('expectations', sanitize(e.target.value, 100))} placeholder="Be specific. What should be DIFFERENT?" />
             <CharCount current={f.expectations.length} max={100} />
           </Field>
           <p className="text-sm font-semibold text-foreground mt-2 mb-3">Specific Goals</p>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="🏆 Business/Career Goal" required>
+            <Field label="🏆 Business/Career Goal" required highlight={missingFields.has('goalBiz')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.goalBiz} onChange={e => set('goalBiz', sanitize(e.target.value, 100))} />
               <CharCount current={f.goalBiz.length} max={100} />
             </Field>
-            <Field label="💰 Financial Goal" required>
+            <Field label="💰 Financial Goal" required highlight={missingFields.has('goalFinance')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.goalFinance} onChange={e => set('goalFinance', sanitize(e.target.value, 100))} />
               <CharCount current={f.goalFinance.length} max={100} />
             </Field>
-            <Field label="❤️ Health Goal" required>
+            <Field label="❤️ Health Goal" required highlight={missingFields.has('goalHealth')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.goalHealth} onChange={e => set('goalHealth', sanitize(e.target.value, 100))} />
               <CharCount current={f.goalHealth.length} max={100} />
             </Field>
-            <Field label="💕 Relationship Goal" required>
+            <Field label="💕 Relationship Goal" required highlight={missingFields.has('goalRelation')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.goalRelation} onChange={e => set('goalRelation', sanitize(e.target.value, 100))} />
               <CharCount current={f.goalRelation.length} max={100} />
             </Field>
-            <Field label="🧠 Personal Growth Goal" required>
+            <Field label="🧠 Personal Growth Goal" required highlight={missingFields.has('goalPersonal')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.goalPersonal} onChange={e => set('goalPersonal', sanitize(e.target.value, 100))} />
               <CharCount current={f.goalPersonal.length} max={100} />
             </Field>
-            <Field label="🕉️ Spiritual Goal" required>
+            <Field label="🕉️ Spiritual Goal" required highlight={missingFields.has('goalSpiritual')}>
               <textarea className={inputCls} rows={2} maxLength={100} value={f.goalSpiritual} onChange={e => set('goalSpiritual', sanitize(e.target.value, 100))} />
               <CharCount current={f.goalSpiritual.length} max={100} />
             </Field>
           </div>
-          <Field label="What would make this program a SUCCESS?" required>
+          <Field label="What would make this program a SUCCESS?" required highlight={missingFields.has('successDef')}>
             <textarea className={inputCls} rows={2} maxLength={100} value={f.successDef} onChange={e => set('successDef', sanitize(e.target.value, 100))} />
             <CharCount current={f.successDef.length} max={100} />
           </Field>
-          <Field label="What would make this program a FAILURE?" required>
+          <Field label="What would make this program a FAILURE?" required highlight={missingFields.has('failureDef')}>
             <textarea className={inputCls} rows={2} maxLength={100} value={f.failureDef} onChange={e => set('failureDef', sanitize(e.target.value, 100))} />
             <CharCount current={f.failureDef.length} max={100} />
           </Field>
-          <Field label="Hours per week you can dedicate" required>
+          <Field label="Hours per week you can dedicate" required highlight={missingFields.has('hoursPerWeek')}>
             <textarea className={inputCls} rows={1} maxLength={100} value={f.hoursPerWeek} onChange={e => set('hoursPerWeek', sanitize(e.target.value, 100))} />
             <CharCount current={f.hoursPerWeek.length} max={100} />
           </Field>
-          <p className="text-sm font-semibold text-foreground mt-4 mb-2">Commitments (all must be checked)</p>
+          <p className="text-sm font-semibold text-foreground mt-4 mb-2">Commitments (all must be checked) <span className="text-destructive">*</span></p>
           <div className="space-y-2">
             {[
               ['sessions','Attend all sessions sincerely'],
@@ -589,13 +626,13 @@ const ApplyLGT = () => {
               ['meditation','Practice meditation and journaling daily'],
               ['confidential','Keep all coaching discussions confidential'],
             ].map(([k, text]) => (
-              <label key={k} className="flex items-start gap-2 cursor-pointer">
-                <input type="checkbox" checked={f.commitments[k]} onChange={e => set('commitments', { ...f.commitments, [k]: e.target.checked })} className="mt-1 rounded" />
+              <label key={k} className={`flex items-start gap-2 cursor-pointer ${missingFields.has(`commitment_${k}`) ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}>
+                <input type="checkbox" checked={f.commitments[k]} onChange={e => { set('commitments', { ...f.commitments, [k]: e.target.checked }); setMissingFields(p => { const n = new Set(p); n.delete(`commitment_${k}`); return n; }); }} className="mt-1 rounded" />
                 <span className="text-sm text-foreground">{text}</span>
               </label>
             ))}
           </div>
-          <Field label="Anything else Vivek Sir should know?" required>
+          <Field label="Anything else Vivek Sir should know?" required highlight={missingFields.has('anythingElse')}>
             <textarea className={inputCls} rows={3} maxLength={100} value={f.anythingElse} onChange={e => set('anythingElse', sanitize(e.target.value, 100))} placeholder="Anything that didn't fit above..." />
             <CharCount current={f.anythingElse.length} max={100} />
           </Field>
@@ -635,10 +672,10 @@ const ApplyLGT = () => {
           </div>
 
           <div className="space-y-3 mt-6 border-t border-border pt-4">
-            <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={f.consent1} onChange={e => set('consent1', e.target.checked)} className="mt-1 rounded" /><span className="text-sm">I declare that all information provided is true and complete. *</span></label>
-            <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={f.consent2} onChange={e => set('consent2', e.target.checked)} className="mt-1 rounded" /><span className="text-sm">I understand this is an APPLICATION and acceptance is at the discretion of Vivek Doba. *</span></label>
-            <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={f.consent3} onChange={e => set('consent3', e.target.checked)} className="mt-1 rounded" /><span className="text-sm">I commit to my transformation journey with sincerity, dedication, and discipline. 🙏 *</span></label>
-            <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={f.consent4} onChange={e => set('consent4', e.target.checked)} className="mt-1 rounded" /><span className="text-sm">I consent to VDTS contacting me via WhatsApp, Email, and Phone. *</span></label>
+            <label className={`flex items-start gap-3 cursor-pointer ${missingFields.has('consent1') ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}><input type="checkbox" checked={f.consent1} onChange={e => { set('consent1', e.target.checked); setMissingFields(p => { const n = new Set(p); n.delete('consent1'); return n; }); }} className="mt-1 rounded" /><span className="text-sm">I declare that all information provided is true and complete. *</span></label>
+            <label className={`flex items-start gap-3 cursor-pointer ${missingFields.has('consent2') ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}><input type="checkbox" checked={f.consent2} onChange={e => { set('consent2', e.target.checked); setMissingFields(p => { const n = new Set(p); n.delete('consent2'); return n; }); }} className="mt-1 rounded" /><span className="text-sm">I understand this is an APPLICATION and acceptance is at the discretion of Vivek Doba. *</span></label>
+            <label className={`flex items-start gap-3 cursor-pointer ${missingFields.has('consent3') ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}><input type="checkbox" checked={f.consent3} onChange={e => { set('consent3', e.target.checked); setMissingFields(p => { const n = new Set(p); n.delete('consent3'); return n; }); }} className="mt-1 rounded" /><span className="text-sm">I commit to my transformation journey with sincerity, dedication, and discipline. 🙏 *</span></label>
+            <label className={`flex items-start gap-3 cursor-pointer ${missingFields.has('consent4') ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}><input type="checkbox" checked={f.consent4} onChange={e => { set('consent4', e.target.checked); setMissingFields(p => { const n = new Set(p); n.delete('consent4'); return n; }); }} className="mt-1 rounded" /><span className="text-sm">I consent to VDTS contacting me via WhatsApp, Email, and Phone. *</span></label>
           </div>
           <button onClick={handleSubmit} disabled={loading} className="w-full mt-6 py-4 rounded-xl text-white font-bold text-base transition-opacity hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #FFD700, #7B1FA2)' }}>
             {loading ? '⏳ Submitting your sacred application...' : '👑 Submit My Application'}
