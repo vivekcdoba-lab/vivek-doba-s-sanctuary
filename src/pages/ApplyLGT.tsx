@@ -146,7 +146,7 @@ const ApplyLGT = () => {
 
   const emailError = f.email.length > 0 && !isValidEmail(f.email) ? 'Email must include @ and end with .com' : '';
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const missing = new Set<string>();
     
     // Program
