@@ -133,6 +133,53 @@ const FollowUpsPage = () => {
           context="general"
         />
       )}
+
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>📞 New Follow-up</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium text-foreground">Seeker *</label>
+              <select value={newFollowUp.seeker_id} onChange={e => setNewFollowUp(p => ({ ...p, seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="">Select Seeker</option>
+                {SEEKERS.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground">Type</label>
+                <select value={newFollowUp.type} onChange={e => setNewFollowUp(p => ({ ...p, type: e.target.value as FollowUp['type'] }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                  <option value="call">📞 Call</option>
+                  <option value="whatsapp">💬 WhatsApp</option>
+                  <option value="email">📧 Email</option>
+                  <option value="in_app">🔔 In-App</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground">Priority</label>
+                <select value={newFollowUp.priority} onChange={e => setNewFollowUp(p => ({ ...p, priority: e.target.value as FollowUp['priority'] }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Due Date *</label>
+              <input type="date" value={newFollowUp.due_date} onChange={e => setNewFollowUp(p => ({ ...p, due_date: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Notes</label>
+              <textarea value={newFollowUp.notes} onChange={e => setNewFollowUp(p => ({ ...p, notes: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Follow-up details..." />
+            </div>
+            <button onClick={handleCreate} className="w-full py-2.5 rounded-xl gradient-chakravartin text-primary-foreground font-medium text-sm">
+              Create Follow-up
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
