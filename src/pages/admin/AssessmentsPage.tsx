@@ -547,6 +547,55 @@ const AssessmentsPage = () => {
           <button className="px-6 py-2.5 rounded-xl gradient-chakravartin text-primary-foreground text-sm font-medium">💾 Save Assessment</button>
         </div>
       )}
+      {/* New Assessment Dialog */}
+      <Dialog open={showNewAssessment} onOpenChange={setShowNewAssessment}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>📥 New Assessment</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium text-foreground">Seeker *</label>
+              <select value={newAssessment.seeker_id} onChange={e => setNewAssessment(p => ({ ...p, seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="">Select Seeker</option>
+                {SEEKERS.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Assessment Type *</label>
+              <select value={newAssessment.type} onChange={e => setNewAssessment(p => ({ ...p, type: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                {TABS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Period *</label>
+              <select value={newAssessment.period} onChange={e => setNewAssessment(p => ({ ...p, period: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                {PERIODS.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Notes</label>
+              <textarea value={newAssessment.notes} onChange={e => setNewAssessment(p => ({ ...p, notes: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Any initial observations..." />
+            </div>
+            <button onClick={() => {
+              if (!newAssessment.seeker_id) {
+                toast.error('Please select a Seeker');
+                return;
+              }
+              const seeker = SEEKERS.find(s => s.id === newAssessment.seeker_id);
+              const tabIndex = TABS.indexOf(newAssessment.type);
+              setSeekerId(newAssessment.seeker_id);
+              setPeriod(newAssessment.period);
+              if (tabIndex >= 0) setTab(tabIndex);
+              toast.success(`New ${newAssessment.type} assessment started for ${seeker?.full_name}`);
+              setShowNewAssessment(false);
+              setNewAssessment({ seeker_id: '', type: 'SWOT', period: 'Initial', notes: '' });
+            }} className="w-full py-2.5 rounded-xl gradient-chakravartin text-primary-foreground font-medium text-sm">
+              Start Assessment
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
