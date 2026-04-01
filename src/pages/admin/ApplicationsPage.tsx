@@ -127,8 +127,50 @@ const ApplicationsPage = () => {
       console.error('Email notification error:', e);
     }
 
+    // If approved, add to seekers list
+    if (status === 'approved') {
+      const fd = sub.form_data || {};
+      const newSeekerId = `s_${Date.now()}`;
+      const matchedCourse = COURSES.find(c =>
+        c.name.toLowerCase().includes((fd.programName || fd.workshopName || '').toString().toLowerCase())
+      );
+      const newSeeker = {
+        id: newSeekerId,
+        full_name: sub.full_name,
+        email: sub.email,
+        phone: sub.mobile || '',
+        city: (fd.city || '').toString(),
+        state: (fd.state || '').toString(),
+        role: 'seeker' as const,
+        created_at: new Date().toISOString().split('T')[0],
+        occupation: (fd.profession || fd.designation || fd.occupation || '').toString(),
+        company: (fd.company || fd.companyName || '').toString(),
+        health: 'green' as const,
+        sessions_completed: 0,
+        total_sessions: matchedCourse ? 24 : 1,
+        growth_score: 0,
+        streak: 0,
+        overdue_assignments: 0,
+        journey_stage: 'awakening' as const,
+        journey_stage_date: new Date().toISOString().split('T')[0],
+        ...(matchedCourse ? {
+          enrollment: {
+            id: `e_${Date.now()}`,
+            seeker_id: newSeekerId,
+            course_id: matchedCourse.id,
+            tier: matchedCourse.tier,
+            start_date: new Date().toISOString().split('T')[0],
+            status: 'active' as const,
+            payment_status: 'pending' as const,
+          },
+          course: matchedCourse,
+        } : {}),
+      };
+      SEEKERS.push(newSeeker as any);
+    }
+
     const labels: Record<string, string> = {
-      approved: `✅ ${sub.full_name} approved! Email sent.`,
+      approved: `✅ ${sub.full_name} approved & added to Seekers! Email sent.`,
       rejected: `❌ ${sub.full_name} rejected. Email sent.`,
       info_requested: `📋 Info requested from ${sub.full_name}. Email sent.`,
     };
