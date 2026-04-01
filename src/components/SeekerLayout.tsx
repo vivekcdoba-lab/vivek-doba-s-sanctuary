@@ -49,7 +49,14 @@ function SeekerSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuthStore();
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
@@ -94,6 +101,13 @@ function SeekerSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {/* Log Off */}
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleLogout} className="hover:bg-destructive/10 text-destructive cursor-pointer">
+                  <LogOut className="h-4 w-4" />
+                  {!collapsed && <span>Log Off</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
