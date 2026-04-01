@@ -146,27 +146,14 @@ const ApplyLGT = () => {
   const emailError = f.email.length > 0 && !isValidEmail(f.email) ? 'Email must include @ and end with .com' : '';
 
   const handleSubmit = () => {
-    if (!f.programId || !f.fullName || !f.mobile || !f.email || !f.city || !f.consent1 || !f.consent2 || !f.consent3 || !f.consent4) {
-      toast({ title: 'Please fill all required fields and checkboxes', variant: 'destructive' }); return;
-    }
-    if (!isValidEmail(f.email)) {
-      toast({ title: 'Please enter a valid email (e.g. xyz@abc.com)', variant: 'destructive' }); return;
-    }
-    if (f.mobile.length !== 10) {
-      toast({ title: 'Mobile number must be 10 digits', variant: 'destructive' }); return;
-    }
-    if (f.pincode && f.pincode.length !== 6) {
-      toast({ title: 'Pincode must be 6 digits', variant: 'destructive' }); return;
-    }
-    if (f.gstRequired === 'yes' && (!f.gstCompany.trim() || !f.gstNumber.trim())) {
-      toast({ title: 'Company Name and GST Number are mandatory for corporate invoice', variant: 'destructive' }); return;
-    }
-    if (f.chronicConditions === 'yes' && !f.chronicDetails.trim()) {
-      toast({ title: 'Health condition details are mandatory when "Yes" is selected', variant: 'destructive' }); return;
-    }
-    // Check all mandatory fields
+    const missing = new Set<string>();
+    
+    // Program
+    if (!f.programId) missing.add('programId');
+    
+    // All mandatory text fields
     const mandatoryTextFields = [
-      'fullName','dob','gender','maritalStatus','bloodGroup','mobile','email','city','state','pincode','hometown',
+      'fullName','preferredName','dob','gender','maritalStatus','bloodGroup','mobile','email','city','state','pincode','hometown',
       'emergName','emergRelation','emergPhone',
       'designation','company','businessNature','yearsInBiz','website',
       'healthGoal','relGoal',
@@ -177,10 +164,59 @@ const ApplyLGT = () => {
       'successDef','failureDef','hoursPerWeek','anythingElse',
     ];
     for (const key of mandatoryTextFields) {
-      if (!f[key] || (typeof f[key] === 'string' && !f[key].trim())) {
-        toast({ title: `Please fill all mandatory fields`, variant: 'destructive' }); return;
-      }
+      if (!f[key] || (typeof f[key] === 'string' && !f[key].trim())) missing.add(key);
     }
+
+    // Commitments — all 6 must be checked
+    const commitmentKeys = ['sessions','dailyTracking','feedback','investment','meditation','confidential'];
+    for (const ck of commitmentKeys) {
+      if (!f.commitments[ck]) missing.add(`commitment_${ck}`);
+    }
+
+    // Consents
+    if (!f.consent1) missing.add('consent1');
+    if (!f.consent2) missing.add('consent2');
+    if (!f.consent3) missing.add('consent3');
+    if (!f.consent4) missing.add('consent4');
+
+    // Conditional
+    if (f.gstRequired === 'yes') {
+      if (!f.gstCompany.trim()) missing.add('gstCompany');
+      if (!f.gstNumber.trim()) missing.add('gstNumber');
+    }
+    if (f.chronicConditions === 'yes' && !f.chronicDetails.trim()) missing.add('chronicDetails');
+    if (f.state === 'Other' && !f.stateOther.trim()) missing.add('stateOther');
+    if (f.emergRelation === 'Other' && !f.emergRelOther.trim()) missing.add('emergRelOther');
+
+    // Email validation
+    if (f.email && !isValidEmail(f.email)) missing.add('email');
+    if (f.mobile && f.mobile.length !== 10) missing.add('mobile');
+    if (f.pincode && f.pincode.length !== 6) missing.add('pincode');
+
+    setMissingFields(missing);
+
+    if (missing.size > 0) {
+      toast({ title: `Please fill all ${missing.size} mandatory field(s) highlighted in red`, variant: 'destructive' });
+      // Open all sections that have errors
+      const sectionFieldMap: Record<string, string[]> = {
+        A: ['fullName','preferredName','dob','gender','maritalStatus','bloodGroup','mobile','email','city','state','stateOther','pincode','hometown','emergName','emergRelation','emergRelOther','emergPhone'],
+        B: ['designation','company','businessNature','yearsInBiz','website'],
+        C: ['healthGoal','chronicDetails'],
+        D: ['relGoal'],
+        E: ['biggestFear'],
+        F: ['lifePurpose'],
+        G: ['hobbies','favBooks','happiness','energyDrains','annoyances'],
+        H: ['challenge1','challenge2','challenge3','longTermIssues','biggestObstacle','limitingBeliefs'],
+        I: ['expectations','goalBiz','goalFinance','goalHealth','goalRelation','goalPersonal','goalSpiritual','successDef','failureDef','hoursPerWeek','anythingElse'],
+      };
+      const toOpen: Record<string, boolean> = {};
+      for (const [sec, fields] of Object.entries(sectionFieldMap)) {
+        if (fields.some(fld => missing.has(fld))) toOpen[sec] = true;
+      }
+      if (Object.keys(toOpen).length > 0) setOpenSections(p => ({ ...p, ...toOpen }));
+      return;
+    }
+
     setLoading(true);
     setTimeout(() => { setLoading(false); setSubmitted(true); }, 2000);
   };
