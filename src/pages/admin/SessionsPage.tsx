@@ -457,6 +457,7 @@ const SessionsPage = () => {
                   session_type: newSession.session_type,
                   duration_minutes: newSession.duration_minutes,
                   location: newSession.session_type === 'video' ? 'Zoom' : 'Office',
+                  location_type: newSession.session_type === 'video' ? 'online' as const : 'in_person' as const,
                   topics_covered: [],
                   key_insights: '',
                   session_notes: newSession.notes,
