@@ -20,11 +20,33 @@ const ResourcesPage = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [newResource, setNewResource] = useState({ title: '', description: '', type: 'pdf' as Resource['type'], category: 'Course Materials', course_id: '', language: 'EN' as Resource['language'], tags: '' });
 
-  const filtered = RESOURCES.filter((r) => {
+  const filtered = resources.filter((r) => {
     const matchSearch = r.title.toLowerCase().includes(search.toLowerCase());
     const matchCat = category === 'All' || r.category === category;
     return matchSearch && matchCat;
   });
+
+  const handleUpload = () => {
+    if (!newResource.title || !newResource.description) {
+      toast.error('Please fill Title and Description');
+      return;
+    }
+    setResources(prev => [...prev, {
+      id: `res_${Date.now()}`,
+      title: newResource.title,
+      description: newResource.description,
+      type: newResource.type,
+      category: newResource.category,
+      course_id: newResource.course_id || undefined,
+      language: newResource.language,
+      tags: newResource.tags.split(',').map(t => t.trim()).filter(Boolean),
+      view_count: 0,
+      download_count: 0,
+    }]);
+    toast.success(`Resource "${newResource.title}" uploaded`);
+    setShowUpload(false);
+    setNewResource({ title: '', description: '', type: 'pdf', category: 'Course Materials', course_id: '', language: 'EN', tags: '' });
+  };
 
   const filteredStories = STORY_LIBRARY.filter(s => {
     const matchSearch = s.title.toLowerCase().includes(search.toLowerCase()) || s.theme.toLowerCase().includes(search.toLowerCase());
