@@ -1,7 +1,6 @@
-import { PAYMENTS, SEEKERS, COURSES, formatINR } from '@/data/mockData';
-import { PaymentMethod } from '@/types';
+import { SEEKERS, formatINR } from '@/data/mockData';
 import { Plus, Bell, FileText } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import SendReminderModal from '@/components/SendReminderModal';
 import InvoiceModal from '@/components/InvoiceModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,13 +9,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { usePayments } from '@/hooks/usePayments';
 
 const PaymentsPage = () => {
-  const [payments, setPayments] = useState(PAYMENTS);
-  const totalRevenue = payments.filter((p) => p.status === 'received').reduce((s, p) => s + p.total_amount, 0);
-  const thisMonth = payments.filter((p) => p.status === 'received' && p.payment_date.startsWith('2025-03')).reduce((s, p) => s + p.total_amount, 0);
-  const pending = payments.filter((p) => p.status === 'pending').reduce((s, p) => s + p.total_amount, 0);
-  const overdue = payments.filter((p) => p.status === 'overdue').reduce((s, p) => s + p.total_amount, 0);
+  const { payments, isLoading, createPayment } = usePayments();
+  const totalRevenue = payments.filter((p) => p.status === 'received').reduce((s, p) => s + Number(p.total_amount), 0);
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const thisMonth = payments.filter((p) => p.status === 'received' && p.payment_date?.startsWith(currentMonth)).reduce((s, p) => s + Number(p.total_amount), 0);
+  const pending = payments.filter((p) => p.status === 'pending').reduce((s, p) => s + Number(p.total_amount), 0);
+  const overdue = payments.filter((p) => p.status === 'overdue').reduce((s, p) => s + Number(p.total_amount), 0);
 
   const stats = [
     { label: 'Total Revenue', value: totalRevenue, gradient: 'gradient-growth' },
@@ -31,7 +33,7 @@ const PaymentsPage = () => {
     overdue: 'bg-destructive/10 text-destructive',
   };
 
-  const [reminder, setReminder] = useState<{ seeker: typeof SEEKERS[0]; payment: typeof payments[0] } | null>(null);
+  const [reminder, setReminder] = useState<{ seeker: typeof SEEKERS[0]; payment: (typeof payments)[0] } | null>(null);
   const [invoice, setInvoice] = useState<any>(null);
   const [showRecordModal, setShowRecordModal] = useState(false);
 
@@ -65,7 +67,7 @@ const PaymentsPage = () => {
     });
   };
 
-  const handleRecordPayment = () => {
+  const handleRecordPayment = async () => {
     if (!rpSeekerId || !rpAmount || !rpDate) {
       toast.error('Please fill Seeker, Amount, and Date');
       return;
@@ -78,27 +80,26 @@ const PaymentsPage = () => {
     const gst = Math.round(amt * 0.18);
     const total = amt + gst;
     const seeker = SEEKERS.find(s => s.id === rpSeekerId);
-    const newPayment = {
-      id: `p-new-${Date.now()}`,
-      seeker_id: rpSeekerId,
-      invoice_number: `INV-${Date.now().toString().slice(-6)}`,
-      amount: amt,
-      gst_amount: gst,
-      total_amount: total,
-      status: 'received' as const,
-      method: rpMethod as PaymentMethod,
-      payment_date: rpDate,
-      due_date: rpDate,
-      transaction_id: rpTransactionId || undefined,
-    };
-    setPayments(prev => [newPayment, ...prev]);
-    toast.success(`Payment of ${formatINR(total)} recorded for ${seeker?.full_name || 'Seeker'}`);
-    setShowRecordModal(false);
-    setRpSeekerId('');
-    setRpAmount('');
-    setRpMethod('upi');
-    setRpTransactionId('');
-    setRpDate(new Date().toISOString().split('T')[0]);
+    try {
+      await createPayment.mutateAsync({
+        seeker_id: rpSeekerId,
+        amount: amt,
+        gst_amount: gst,
+        total_amount: total,
+        payment_date: rpDate,
+        method: rpMethod,
+        transaction_id: rpTransactionId || undefined,
+      });
+      toast.success(`Payment of ${formatINR(total)} recorded for ${seeker?.full_name || 'Seeker'}`);
+      setShowRecordModal(false);
+      setRpSeekerId('');
+      setRpAmount('');
+      setRpMethod('upi');
+      setRpTransactionId('');
+      setRpDate(new Date().toISOString().split('T')[0]);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save payment');
+    }
   };
 
   return (
@@ -142,7 +143,7 @@ const PaymentsPage = () => {
                   <td className="p-3 font-medium text-foreground">{p.invoice_number}</td>
                   <td className="p-3 text-foreground">{seeker.full_name}</td>
                   <td className="p-3 font-semibold text-foreground">{formatINR(p.total_amount)}</td>
-                  <td className="p-3 text-muted-foreground">{p.payment_date || p.due_date}</td>
+                  <td className="p-3 text-muted-foreground">{p.payment_date || p.due_date || '—'}</td>
                   <td className="p-3 text-muted-foreground capitalize">{p.method.replace('_', ' ')}</td>
                   <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[p.status] || 'bg-muted text-muted-foreground'}`}>{p.status}</span></td>
                   <td className="p-3">
