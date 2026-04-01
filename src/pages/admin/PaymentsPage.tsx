@@ -86,7 +86,7 @@ const PaymentsPage = () => {
       gst_amount: gst,
       total_amount: total,
       status: 'received' as const,
-      method: rpMethod,
+      method: rpMethod as PaymentMethod,
       payment_date: rpDate,
       due_date: rpDate,
       transaction_id: rpTransactionId || undefined,
