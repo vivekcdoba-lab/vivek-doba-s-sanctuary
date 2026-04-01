@@ -72,7 +72,7 @@ const RegisterWorkshop = () => {
   const emailError = form.email && !isValidEmail(form.email) ? 'Email must include @ and end with .com (e.g. xyz@abc.com)' : '';
   const toggleCourse = (id: string) => set('interestedCourses', form.interestedCourses.includes(id) ? form.interestedCourses.filter((x: string) => x !== id) : [...form.interestedCourses, id]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.workshopId) { toast({ title: 'Please select a workshop', variant: 'destructive' }); return; }
     if (!form.fullName || form.fullName.length < 2) { toast({ title: 'Please enter a valid full name (min 2 characters)', variant: 'destructive' }); return; }
     if (form.mobile.length !== 10) { toast({ title: 'Please enter a valid 10-digit mobile number', variant: 'destructive' }); return; }

@@ -93,7 +93,7 @@ const BookAppointment = () => {
   const sanitizeAddress = (val: string) => val.slice(0, 100);
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.(com|in|org|net|co|io|edu|gov|info)$/i.test(email);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.fullName || form.fullName.length < 2) {
       toast({ title: 'Please enter a valid full name (min 2 characters)', variant: 'destructive' }); return;
     }
