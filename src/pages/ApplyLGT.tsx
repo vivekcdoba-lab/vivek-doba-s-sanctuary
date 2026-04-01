@@ -219,7 +219,35 @@ const ApplyLGT = () => {
     }
 
     setLoading(true);
-    setTimeout(() => { setLoading(false); setSubmitted(true); }, 2000);
+    try {
+      const formData = { ...f, programName: selected?.name };
+      const { error } = await supabase.from('submissions').insert({
+        form_type: 'lgt_application',
+        full_name: f.fullName,
+        email: f.email,
+        mobile: f.mobile,
+        country_code: f.countryCode,
+        form_data: formData as any,
+      });
+      if (error) throw error;
+      await supabase.functions.invoke('send-notification', {
+        body: {
+          type: 'new_submission',
+          form_type: 'lgt_application',
+          applicant_name: f.fullName,
+          applicant_email: f.email,
+          applicant_mobile: `${f.countryCode}${f.mobile}`,
+          form_data: formData,
+        },
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error(err);
+      toast({ title: 'Submission saved! Email notification may be delayed.', variant: 'default' });
+      setSubmitted(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {

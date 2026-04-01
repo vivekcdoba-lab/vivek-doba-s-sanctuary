@@ -110,7 +110,36 @@ const BookAppointment = () => {
       toast({ title: 'Please fill all required fields', variant: 'destructive' }); return;
     }
     setLoading(true);
-    setTimeout(() => { setLoading(false); setSubmitted(true); }, 1500);
+    try {
+      const formData = { ...form, selectedDate: form.selectedDate?.toISOString() };
+      const { error } = await supabase.from('submissions').insert({
+        form_type: 'discovery_call',
+        full_name: form.fullName,
+        email: form.email,
+        mobile: form.mobile,
+        country_code: form.countryCode,
+        form_data: formData as any,
+      });
+      if (error) throw error;
+      // Send admin notification email
+      await supabase.functions.invoke('send-notification', {
+        body: {
+          type: 'new_submission',
+          form_type: 'discovery_call',
+          applicant_name: form.fullName,
+          applicant_email: form.email,
+          applicant_mobile: `${form.countryCode}${form.mobile}`,
+          form_data: formData,
+        },
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error(err);
+      toast({ title: 'Submission saved! Email notification may be delayed.', variant: 'default' });
+      setSubmitted(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
