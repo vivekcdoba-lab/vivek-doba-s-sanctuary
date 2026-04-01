@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Phone, MessageSquare, Mail, Check, X, RefreshCw, ChevronDown, ChevronUp, Loader2, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { SEEKERS, COURSES } from '@/data/mockData';
 
 type FormType = 'discovery_call' | 'workshop' | 'lgt_application';
 type SubmissionStatus = 'pending' | 'approved' | 'rejected' | 'info_requested';
