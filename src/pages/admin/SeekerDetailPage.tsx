@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SEEKERS, SESSIONS, ASSIGNMENTS, PAYMENTS, COURSES, formatINR, formatDate, formatTime12, getHealthColor, getTierBadgeClass } from '@/data/mockData';
+import { PaymentMethod } from '@/types';
 import {
   Phone, MessageSquare, Mail, Edit, Archive, Calendar, ClipboardList, TrendingUp,
   CreditCard, Flame, ArrowLeft, UserCheck, CalendarCheck, Eye, ChevronDown, ChevronUp,
@@ -8,7 +9,12 @@ import {
 } from 'lucide-react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LGTAssessment, { LGT_SECTIONS, LGT_ZONES, PILLAR_COLORS, getZone, getPillarZone } from '@/components/LGTAssessment';
+import { toast } from 'sonner';
 
 const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Growth Matrix', 'Assignments', 'Daily Tracking', 'Payments', 'Goals & Vision', 'Private Notes 🔒', 'Timeline'];
 
@@ -121,8 +127,19 @@ const SeekerDetailPage = () => {
   const [wheelModal, setWheelModal] = useState(false);
   const [lgtModal, setLgtModal] = useState(false);
   const [timelineFilter, setTimelineFilter] = useState('all');
+  const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
+  const [seekerPayments, setSeekerPayments] = useState(() => PAYMENTS.filter((p) => p.seeker_id === id));
+  const [rpAmount, setRpAmount] = useState('');
+  const [rpMethod, setRpMethod] = useState<PaymentMethod>('upi');
+  const [rpTransactionId, setRpTransactionId] = useState('');
+  const [rpDate, setRpDate] = useState(new Date().toISOString().split('T')[0]);
 
   const seeker = SEEKERS.find((s) => s.id === id);
+
+  useEffect(() => {
+    setSeekerPayments(PAYMENTS.filter((p) => p.seeker_id === id));
+  }, [id]);
+
   if (!seeker) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -136,7 +153,6 @@ const SeekerDetailPage = () => {
 
   const seekerSessions = SESSIONS.filter((s) => s.seeker_id === id).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const seekerAssignments = ASSIGNMENTS.filter((a) => a.seeker_id === id);
-  const seekerPayments = PAYMENTS.filter((p) => p.seeker_id === id);
   const daysSinceJoin = Math.floor((Date.now() - new Date(seeker.created_at).getTime()) / 86400000);
   const totalCourseFee = seeker.course?.price || 0;
   const totalPaid = seekerPayments.filter(p => p.status === 'received').reduce((s, p) => s + p.total_amount, 0);
@@ -161,6 +177,50 @@ const SeekerDetailPage = () => {
   const wheelOverall = Object.values(WHEEL_DATA_RAHUL.month3).reduce((a, b) => a + b, 0) / 10;
 
   const invoicePayment = seekerPayments.find(p => p.id === showInvoice);
+
+  const resetRecordPaymentForm = () => {
+    setRpAmount('');
+    setRpMethod('upi');
+    setRpTransactionId('');
+    setRpDate(new Date().toISOString().split('T')[0]);
+  };
+
+  const handleRecordPayment = () => {
+    if (!rpAmount || !rpDate) {
+      toast.error('Please fill Amount and Date');
+      return;
+    }
+
+    const amount = parseFloat(rpAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Enter a valid amount');
+      return;
+    }
+
+    const gst = Math.round(amount * 0.18);
+    const total = amount + gst;
+
+    setSeekerPayments((prev) => [
+      {
+        id: `p-${Date.now()}`,
+        seeker_id: seeker.id,
+        invoice_number: `INV-${Date.now().toString().slice(-6)}`,
+        amount,
+        gst_amount: gst,
+        total_amount: total,
+        payment_date: rpDate,
+        due_date: rpDate,
+        method: rpMethod,
+        transaction_id: rpTransactionId || undefined,
+        status: 'received',
+      },
+      ...prev,
+    ]);
+
+    toast.success(`Payment of ${formatINR(total)} recorded for ${seeker.full_name}`);
+    setRecordPaymentOpen(false);
+    resetRecordPaymentForm();
+  };
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -747,7 +807,7 @@ const SeekerDetailPage = () => {
             <div className="bg-card rounded-xl p-4 shadow-sm border-2 border-saffron/20"><p className="text-xs text-muted-foreground">Balance</p><p className="text-xl font-bold text-saffron">{formatINR(balance)}</p></div>
             <div className="bg-card rounded-xl p-4 shadow-sm border-2 border-warning-amber/20"><p className="text-xs text-muted-foreground">Next Due</p><p className="text-lg font-bold text-warning-amber">₹41,667</p><p className="text-xs text-muted-foreground">25/04/2026</p></div>
           </div>
-          <div className="flex justify-end"><button className="px-4 py-2 rounded-xl gradient-chakravartin text-primary-foreground text-sm font-medium">➕ Record Payment</button></div>
+          <div className="flex justify-end"><button onClick={() => setRecordPaymentOpen(true)} className="px-4 py-2 rounded-xl gradient-chakravartin text-primary-foreground text-sm font-medium">➕ Record Payment</button></div>
           <div className="bg-card rounded-xl border border-border overflow-x-auto">
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border bg-muted/30">
@@ -835,6 +895,55 @@ const SeekerDetailPage = () => {
                 <button onClick={() => window.print()} className="flex-1 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium">🖨️ Print</button>
                 <button onClick={() => window.open(`mailto:${seeker.email}?subject=Invoice ${invoicePayment?.invoice_number} — Vivek Doba Training Solutions`)} className="flex-1 px-4 py-2 rounded-xl border border-border text-foreground text-sm font-medium">📧 Email</button>
                 <button onClick={() => setShowInvoice(null)} className="px-4 py-2 rounded-xl bg-muted text-muted-foreground text-sm font-medium">Close</button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={recordPaymentOpen} onOpenChange={setRecordPaymentOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Record Payment</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Seeker</Label>
+                  <Input value={seeker.full_name} disabled />
+                </div>
+                <div>
+                  <Label>Amount (₹) *</Label>
+                  <Input type="number" placeholder="e.g. 25000" value={rpAmount} onChange={(e) => setRpAmount(e.target.value)} />
+                  {rpAmount && !isNaN(parseFloat(rpAmount)) && parseFloat(rpAmount) > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      + GST 18%: {formatINR(Math.round(parseFloat(rpAmount) * 0.18))} → Total: {formatINR(parseFloat(rpAmount) + Math.round(parseFloat(rpAmount) * 0.18))}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label>Payment Date *</Label>
+                  <Input type="date" value={rpDate} onChange={(e) => setRpDate(e.target.value)} />
+                </div>
+                <div>
+                  <Label>Payment Method</Label>
+                  <Select value={rpMethod} onValueChange={(value) => setRpMethod(value as PaymentMethod)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="upi">UPI</SelectItem>
+                      <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="cheque">Cheque</SelectItem>
+                      <SelectItem value="razorpay">Razorpay</SelectItem>
+                      <SelectItem value="emi">EMI</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Transaction ID</Label>
+                  <Input placeholder="Optional" value={rpTransactionId} onChange={(e) => setRpTransactionId(e.target.value)} />
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setRecordPaymentOpen(false)}>Cancel</Button>
+                  <Button type="button" onClick={handleRecordPayment} className="gradient-chakravartin text-primary-foreground">Record Payment</Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
