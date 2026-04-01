@@ -19,8 +19,8 @@ export default function CoachingDashboard() {
         <h1 className="text-2xl font-bold text-foreground">
           {lang === "en" ? "Dashboard" : "डैशबोर्ड"}
         </h1>
-        <button onClick={() => navigate('/')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-          <Home className="w-4 h-4" /> {lang === "en" ? "Home" : "होम"}
+        <button onClick={() => navigate('/dashboard')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+          <Home className="w-4 h-4" /> {lang === "en" ? "Back to Dashboard" : "डैशबोर्ड पर वापस"}
         </button>
       </div>
 
