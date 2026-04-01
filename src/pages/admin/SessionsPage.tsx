@@ -25,6 +25,11 @@ const SessionsPage = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sessions, setSessions] = useState(SESSIONS);
   const [reminder, setReminder] = useState<{ seeker: typeof SEEKERS[0]; session: typeof SESSIONS[0] } | null>(null);
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [newSession, setNewSession] = useState({
+    seeker_id: '', course_id: '', date: '', start_time: '10:00', end_time: '11:00',
+    session_type: 'video' as 'video' | 'in_person', duration_minutes: 60, notes: '',
+  });
   const [liveSession, setLiveSession] = useState<string | null>(null);
   const [liveNotes, setLiveNotes] = useState('');
   const [liveTimer, setLiveTimer] = useState(0);
