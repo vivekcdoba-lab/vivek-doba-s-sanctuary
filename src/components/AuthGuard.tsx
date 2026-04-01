@@ -14,8 +14,8 @@ const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.role !== requiredRole) {
-    return <Navigate to={user.role === 'admin' ? '/dashboard' : '/seeker/home'} replace />;
+  if (user.role !== requiredRole && user.role !== 'admin') {
+    return <Navigate to="/seeker/home" replace />;
   }
 
   return <>{children}</>;
