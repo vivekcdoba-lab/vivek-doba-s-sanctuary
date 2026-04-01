@@ -331,7 +331,7 @@ const ApplyLGT = () => {
         {/* Section A: Personal */}
         <Section id="A" title="Tell Us About Yourself" color="linear-gradient(135deg, #B8860B, #FFD700)" icon="👤" open={!!openSections.A} onToggle={() => toggle('A')}>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Full Name (as per Aadhaar/PAN)" required>
+            <Field label="Full Name (as per Aadhaar/PAN)" required highlight={missingFields.has('fullName')}>
               <input className={inputCls} maxLength={30} value={f.fullName} onChange={e => set('fullName', sanitize(e.target.value, 30))} />
               <CharCount current={f.fullName.length} max={30} />
             </Field>
