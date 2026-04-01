@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { FOLLOW_UPS, SEEKERS } from '@/data/mockData';
-import { Phone, MessageSquare, Mail, Bell, CheckCircle, Clock, AlertTriangle, Send } from 'lucide-react';
+import { Phone, MessageSquare, Mail, Bell, CheckCircle, Clock, AlertTriangle, Send, Plus } from 'lucide-react';
 import SendReminderModal from '@/components/SendReminderModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import { FollowUp } from '@/types';
 
 const filterTabs = ['All', 'Overdue', 'Due Today', 'Upcoming', 'Completed'];
 const typeIcons: Record<string, any> = { call: Phone, whatsapp: MessageSquare, email: Mail, in_app: Bell };
@@ -9,9 +12,12 @@ const typeIcons: Record<string, any> = { call: Phone, whatsapp: MessageSquare, e
 const FollowUpsPage = () => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [reminder, setReminder] = useState<typeof SEEKERS[0] | null>(null);
+  const [followUps, setFollowUps] = useState<FollowUp[]>(FOLLOW_UPS);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newFollowUp, setNewFollowUp] = useState({ seeker_id: '', type: 'call' as FollowUp['type'], due_date: '', priority: 'medium' as FollowUp['priority'], notes: '' });
 
   const today = '2025-03-31';
-  const filtered = FOLLOW_UPS.filter((f) => {
+  const filtered = followUps.filter((f) => {
     if (activeFilter === 'All') return true;
     if (activeFilter === 'Overdue') return f.status === 'overdue';
     if (activeFilter === 'Due Today') return f.due_date === today && f.status === 'pending';
@@ -20,15 +26,35 @@ const FollowUpsPage = () => {
     return true;
   });
 
+  const handleCreate = () => {
+    if (!newFollowUp.seeker_id || !newFollowUp.due_date) {
+      toast.error('Please select a Seeker and Due Date');
+      return;
+    }
+    const seeker = SEEKERS.find(s => s.id === newFollowUp.seeker_id);
+    setFollowUps(prev => [...prev, {
+      id: `fu_${Date.now()}`,
+      seeker_id: newFollowUp.seeker_id,
+      type: newFollowUp.type,
+      due_date: newFollowUp.due_date,
+      priority: newFollowUp.priority,
+      notes: newFollowUp.notes,
+      status: 'pending',
+    }]);
+    toast.success(`Follow-up created for ${seeker?.full_name}`);
+    setShowCreate(false);
+    setNewFollowUp({ seeker_id: '', type: 'call', due_date: '', priority: 'medium', notes: '' });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Follow-ups</h1>
-          <p className="text-sm text-muted-foreground">{FOLLOW_UPS.filter(f => f.status !== 'completed').length} pending follow-ups</p>
+          <p className="text-sm text-muted-foreground">{followUps.filter(f => f.status !== 'completed').length} pending follow-ups</p>
         </div>
-        <button className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm hover:opacity-90">
-          + New Follow-up
+        <button onClick={() => setShowCreate(true)} className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm hover:opacity-90 flex items-center gap-1.5">
+          <Plus className="w-4 h-4" /> New Follow-up
         </button>
       </div>
 
@@ -107,6 +133,53 @@ const FollowUpsPage = () => {
           context="general"
         />
       )}
+
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>📞 New Follow-up</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium text-foreground">Seeker *</label>
+              <select value={newFollowUp.seeker_id} onChange={e => setNewFollowUp(p => ({ ...p, seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="">Select Seeker</option>
+                {SEEKERS.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground">Type</label>
+                <select value={newFollowUp.type} onChange={e => setNewFollowUp(p => ({ ...p, type: e.target.value as FollowUp['type'] }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                  <option value="call">📞 Call</option>
+                  <option value="whatsapp">💬 WhatsApp</option>
+                  <option value="email">📧 Email</option>
+                  <option value="in_app">🔔 In-App</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground">Priority</label>
+                <select value={newFollowUp.priority} onChange={e => setNewFollowUp(p => ({ ...p, priority: e.target.value as FollowUp['priority'] }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Due Date *</label>
+              <input type="date" value={newFollowUp.due_date} onChange={e => setNewFollowUp(p => ({ ...p, due_date: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Notes</label>
+              <textarea value={newFollowUp.notes} onChange={e => setNewFollowUp(p => ({ ...p, notes: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Follow-up details..." />
+            </div>
+            <button onClick={handleCreate} className="w-full py-2.5 rounded-xl gradient-chakravartin text-primary-foreground font-medium text-sm">
+              Create Follow-up
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
