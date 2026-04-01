@@ -153,6 +153,54 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          due_date: string | null
+          gst_amount: number
+          id: string
+          invoice_number: string
+          method: string
+          notes: string | null
+          payment_date: string | null
+          seeker_id: string
+          status: string
+          total_amount: number
+          transaction_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          due_date?: string | null
+          gst_amount?: number
+          id?: string
+          invoice_number: string
+          method?: string
+          notes?: string | null
+          payment_date?: string | null
+          seeker_id: string
+          status?: string
+          total_amount: number
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          due_date?: string | null
+          gst_amount?: number
+          id?: string
+          invoice_number?: string
+          method?: string
+          notes?: string | null
+          payment_date?: string | null
+          seeker_id?: string
+          status?: string
+          total_amount?: number
+          transaction_id?: string | null
+        }
+        Relationships: []
+      }
       submissions: {
         Row: {
           admin_notes: string | null
