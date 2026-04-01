@@ -49,7 +49,7 @@ const GrowthMatrixPage = () => {
           <select value={selectedSeeker} onChange={e => setSelectedSeeker(e.target.value)} className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm">
             {SEEKERS.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
           </select>
-          <button onClick={() => toast({ title: '📊 Record saved!' })} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm">📊 Record New Month</button>
+          <button onClick={() => setShowNewAssessment(true)} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm">📊 Record New Month</button>
         </div>
       </div>
 
