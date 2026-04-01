@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { SEEKERS, COURSES } from '@/data/mockData';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { ChevronDown, ChevronUp, Plus, Trash2, Edit, Save, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 const TABS = ['SWOT', 'Wheel of Life ⭐', "Life's Golden Triangle", 'Purusharthas', 'Real Happiness', 'MOOCH'];
 const PERIODS = ['Initial', 'Month 1', 'Month 2', 'Month 3', 'Month 6', 'Month 9', 'Month 12', 'Final'];
