@@ -1,5 +1,6 @@
 import { useCoachingLang } from "@/components/CoachingLayout";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 const MODULE_NAMES: Record<string, { en: string; hi: string }> = {
   "/coaching/sessions": { en: "Session Notes", hi: "सत्र नोट्स" },
