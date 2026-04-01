@@ -110,7 +110,7 @@ const AssessmentsPage = () => {
         <select value={period} onChange={e => setPeriod(e.target.value)} className="bg-card border border-input rounded-xl px-3 py-2 text-sm text-foreground">
           {PERIODS.map(p => <option key={p}>{p}</option>)}
         </select>
-        <button className="px-4 py-2 rounded-xl gradient-chakravartin text-primary-foreground text-sm font-medium">📥 New Assessment</button>
+        <button onClick={() => setShowNewAssessment(true)} className="px-4 py-2 rounded-xl gradient-chakravartin text-primary-foreground text-sm font-medium">📥 New Assessment</button>
         <button className="px-4 py-2 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted">📊 Compare Previous</button>
       </div>
 
