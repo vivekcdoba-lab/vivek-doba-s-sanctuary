@@ -143,6 +143,57 @@ const GrowthMatrixPage = () => {
           </div>
         </details>
       ))}
+      {/* New Assessment Dialog */}
+      <Dialog open={showNewAssessment} onOpenChange={setShowNewAssessment}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>📊 New Growth Assessment</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium text-foreground">Seeker *</label>
+              <select value={newAssessment.seeker_id} onChange={e => setNewAssessment(p => ({ ...p, seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="">Select Seeker</option>
+                {SEEKERS.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Assessment Period *</label>
+              <select value={newAssessment.month} onChange={e => setNewAssessment(p => ({ ...p, month: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="">Select Period</option>
+                {['Month 1', 'Month 2', 'Month 3', 'Month 6', 'Month 9', 'Month 12'].map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Categories to Assess</label>
+              <div className="mt-1 space-y-1">
+                {categories.map(c => (
+                  <label key={c.key} className="flex items-center gap-2 text-sm text-foreground">
+                    <input type="checkbox" defaultChecked className="accent-primary" /> {c.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Notes</label>
+              <textarea value={newAssessment.notes} onChange={e => setNewAssessment(p => ({ ...p, notes: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Observations for this period..." />
+            </div>
+            <button onClick={() => {
+              if (!newAssessment.seeker_id || !newAssessment.month) {
+                sonnerToast.error('Please select Seeker and Period');
+                return;
+              }
+              const seeker = SEEKERS.find(s => s.id === newAssessment.seeker_id);
+              setSelectedSeeker(newAssessment.seeker_id);
+              sonnerToast.success(`Growth assessment started for ${seeker?.full_name} — ${newAssessment.month}`);
+              setShowNewAssessment(false);
+              setNewAssessment({ seeker_id: '', month: '', notes: '' });
+            }} className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm">
+              Start Assessment
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
