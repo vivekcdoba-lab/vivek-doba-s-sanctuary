@@ -134,7 +134,7 @@ const ApplyLGT = () => {
     consent1: false, consent2: false, consent3: false, consent4: false,
   });
 
-  const set = (k: string, v: any) => setF(p => ({ ...p, [k]: v }));
+  const set = (k: string, v: any) => { setF(p => ({ ...p, [k]: v })); setMissingFields(p => { const n = new Set(p); n.delete(k); return n; }); };
   const toggleArr = (k: string, v: string) => {
     const arr = f[k] as string[];
     set(k, arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
