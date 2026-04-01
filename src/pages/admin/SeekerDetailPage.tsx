@@ -1,7 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { SEEKERS, SESSIONS, ASSIGNMENTS, PAYMENTS, COURSES, formatINR, formatDate, formatTime12, getHealthColor, getTierBadgeClass } from '@/data/mockData';
-import { PaymentMethod } from '@/types';
+import { useState } from 'react';
+import { SEEKERS, SESSIONS, ASSIGNMENTS, formatINR, formatDate, formatTime12, getHealthColor, getTierBadgeClass } from '@/data/mockData';
 import {
   Phone, MessageSquare, Mail, Edit, Archive, Calendar, ClipboardList, TrendingUp,
   CreditCard, Flame, ArrowLeft, UserCheck, CalendarCheck, Eye, ChevronDown, ChevronUp,
@@ -15,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LGTAssessment, { LGT_SECTIONS, LGT_ZONES, PILLAR_COLORS, getZone, getPillarZone } from '@/components/LGTAssessment';
 import { toast } from 'sonner';
+import { usePayments } from '@/hooks/usePayments';
 
 const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Growth Matrix', 'Assignments', 'Daily Tracking', 'Payments', 'Goals & Vision', 'Private Notes 🔒', 'Timeline'];
 
@@ -128,18 +128,13 @@ const SeekerDetailPage = () => {
   const [lgtModal, setLgtModal] = useState(false);
   const [timelineFilter, setTimelineFilter] = useState('all');
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
-  const [seekerPayments, setSeekerPayments] = useState(() => PAYMENTS.filter((p) => p.seeker_id === id));
   const [rpAmount, setRpAmount] = useState('');
-  const [rpMethod, setRpMethod] = useState<PaymentMethod>('upi');
+  const [rpMethod, setRpMethod] = useState('upi');
   const [rpTransactionId, setRpTransactionId] = useState('');
   const [rpDate, setRpDate] = useState(new Date().toISOString().split('T')[0]);
+  const { payments: seekerPayments, createPayment } = usePayments(id);
 
   const seeker = SEEKERS.find((s) => s.id === id);
-
-  useEffect(() => {
-    setSeekerPayments(PAYMENTS.filter((p) => p.seeker_id === id));
-  }, [id]);
-
   if (!seeker) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -155,7 +150,7 @@ const SeekerDetailPage = () => {
   const seekerAssignments = ASSIGNMENTS.filter((a) => a.seeker_id === id);
   const daysSinceJoin = Math.floor((Date.now() - new Date(seeker.created_at).getTime()) / 86400000);
   const totalCourseFee = seeker.course?.price || 0;
-  const totalPaid = seekerPayments.filter(p => p.status === 'received').reduce((s, p) => s + p.total_amount, 0);
+  const totalPaid = seekerPayments.filter(p => p.status === 'received').reduce((s, p) => s + Number(p.total_amount), 0);
   const balance = totalCourseFee - totalPaid;
 
   const filteredSessions = seekerSessions.filter(s => sessionFilter === 'all' || s.status === sessionFilter);
@@ -185,7 +180,7 @@ const SeekerDetailPage = () => {
     setRpDate(new Date().toISOString().split('T')[0]);
   };
 
-  const handleRecordPayment = () => {
+  const handleRecordPayment = async () => {
     if (!rpAmount || !rpDate) {
       toast.error('Please fill Amount and Date');
       return;
@@ -200,26 +195,22 @@ const SeekerDetailPage = () => {
     const gst = Math.round(amount * 0.18);
     const total = amount + gst;
 
-    setSeekerPayments((prev) => [
-      {
-        id: `p-${Date.now()}`,
+    try {
+      await createPayment.mutateAsync({
         seeker_id: seeker.id,
-        invoice_number: `INV-${Date.now().toString().slice(-6)}`,
         amount,
         gst_amount: gst,
         total_amount: total,
         payment_date: rpDate,
-        due_date: rpDate,
         method: rpMethod,
         transaction_id: rpTransactionId || undefined,
-        status: 'received',
-      },
-      ...prev,
-    ]);
-
-    toast.success(`Payment of ${formatINR(total)} recorded for ${seeker.full_name}`);
-    setRecordPaymentOpen(false);
-    resetRecordPaymentForm();
+      });
+      toast.success(`Payment of ${formatINR(total)} recorded for ${seeker.full_name}`);
+      setRecordPaymentOpen(false);
+      resetRecordPaymentForm();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save payment');
+    }
   };
 
   return (
@@ -924,7 +915,7 @@ const SeekerDetailPage = () => {
                 </div>
                 <div>
                   <Label>Payment Method</Label>
-                  <Select value={rpMethod} onValueChange={(value) => setRpMethod(value as PaymentMethod)}>
+                  <Select value={rpMethod} onValueChange={(value) => setRpMethod(value)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="upi">UPI</SelectItem>
