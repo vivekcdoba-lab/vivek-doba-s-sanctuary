@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { RESOURCES, COURSES } from '@/data/mockData';
 import { STORY_LIBRARY } from '@/data/storyLibrary';
-import { FileText, Headphones, Video, FileSpreadsheet, Search, Download, Eye, BookOpen } from 'lucide-react';
+import { FileText, Headphones, Video, FileSpreadsheet, Search, Download, Eye, BookOpen, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import { Resource } from '@/types';
 
 const typeIcon: Record<string, any> = { pdf: FileText, audio: Headphones, video: Video, worksheet: FileSpreadsheet };
 const categories = ['All', 'Course Materials', 'Worksheets', 'Meditation', 'Affirmations', 'Templates', 'Books'];
@@ -13,6 +16,9 @@ const ResourcesPage = () => {
   const [category, setCategory] = useState('All');
   const [activeTab, setActiveTab] = useState<'resources' | 'stories'>('resources');
   const [storySource, setStorySource] = useState('all');
+  const [resources, setResources] = useState<Resource[]>(RESOURCES);
+  const [showUpload, setShowUpload] = useState(false);
+  const [newResource, setNewResource] = useState({ title: '', description: '', type: 'pdf' as Resource['type'], category: 'Course Materials', course_id: '', language: 'EN' as Resource['language'], tags: '' });
 
   const filtered = RESOURCES.filter((r) => {
     const matchSearch = r.title.toLowerCase().includes(search.toLowerCase());
