@@ -153,6 +153,48 @@ export type Database = {
         }
         Relationships: []
       }
+      submissions: {
+        Row: {
+          admin_notes: string | null
+          country_code: string | null
+          created_at: string
+          email: string
+          form_data: Json
+          form_type: string
+          full_name: string
+          id: string
+          mobile: string | null
+          status: Database["public"]["Enums"]["submission_status"]
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          country_code?: string | null
+          created_at?: string
+          email: string
+          form_data?: Json
+          form_type: string
+          full_name: string
+          id?: string
+          mobile?: string | null
+          status?: Database["public"]["Enums"]["submission_status"]
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          country_code?: string | null
+          created_at?: string
+          email?: string
+          form_data?: Json
+          form_type?: string
+          full_name?: string
+          id?: string
+          mobile?: string | null
+          status?: Database["public"]["Enums"]["submission_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -161,7 +203,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      submission_status: "pending" | "approved" | "rejected" | "info_requested"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -288,6 +330,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      submission_status: ["pending", "approved", "rejected", "info_requested"],
+    },
   },
 } as const
