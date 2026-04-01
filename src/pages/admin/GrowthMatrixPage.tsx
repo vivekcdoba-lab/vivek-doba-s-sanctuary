@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { SEEKERS } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast as sonnerToast } from 'sonner';
 
 const monthlyData = [
   { month: 'Month 1', personal: 5.0, professional: 5.5, spiritual: 5.0, relationships: 4.5, health: 5.0, overall: 45 },
