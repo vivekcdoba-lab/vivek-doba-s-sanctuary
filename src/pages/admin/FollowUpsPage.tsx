@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { FOLLOW_UPS, SEEKERS } from '@/data/mockData';
-import { Phone, MessageSquare, Mail, Bell, CheckCircle, Clock, AlertTriangle, Send } from 'lucide-react';
+import { Phone, MessageSquare, Mail, Bell, CheckCircle, Clock, AlertTriangle, Send, Plus } from 'lucide-react';
 import SendReminderModal from '@/components/SendReminderModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import { FollowUp } from '@/types';
 
 const filterTabs = ['All', 'Overdue', 'Due Today', 'Upcoming', 'Completed'];
 const typeIcons: Record<string, any> = { call: Phone, whatsapp: MessageSquare, email: Mail, in_app: Bell };
@@ -9,6 +12,9 @@ const typeIcons: Record<string, any> = { call: Phone, whatsapp: MessageSquare, e
 const FollowUpsPage = () => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [reminder, setReminder] = useState<typeof SEEKERS[0] | null>(null);
+  const [followUps, setFollowUps] = useState<FollowUp[]>(FOLLOW_UPS);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newFollowUp, setNewFollowUp] = useState({ seeker_id: '', type: 'call' as FollowUp['type'], due_date: '', priority: 'medium' as FollowUp['priority'], notes: '' });
 
   const today = '2025-03-31';
   const filtered = FOLLOW_UPS.filter((f) => {
