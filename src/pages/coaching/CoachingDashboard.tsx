@@ -1,7 +1,10 @@
 import { useCoachingLang } from "@/components/CoachingLayout";
+import { useNavigate } from "react-router-dom";
+import { Home } from "lucide-react";
 
 export default function CoachingDashboard() {
   const { lang } = useCoachingLang();
+  const navigate = useNavigate();
 
   const cards = [
     { label: { en: "Total Clients", hi: "कुल ग्राहक" }, value: "0", icon: "👥" },
@@ -12,9 +15,14 @@ export default function CoachingDashboard() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-foreground">
-        {lang === "en" ? "Dashboard" : "डैशबोर्ड"}
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-foreground">
+          {lang === "en" ? "Dashboard" : "डैशबोर्ड"}
+        </h1>
+        <button onClick={() => navigate('/')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+          <Home className="w-4 h-4" /> {lang === "en" ? "Home" : "होम"}
+        </button>
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {cards.map((c, i) => (
