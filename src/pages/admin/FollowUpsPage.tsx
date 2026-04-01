@@ -51,10 +51,10 @@ const FollowUpsPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Follow-ups</h1>
-          <p className="text-sm text-muted-foreground">{FOLLOW_UPS.filter(f => f.status !== 'completed').length} pending follow-ups</p>
+          <p className="text-sm text-muted-foreground">{followUps.filter(f => f.status !== 'completed').length} pending follow-ups</p>
         </div>
-        <button className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm hover:opacity-90">
-          + New Follow-up
+        <button onClick={() => setShowCreate(true)} className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm hover:opacity-90 flex items-center gap-1.5">
+          <Plus className="w-4 h-4" /> New Follow-up
         </button>
       </div>
 
