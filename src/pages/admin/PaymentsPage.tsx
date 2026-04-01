@@ -1,4 +1,5 @@
 import { PAYMENTS, SEEKERS, COURSES, formatINR } from '@/data/mockData';
+import { PaymentMethod } from '@/types';
 import { Plus, Bell, FileText } from 'lucide-react';
 import { useState } from 'react';
 import SendReminderModal from '@/components/SendReminderModal';
