@@ -17,7 +17,7 @@ const FollowUpsPage = () => {
   const [newFollowUp, setNewFollowUp] = useState({ seeker_id: '', type: 'call' as FollowUp['type'], due_date: '', priority: 'medium' as FollowUp['priority'], notes: '' });
 
   const today = '2025-03-31';
-  const filtered = FOLLOW_UPS.filter((f) => {
+  const filtered = followUps.filter((f) => {
     if (activeFilter === 'All') return true;
     if (activeFilter === 'Overdue') return f.status === 'overdue';
     if (activeFilter === 'Due Today') return f.due_date === today && f.status === 'pending';
@@ -25,6 +25,26 @@ const FollowUpsPage = () => {
     if (activeFilter === 'Completed') return f.status === 'completed';
     return true;
   });
+
+  const handleCreate = () => {
+    if (!newFollowUp.seeker_id || !newFollowUp.due_date) {
+      toast.error('Please select a Seeker and Due Date');
+      return;
+    }
+    const seeker = SEEKERS.find(s => s.id === newFollowUp.seeker_id);
+    setFollowUps(prev => [...prev, {
+      id: `fu_${Date.now()}`,
+      seeker_id: newFollowUp.seeker_id,
+      type: newFollowUp.type,
+      due_date: newFollowUp.due_date,
+      priority: newFollowUp.priority,
+      notes: newFollowUp.notes,
+      status: 'pending',
+    }]);
+    toast.success(`Follow-up created for ${seeker?.full_name}`);
+    setShowCreate(false);
+    setNewFollowUp({ seeker_id: '', type: 'call', due_date: '', priority: 'medium', notes: '' });
+  };
 
   return (
     <div className="space-y-6">
