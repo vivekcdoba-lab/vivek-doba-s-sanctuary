@@ -915,7 +915,7 @@ const SeekerDetailPage = () => {
                 </div>
                 <div>
                   <Label>Payment Method</Label>
-                  <Select value={rpMethod} onValueChange={(value) => setRpMethod(value as PaymentMethod)}>
+                  <Select value={rpMethod} onValueChange={(value) => setRpMethod(value)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="upi">UPI</SelectItem>
