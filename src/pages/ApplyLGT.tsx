@@ -40,8 +40,8 @@ const sanitize = (val: string, max: number) => val.slice(0, max);
 const sanitizeDigits = (val: string, max: number) => val.replace(/\D/g, '').slice(0, max);
 
 // Reusable components defined OUTSIDE the main component to prevent re-mount
-const Field = ({ label, required, children, className = '' }: { label: string; required?: boolean; children: React.ReactNode; className?: string }) => (
-  <div className={className}><label className="block text-sm font-medium text-foreground mb-1">{label}{required && <span className="text-destructive ml-1">*</span>}</label>{children}</div>
+const Field = ({ label, required, children, className = '', highlight = false }: { label: string; required?: boolean; children: React.ReactNode; className?: string; highlight?: boolean }) => (
+  <div className={`${className} ${highlight ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}><label className="block text-sm font-medium text-foreground mb-1">{label}{required && <span className="text-destructive ml-1">*</span>}</label>{children}</div>
 );
 
 const CharCount = ({ current, max }: { current: number; max: number }) => (
