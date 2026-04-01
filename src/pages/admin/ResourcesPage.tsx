@@ -61,8 +61,8 @@ const ResourcesPage = () => {
           <h1 className="text-2xl font-bold text-foreground">Resource Library</h1>
           <p className="text-sm text-muted-foreground">{RESOURCES.length} resources • {STORY_LIBRARY.length} stories</p>
         </div>
-        <button className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm hover:opacity-90">
-          + Upload Resource
+        <button onClick={() => setShowUpload(true)} className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm hover:opacity-90 flex items-center gap-1.5">
+          <Plus className="w-4 h-4" /> Upload Resource
         </button>
       </div>
 
