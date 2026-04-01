@@ -60,6 +60,8 @@ const AssessmentsPage = () => {
   const [purushScores, setPurushScores] = useState({ dharma: 8, artha: 5, kama: 4, moksha: 7 });
   const [happinessScores, setHappinessScores] = useState([8, 7, 6, 9, 8, 7, 6, 8, 7, 7]);
   const [moochExpanded, setMoochExpanded] = useState<number | null>(null);
+  const [showNewAssessment, setShowNewAssessment] = useState(false);
+  const [newAssessment, setNewAssessment] = useState({ seeker_id: '', type: 'SWOT', period: 'Initial', notes: '' });
 
   const seeker = SEEKERS.find(s => s.id === seekerId);
   const wheelOverall = (wheelData.reduce((a, d) => a + d.coach, 0) / 10).toFixed(1);
