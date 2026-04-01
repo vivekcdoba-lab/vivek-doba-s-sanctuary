@@ -22,6 +22,8 @@ const GrowthMatrixPage = () => {
   const [selectedSeeker, setSelectedSeeker] = useState('s1');
   const [selectedMonth, setSelectedMonth] = useState(2);
   const { toast } = useToast();
+  const [showNewAssessment, setShowNewAssessment] = useState(false);
+  const [newAssessment, setNewAssessment] = useState({ seeker_id: '', month: '', notes: '' });
   const seeker = SEEKERS.find(s => s.id === selectedSeeker);
   const current = monthlyData[selectedMonth];
   const prev = monthlyData[selectedMonth - 1];
