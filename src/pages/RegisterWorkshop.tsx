@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Check, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { COURSES } from '@/data/mockData';
 
 const WORKSHOPS = [
@@ -71,7 +72,7 @@ const RegisterWorkshop = () => {
   const emailError = form.email && !isValidEmail(form.email) ? 'Email must include @ and end with .com (e.g. xyz@abc.com)' : '';
   const toggleCourse = (id: string) => set('interestedCourses', form.interestedCourses.includes(id) ? form.interestedCourses.filter((x: string) => x !== id) : [...form.interestedCourses, id]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.workshopId) { toast({ title: 'Please select a workshop', variant: 'destructive' }); return; }
     if (!form.fullName || form.fullName.length < 2) { toast({ title: 'Please enter a valid full name (min 2 characters)', variant: 'destructive' }); return; }
     if (form.mobile.length !== 10) { toast({ title: 'Please enter a valid 10-digit mobile number', variant: 'destructive' }); return; }
@@ -81,7 +82,35 @@ const RegisterWorkshop = () => {
       toast({ title: 'Please fill all required fields', variant: 'destructive' }); return;
     }
     setLoading(true);
-    setTimeout(() => { setLoading(false); setSubmitted(true); }, 1500);
+    try {
+      const formData = { ...form, workshopName: selected?.name };
+      const { error } = await supabase.from('submissions').insert({
+        form_type: 'workshop',
+        full_name: form.fullName,
+        email: form.email,
+        mobile: form.mobile,
+        country_code: form.countryCode,
+        form_data: formData as any,
+      });
+      if (error) throw error;
+      await supabase.functions.invoke('send-notification', {
+        body: {
+          type: 'new_submission',
+          form_type: 'workshop',
+          applicant_name: form.fullName,
+          applicant_email: form.email,
+          applicant_mobile: `${form.countryCode}${form.mobile}`,
+          form_data: formData,
+        },
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error(err);
+      toast({ title: 'Submission saved! Email notification may be delayed.', variant: 'default' });
+      setSubmitted(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {

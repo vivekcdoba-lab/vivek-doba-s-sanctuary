@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Check, Phone, MessageSquare, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { COURSES } from '@/data/mockData';
+import { supabase } from '@/integrations/supabase/client';
 
 const INDUSTRIES = ['IT & Software','Manufacturing','Education','Healthcare','Retail & E-commerce','Finance & Banking','Real Estate','Government & Politics','Legal','Agriculture','Media & Entertainment','Hospitality','Consulting','NGO/Non-Profit','Other'];
 const REVENUE_RANGES = ['Below ₹10 Lakhs','₹10L - ₹50L','₹50L - ₹1 Crore','₹1Cr - ₹5 Crore','₹5Cr - ₹25 Crore','₹25Cr - ₹100 Crore','₹100 Crore+','Not Applicable (Salaried)','Prefer Not to Say'];
@@ -92,7 +93,7 @@ const BookAppointment = () => {
   const sanitizeAddress = (val: string) => val.slice(0, 100);
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.(com|in|org|net|co|io|edu|gov|info)$/i.test(email);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.fullName || form.fullName.length < 2) {
       toast({ title: 'Please enter a valid full name (min 2 characters)', variant: 'destructive' }); return;
     }
@@ -109,7 +110,36 @@ const BookAppointment = () => {
       toast({ title: 'Please fill all required fields', variant: 'destructive' }); return;
     }
     setLoading(true);
-    setTimeout(() => { setLoading(false); setSubmitted(true); }, 1500);
+    try {
+      const formData = { ...form, selectedDate: form.selectedDate?.toISOString() };
+      const { error } = await supabase.from('submissions').insert({
+        form_type: 'discovery_call',
+        full_name: form.fullName,
+        email: form.email,
+        mobile: form.mobile,
+        country_code: form.countryCode,
+        form_data: formData as any,
+      });
+      if (error) throw error;
+      // Send admin notification email
+      await supabase.functions.invoke('send-notification', {
+        body: {
+          type: 'new_submission',
+          form_type: 'discovery_call',
+          applicant_name: form.fullName,
+          applicant_email: form.email,
+          applicant_mobile: `${form.countryCode}${form.mobile}`,
+          form_data: formData,
+        },
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error(err);
+      toast({ title: 'Submission saved! Email notification may be delayed.', variant: 'default' });
+      setSubmitted(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
