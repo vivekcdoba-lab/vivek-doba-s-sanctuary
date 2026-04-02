@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format, addDays, subDays } from 'date-fns';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate, Loader2, Award } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate, Loader2, Award, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
