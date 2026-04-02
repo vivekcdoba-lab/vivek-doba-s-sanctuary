@@ -53,7 +53,7 @@ const AdminLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const location = useLocation();
-  const { user, logout, darkMode, toggleDarkMode } = useAuthStore();
+  const { profile, logout, darkMode, toggleDarkMode } = useAuthStore();
 
   const isActive = (path: string) => location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path + '/'));
 
