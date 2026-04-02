@@ -119,8 +119,39 @@ const DailyWorksheet = () => {
     });
   };
 
+  const TOMORROW_PREP_ITEMS = [
+    'Tomorrow\'s outfit/clothes ready',
+    'Tomorrow\'s schedule reviewed',
+    'Tomorrow\'s MIT (3 tasks) identified',
+    'Phone charged / workspace clean',
+    'Alarm set for Brahma Muhurta',
+    'Tomorrow\'s meals planned',
+    'Pending calls/messages responded to',
+  ];
+  const tomorrowPrepDone = Object.values(tomorrowPrep).filter(Boolean).length;
+
+  const SCHEDULE_TEMPLATES = [
+    { emoji: '🧘', name: 'Sadhak Day', desc: 'Spirituality-heavy day', pillar: 'moksha' },
+    { emoji: '💼', name: 'Arjun Day', desc: 'Business-heavy high performance', pillar: 'artha' },
+    { emoji: '❤️', name: 'Grihastha Day', desc: 'Family & relationships focused', pillar: 'kama' },
+    { emoji: '⚖️', name: 'Sampoorna Din', desc: 'Balanced LGT ideal day', pillar: 'all' },
+    { emoji: '📚', name: 'Vidyarthi Day', desc: 'Learning & growth focused', pillar: 'dharma' },
+    { emoji: '😴', name: 'Rest & Recovery', desc: 'Low activity recovery day', pillar: 'dharma' },
+    { emoji: '🔥', name: 'Brahmastra Day', desc: 'Maximum productivity war mode', pillar: 'artha' },
+    { emoji: '💰', name: 'Lakshmi Day', desc: 'Money, sales & Artha-focused', pillar: 'artha' },
+  ];
+
+  const eveningFulfillmentScore = ((evMentalPeace[0] + evEmotionalSat[0] + evFulfillment[0]) / 3).toFixed(1);
+  const eveningNum = parseFloat(eveningFulfillmentScore);
+  const lgtBalanceScore = ((dharmaScore[0] + arthaScore[0] + kamaScore[0] + mokshaScore[0]) / 4).toFixed(1);
+
   const handleSave = () => {
     toast.success('Worksheet saved as draft!');
+  };
+
+  const applyTemplate = (templateName: string) => {
+    toast.success(`"${templateName}" template applied!`);
+    setTemplatesOpen(false);
   };
 
   return (
