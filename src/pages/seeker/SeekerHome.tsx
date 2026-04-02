@@ -2,8 +2,7 @@ import { Link } from 'react-router-dom';
 import { getGreeting, SEEKERS, SESSIONS, AFFIRMATIONS, MOTIVATIONAL_QUOTES } from '@/data/mockData';
 import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award, ScrollText, X } from 'lucide-react';
 import { useBadgeNotifications } from '@/hooks/useBadgeNotifications';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuthStore } from '@/store/authStore';
 import { useAuthStore } from '@/store/authStore';
 
 const SeekerHome = () => {
