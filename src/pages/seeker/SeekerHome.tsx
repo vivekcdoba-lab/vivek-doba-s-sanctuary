@@ -30,7 +30,7 @@ const SeekerHome = () => {
       {/* Greeting Banner */}
       <div className="gradient-saffron rounded-2xl p-5 text-primary-foreground relative overflow-hidden">
         <div className="absolute top-2 right-4 text-4xl opacity-10">✿</div>
-        <h1 className="text-xl font-bold">{getGreeting()}, {seeker.full_name.split(' ')[0]}!</h1>
+        <h1 className="text-xl font-bold">{getGreeting()}, {displayName}!</h1>
         <p className="text-sm text-primary-foreground/80 mt-1">Day 168 of your {seeker.course?.name?.split('—')[0]} journey</p>
       </div>
 
