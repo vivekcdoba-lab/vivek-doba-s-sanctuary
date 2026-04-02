@@ -70,6 +70,7 @@ const WorksheetAnalyticsPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [trendData, setTrendData] = useState<WorksheetRow[]>([]);
+  const [badgeData, setBadgeData] = useState<BadgeWithDef[]>([]);
 
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
 
