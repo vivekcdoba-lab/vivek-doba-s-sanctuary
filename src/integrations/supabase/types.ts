@@ -931,6 +931,47 @@ export type Database = {
           },
         ]
       }
+      japa_log: {
+        Row: {
+          created_at: string
+          id: string
+          log_date: string
+          mala_count: number
+          mantra_text: string
+          seeker_id: string
+          total_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          mala_count?: number
+          mantra_text?: string
+          seeker_id: string
+          total_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          mala_count?: number
+          mantra_text?: string
+          seeker_id?: string
+          total_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "japa_log_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           created_at: string

@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format, addDays, subDays } from 'date-fns';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate, Loader2, Award } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate, Loader2, Award, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -21,6 +21,8 @@ import {
 import { useWorksheet } from '@/hooks/useWorksheet';
 import { useBadges } from '@/hooks/useBadges';
 import { toast } from 'sonner';
+import { playPreset, stopAll, MOOD_PRESETS, type SoundId } from '@/lib/sacredAudioEngine';
+import { useAudioStore } from '@/store/audioStore';
 
 const DailyWorksheet = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -31,8 +33,26 @@ const DailyWorksheet = () => {
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [badgesOpen, setBadgesOpen] = useState(false);
 
+  const [worksheetMusic, setWorksheetMusic] = useState<string | null>(null);
+  const { setPlaying } = useAudioStore();
+
   const { state, updateField, updateSlot, saveWorksheet, copyYesterday, seekerProfileId } = useWorksheet(selectedDate);
   const { progress, earnedBadges, nextBadge, checkAndAwardBadges } = useBadges(seekerProfileId);
+
+  // Page visibility — pause music when tab hidden
+  useEffect(() => {
+    const handler = () => {
+      if (document.hidden && worksheetMusic) {
+        stopAll();
+      } else if (!document.hidden && worksheetMusic) {
+        playPreset(worksheetMusic);
+        const preset = MOOD_PRESETS[worksheetMusic];
+        if (preset) setPlaying(preset.sounds.map(s => s.id));
+      }
+    };
+    document.addEventListener('visibilitychange', handler);
+    return () => document.removeEventListener('visibilitychange', handler);
+  }, [worksheetMusic, setPlaying]);
 
   const slots = useMemo(() => generateTimeSlots(), []);
   const dayInfo = DAY_NAMES[selectedDate.getDay()];
@@ -115,6 +135,27 @@ const DailyWorksheet = () => {
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
+      {/* Focus Music Bar */}
+      <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-3 py-2">
+        <Music className="w-4 h-4 text-muted-foreground" />
+        <span className="text-xs text-muted-foreground">Focus music:</span>
+        {[
+          { key: null, label: '🔕 Off' },
+          { key: 'meditate', label: '🧘 Meditate' },
+          { key: 'focus', label: '🔥 Focus' },
+          { key: 'pray', label: '🙏 Pray' },
+        ].map(opt => (
+          <button key={opt.key || 'off'} onClick={() => {
+            if (opt.key === worksheetMusic || (!opt.key && !worksheetMusic)) return;
+            if (!opt.key) { stopAll(); setPlaying([]); setWorksheetMusic(null); }
+            else { playPreset(opt.key); const p = MOOD_PRESETS[opt.key]; if (p) { setPlaying(p.sounds.map(s => s.id)); p.sounds.forEach(s => { /* volume set by preset */ }); } setWorksheetMusic(opt.key); }
+          }}
+            className={`text-xs px-2 py-1 rounded-lg transition-colors ${(opt.key === worksheetMusic || (!opt.key && !worksheetMusic)) ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {/* SECTION 1 — Header & Date */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

@@ -5,6 +5,7 @@ import {
   Home, Sun, ClipboardList, TrendingUp, Sparkles, User, Bell, Flame, Moon,
   MessageSquare, CreditCard, BookOpen, Target, CalendarDays, Menu, LogOut, ScrollText
 } from 'lucide-react';
+import FloatingMusicButton from '@/components/FloatingMusicButton';
 import {
   Sidebar,
   SidebarContent,
@@ -162,6 +163,9 @@ const SeekerLayoutInner = () => {
         <main className="flex-1 pb-20 lg:pb-4 overflow-y-auto">
           <Outlet />
         </main>
+
+        {/* Global Floating Music Button */}
+        <FloatingMusicButton />
 
         {/* Bottom Tab Bar (mobile only) */}
         <nav className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border shadow-lg lg:hidden">
