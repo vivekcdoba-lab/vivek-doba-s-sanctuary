@@ -40,6 +40,28 @@ const SeekerHome = () => {
         <p className="text-sm text-primary-foreground/80 mt-1">Day 168 of your {seeker.course?.name?.split('—')[0]} journey</p>
       </div>
 
+      {/* 🎉 Badge Congratulations */}
+      {notifications.length > 0 && (
+        <div className="space-y-2">
+          {notifications.map((n) => (
+            <div key={n.id} className="relative bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border-2 border-yellow-300 dark:border-yellow-700 rounded-2xl p-4 animate-in slide-in-from-top">
+              <button onClick={() => dismiss(n.id)} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-yellow-200 dark:bg-yellow-800 flex items-center justify-center text-xl">🏆</div>
+                <p className="text-sm font-medium text-foreground pr-5">{n.message}</p>
+              </div>
+            </div>
+          ))}
+          {notifications.length > 1 && (
+            <button onClick={dismissAll} className="text-xs text-muted-foreground hover:text-foreground underline w-full text-center">
+              Dismiss all
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Today's Affirmation */}
       <div className="glass-card p-5 border-2 border-primary/20 relative">
         <div className="absolute top-2 right-3 text-xs text-primary">✦</div>
