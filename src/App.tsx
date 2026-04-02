@@ -93,7 +93,7 @@ const App = () => (
             <Route path="/growth-matrix" element={<GrowthMatrixPage />} />
             <Route path="/applications" element={<ApplicationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/worksheet-analytics" element={<DailyTrackingPage />} />
+            <Route path="/worksheet-analytics" element={<WorksheetAnalyticsPage />} />
           </Route>
 
           {/* Seeker Routes */}
