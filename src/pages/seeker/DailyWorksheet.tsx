@@ -908,6 +908,12 @@ const DailyWorksheet = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Sticky Action Bar */}
+      <div className="sticky bottom-0 bg-background/90 backdrop-blur-md border-t border-border p-3 -mx-4 flex flex-wrap gap-2 justify-center">
+        <Button variant="outline" className="gap-2" onClick={() => setTemplatesOpen(true)}>
+          <LayoutTemplate className="w-4 h-4" /> Templates
+        </Button>
         <Button onClick={handleSave} className="gap-2">
           <Save className="w-4 h-4" /> Save Draft
         </Button>
