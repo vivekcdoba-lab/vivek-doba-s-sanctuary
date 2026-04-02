@@ -2,26 +2,18 @@ import { Link } from 'react-router-dom';
 import { getGreeting, SEEKERS, SESSIONS, AFFIRMATIONS, MOTIVATIONAL_QUOTES } from '@/data/mockData';
 import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award, ScrollText, X } from 'lucide-react';
 import { useBadgeNotifications } from '@/hooks/useBadgeNotifications';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuthStore } from '@/store/authStore';
 
 const SeekerHome = () => {
+  const { profile } = useAuthStore();
   const seeker = SEEKERS[0];
   const affirmation = AFFIRMATIONS[0];
   const quote = MOTIVATIONAL_QUOTES[3];
   const nextSession = SESSIONS.find((s) => s.seeker_id === seeker.id && s.status === 'scheduled');
+  const displayName = profile?.full_name?.split(' ')[0] || seeker.full_name.split(' ')[0];
 
-  // Resolve profile ID for notifications
-  const [profileId, setProfileId] = useState<string | null>(null);
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) return;
-      supabase.from('profiles').select('id').eq('user_id', data.user.id).maybeSingle()
-        .then(({ data: p }) => { if (p) setProfileId(p.id); });
-    });
-  }, []);
-
-  const { notifications, dismiss, dismissAll } = useBadgeNotifications(profileId);
+  // Use profile ID directly for notifications
+  const { notifications, dismiss, dismissAll } = useBadgeNotifications(profile?.id || null);
 
   const streaks = [
     { label: 'Meditation', emoji: '🧘', count: 15 },
@@ -36,7 +28,7 @@ const SeekerHome = () => {
       {/* Greeting Banner */}
       <div className="gradient-saffron rounded-2xl p-5 text-primary-foreground relative overflow-hidden">
         <div className="absolute top-2 right-4 text-4xl opacity-10">✿</div>
-        <h1 className="text-xl font-bold">{getGreeting()}, {seeker.full_name.split(' ')[0]}!</h1>
+        <h1 className="text-xl font-bold">{getGreeting()}, {displayName}!</h1>
         <p className="text-sm text-primary-foreground/80 mt-1">Day 168 of your {seeker.course?.name?.split('—')[0]} journey</p>
       </div>
 

@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
-import { Eye, EyeOff, Mail, Lock, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Sparkles, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const LotusPattern = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -25,18 +25,38 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const login = useAuthStore((s) => s.login);
-  const { toast } = useToast();
 
-  const handleLogin = (role: 'admin' | 'seeker') => {
+  const handleLogin = async () => {
     if (!email || !password) {
-      toast({ title: 'Please fill all fields', variant: 'destructive' });
+      toast.error('Please fill all fields');
       return;
     }
-    login(email, role);
-    toast({ title: `Welcome${role === 'admin' ? ', Vivek Sir' : ''}! 🙏` });
-    navigate(role === 'admin' ? '/dashboard' : '/seeker/home');
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      if (data.user) {
+        // Fetch profile to determine role
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+
+        const role = profile?.role || 'seeker';
+        toast.success(`Welcome! 🙏`);
+        navigate(role === 'admin' ? '/dashboard' : '/seeker/home');
+      }
+    } catch {
+      toast.error('An error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,7 +65,6 @@ const LoginPage = () => {
       <div className="lg:w-[55%] gradient-hero relative flex items-center justify-center p-8 lg:p-16 min-h-[30vh] lg:min-h-screen">
         <LotusPattern />
         <div className="relative z-10 text-center">
-          {/* VD Monogram */}
           <div className="mx-auto w-28 h-28 lg:w-36 lg:h-36 rounded-full flex items-center justify-center mb-8 mandala-border">
             <div className="w-full h-full rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center">
               <span className="text-4xl lg:text-5xl font-bold text-primary-foreground tracking-wider">VD</span>
@@ -78,62 +97,39 @@ const LoginPage = () => {
           <div className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
-              />
+              <Input type="email" placeholder="Email address" value={email}
+                onChange={(e) => setEmail(e.target.value)} className="pl-10"
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
+              <Input type={showPassword ? 'text' : 'password'} placeholder="Password" value={password}
+                onChange={(e) => setPassword(e.target.value)} className="pl-10 pr-10"
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
-          <div className="space-y-3">
-            <button
-              onClick={() => handleLogin('admin')}
-              className="w-full py-3 rounded-xl font-semibold text-primary-foreground gradient-chakravartin hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            >
-              🟡 Enter as Coach / Admin
-            </button>
-            <button
-              onClick={() => handleLogin('seeker')}
-              className="w-full py-3 rounded-xl font-semibold text-primary-foreground gradient-maroon hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            >
-              🙏 Enter as Seeker (साधक)
-            </button>
+          <button onClick={handleLogin} disabled={loading}
+            className="w-full py-3 rounded-xl font-semibold text-primary-foreground gradient-saffron hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50">
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : '🙏'} Sign In
+          </button>
+
+          <div className="text-center space-y-2">
+            <button className="text-xs text-muted-foreground hover:text-foreground">Forgot Password?</button>
+            <p className="text-sm text-muted-foreground">
+              New seeker? <Link to="/register" className="text-primary hover:underline font-medium">Create Account →</Link>
+            </p>
           </div>
 
-          <div className="text-center">
-            <button className="text-xs text-muted-foreground hover:text-foreground">
-              Forgot Password?
-            </button>
-          </div>
-
-          {/* Begin Your Journey - 3 Forms */}
+          {/* Begin Your Journey */}
           <div className="pt-4 border-t border-border">
             <p className="text-center text-sm font-semibold text-foreground mb-3">Begin Your Journey</p>
             <div className="space-y-2">
-              <Link
-                to="/book-appointment"
-                className="flex items-center justify-between w-full p-3 rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all group bg-card"
-              >
+              <Link to="/book-appointment" className="flex items-center justify-between w-full p-3 rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all group bg-card">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">📞</span>
                   <div className="text-left">
@@ -143,11 +139,7 @@ const LoginPage = () => {
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </Link>
-
-              <Link
-                to="/register-workshop"
-                className="flex items-center justify-between w-full p-3 rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all group bg-card"
-              >
+              <Link to="/register-workshop" className="flex items-center justify-between w-full p-3 rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all group bg-card">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">🎯</span>
                   <div className="text-left">
@@ -157,11 +149,7 @@ const LoginPage = () => {
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </Link>
-
-              <Link
-                to="/apply-lgt"
-                className="flex items-center justify-between w-full p-3 rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all group bg-card"
-              >
+              <Link to="/apply-lgt" className="flex items-center justify-between w-full p-3 rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all group bg-card">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">👑</span>
                   <div className="text-left">
@@ -172,11 +160,7 @@ const LoginPage = () => {
                 <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </Link>
             </div>
-
-            <Link
-              to="/"
-              className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mt-2"
-            >
+            <Link to="/" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mt-2">
               ← Back to Home
             </Link>
           </div>
