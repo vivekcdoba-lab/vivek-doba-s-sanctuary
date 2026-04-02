@@ -743,7 +743,171 @@ const DailyWorksheet = () => {
           />
         </div>
       </div>
-      <div className="sticky bottom-0 bg-background/90 backdrop-blur-md border-t border-border p-3 -mx-4 flex flex-wrap gap-2 justify-center">
+
+      {/* SECTION 8 — End of Day Reflection */}
+      <Collapsible open={reflectionOpen} onOpenChange={setReflectionOpen}>
+        <div className="bg-card rounded-xl border-2 border-violet-200 dark:border-violet-800 overflow-hidden">
+          <CollapsibleTrigger className="w-full p-5 flex items-center justify-between hover:bg-muted/30 transition-colors">
+            <h2 className="text-lg font-bold">🌙 Sham Ka Chintan (Evening Reflection)</h2>
+            <ChevronDown className={cn('w-5 h-5 text-muted-foreground transition-transform', reflectionOpen && 'rotate-180')} />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="px-5 pb-5 space-y-5 border-t border-border pt-4">
+              {/* Evening Mood */}
+              <div>
+                <p className="text-sm font-semibold mb-2">😊 Mood at End of Day</p>
+                <div className="flex flex-wrap gap-2">
+                  {MOOD_OPTIONS.map(m => (
+                    <button key={m.label} onClick={() => setEveningMood(m.label)}
+                      className={cn('px-3 py-2 rounded-lg text-sm border transition-all',
+                        eveningMood === m.label ? 'border-primary bg-primary/10 font-medium' : 'border-border hover:bg-muted'
+                      )}>
+                      {m.emoji} {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* EQ Evening Pulse */}
+              <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                <p className="text-sm font-semibold">🧠 EQ Evening Pulse</p>
+                <div>
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <span>Mental Peace — "Mera mann aaj kitna shant raha?"</span><span>{evMentalPeace[0]}/10</span>
+                  </div>
+                  <Slider value={evMentalPeace} onValueChange={setEvMentalPeace} max={10} min={1} step={1} />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <span>Emotional Satisfaction — "Andar se kitna bhar hua feel?"</span><span>{evEmotionalSat[0]}/10</span>
+                  </div>
+                  <Slider value={evEmotionalSat} onValueChange={setEvEmotionalSat} max={10} min={1} step={1} />
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <span>Overall Fulfillment — "Din kitna meaningful laga?"</span><span>{evFulfillment[0]}/10</span>
+                  </div>
+                  <Slider value={evFulfillment} onValueChange={setEvFulfillment} max={10} min={1} step={1} />
+                </div>
+                <div className="flex items-center gap-3 pt-1">
+                  <span className="text-xs text-muted-foreground">Evening Score:</span>
+                  <span className={cn('px-2 py-0.5 rounded-full text-xs font-bold text-white',
+                    eveningNum >= 7 ? 'bg-green-500' : eveningNum >= 5 ? 'bg-yellow-500' : 'bg-red-500'
+                  )}>{eveningFulfillmentScore}</span>
+                  <span className="text-xs text-muted-foreground">
+                    vs Morning {morningReadiness} → {eveningNum > readinessNum ? '📈 Improved' : eveningNum < readinessNum ? '📉 Declined' : '➡️ Same'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Reflection Text Areas */}
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm font-semibold mb-1">✅ What went well today?</p>
+                  <Textarea placeholder="Aaj kya accha hua..." value={whatWentWell} onChange={e => setWhatWentWell(e.target.value)} className="min-h-[60px]" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold mb-1">📚 What did I learn today?</p>
+                  <Textarea placeholder="Aaj maine kya seekha..." value={whatLearned} onChange={e => setWhatLearned(e.target.value)} className="min-h-[60px]" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold mb-1">🔄 What will I do differently tomorrow?</p>
+                  <Textarea placeholder="Kal main differently karunga..." value={doDifferently} onChange={e => setDoDifferently(e.target.value)} className="min-h-[60px]" />
+                </div>
+              </div>
+
+              {/* Gratitude */}
+              <div>
+                <p className="text-sm font-semibold mb-2">🙏 Gratitude</p>
+                <div className="space-y-2">
+                  {gratitudes.map((g, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="text-sm">🙏</span>
+                      <Input placeholder={`Gratitude ${i + 1}...`} value={g}
+                        onChange={e => { const arr = [...gratitudes]; arr[i] = e.target.value; setGratitudes(arr); }} />
+                    </div>
+                  ))}
+                  {!showExtraGratitude && gratitudes.length <= 3 && (
+                    <Button variant="outline" size="sm" onClick={() => { setGratitudes([...gratitudes, '', '']); setShowExtraGratitude(true); }} className="gap-1">
+                      <Plus className="w-3 h-3" /> Add More Gratitude
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Self-Rating Sliders */}
+              <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                <p className="text-sm font-semibold">📊 Self-Rating (LGT Pillars)</p>
+                {([
+                  { label: '🟠 Dharma', val: dharmaScore, set: setDharmaScore },
+                  { label: '💛 Artha', val: arthaScore, set: setArthaScore },
+                  { label: '🩷 Kama', val: kamaScore, set: setKamaScore },
+                  { label: '🟣 Moksha', val: mokshaScore, set: setMokshaScore },
+                ] as const).map(s => (
+                  <div key={s.label}>
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <span>{s.label} Score</span><span>{s.val[0]}/10</span>
+                    </div>
+                    <Slider value={[...s.val]} onValueChange={s.set} max={10} min={1} step={1} />
+                  </div>
+                ))}
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs text-muted-foreground">LGT Balance Score:</span>
+                  <span className={cn('px-2 py-0.5 rounded-full text-xs font-bold text-white',
+                    parseFloat(lgtBalanceScore) >= 7 ? 'bg-green-500' : parseFloat(lgtBalanceScore) >= 5 ? 'bg-yellow-500' : 'bg-red-500'
+                  )}>{lgtBalanceScore}/10</span>
+                </div>
+              </div>
+
+              {/* Tomorrow's Sankalp */}
+              <div>
+                <p className="text-sm font-semibold mb-1">🌅 Tomorrow's Sankalp</p>
+                <Input placeholder="Kal ka sankalp..." value={tomorrowSankalp} onChange={e => setTomorrowSankalp(e.target.value)} />
+              </div>
+
+              {/* Tomorrow Prep Checklist */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-semibold">📋 Tomorrow's Preparation</p>
+                  <span className={cn('px-2 py-0.5 rounded-full text-xs font-bold',
+                    tomorrowPrepDone === TOMORROW_PREP_ITEMS.length ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'
+                  )}>
+                    {tomorrowPrepDone}/{TOMORROW_PREP_ITEMS.length}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {TOMORROW_PREP_ITEMS.map((item, i) => (
+                    <label key={i} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                      <Checkbox checked={!!tomorrowPrep[i]} onCheckedChange={(c) => setTomorrowPrep(prev => ({ ...prev, [i]: !!c }))} />
+                      <span className={cn('text-sm', tomorrowPrep[i] && 'line-through text-muted-foreground')}>{item}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </div>
+      </Collapsible>
+
+      {/* SECTION 9 — Quick Templates Modal */}
+      <Dialog open={templatesOpen} onOpenChange={setTemplatesOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>📋 Quick-Fill Templates</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-4">Choose a template to pre-fill your 24-hour timesheet:</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {SCHEDULE_TEMPLATES.map(t => (
+              <button key={t.name} onClick={() => applyTemplate(t.name)}
+                className="text-left p-4 rounded-xl border border-border hover:border-primary hover:bg-primary/5 transition-all">
+                <span className="text-2xl block mb-1">{t.emoji}</span>
+                <p className="font-semibold text-sm text-foreground">{t.name}</p>
+                <p className="text-xs text-muted-foreground">{t.desc}</p>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
         <Button onClick={handleSave} className="gap-2">
           <Save className="w-4 h-4" /> Save Draft
         </Button>
