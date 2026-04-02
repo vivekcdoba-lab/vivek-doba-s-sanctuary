@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import { NavLink } from '@/components/NavLink';
 import {
   Home, Sun, ClipboardList, TrendingUp, Sparkles, User, Bell, Flame, Moon,
-  MessageSquare, CreditCard, BookOpen, Target, CalendarDays, Menu, LogOut
+  MessageSquare, CreditCard, BookOpen, Target, CalendarDays, Menu, LogOut, ScrollText
 } from 'lucide-react';
 import {
   Sidebar,
