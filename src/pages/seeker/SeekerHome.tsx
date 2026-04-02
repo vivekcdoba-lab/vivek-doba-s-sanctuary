@@ -3,7 +3,6 @@ import { getGreeting, SEEKERS, SESSIONS, AFFIRMATIONS, MOTIVATIONAL_QUOTES } fro
 import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award, ScrollText, X } from 'lucide-react';
 import { useBadgeNotifications } from '@/hooks/useBadgeNotifications';
 import { useAuthStore } from '@/store/authStore';
-import { useAuthStore } from '@/store/authStore';
 
 const SeekerHome = () => {
   const { profile } = useAuthStore();
