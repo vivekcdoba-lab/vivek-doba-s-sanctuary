@@ -50,21 +50,45 @@ const LoginPage = () => {
         return;
       }
       if (data.user) {
-        // Fetch profile to determine role
-        const { data: profile } = await supabase
+        // Use metadata role as primary (always available), profile as secondary
+        const metadataRole = (data.user.user_metadata?.role as string) || 'seeker';
+
+        // Try fetching profile with a timeout
+        let profile = null;
+        let role = metadataRole;
+        
+        const profilePromise = supabase
           .from('profiles')
           .select('id, user_id, email, full_name, role')
           .eq('user_id', data.user.id)
           .maybeSingle();
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('timeout')), 3000)
+        );
 
-        const role = profile?.role || 'seeker';
+        try {
+          const { data: profileData } = await Promise.race([profilePromise, timeoutPromise]) as any;
+          if (profileData) {
+            profile = profileData;
+            role = profileData.role || role;
+          }
+        } catch {
+          console.warn('Profile fetch timed out, using metadata role:', metadataRole);
+        }
 
         // Update auth store
-        setAuth(data.user, profile as any);
+        setAuth(data.user, profile || {
+          id: data.user.id,
+          user_id: data.user.id,
+          email: data.user.email || '',
+          full_name: data.user.user_metadata?.full_name || data.user.email || '',
+          role: role,
+        } as any);
 
         toast.success(`Welcome! 🙏`);
 
-        // Route based on actual role from database
+        // Route based on role
         if (role === 'admin') {
           navigate('/dashboard');
         } else if (role === 'coach') {
