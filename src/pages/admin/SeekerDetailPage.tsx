@@ -1,20 +1,23 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SEEKERS, SESSIONS, ASSIGNMENTS, formatINR, formatDate, formatTime12, getHealthColor, getTierBadgeClass } from '@/data/mockData';
 import {
   Phone, MessageSquare, Mail, Edit, Archive, Calendar, ClipboardList, TrendingUp,
   CreditCard, Flame, ArrowLeft, UserCheck, CalendarCheck, Eye, ChevronDown, ChevronUp,
-  Lock, Star, Flag, Printer, X, Target, Heart, BookOpen, Sparkles, AlertTriangle
+  Lock, Star, Flag, Printer, X, Target, Heart, BookOpen, Sparkles, AlertTriangle, Award, Plus, Gift
 } from 'lucide-react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LGTAssessment, { LGT_SECTIONS, LGT_ZONES, PILLAR_COLORS, getZone, getPillarZone } from '@/components/LGTAssessment';
 import { toast } from 'sonner';
 import { usePayments } from '@/hooks/usePayments';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
 
 const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Growth Matrix', 'Assignments', 'Daily Tracking', 'Payments', 'Goals & Vision', 'Private Notes 🔒', 'Timeline'];
 
