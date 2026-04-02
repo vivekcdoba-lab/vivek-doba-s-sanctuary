@@ -230,6 +230,13 @@ export async function updateBadgeStreaks(
         });
       if (!error) {
         newlyEarned.push(`${badge.emoji} ${badge.name}`);
+        // Create notification for the seeker
+        await supabase.from('worksheet_notifications').insert({
+          seeker_id: seekerId,
+          notification_type: 'badge_earned',
+          message: `🎉 Congratulations! You earned the ${badge.emoji} ${badge.name} badge! ${badge.description}`,
+          triggered_by: 'system',
+        });
       }
     }
   }
