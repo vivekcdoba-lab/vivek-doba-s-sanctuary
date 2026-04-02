@@ -1,20 +1,28 @@
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { UserRole } from '@/types';
+import { Loader2 } from 'lucide-react';
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  requiredRole: UserRole;
+  requiredRole: 'admin' | 'seeker';
 }
 
 const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, profile, loading } = useAuthStore();
 
-  if (!isAuthenticated || !user) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !profile) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.role !== requiredRole && user.role !== 'admin') {
+  if (profile.role !== requiredRole && profile.role !== 'admin') {
     return <Navigate to="/seeker/home" replace />;
   }
 
