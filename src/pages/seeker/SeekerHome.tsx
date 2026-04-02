@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { getGreeting, SEEKERS, SESSIONS, AFFIRMATIONS, MOTIVATIONAL_QUOTES } from '@/data/mockData';
-import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award } from 'lucide-react';
+import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award, ScrollText } from 'lucide-react';
 
 const SeekerHome = () => {
   const seeker = SEEKERS[0]; // Mock current seeker as Rahul Patil
