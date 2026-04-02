@@ -21,6 +21,7 @@ import {
 
 const mainTabs = [
   { icon: Home, label: 'Home', path: '/seeker/home' },
+  { icon: ScrollText, label: 'Daily Worksheet', path: '/seeker/worksheet' },
   { icon: Sun, label: 'Daily Log', path: '/seeker/daily-log' },
   { icon: ClipboardList, label: 'Tasks', path: '/seeker/tasks' },
   { icon: TrendingUp, label: 'Growth', path: '/seeker/growth' },

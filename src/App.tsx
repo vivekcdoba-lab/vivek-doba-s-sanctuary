@@ -107,6 +107,7 @@ const App = () => (
             <Route path="/seeker/messages" element={<SeekerMessages />} />
             <Route path="/seeker/weekly-review" element={<SeekerWeeklyReview />} />
             <Route path="/seeker/payments" element={<SeekerPayments />} />
+            <Route path="/seeker/worksheet" element={<DailyWorksheet />} />
           </Route>
 
           {/* Coaching Management Routes */}
