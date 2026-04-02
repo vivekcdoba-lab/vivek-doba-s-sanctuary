@@ -126,13 +126,20 @@ export function useWorksheet(selectedDate: Date) {
   useEffect(() => {
     const getProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
       const { data } = await supabase
         .from('profiles')
         .select('id')
         .eq('user_id', user.id)
         .single();
-      if (data) setSeekerProfileId(data.id);
+      if (data) {
+        setSeekerProfileId(data.id);
+      } else {
+        setState(prev => ({ ...prev, isLoading: false }));
+      }
     };
     getProfile();
   }, []);
