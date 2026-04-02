@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import { NavLink } from '@/components/NavLink';
 import {
   Home, Sun, ClipboardList, TrendingUp, Sparkles, User, Bell, Flame, Moon,
-  MessageSquare, CreditCard, BookOpen, Target, CalendarDays, Menu, LogOut
+  MessageSquare, CreditCard, BookOpen, Target, CalendarDays, Menu, LogOut, ScrollText
 } from 'lucide-react';
 import {
   Sidebar,
@@ -21,6 +21,7 @@ import {
 
 const mainTabs = [
   { icon: Home, label: 'Home', path: '/seeker/home' },
+  { icon: ScrollText, label: 'Daily Worksheet', path: '/seeker/worksheet' },
   { icon: Sun, label: 'Daily Log', path: '/seeker/daily-log' },
   { icon: ClipboardList, label: 'Tasks', path: '/seeker/tasks' },
   { icon: TrendingUp, label: 'Growth', path: '/seeker/growth' },

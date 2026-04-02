@@ -45,6 +45,7 @@ import SeekerProfile from "./pages/seeker/SeekerProfile";
 import SeekerJourney from "./pages/seeker/SeekerJourney";
 import SeekerMessages from "./pages/seeker/SeekerMessages";
 import SeekerWeeklyReview from "./pages/seeker/SeekerWeeklyReview";
+import DailyWorksheet from "./pages/seeker/DailyWorksheet";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
@@ -91,6 +92,7 @@ const App = () => (
             <Route path="/growth-matrix" element={<GrowthMatrixPage />} />
             <Route path="/applications" element={<ApplicationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/worksheet-analytics" element={<DailyTrackingPage />} />
           </Route>
 
           {/* Seeker Routes */}
@@ -106,6 +108,7 @@ const App = () => (
             <Route path="/seeker/messages" element={<SeekerMessages />} />
             <Route path="/seeker/weekly-review" element={<SeekerWeeklyReview />} />
             <Route path="/seeker/payments" element={<SeekerPayments />} />
+            <Route path="/seeker/worksheet" element={<DailyWorksheet />} />
           </Route>
 
           {/* Coaching Management Routes */}

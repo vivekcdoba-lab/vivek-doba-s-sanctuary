@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Target, BookOpen, CalendarDays, Calendar,
   ClipboardList, BarChart3, Sun, TrendingUp, RefreshCw, IndianRupee,
   MessageSquare, FolderOpen, PieChart, Settings, LogOut, Moon,
-  Menu, X, Bell, Search, ChevronRight, Inbox
+  Menu, X, Bell, Search, ChevronRight, Inbox, ScrollText
 } from 'lucide-react';
 import { NOTIFICATIONS } from '@/data/mockData';
 
@@ -29,6 +29,7 @@ const navGroups = [
   },
   {
     label: 'TRANSFORMATION', items: [
+      { icon: ScrollText, label: 'Worksheet Analytics', path: '/worksheet-analytics' },
       { icon: ClipboardList, label: 'Assignments', path: '/assignments' },
       { icon: BarChart3, label: 'Assessments', path: '/assessments' },
       { icon: Sun, label: 'Daily Tracking', path: '/daily-tracking' },

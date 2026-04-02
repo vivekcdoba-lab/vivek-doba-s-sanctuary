@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { getGreeting, SEEKERS, SESSIONS, AFFIRMATIONS, MOTIVATIONAL_QUOTES } from '@/data/mockData';
-import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award } from 'lucide-react';
+import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award, ScrollText } from 'lucide-react';
 
 const SeekerHome = () => {
   const seeker = SEEKERS[0]; // Mock current seeker as Rahul Patil
@@ -50,6 +50,22 @@ const SeekerHome = () => {
           ))}
         </div>
       </div>
+
+      {/* Daily Worksheet Quick Card */}
+      <Link to="/seeker/worksheet" className="block bg-card rounded-xl p-4 shadow-sm border-2 border-orange-200 dark:border-orange-800 hover:shadow-md transition-shadow">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F97316' }}>
+              <ScrollText className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Today's Dharmic Worksheet</p>
+              <p className="text-xs text-muted-foreground">🔥 15 day streak • Fill your sacred planner</p>
+            </div>
+          </div>
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-600 dark:bg-orange-900/30">Open →</span>
+        </div>
+      </Link>
 
       {/* Next Session */}
       {nextSession && (

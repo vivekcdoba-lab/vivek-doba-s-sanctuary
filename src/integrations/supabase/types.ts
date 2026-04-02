@@ -269,6 +269,53 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_weekly_challenges: {
+        Row: {
+          challenge_description: string | null
+          challenge_text: string
+          coach_id: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          lgt_pillar: string | null
+          seeker_id: string | null
+          week_end_date: string
+          week_start_date: string
+        }
+        Insert: {
+          challenge_description?: string | null
+          challenge_text: string
+          coach_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          lgt_pillar?: string | null
+          seeker_id?: string | null
+          week_end_date: string
+          week_start_date: string
+        }
+        Update: {
+          challenge_description?: string | null
+          challenge_text?: string
+          coach_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          lgt_pillar?: string | null
+          seeker_id?: string | null
+          week_end_date?: string
+          week_start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_weekly_challenges_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           created_at: string
@@ -316,6 +363,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      daily_financial_log: {
+        Row: {
+          amount_inr: number | null
+          category: string | null
+          created_at: string
+          entry_type: string
+          id: string
+          source_description: string | null
+          worksheet_id: string
+        }
+        Insert: {
+          amount_inr?: number | null
+          category?: string | null
+          created_at?: string
+          entry_type: string
+          id?: string
+          source_description?: string | null
+          worksheet_id: string
+        }
+        Update: {
+          amount_inr?: number | null
+          category?: string | null
+          created_at?: string
+          entry_type?: string
+          id?: string
+          source_description?: string | null
+          worksheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_financial_log_worksheet_id_fkey"
+            columns: ["worksheet_id"]
+            isOneToOne: false
+            referencedRelation: "daily_worksheets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       daily_logs: {
         Row: {
@@ -372,6 +457,324 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "daily_logs_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_non_negotiable_log: {
+        Row: {
+          id: string
+          is_completed: boolean | null
+          logged_at: string | null
+          non_negotiable_id: string
+          worksheet_id: string
+        }
+        Insert: {
+          id?: string
+          is_completed?: boolean | null
+          logged_at?: string | null
+          non_negotiable_id: string
+          worksheet_id: string
+        }
+        Update: {
+          id?: string
+          is_completed?: boolean | null
+          logged_at?: string | null
+          non_negotiable_id?: string
+          worksheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_non_negotiable_log_non_negotiable_id_fkey"
+            columns: ["non_negotiable_id"]
+            isOneToOne: false
+            referencedRelation: "seeker_non_negotiables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_non_negotiable_log_worksheet_id_fkey"
+            columns: ["worksheet_id"]
+            isOneToOne: false
+            referencedRelation: "daily_worksheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_priorities: {
+        Row: {
+          id: string
+          is_completed: boolean | null
+          lgt_pillar: string | null
+          priority_number: number
+          task_description: string | null
+          time_estimate_minutes: number | null
+          worksheet_id: string
+        }
+        Insert: {
+          id?: string
+          is_completed?: boolean | null
+          lgt_pillar?: string | null
+          priority_number: number
+          task_description?: string | null
+          time_estimate_minutes?: number | null
+          worksheet_id: string
+        }
+        Update: {
+          id?: string
+          is_completed?: boolean | null
+          lgt_pillar?: string | null
+          priority_number?: number
+          task_description?: string | null
+          time_estimate_minutes?: number | null
+          worksheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_priorities_worksheet_id_fkey"
+            columns: ["worksheet_id"]
+            isOneToOne: false
+            referencedRelation: "daily_worksheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_time_slots: {
+        Row: {
+          activity_category: string | null
+          activity_name: string | null
+          actual_status: string | null
+          created_at: string
+          energy_level: string | null
+          id: string
+          is_completed: boolean | null
+          is_planned: boolean | null
+          lgt_pillar: string | null
+          modified_activity_name: string | null
+          notes: string | null
+          skip_reason: string | null
+          slot_end_time: string
+          slot_start_time: string
+          worksheet_id: string
+        }
+        Insert: {
+          activity_category?: string | null
+          activity_name?: string | null
+          actual_status?: string | null
+          created_at?: string
+          energy_level?: string | null
+          id?: string
+          is_completed?: boolean | null
+          is_planned?: boolean | null
+          lgt_pillar?: string | null
+          modified_activity_name?: string | null
+          notes?: string | null
+          skip_reason?: string | null
+          slot_end_time: string
+          slot_start_time: string
+          worksheet_id: string
+        }
+        Update: {
+          activity_category?: string | null
+          activity_name?: string | null
+          actual_status?: string | null
+          created_at?: string
+          energy_level?: string | null
+          id?: string
+          is_completed?: boolean | null
+          is_planned?: boolean | null
+          lgt_pillar?: string | null
+          modified_activity_name?: string | null
+          notes?: string | null
+          skip_reason?: string | null
+          slot_end_time?: string
+          slot_start_time?: string
+          worksheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_time_slots_worksheet_id_fkey"
+            columns: ["worksheet_id"]
+            isOneToOne: false
+            referencedRelation: "daily_worksheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_worksheets: {
+        Row: {
+          aha_moment: string | null
+          artha_score: number | null
+          body_weight_kg: number | null
+          coach_weekly_challenge_done: boolean | null
+          completion_rate_percent: number | null
+          created_at: string
+          dharma_score: number | null
+          do_differently: string | null
+          end_energy_level: number | null
+          evening_emotional_satisfaction: number | null
+          evening_fulfillment: number | null
+          evening_fulfillment_score: number | null
+          evening_mental_peace: number | null
+          evening_mood: string | null
+          gratitude_1: string | null
+          gratitude_2: string | null
+          gratitude_3: string | null
+          gratitude_4: string | null
+          gratitude_5: string | null
+          id: string
+          is_draft: boolean | null
+          is_submitted: boolean | null
+          kama_score: number | null
+          lgt_balance_score: number | null
+          moksha_score: number | null
+          morning_clarity_score: number | null
+          morning_energy_score: number | null
+          morning_intention: string | null
+          morning_mood: string | null
+          morning_peace_score: number | null
+          morning_readiness_score: number | null
+          non_negotiables_completed: number | null
+          non_negotiables_total: number | null
+          sampoorna_din_score: number | null
+          screen_time_hours: number | null
+          seeker_id: string
+          share_with_buddy: boolean | null
+          sleep_hours: number | null
+          sleep_quality: string | null
+          steps_taken: number | null
+          supplements_taken: boolean | null
+          todays_win_1: string | null
+          todays_win_2: string | null
+          todays_win_3: string | null
+          tomorrow_prep_score: number | null
+          tomorrow_sankalp: string | null
+          updated_at: string
+          water_intake_glasses: number | null
+          what_i_learned: string | null
+          what_went_well: string | null
+          workout_done: boolean | null
+          workout_duration_minutes: number | null
+          workout_type: string | null
+          worksheet_date: string
+        }
+        Insert: {
+          aha_moment?: string | null
+          artha_score?: number | null
+          body_weight_kg?: number | null
+          coach_weekly_challenge_done?: boolean | null
+          completion_rate_percent?: number | null
+          created_at?: string
+          dharma_score?: number | null
+          do_differently?: string | null
+          end_energy_level?: number | null
+          evening_emotional_satisfaction?: number | null
+          evening_fulfillment?: number | null
+          evening_fulfillment_score?: number | null
+          evening_mental_peace?: number | null
+          evening_mood?: string | null
+          gratitude_1?: string | null
+          gratitude_2?: string | null
+          gratitude_3?: string | null
+          gratitude_4?: string | null
+          gratitude_5?: string | null
+          id?: string
+          is_draft?: boolean | null
+          is_submitted?: boolean | null
+          kama_score?: number | null
+          lgt_balance_score?: number | null
+          moksha_score?: number | null
+          morning_clarity_score?: number | null
+          morning_energy_score?: number | null
+          morning_intention?: string | null
+          morning_mood?: string | null
+          morning_peace_score?: number | null
+          morning_readiness_score?: number | null
+          non_negotiables_completed?: number | null
+          non_negotiables_total?: number | null
+          sampoorna_din_score?: number | null
+          screen_time_hours?: number | null
+          seeker_id: string
+          share_with_buddy?: boolean | null
+          sleep_hours?: number | null
+          sleep_quality?: string | null
+          steps_taken?: number | null
+          supplements_taken?: boolean | null
+          todays_win_1?: string | null
+          todays_win_2?: string | null
+          todays_win_3?: string | null
+          tomorrow_prep_score?: number | null
+          tomorrow_sankalp?: string | null
+          updated_at?: string
+          water_intake_glasses?: number | null
+          what_i_learned?: string | null
+          what_went_well?: string | null
+          workout_done?: boolean | null
+          workout_duration_minutes?: number | null
+          workout_type?: string | null
+          worksheet_date: string
+        }
+        Update: {
+          aha_moment?: string | null
+          artha_score?: number | null
+          body_weight_kg?: number | null
+          coach_weekly_challenge_done?: boolean | null
+          completion_rate_percent?: number | null
+          created_at?: string
+          dharma_score?: number | null
+          do_differently?: string | null
+          end_energy_level?: number | null
+          evening_emotional_satisfaction?: number | null
+          evening_fulfillment?: number | null
+          evening_fulfillment_score?: number | null
+          evening_mental_peace?: number | null
+          evening_mood?: string | null
+          gratitude_1?: string | null
+          gratitude_2?: string | null
+          gratitude_3?: string | null
+          gratitude_4?: string | null
+          gratitude_5?: string | null
+          id?: string
+          is_draft?: boolean | null
+          is_submitted?: boolean | null
+          kama_score?: number | null
+          lgt_balance_score?: number | null
+          moksha_score?: number | null
+          morning_clarity_score?: number | null
+          morning_energy_score?: number | null
+          morning_intention?: string | null
+          morning_mood?: string | null
+          morning_peace_score?: number | null
+          morning_readiness_score?: number | null
+          non_negotiables_completed?: number | null
+          non_negotiables_total?: number | null
+          sampoorna_din_score?: number | null
+          screen_time_hours?: number | null
+          seeker_id?: string
+          share_with_buddy?: boolean | null
+          sleep_hours?: number | null
+          sleep_quality?: string | null
+          steps_taken?: number | null
+          supplements_taken?: boolean | null
+          todays_win_1?: string | null
+          todays_win_2?: string | null
+          todays_win_3?: string | null
+          tomorrow_prep_score?: number | null
+          tomorrow_sankalp?: string | null
+          updated_at?: string
+          water_intake_glasses?: number | null
+          what_i_learned?: string | null
+          what_went_well?: string | null
+          workout_done?: boolean | null
+          workout_duration_minutes?: number | null
+          workout_type?: string | null
+          worksheet_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_worksheets_seeker_id_fkey"
             columns: ["seeker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -813,6 +1216,44 @@ export type Database = {
           },
         ]
       }
+      seeker_non_negotiables: {
+        Row: {
+          added_by: string
+          created_at: string
+          habit_name: string
+          id: string
+          is_active: boolean | null
+          lgt_pillar: string | null
+          seeker_id: string
+        }
+        Insert: {
+          added_by?: string
+          created_at?: string
+          habit_name: string
+          id?: string
+          is_active?: boolean | null
+          lgt_pillar?: string | null
+          seeker_id: string
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          habit_name?: string
+          id?: string
+          is_active?: boolean | null
+          lgt_pillar?: string | null
+          seeker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seeker_non_negotiables_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           attendance: string | null
@@ -950,6 +1391,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      worksheet_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          notification_type: string
+          seeker_id: string
+          triggered_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          notification_type: string
+          seeker_id: string
+          triggered_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          notification_type?: string
+          seeker_id?: string
+          triggered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worksheet_notifications_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
