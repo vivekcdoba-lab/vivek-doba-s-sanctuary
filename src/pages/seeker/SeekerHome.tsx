@@ -1,12 +1,27 @@
 import { Link } from 'react-router-dom';
 import { getGreeting, SEEKERS, SESSIONS, AFFIRMATIONS, MOTIVATIONAL_QUOTES } from '@/data/mockData';
-import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award, ScrollText } from 'lucide-react';
+import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award, ScrollText, X } from 'lucide-react';
+import { useBadgeNotifications } from '@/hooks/useBadgeNotifications';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const SeekerHome = () => {
-  const seeker = SEEKERS[0]; // Mock current seeker as Rahul Patil
+  const seeker = SEEKERS[0];
   const affirmation = AFFIRMATIONS[0];
   const quote = MOTIVATIONAL_QUOTES[3];
   const nextSession = SESSIONS.find((s) => s.seeker_id === seeker.id && s.status === 'scheduled');
+
+  // Resolve profile ID for notifications
+  const [profileId, setProfileId] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      supabase.from('profiles').select('id').eq('user_id', data.user.id).maybeSingle()
+        .then(({ data: p }) => { if (p) setProfileId(p.id); });
+    });
+  }, []);
+
+  const { notifications, dismiss, dismissAll } = useBadgeNotifications(profileId);
 
   const streaks = [
     { label: 'Meditation', emoji: '🧘', count: 15 },
