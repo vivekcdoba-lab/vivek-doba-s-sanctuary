@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { format, addDays, subDays } from 'date-fns';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate, Loader2 } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate, Loader2, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -12,12 +12,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Progress } from '@/components/ui/progress';
 import {
   ACTIVITY_GROUPS, DEFAULT_NON_NEGOTIABLES, MOOD_OPTIONS, PILLAR_CONFIG,
   DAY_NAMES, MONEY_AFFIRMATIONS, generateTimeSlots, getPhaseForTime,
   type PillarKey,
 } from '@/data/worksheetData';
 import { useWorksheet } from '@/hooks/useWorksheet';
+import { useBadges } from '@/hooks/useBadges';
 import { toast } from 'sonner';
 
 const DailyWorksheet = () => {
@@ -27,8 +29,10 @@ const DailyWorksheet = () => {
   const [reflectionOpen, setReflectionOpen] = useState(false);
   const [showExtraGratitude, setShowExtraGratitude] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [badgesOpen, setBadgesOpen] = useState(false);
 
-  const { state, updateField, updateSlot, saveWorksheet, copyYesterday } = useWorksheet(selectedDate);
+  const { state, updateField, updateSlot, saveWorksheet, copyYesterday, seekerProfileId } = useWorksheet(selectedDate);
+  const { progress, earnedBadges, nextBadge, checkAndAwardBadges } = useBadges(seekerProfileId);
 
   const slots = useMemo(() => generateTimeSlots(), []);
   const dayInfo = DAY_NAMES[selectedDate.getDay()];
