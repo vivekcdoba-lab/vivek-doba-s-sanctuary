@@ -50,21 +50,31 @@ const LoginPage = () => {
         return;
       }
       if (data.user) {
-        // Fetch profile to determine role
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id, user_id, email, full_name, role')
-          .eq('user_id', data.user.id)
-          .maybeSingle();
+        // Try fetching profile, fallback to user metadata role
+        let role = (data.user.user_metadata?.role as string) || 'seeker';
+        let profile = null;
 
-        const role = profile?.role || 'seeker';
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('id, user_id, email, full_name, role')
+            .eq('user_id', data.user.id)
+            .maybeSingle();
+
+          if (profileData) {
+            profile = profileData;
+            role = profileData.role || role;
+          }
+        } catch {
+          console.warn('Profile fetch failed, using metadata role');
+        }
 
         // Update auth store
         setAuth(data.user, profile as any);
 
         toast.success(`Welcome! 🙏`);
 
-        // Route based on actual role from database
+        // Route based on role
         if (role === 'admin') {
           navigate('/dashboard');
         } else if (role === 'coach') {
