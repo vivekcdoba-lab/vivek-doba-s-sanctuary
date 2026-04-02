@@ -335,7 +335,7 @@ const WorksheetAnalyticsPage = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  {['Seeker', 'Status', 'Morning', 'Evening', 'LGT Balance', 'D', 'A', 'K', 'M', 'Water', 'Sleep'].map(h => (
+                  {['Seeker', 'Status', 'Badges', 'Morning', 'Evening', 'LGT Balance', 'D', 'A', 'K', 'M', 'Water', 'Sleep'].map(h => (
                     <th key={h} className="text-left px-3 py-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
