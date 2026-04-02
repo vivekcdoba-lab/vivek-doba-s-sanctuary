@@ -47,6 +47,14 @@ interface ProfileRow {
   avatar_url: string | null;
 }
 
+interface BadgeWithDef {
+  seeker_id: string;
+  badge_id: string;
+  earned_at: string;
+  emoji: string;
+  name: string;
+}
+
 const PILLAR_COLORS = {
   dharma: '#F97316',
   artha: '#EAB308',
@@ -62,6 +70,7 @@ const WorksheetAnalyticsPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [trendData, setTrendData] = useState<WorksheetRow[]>([]);
+  const [badgeData, setBadgeData] = useState<BadgeWithDef[]>([]);
 
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
 
@@ -99,6 +108,25 @@ const WorksheetAnalyticsPage = () => {
         .order('worksheet_date', { ascending: true });
 
       if (trend) setTrendData(trend as unknown as WorksheetRow[]);
+
+      // Load earned badges with definitions
+      const { data: badges } = await supabase
+        .from('seeker_badges')
+        .select('seeker_id, badge_id, earned_at');
+
+      if (badges?.length) {
+        const { data: defs } = await supabase
+          .from('badge_definitions')
+          .select('id, emoji, name');
+        const defMap = new Map((defs || []).map(d => [d.id, d]));
+        const enriched: BadgeWithDef[] = badges.map(b => {
+          const def = defMap.get(b.badge_id);
+          return { ...b, emoji: def?.emoji || '🏅', name: def?.name || 'Badge' };
+        });
+        setBadgeData(enriched);
+      } else {
+        setBadgeData([]);
+      }
     } catch (err) {
       console.error('Error loading analytics:', err);
     }
@@ -106,6 +134,7 @@ const WorksheetAnalyticsPage = () => {
   };
 
   const getProfile = (seekerId: string) => profiles.find(p => p.id === seekerId);
+  const getBadgesForSeeker = (seekerId: string) => badgeData.filter(b => b.seeker_id === seekerId);
 
   // Summary stats
   const totalSeekers = profiles.length;
@@ -306,7 +335,7 @@ const WorksheetAnalyticsPage = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  {['Seeker', 'Status', 'Morning', 'Evening', 'LGT Balance', 'D', 'A', 'K', 'M', 'Water', 'Sleep'].map(h => (
+                  {['Seeker', 'Status', 'Badges', 'Morning', 'Evening', 'LGT Balance', 'D', 'A', 'K', 'M', 'Water', 'Sleep'].map(h => (
                     <th key={h} className="text-left px-3 py-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -332,6 +361,21 @@ const WorksheetAnalyticsPage = () => {
                       )}
                     </td>
                     <td className="px-3 py-2.5">
+                      {(() => {
+                        const seekerBadges = getBadgesForSeeker(profile.id);
+                        if (!seekerBadges.length) return <span className="text-xs text-muted-foreground">—</span>;
+                        return (
+                          <div className="flex items-center gap-0.5" title={seekerBadges.map(b => b.name).join(', ')}>
+                            {seekerBadges.slice(0, 4).map((b, i) => (
+                              <span key={i} className="text-sm" title={b.name}>{b.emoji}</span>
+                            ))}
+                            {seekerBadges.length > 4 && (
+                              <span className="text-[10px] text-muted-foreground ml-0.5">+{seekerBadges.length - 4}</span>
+                            )}
+                            <span className="ml-1 text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">{seekerBadges.length}</span>
+                          </div>
+                        );
+                      })()}
                       <span className={cn('text-xs font-bold',
                         (worksheet?.morning_readiness_score || 0) >= 7 ? 'text-green-600' :
                         (worksheet?.morning_readiness_score || 0) >= 5 ? 'text-yellow-600' : 'text-red-500'
@@ -364,7 +408,7 @@ const WorksheetAnalyticsPage = () => {
                   </tr>
                 ))}
                 {filteredWorksheets.length === 0 && (
-                  <tr><td colSpan={11} className="text-center py-8 text-muted-foreground">No seekers found</td></tr>
+                  <tr><td colSpan={12} className="text-center py-8 text-muted-foreground">No seekers found</td></tr>
                 )}
               </tbody>
             </table>
