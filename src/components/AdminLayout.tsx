@@ -112,7 +112,7 @@ const AdminLayout = () => {
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-primary-foreground truncate">{user?.name}</p>
+              <p className="text-xs font-medium text-primary-foreground truncate">{profile?.full_name || 'Coach'}</p>
               <p className="text-[10px] text-sidebar-foreground/60">Coach</p>
             </div>
           )}
