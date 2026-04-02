@@ -137,6 +137,81 @@ const SeekerDetailPage = () => {
   const [rpDate, setRpDate] = useState(new Date().toISOString().split('T')[0]);
   const { payments: seekerPayments, createPayment } = usePayments(id);
 
+  // Badge state
+  const [awardBadgeOpen, setAwardBadgeOpen] = useState(false);
+  const [badgeDefinitions, setBadgeDefinitions] = useState<any[]>([]);
+  const [seekerBadges, setSeekerBadges] = useState<any[]>([]);
+  const [selectedBadgeId, setSelectedBadgeId] = useState('');
+  const [customEmoji, setCustomEmoji] = useState('🏆');
+  const [customBadgeName, setCustomBadgeName] = useState('');
+  const [badgeNotes, setBadgeNotes] = useState('');
+  const [isCustomBadge, setIsCustomBadge] = useState(false);
+  const [badgeAwarding, setBadgeAwarding] = useState(false);
+
+  // Fetch badge definitions and seeker's earned badges
+  const loadBadges = useCallback(async () => {
+    const [{ data: defs }, { data: earned }] = await Promise.all([
+      supabase.from('badge_definitions').select('*').eq('is_active', true).order('sort_order'),
+      supabase.from('seeker_badges').select('*').eq('seeker_id', id || ''),
+    ]);
+    if (defs) setBadgeDefinitions(defs);
+    if (earned && defs) {
+      const defMap = new Map(defs.map((d: any) => [d.id, d]));
+      setSeekerBadges(earned.map((b: any) => ({ ...b, badge: defMap.get(b.badge_id) })).filter((b: any) => b.badge));
+    }
+  }, [id]);
+
+  useEffect(() => { loadBadges(); }, [loadBadges]);
+
+  const handleAwardBadge = async () => {
+    if (!id) return;
+    setBadgeAwarding(true);
+    try {
+      if (isCustomBadge) {
+        // Create custom badge definition first
+        const { data: newDef, error: defErr } = await supabase.from('badge_definitions').insert({
+          badge_key: `custom_${Date.now()}`,
+          emoji: customEmoji,
+          name: customBadgeName,
+          description: badgeNotes || `Custom badge awarded by coach`,
+          category: 'custom',
+          condition_type: 'manual',
+          condition_threshold: 0,
+          condition_streak_days: 0,
+          sort_order: 999,
+        }).select('id').single();
+        if (defErr) throw defErr;
+        await supabase.from('seeker_badges').insert({
+          seeker_id: id,
+          badge_id: newDef.id,
+          awarded_by: 'coach',
+          notes: badgeNotes || null,
+        });
+      } else {
+        if (!selectedBadgeId) { toast.error('Select a badge'); setBadgeAwarding(false); return; }
+        // Check not already earned
+        const existing = seekerBadges.find(b => b.badge_id === selectedBadgeId);
+        if (existing) { toast.error('Seeker already has this badge'); setBadgeAwarding(false); return; }
+        await supabase.from('seeker_badges').insert({
+          seeker_id: id,
+          badge_id: selectedBadgeId,
+          awarded_by: 'coach',
+          notes: badgeNotes || null,
+        });
+      }
+      toast.success('🏅 Badge awarded successfully!');
+      setAwardBadgeOpen(false);
+      setSelectedBadgeId('');
+      setCustomBadgeName('');
+      setBadgeNotes('');
+      setIsCustomBadge(false);
+      await loadBadges();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to award badge');
+    }
+    setBadgeAwarding(false);
+  };
+
   const seeker = SEEKERS.find((s) => s.id === id);
   if (!seeker) {
     return (
