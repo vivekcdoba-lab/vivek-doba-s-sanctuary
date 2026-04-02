@@ -164,6 +164,9 @@ const SeekerLayoutInner = () => {
           <Outlet />
         </main>
 
+        {/* Global Floating Music Button */}
+        <FloatingMusicButton />
+
         {/* Bottom Tab Bar (mobile only) */}
         <nav className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border shadow-lg lg:hidden">
           <div className="flex items-center justify-around h-16 max-w-lg mx-auto">

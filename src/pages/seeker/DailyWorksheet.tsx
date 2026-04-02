@@ -21,6 +21,8 @@ import {
 import { useWorksheet } from '@/hooks/useWorksheet';
 import { useBadges } from '@/hooks/useBadges';
 import { toast } from 'sonner';
+import { playPreset, stopAll, MOOD_PRESETS, type SoundId } from '@/lib/sacredAudioEngine';
+import { useAudioStore } from '@/store/audioStore';
 
 const DailyWorksheet = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
