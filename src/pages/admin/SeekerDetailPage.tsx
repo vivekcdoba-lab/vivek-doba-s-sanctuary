@@ -1145,6 +1145,115 @@ const SeekerDetailPage = () => {
           </div>
         </div>
       )}
+
+      {/* ===== AWARD BADGE DIALOG ===== */}
+      <Dialog open={awardBadgeOpen} onOpenChange={setAwardBadgeOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gift className="w-5 h-5 text-primary" /> Award Badge to {seeker.full_name}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Toggle: Existing vs Custom */}
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant={!isCustomBadge ? 'default' : 'outline'}
+                onClick={() => setIsCustomBadge(false)}
+                className="flex-1"
+              >
+                🏅 Existing Badge
+              </Button>
+              <Button
+                size="sm"
+                variant={isCustomBadge ? 'default' : 'outline'}
+                onClick={() => setIsCustomBadge(true)}
+                className="flex-1"
+              >
+                ✨ Custom Badge
+              </Button>
+            </div>
+
+            {!isCustomBadge ? (
+              <div className="space-y-3">
+                <Label>Select Badge</Label>
+                <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto">
+                  {badgeDefinitions.map((def: any) => {
+                    const alreadyEarned = seekerBadges.some((b: any) => b.badge_id === def.id);
+                    return (
+                      <button
+                        key={def.id}
+                        disabled={alreadyEarned}
+                        onClick={() => setSelectedBadgeId(def.id)}
+                        className={`p-2 rounded-lg border text-center transition-colors ${
+                          selectedBadgeId === def.id
+                            ? 'border-primary bg-primary/10 ring-2 ring-primary/30'
+                            : alreadyEarned
+                            ? 'border-border bg-muted opacity-50 cursor-not-allowed'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <span className="text-xl block">{def.emoji}</span>
+                        <p className="text-[10px] font-semibold text-foreground mt-0.5">{def.name}</p>
+                        {alreadyEarned && <p className="text-[9px] text-muted-foreground">✅ Earned</p>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <Label>Badge Emoji</Label>
+                  <div className="flex gap-2 mt-1">
+                    {['🏆', '⭐', '🎖️', '💎', '🦁', '🔥', '🌟', '👑'].map(e => (
+                      <button
+                        key={e}
+                        onClick={() => setCustomEmoji(e)}
+                        className={`text-xl p-1.5 rounded-lg border transition-colors ${
+                          customEmoji === e ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        {e}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label>Badge Name</Label>
+                  <Input
+                    placeholder="e.g. Breakthrough Champion"
+                    value={customBadgeName}
+                    onChange={e => setCustomBadgeName(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div>
+              <Label>Notes (optional)</Label>
+              <Textarea
+                placeholder="Why is this badge being awarded?"
+                value={badgeNotes}
+                onChange={e => setBadgeNotes(e.target.value)}
+                className="mt-1"
+                rows={2}
+              />
+            </div>
+
+            <Button
+              onClick={handleAwardBadge}
+              disabled={badgeAwarding || (!isCustomBadge && !selectedBadgeId) || (isCustomBadge && !customBadgeName)}
+              className="w-full"
+            >
+              {badgeAwarding ? 'Awarding...' : '🏅 Award Badge'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
