@@ -29,6 +29,7 @@ const navGroups = [
   },
   {
     label: 'TRANSFORMATION', items: [
+      { icon: ScrollText, label: 'Worksheet Analytics', path: '/worksheet-analytics' },
       { icon: ClipboardList, label: 'Assignments', path: '/assignments' },
       { icon: BarChart3, label: 'Assessments', path: '/assessments' },
       { icon: Sun, label: 'Daily Tracking', path: '/daily-tracking' },
