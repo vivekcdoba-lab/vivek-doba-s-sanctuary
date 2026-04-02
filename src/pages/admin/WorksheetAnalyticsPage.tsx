@@ -408,7 +408,7 @@ const WorksheetAnalyticsPage = () => {
                   </tr>
                 ))}
                 {filteredWorksheets.length === 0 && (
-                  <tr><td colSpan={11} className="text-center py-8 text-muted-foreground">No seekers found</td></tr>
+                  <tr><td colSpan={12} className="text-center py-8 text-muted-foreground">No seekers found</td></tr>
                 )}
               </tbody>
             </table>
