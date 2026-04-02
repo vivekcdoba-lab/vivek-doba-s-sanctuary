@@ -428,7 +428,267 @@ const DailyWorksheet = () => {
         </div>
       </div>
 
-      {/* Sticky Action Bar */}
+      {/* SECTION 5 — Daily Financial Log */}
+      <div className="bg-card rounded-xl border-2 border-yellow-200 dark:border-yellow-800 p-5 space-y-5">
+        <h2 className="text-lg font-bold">💰 Aaj Ka Artha (Daily Financial Log)</h2>
+
+        {/* Income */}
+        <div>
+          <p className="text-sm font-semibold text-foreground mb-2">📥 Income Received Today</p>
+          <div className="space-y-2">
+            {incomeEntries.map((entry, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Input
+                  placeholder="Source (e.g., Client payment)"
+                  value={entry.source}
+                  onChange={e => { const arr = [...incomeEntries]; arr[i] = { ...arr[i], source: e.target.value }; setIncomeEntries(arr); }}
+                  className="flex-1"
+                />
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">₹</span>
+                  <Input
+                    placeholder="Amount"
+                    type="number"
+                    value={entry.amount}
+                    onChange={e => { const arr = [...incomeEntries]; arr[i] = { ...arr[i], amount: e.target.value }; setIncomeEntries(arr); }}
+                    className="w-28 pl-6"
+                  />
+                </div>
+                <Select value={entry.category} onValueChange={v => { const arr = [...incomeEntries]; arr[i] = { ...arr[i], category: v }; setIncomeEntries(arr); }}>
+                  <SelectTrigger className="w-32 text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="coaching_fee">Coaching Fee</SelectItem>
+                    <SelectItem value="training">Training</SelectItem>
+                    <SelectItem value="product_sale">Product Sale</SelectItem>
+                    <SelectItem value="commission">Commission</SelectItem>
+                    <SelectItem value="other_income">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                {incomeEntries.length > 1 && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setIncomeEntries(incomeEntries.filter((_, j) => j !== i))}>
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button variant="outline" size="sm" onClick={() => setIncomeEntries([...incomeEntries, { source: '', amount: '', category: '' }])} className="gap-1">
+              <Plus className="w-3 h-3" /> Add Income
+            </Button>
+          </div>
+        </div>
+
+        {/* Expense */}
+        <div>
+          <p className="text-sm font-semibold text-foreground mb-2">📤 Expense / Investment Today</p>
+          <div className="space-y-2">
+            {expenseEntries.map((entry, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Input
+                  placeholder="Source (e.g., Venue booking)"
+                  value={entry.source}
+                  onChange={e => { const arr = [...expenseEntries]; arr[i] = { ...arr[i], source: e.target.value }; setExpenseEntries(arr); }}
+                  className="flex-1"
+                />
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">₹</span>
+                  <Input
+                    placeholder="Amount"
+                    type="number"
+                    value={entry.amount}
+                    onChange={e => { const arr = [...expenseEntries]; arr[i] = { ...arr[i], amount: e.target.value }; setExpenseEntries(arr); }}
+                    className="w-28 pl-6"
+                  />
+                </div>
+                <Select value={entry.category} onValueChange={v => { const arr = [...expenseEntries]; arr[i] = { ...arr[i], category: v }; setExpenseEntries(arr); }}>
+                  <SelectTrigger className="w-32 text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="business_investment">Business Investment</SelectItem>
+                    <SelectItem value="personal_need">Personal Need</SelectItem>
+                    <SelectItem value="education">Education</SelectItem>
+                    <SelectItem value="charity">Charity / Daan</SelectItem>
+                    <SelectItem value="other_expense">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                {expenseEntries.length > 1 && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setExpenseEntries(expenseEntries.filter((_, j) => j !== i))}>
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button variant="outline" size="sm" onClick={() => setExpenseEntries([...expenseEntries, { source: '', amount: '', category: '' }])} className="gap-1">
+              <Plus className="w-3 h-3" /> Add Expense
+            </Button>
+          </div>
+        </div>
+
+        {/* Daily Totals */}
+        {(() => {
+          const totalIncome = incomeEntries.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+          const totalExpense = expenseEntries.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+          const net = totalIncome - totalExpense;
+          return (
+            <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
+              <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-900/10">
+                <p className="text-xs text-muted-foreground">Total Income</p>
+                <p className="text-lg font-bold text-green-600">₹{totalIncome.toLocaleString('en-IN')}</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-red-50 dark:bg-red-900/10">
+                <p className="text-xs text-muted-foreground">Total Expense</p>
+                <p className="text-lg font-bold text-red-500">₹{totalExpense.toLocaleString('en-IN')}</p>
+              </div>
+              <div className={cn('text-center p-3 rounded-lg', net >= 0 ? 'bg-green-50 dark:bg-green-900/10' : 'bg-red-50 dark:bg-red-900/10')}>
+                <p className="text-xs text-muted-foreground">Net for Day</p>
+                <p className={cn('text-lg font-bold', net >= 0 ? 'text-green-600' : 'text-red-500')}>₹{net.toLocaleString('en-IN')}</p>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Money Affirmation */}
+        <div className="p-3 rounded-lg text-center italic text-sm border border-yellow-200 dark:border-yellow-800" style={{ backgroundColor: 'rgba(234,179,8,0.06)' }}>
+          <p className="text-muted-foreground">💛 "{todayAffirmation}"</p>
+        </div>
+      </div>
+
+      {/* SECTION 6 — Body & Health Metrics */}
+      <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+        <h2 className="text-lg font-bold">🏥 Sharir Ka Haal (Body Dashboard)</h2>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {/* Water Intake */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground">💧 Water (glasses)</p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setWaterGlasses(Math.max(0, waterGlasses - 1))}>-</Button>
+              <span className={cn('text-xl font-bold', waterGlasses >= 8 ? 'text-green-600' : 'text-foreground')}>{waterGlasses}</span>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setWaterGlasses(waterGlasses + 1)}>+</Button>
+              <span className="text-xs text-muted-foreground">/8</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+              <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${Math.min(100, (waterGlasses / 8) * 100)}%` }} />
+            </div>
+          </div>
+
+          {/* Steps */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground">👣 Steps</p>
+            <Input placeholder="0" type="number" value={stepsTaken} onChange={e => setStepsTaken(e.target.value)} className="h-9" />
+            <p className="text-[10px] text-muted-foreground">Goal: 10,000</p>
+          </div>
+
+          {/* Sleep */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground">😴 Sleep (hrs)</p>
+            <Input placeholder="0" type="number" step="0.5" value={sleepHours} onChange={e => setSleepHours(e.target.value)} className="h-9" />
+            <Select value={sleepQuality} onValueChange={setSleepQuality}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Quality" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="deep">😴 Deep</SelectItem>
+                <SelectItem value="restless">😵 Restless</SelectItem>
+                <SelectItem value="interrupted">🌀 Interrupted</SelectItem>
+                <SelectItem value="refreshed">🌟 Refreshed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Body Weight */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground">⚖️ Weight (kg)</p>
+            <Input placeholder="Optional" type="number" step="0.1" value={bodyWeight} onChange={e => setBodyWeight(e.target.value)} className="h-9" />
+          </div>
+
+          {/* Supplements */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground">💊 Supplements</p>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox checked={supplementsTaken} onCheckedChange={(c) => setSupplementsTaken(!!c)} />
+              <span className="text-sm">{supplementsTaken ? 'Taken ✅' : 'Not yet'}</span>
+            </label>
+          </div>
+
+          {/* Workout */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground">🏋️ Workout</p>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox checked={workoutDone} onCheckedChange={(c) => setWorkoutDone(!!c)} />
+              <span className="text-sm">{workoutDone ? 'Done ✅' : 'Not yet'}</span>
+            </label>
+            {workoutDone && (
+              <div className="flex gap-1">
+                <Input placeholder="Type" value={workoutType} onChange={e => setWorkoutType(e.target.value)} className="h-8 text-xs flex-1" />
+                <Input placeholder="Min" type="number" value={workoutDuration} onChange={e => setWorkoutDuration(e.target.value)} className="h-8 text-xs w-16" />
+              </div>
+            )}
+          </div>
+
+          {/* Screen Time */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground">📱 Screen Time (hrs)</p>
+            <Input placeholder="0" type="number" step="0.5" value={screenTime} onChange={e => setScreenTime(e.target.value)} className="h-9" />
+          </div>
+
+          {/* End Energy */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground">⚡ Energy at Day End</p>
+            <Slider value={endEnergyLevel} onValueChange={setEndEnergyLevel} max={10} min={1} step={1} />
+            <p className="text-xs text-center">
+              {endEnergyLevel[0] <= 3 ? '🔴' : endEnergyLevel[0] <= 6 ? '🟡' : '🟢'} {endEnergyLevel[0]}/10
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 7 — Aaj Ki Jeet & AHA Moment */}
+      <div className="space-y-4">
+        {/* Wins */}
+        <div className="bg-card rounded-xl border-2 border-green-200 dark:border-green-800 p-5">
+          <h2 className="text-lg font-bold mb-3">🏆 Aaj Ki Jeet (Today's Win)</h2>
+          <p className="text-xs text-muted-foreground mb-3">At least 1 win is required — har jeet celebrate hoti hai!</p>
+          <div className="space-y-2">
+            {wins.map((win, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-sm">🏆</span>
+                <Textarea
+                  placeholder="Aaj maine kya achieve kiya, bada ya chhota..."
+                  value={win}
+                  onChange={e => { const arr = [...wins]; arr[i] = e.target.value; setWins(arr); }}
+                  className="min-h-[60px] flex-1"
+                />
+                {wins.length > 1 && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setWins(wins.filter((_, j) => j !== i))}>
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            {wins.length < 3 && (
+              <Button variant="outline" size="sm" onClick={() => setWins([...wins, ''])} className="gap-1">
+                <Plus className="w-3 h-3" /> Add Another Win
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* AHA Moment */}
+        <div className="bg-card rounded-xl border-2 border-amber-200 dark:border-amber-800 p-5 relative overflow-hidden">
+          {ahaMoment && (
+            <div className="absolute inset-0 pointer-events-none">
+              <Sparkles className="absolute top-2 right-3 w-5 h-5 text-amber-400 animate-pulse" />
+              <Sparkles className="absolute bottom-4 left-5 w-4 h-4 text-amber-300 animate-pulse delay-300" />
+              <Sparkles className="absolute top-8 right-12 w-3 h-3 text-yellow-400 animate-pulse delay-700" />
+            </div>
+          )}
+          <h2 className="text-lg font-bold mb-2">💡 AHA Moment (Breakthrough Insight)</h2>
+          <p className="text-xs text-muted-foreground mb-3">Optional but encouraged — capture your breakthroughs!</p>
+          <Textarea
+            placeholder="Aaj kuch aisa hua ya socha jo pehle kabhi nahin hua..."
+            value={ahaMoment}
+            onChange={e => setAhaMoment(e.target.value)}
+            className="min-h-[80px]"
+          />
+        </div>
+      </div>
       <div className="sticky bottom-0 bg-background/90 backdrop-blur-md border-t border-border p-3 -mx-4 flex flex-wrap gap-2 justify-center">
         <Button onClick={handleSave} className="gap-2">
           <Save className="w-4 h-4" /> Save Draft
