@@ -899,6 +899,56 @@ const DailyWorksheet = () => {
           </Button>
         </div>
       </div>
+
+      {/* Badges Dialog */}
+      <Dialog open={badgesOpen} onOpenChange={setBadgesOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>🏅 My Badges & Achievements</DialogTitle>
+          </DialogHeader>
+
+          {/* Earned Badges */}
+          {earnedBadges.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-foreground">✅ Earned ({earnedBadges.length})</p>
+              <div className="grid grid-cols-2 gap-2">
+                {earnedBadges.map(b => (
+                  <div key={b.id} className="p-3 rounded-xl border-2 border-primary/30 bg-primary/5 text-center">
+                    <span className="text-3xl block">{b.badge.emoji}</span>
+                    <p className="text-xs font-bold text-foreground mt-1">{b.badge.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{b.badge.description}</p>
+                    <p className="text-[10px] text-primary mt-1">
+                      Earned {format(new Date(b.earned_at), 'dd MMM yyyy')}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* In Progress */}
+          <div className="space-y-2 mt-4">
+            <p className="text-sm font-semibold text-foreground">🔄 In Progress</p>
+            <div className="space-y-2">
+              {progress.filter(p => !p.isEarned).map(p => (
+                <div key={p.badge.id} className="p-3 rounded-xl border border-border flex items-center gap-3">
+                  <span className="text-2xl opacity-50">{p.badge.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-foreground">{p.badge.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{p.badge.description}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Progress value={p.progressPercent} className="h-1.5 flex-1" />
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {p.currentStreak}/{p.requiredStreak}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
