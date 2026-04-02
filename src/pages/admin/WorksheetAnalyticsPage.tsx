@@ -361,6 +361,21 @@ const WorksheetAnalyticsPage = () => {
                       )}
                     </td>
                     <td className="px-3 py-2.5">
+                      {(() => {
+                        const seekerBadges = getBadgesForSeeker(profile.id);
+                        if (!seekerBadges.length) return <span className="text-xs text-muted-foreground">—</span>;
+                        return (
+                          <div className="flex items-center gap-0.5" title={seekerBadges.map(b => b.name).join(', ')}>
+                            {seekerBadges.slice(0, 4).map((b, i) => (
+                              <span key={i} className="text-sm" title={b.name}>{b.emoji}</span>
+                            ))}
+                            {seekerBadges.length > 4 && (
+                              <span className="text-[10px] text-muted-foreground ml-0.5">+{seekerBadges.length - 4}</span>
+                            )}
+                            <span className="ml-1 text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">{seekerBadges.length}</span>
+                          </div>
+                        );
+                      })()}
                       <span className={cn('text-xs font-bold',
                         (worksheet?.morning_readiness_score || 0) >= 7 ? 'text-green-600' :
                         (worksheet?.morning_readiness_score || 0) >= 5 ? 'text-yellow-600' : 'text-red-500'
