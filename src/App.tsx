@@ -45,6 +45,7 @@ import SeekerProfile from "./pages/seeker/SeekerProfile";
 import SeekerJourney from "./pages/seeker/SeekerJourney";
 import SeekerMessages from "./pages/seeker/SeekerMessages";
 import SeekerWeeklyReview from "./pages/seeker/SeekerWeeklyReview";
+import DailyWorksheet from "./pages/seeker/DailyWorksheet";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
