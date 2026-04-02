@@ -108,6 +108,25 @@ const WorksheetAnalyticsPage = () => {
         .order('worksheet_date', { ascending: true });
 
       if (trend) setTrendData(trend as unknown as WorksheetRow[]);
+
+      // Load earned badges with definitions
+      const { data: badges } = await supabase
+        .from('seeker_badges')
+        .select('seeker_id, badge_id, earned_at');
+
+      if (badges?.length) {
+        const { data: defs } = await supabase
+          .from('badge_definitions')
+          .select('id, emoji, name');
+        const defMap = new Map((defs || []).map(d => [d.id, d]));
+        const enriched: BadgeWithDef[] = badges.map(b => {
+          const def = defMap.get(b.badge_id);
+          return { ...b, emoji: def?.emoji || '🏅', name: def?.name || 'Badge' };
+        });
+        setBadgeData(enriched);
+      } else {
+        setBadgeData([]);
+      }
     } catch (err) {
       console.error('Error loading analytics:', err);
     }
