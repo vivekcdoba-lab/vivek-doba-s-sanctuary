@@ -1,20 +1,23 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SEEKERS, SESSIONS, ASSIGNMENTS, formatINR, formatDate, formatTime12, getHealthColor, getTierBadgeClass } from '@/data/mockData';
 import {
   Phone, MessageSquare, Mail, Edit, Archive, Calendar, ClipboardList, TrendingUp,
   CreditCard, Flame, ArrowLeft, UserCheck, CalendarCheck, Eye, ChevronDown, ChevronUp,
-  Lock, Star, Flag, Printer, X, Target, Heart, BookOpen, Sparkles, AlertTriangle
+  Lock, Star, Flag, Printer, X, Target, Heart, BookOpen, Sparkles, AlertTriangle, Award, Plus, Gift
 } from 'lucide-react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LGTAssessment, { LGT_SECTIONS, LGT_ZONES, PILLAR_COLORS, getZone, getPillarZone } from '@/components/LGTAssessment';
 import { toast } from 'sonner';
 import { usePayments } from '@/hooks/usePayments';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
 
 const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Growth Matrix', 'Assignments', 'Daily Tracking', 'Payments', 'Goals & Vision', 'Private Notes 🔒', 'Timeline'];
 
@@ -133,6 +136,81 @@ const SeekerDetailPage = () => {
   const [rpTransactionId, setRpTransactionId] = useState('');
   const [rpDate, setRpDate] = useState(new Date().toISOString().split('T')[0]);
   const { payments: seekerPayments, createPayment } = usePayments(id);
+
+  // Badge state
+  const [awardBadgeOpen, setAwardBadgeOpen] = useState(false);
+  const [badgeDefinitions, setBadgeDefinitions] = useState<any[]>([]);
+  const [seekerBadges, setSeekerBadges] = useState<any[]>([]);
+  const [selectedBadgeId, setSelectedBadgeId] = useState('');
+  const [customEmoji, setCustomEmoji] = useState('🏆');
+  const [customBadgeName, setCustomBadgeName] = useState('');
+  const [badgeNotes, setBadgeNotes] = useState('');
+  const [isCustomBadge, setIsCustomBadge] = useState(false);
+  const [badgeAwarding, setBadgeAwarding] = useState(false);
+
+  // Fetch badge definitions and seeker's earned badges
+  const loadBadges = useCallback(async () => {
+    const [{ data: defs }, { data: earned }] = await Promise.all([
+      supabase.from('badge_definitions').select('*').eq('is_active', true).order('sort_order'),
+      supabase.from('seeker_badges').select('*').eq('seeker_id', id || ''),
+    ]);
+    if (defs) setBadgeDefinitions(defs);
+    if (earned && defs) {
+      const defMap = new Map(defs.map((d: any) => [d.id, d]));
+      setSeekerBadges(earned.map((b: any) => ({ ...b, badge: defMap.get(b.badge_id) })).filter((b: any) => b.badge));
+    }
+  }, [id]);
+
+  useEffect(() => { loadBadges(); }, [loadBadges]);
+
+  const handleAwardBadge = async () => {
+    if (!id) return;
+    setBadgeAwarding(true);
+    try {
+      if (isCustomBadge) {
+        // Create custom badge definition first
+        const { data: newDef, error: defErr } = await supabase.from('badge_definitions').insert({
+          badge_key: `custom_${Date.now()}`,
+          emoji: customEmoji,
+          name: customBadgeName,
+          description: badgeNotes || `Custom badge awarded by coach`,
+          category: 'custom',
+          condition_type: 'manual',
+          condition_threshold: 0,
+          condition_streak_days: 0,
+          sort_order: 999,
+        }).select('id').single();
+        if (defErr) throw defErr;
+        await supabase.from('seeker_badges').insert({
+          seeker_id: id,
+          badge_id: newDef.id,
+          awarded_by: 'coach',
+          notes: badgeNotes || null,
+        });
+      } else {
+        if (!selectedBadgeId) { toast.error('Select a badge'); setBadgeAwarding(false); return; }
+        // Check not already earned
+        const existing = seekerBadges.find(b => b.badge_id === selectedBadgeId);
+        if (existing) { toast.error('Seeker already has this badge'); setBadgeAwarding(false); return; }
+        await supabase.from('seeker_badges').insert({
+          seeker_id: id,
+          badge_id: selectedBadgeId,
+          awarded_by: 'coach',
+          notes: badgeNotes || null,
+        });
+      }
+      toast.success('🏅 Badge awarded successfully!');
+      setAwardBadgeOpen(false);
+      setSelectedBadgeId('');
+      setCustomBadgeName('');
+      setBadgeNotes('');
+      setIsCustomBadge(false);
+      await loadBadges();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to award badge');
+    }
+    setBadgeAwarding(false);
+  };
 
   const seeker = SEEKERS.find((s) => s.id === id);
   if (!seeker) {
@@ -297,6 +375,35 @@ const SeekerDetailPage = () => {
                 )}
               </div>
             ))}
+          </div>
+
+          {/* Badges & Achievements */}
+          <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Award className="w-5 h-5 text-primary" /> Badges & Achievements
+                {seekerBadges.length > 0 && (
+                  <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">{seekerBadges.length}</span>
+                )}
+              </h3>
+              <Button size="sm" variant="outline" onClick={() => setAwardBadgeOpen(true)} className="gap-1">
+                <Gift className="w-3.5 h-3.5" /> Award Badge
+              </Button>
+            </div>
+            {seekerBadges.length > 0 ? (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                {seekerBadges.map((b: any) => (
+                  <div key={b.id} className="text-center p-3 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors" title={b.badge?.description}>
+                    <span className="text-3xl block">{b.badge?.emoji}</span>
+                    <p className="text-[11px] font-bold text-foreground mt-1 truncate">{b.badge?.name}</p>
+                    <p className="text-[9px] text-muted-foreground">{format(new Date(b.earned_at), 'dd MMM yyyy')}</p>
+                    <p className="text-[9px] text-muted-foreground capitalize">{b.awarded_by}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">No badges earned yet. Award one to motivate this seeker! 🌟</p>
+            )}
           </div>
 
           {/* Next Session */}
@@ -1038,6 +1145,115 @@ const SeekerDetailPage = () => {
           </div>
         </div>
       )}
+
+      {/* ===== AWARD BADGE DIALOG ===== */}
+      <Dialog open={awardBadgeOpen} onOpenChange={setAwardBadgeOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gift className="w-5 h-5 text-primary" /> Award Badge to {seeker.full_name}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Toggle: Existing vs Custom */}
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant={!isCustomBadge ? 'default' : 'outline'}
+                onClick={() => setIsCustomBadge(false)}
+                className="flex-1"
+              >
+                🏅 Existing Badge
+              </Button>
+              <Button
+                size="sm"
+                variant={isCustomBadge ? 'default' : 'outline'}
+                onClick={() => setIsCustomBadge(true)}
+                className="flex-1"
+              >
+                ✨ Custom Badge
+              </Button>
+            </div>
+
+            {!isCustomBadge ? (
+              <div className="space-y-3">
+                <Label>Select Badge</Label>
+                <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto">
+                  {badgeDefinitions.map((def: any) => {
+                    const alreadyEarned = seekerBadges.some((b: any) => b.badge_id === def.id);
+                    return (
+                      <button
+                        key={def.id}
+                        disabled={alreadyEarned}
+                        onClick={() => setSelectedBadgeId(def.id)}
+                        className={`p-2 rounded-lg border text-center transition-colors ${
+                          selectedBadgeId === def.id
+                            ? 'border-primary bg-primary/10 ring-2 ring-primary/30'
+                            : alreadyEarned
+                            ? 'border-border bg-muted opacity-50 cursor-not-allowed'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <span className="text-xl block">{def.emoji}</span>
+                        <p className="text-[10px] font-semibold text-foreground mt-0.5">{def.name}</p>
+                        {alreadyEarned && <p className="text-[9px] text-muted-foreground">✅ Earned</p>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <Label>Badge Emoji</Label>
+                  <div className="flex gap-2 mt-1">
+                    {['🏆', '⭐', '🎖️', '💎', '🦁', '🔥', '🌟', '👑'].map(e => (
+                      <button
+                        key={e}
+                        onClick={() => setCustomEmoji(e)}
+                        className={`text-xl p-1.5 rounded-lg border transition-colors ${
+                          customEmoji === e ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        {e}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label>Badge Name</Label>
+                  <Input
+                    placeholder="e.g. Breakthrough Champion"
+                    value={customBadgeName}
+                    onChange={e => setCustomBadgeName(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div>
+              <Label>Notes (optional)</Label>
+              <Textarea
+                placeholder="Why is this badge being awarded?"
+                value={badgeNotes}
+                onChange={e => setBadgeNotes(e.target.value)}
+                className="mt-1"
+                rows={2}
+              />
+            </div>
+
+            <Button
+              onClick={handleAwardBadge}
+              disabled={badgeAwarding || (!isCustomBadge && !selectedBadgeId) || (isCustomBadge && !customBadgeName)}
+              className="w-full"
+            >
+              {badgeAwarding ? 'Awarding...' : '🏅 Award Badge'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
