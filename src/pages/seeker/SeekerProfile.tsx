@@ -1,14 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SEEKERS, COURSES } from '@/data/mockData';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/use-toast';
 import { Save, LogOut } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { supabase } from '@/integrations/supabase/client';
+import { useBadges } from '@/hooks/useBadges';
+import { format } from 'date-fns';
 
 const SeekerProfile = () => {
   const seeker = SEEKERS[0];
   const { logout } = useAuthStore();
   const { toast } = useToast();
   const [editing, setEditing] = useState(false);
+  const [seekerProfileId, setSeekerProfileId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from('profiles').select('id').eq('user_id', user.id).single();
+      if (data) setSeekerProfileId(data.id);
+    };
+    getProfile();
+  }, []);
+
+  const { progress, earnedBadges } = useBadges(seekerProfileId);
   const [profile, setProfile] = useState({
     full_name: seeker.full_name, email: seeker.email, phone: seeker.phone,
     city: seeker.city, state: seeker.state || 'Maharashtra',
