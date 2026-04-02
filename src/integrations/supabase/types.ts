@@ -165,6 +165,54 @@ export type Database = {
           },
         ]
       }
+      badge_definitions: {
+        Row: {
+          badge_key: string
+          category: string
+          condition_field: string | null
+          condition_streak_days: number
+          condition_threshold: number
+          condition_type: string
+          created_at: string
+          description: string
+          emoji: string
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          badge_key: string
+          category?: string
+          condition_field?: string | null
+          condition_streak_days?: number
+          condition_threshold?: number
+          condition_type: string
+          created_at?: string
+          description: string
+          emoji: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          badge_key?: string
+          category?: string
+          condition_field?: string | null
+          condition_streak_days?: number
+          condition_threshold?: number
+          condition_type?: string
+          created_at?: string
+          description?: string
+          emoji?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           color: string | null
@@ -1209,6 +1257,93 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "seeker_assessments_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seeker_badge_progress: {
+        Row: {
+          badge_id: string
+          best_streak: number
+          current_streak: number
+          id: string
+          last_qualifying_date: string | null
+          seeker_id: string
+          updated_at: string
+        }
+        Insert: {
+          badge_id: string
+          best_streak?: number
+          current_streak?: number
+          id?: string
+          last_qualifying_date?: string | null
+          seeker_id: string
+          updated_at?: string
+        }
+        Update: {
+          badge_id?: string
+          best_streak?: number
+          current_streak?: number
+          id?: string
+          last_qualifying_date?: string | null
+          seeker_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seeker_badge_progress_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badge_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seeker_badge_progress_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seeker_badges: {
+        Row: {
+          awarded_by: string
+          badge_id: string
+          earned_at: string
+          id: string
+          notes: string | null
+          seeker_id: string
+        }
+        Insert: {
+          awarded_by?: string
+          badge_id: string
+          earned_at?: string
+          id?: string
+          notes?: string | null
+          seeker_id: string
+        }
+        Update: {
+          awarded_by?: string
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          notes?: string | null
+          seeker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seeker_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badge_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seeker_badges_seeker_id_fkey"
             columns: ["seeker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
