@@ -151,12 +151,33 @@ const DailyWorksheet = () => {
         </div>
       )}
 
-      {/* Streak Counter */}
-      <div className="flex items-center gap-4 text-sm">
+      {/* Streak Counter & Badge Preview */}
+      <div className="flex items-center gap-4 text-sm flex-wrap">
         <span className="flex items-center gap-1"><Flame className="w-4 h-4 text-orange-500" /> Streak: <strong>15 days</strong></span>
         <span className="flex items-center gap-1"><Star className="w-4 h-4 text-yellow-500" /> Best: <strong>42 days</strong></span>
         <span className="text-muted-foreground">📅 Total: <strong>68</strong></span>
+        {earnedBadges.length > 0 && (
+          <button onClick={() => setBadgesOpen(true)} className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
+            <Award className="w-3.5 h-3.5" /> {earnedBadges.length} Badges
+          </button>
+        )}
       </div>
+
+      {/* Next Badge Progress */}
+      {nextBadge && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 rounded-xl border border-amber-200 dark:border-amber-800 p-3 flex items-center gap-3">
+          <span className="text-2xl">{nextBadge.badge.emoji}</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground">
+              🔥 {nextBadge.daysRemaining} more days to earn <strong>{nextBadge.badge.name}</strong> badge!
+            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <Progress value={nextBadge.progressPercent} className="h-2 flex-1" />
+              <span className="text-[10px] text-muted-foreground font-mono">{nextBadge.currentStreak}/{nextBadge.requiredStreak}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sankalp */}
       <div className="bg-card rounded-xl border border-border p-4">
