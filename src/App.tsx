@@ -33,6 +33,7 @@ import DailyTrackingPage from "./pages/admin/DailyTrackingPage";
 import GrowthMatrixPage from "./pages/admin/GrowthMatrixPage";
 import ApplicationsPage from "./pages/admin/ApplicationsPage";
 import CoachDayView from "./pages/admin/CoachDayView";
+import WorksheetAnalyticsPage from "./pages/admin/WorksheetAnalyticsPage";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -92,7 +93,7 @@ const App = () => (
             <Route path="/growth-matrix" element={<GrowthMatrixPage />} />
             <Route path="/applications" element={<ApplicationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/worksheet-analytics" element={<DailyTrackingPage />} />
+            <Route path="/worksheet-analytics" element={<WorksheetAnalyticsPage />} />
           </Route>
 
           {/* Seeker Routes */}
