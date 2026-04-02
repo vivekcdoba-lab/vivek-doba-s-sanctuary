@@ -1,11 +1,18 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Eye, EyeOff, Mail, Lock, Sparkles, Loader2, Shield, Users, UserCheck, MessageSquare } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
-import { Eye, EyeOff, Mail, Lock, Sparkles, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+
+type LoginRole = 'seeker' | 'coach' | 'admin';
+
+const roleTabs: { role: LoginRole; label: string; icon: React.ReactNode; color: string; gradient: string }[] = [
+  { role: 'seeker', label: 'Seeker', icon: <Users className="w-4 h-4" />, color: 'text-emerald-600', gradient: 'from-emerald-500 to-teal-500' },
+  { role: 'coach', label: 'Coach', icon: <UserCheck className="w-4 h-4" />, color: 'text-amber-600', gradient: 'from-amber-500 to-orange-500' },
+  { role: 'admin', label: 'Admin', icon: <Shield className="w-4 h-4" />, color: 'text-purple-600', gradient: 'from-purple-500 to-indigo-500' },
+];
 
 const LotusPattern = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -26,7 +33,9 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<LoginRole>('seeker');
   const navigate = useNavigate();
+  const { setAuth } = useAuthStore();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -44,13 +53,25 @@ const LoginPage = () => {
         // Fetch profile to determine role
         const { data: profile } = await supabase
           .from('profiles')
-          .select('role')
+          .select('id, user_id, email, full_name, role')
           .eq('user_id', data.user.id)
           .maybeSingle();
 
         const role = profile?.role || 'seeker';
+
+        // Update auth store
+        setAuth(data.user, profile as any);
+
         toast.success(`Welcome! 🙏`);
-        navigate(role === 'admin' ? '/dashboard' : '/seeker/home');
+
+        // Route based on actual role from database
+        if (role === 'admin') {
+          navigate('/dashboard');
+        } else if (role === 'coach') {
+          navigate('/coaching');
+        } else {
+          navigate('/seeker/home');
+        }
       }
     } catch {
       toast.error('An error occurred');
@@ -58,6 +79,8 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+
+  const activeTab = roleTabs.find(t => t.role === selectedRole)!;
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
@@ -94,10 +117,28 @@ const LoginPage = () => {
             <p className="text-muted-foreground text-sm mt-1">Begin your sacred session</p>
           </div>
 
+          {/* Role Tabs */}
+          <div className="flex rounded-xl border border-border overflow-hidden">
+            {roleTabs.map((tab) => (
+              <button
+                key={tab.role}
+                onClick={() => setSelectedRole(tab.role)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  selectedRole === tab.role
+                    ? `bg-gradient-to-r ${tab.gradient} text-white shadow-inner`
+                    : 'bg-card text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
           <div className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input type="email" placeholder="Email address" value={email}
+              <Input type="email" placeholder={`${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)} email address`} value={email}
                 onChange={(e) => setEmail(e.target.value)} className="pl-10"
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
             </div>
@@ -114,8 +155,8 @@ const LoginPage = () => {
           </div>
 
           <button onClick={handleLogin} disabled={loading}
-            className="w-full py-3 rounded-xl font-semibold text-primary-foreground gradient-saffron hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50">
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : '🙏'} Sign In
+            className={`w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r ${activeTab.gradient} hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50`}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : '🙏'} Sign In as {activeTab.label}
           </button>
 
           <div className="text-center space-y-2">
@@ -125,9 +166,19 @@ const LoginPage = () => {
             </p>
           </div>
 
-          {/* Begin Your Journey */}
-          <div className="pt-4 border-t border-border">
-            <p className="text-center text-sm font-semibold text-foreground mb-3">Begin Your Journey</p>
+          {/* WhatsApp + Journey */}
+          <div className="pt-4 border-t border-border space-y-3">
+            <a
+              href="https://wa.me/919607050111"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#25D366' }}
+            >
+              <MessageSquare className="w-4 h-4" /> Chat on WhatsApp — 9607050111
+            </a>
+
+            <p className="text-center text-sm font-semibold text-foreground">Begin Your Journey</p>
             <div className="space-y-2">
               <Link to="/book-appointment" className="flex items-center justify-between w-full p-3 rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all group bg-card">
                 <div className="flex items-center gap-3">
@@ -160,7 +211,7 @@ const LoginPage = () => {
                 <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </Link>
             </div>
-            <Link to="/" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mt-2">
+            <Link to="/" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
               ← Back to Home
             </Link>
           </div>
