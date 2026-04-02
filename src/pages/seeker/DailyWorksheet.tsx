@@ -82,7 +82,22 @@ const DailyWorksheet = () => {
   const lgtBalanceScore = ((state.dharmaScore[0] + state.arthaScore[0] + state.kamaScore[0] + state.mokshaScore[0]) / 4).toFixed(1);
 
   const handleSave = () => saveWorksheet(false);
-  const handleSubmit = () => saveWorksheet(true);
+  const handleSubmit = async () => {
+    await saveWorksheet(true);
+    // Check badge streaks after submit
+    const totalIncome = state.incomeEntries.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+    const newlyEarned = await checkAndAwardBadges(format(selectedDate, 'yyyy-MM-dd'), {
+      is_submitted: true,
+      water_intake_glasses: state.waterGlasses,
+      sampoorna_din_score: null,
+      non_negotiables_completed: Object.values(state.nonNegotiables).filter(Boolean).length,
+      non_negotiables_total: DEFAULT_NON_NEGOTIABLES.length,
+      has_positive_income: totalIncome > 0,
+    });
+    if (newlyEarned.length) {
+      toast.success(`🏅 New Badge Earned: ${newlyEarned.join(', ')}!`, { duration: 5000 });
+    }
+  };
 
   const applyTemplate = (templateName: string) => {
     toast.success(`"${templateName}" template applied!`);
