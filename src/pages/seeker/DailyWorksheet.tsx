@@ -33,8 +33,26 @@ const DailyWorksheet = () => {
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [badgesOpen, setBadgesOpen] = useState(false);
 
+  const [worksheetMusic, setWorksheetMusic] = useState<string | null>(null);
+  const { setPlaying } = useAudioStore();
+
   const { state, updateField, updateSlot, saveWorksheet, copyYesterday, seekerProfileId } = useWorksheet(selectedDate);
   const { progress, earnedBadges, nextBadge, checkAndAwardBadges } = useBadges(seekerProfileId);
+
+  // Page visibility — pause music when tab hidden
+  useEffect(() => {
+    const handler = () => {
+      if (document.hidden && worksheetMusic) {
+        stopAll();
+      } else if (!document.hidden && worksheetMusic) {
+        playPreset(worksheetMusic);
+        const preset = MOOD_PRESETS[worksheetMusic];
+        if (preset) setPlaying(preset.sounds.map(s => s.id));
+      }
+    };
+    document.addEventListener('visibilitychange', handler);
+    return () => document.removeEventListener('visibilitychange', handler);
+  }, [worksheetMusic, setPlaying]);
 
   const slots = useMemo(() => generateTimeSlots(), []);
   const dayInfo = DAY_NAMES[selectedDate.getDay()];
