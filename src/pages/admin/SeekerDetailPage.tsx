@@ -377,6 +377,35 @@ const SeekerDetailPage = () => {
             ))}
           </div>
 
+          {/* Badges & Achievements */}
+          <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Award className="w-5 h-5 text-primary" /> Badges & Achievements
+                {seekerBadges.length > 0 && (
+                  <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">{seekerBadges.length}</span>
+                )}
+              </h3>
+              <Button size="sm" variant="outline" onClick={() => setAwardBadgeOpen(true)} className="gap-1">
+                <Gift className="w-3.5 h-3.5" /> Award Badge
+              </Button>
+            </div>
+            {seekerBadges.length > 0 ? (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                {seekerBadges.map((b: any) => (
+                  <div key={b.id} className="text-center p-3 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors" title={b.badge?.description}>
+                    <span className="text-3xl block">{b.badge?.emoji}</span>
+                    <p className="text-[11px] font-bold text-foreground mt-1 truncate">{b.badge?.name}</p>
+                    <p className="text-[9px] text-muted-foreground">{format(new Date(b.earned_at), 'dd MMM yyyy')}</p>
+                    <p className="text-[9px] text-muted-foreground capitalize">{b.awarded_by}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">No badges earned yet. Award one to motivate this seeker! 🌟</p>
+            )}
+          </div>
+
           {/* Next Session */}
           <div className="bg-card rounded-xl p-5 shadow-sm border-2 border-primary/20">
             <h3 className="font-semibold text-foreground mb-2">Next Session</h3>
