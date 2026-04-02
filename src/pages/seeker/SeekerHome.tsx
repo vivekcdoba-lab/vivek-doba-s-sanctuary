@@ -4,12 +4,15 @@ import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, Ale
 import { useBadgeNotifications } from '@/hooks/useBadgeNotifications';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuthStore } from '@/store/authStore';
 
 const SeekerHome = () => {
+  const { profile } = useAuthStore();
   const seeker = SEEKERS[0];
   const affirmation = AFFIRMATIONS[0];
   const quote = MOTIVATIONAL_QUOTES[3];
   const nextSession = SESSIONS.find((s) => s.seeker_id === seeker.id && s.status === 'scheduled');
+  const displayName = profile?.full_name?.split(' ')[0] || seeker.full_name.split(' ')[0];
 
   // Resolve profile ID for notifications
   const [profileId, setProfileId] = useState<string | null>(null);
