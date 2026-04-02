@@ -134,6 +134,7 @@ const WorksheetAnalyticsPage = () => {
   };
 
   const getProfile = (seekerId: string) => profiles.find(p => p.id === seekerId);
+  const getBadgesForSeeker = (seekerId: string) => badgeData.filter(b => b.seeker_id === seekerId);
 
   // Summary stats
   const totalSeekers = profiles.length;
