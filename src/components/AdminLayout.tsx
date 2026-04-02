@@ -15,6 +15,7 @@ const navGroups = [
       { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
       { icon: Sun, label: "Coach's Day", path: '/coach-day' },
       { icon: Users, label: 'Seekers', path: '/seekers' },
+      { icon: BookOpen, label: 'Coaching Tools', path: '/coaching' },
       { icon: Target, label: 'Leads', path: '/leads' },
       { icon: Inbox, label: 'Applications', path: '/applications', badge: true },
     ]
