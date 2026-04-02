@@ -14,17 +14,8 @@ const SeekerHome = () => {
   const nextSession = SESSIONS.find((s) => s.seeker_id === seeker.id && s.status === 'scheduled');
   const displayName = profile?.full_name?.split(' ')[0] || seeker.full_name.split(' ')[0];
 
-  // Resolve profile ID for notifications
-  const [profileId, setProfileId] = useState<string | null>(null);
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) return;
-      supabase.from('profiles').select('id').eq('user_id', data.user.id).maybeSingle()
-        .then(({ data: p }) => { if (p) setProfileId(p.id); });
-    });
-  }, []);
-
-  const { notifications, dismiss, dismissAll } = useBadgeNotifications(profileId);
+  // Use profile ID directly for notifications
+  const { notifications, dismiss, dismissAll } = useBadgeNotifications(profile?.id || null);
 
   const streaks = [
     { label: 'Meditation', emoji: '🧘', count: 15 },
