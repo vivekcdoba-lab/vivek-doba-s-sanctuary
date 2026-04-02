@@ -45,20 +45,37 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 
 // Initialize auth listener
-async function fetchProfile(userId: string): Promise<Profile | null> {
-  const { data } = await supabase
+async function fetchProfile(userId: string, userEmail?: string, metadata?: any): Promise<Profile | null> {
+  const profilePromise = supabase
     .from('profiles')
     .select('id, user_id, email, full_name, role')
     .eq('user_id', userId)
     .maybeSingle();
-  return data as Profile | null;
+  
+  const timeoutPromise = new Promise((_, reject) => 
+    setTimeout(() => reject(new Error('timeout')), 3000)
+  );
+
+  try {
+    const { data } = await Promise.race([profilePromise, timeoutPromise]) as any;
+    return data as Profile | null;
+  } catch {
+    console.warn('Profile fetch timed out, using metadata fallback');
+    return {
+      id: userId,
+      user_id: userId,
+      email: userEmail || '',
+      full_name: metadata?.full_name || userEmail || '',
+      role: metadata?.role || 'seeker',
+    } as Profile;
+  }
 }
 
 // Set up auth state change listener
 supabase.auth.onAuthStateChange(async (event, session) => {
   const user = session?.user ?? null;
   if (user) {
-    const profile = await fetchProfile(user.id);
+    const profile = await fetchProfile(user.id, user.email, user.user_metadata);
     useAuthStore.getState().setAuth(user, profile);
   } else {
     useAuthStore.getState().setAuth(null, null);
@@ -69,7 +86,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 supabase.auth.getSession().then(async ({ data: { session } }) => {
   const user = session?.user ?? null;
   if (user) {
-    const profile = await fetchProfile(user.id);
+    const profile = await fetchProfile(user.id, user.email, user.user_metadata);
     useAuthStore.getState().setAuth(user, profile);
   } else {
     useAuthStore.getState().setAuth(null, null);
