@@ -40,6 +40,28 @@ const DailyWorksheet = () => {
   );
   const [timeSlots, setTimeSlots] = useState<Record<string, TimeSlotData>>({});
 
+  // Section 5 — Financial Log
+  interface FinancialEntry { source: string; amount: string; category: string; }
+  const [incomeEntries, setIncomeEntries] = useState<FinancialEntry[]>([{ source: '', amount: '', category: '' }]);
+  const [expenseEntries, setExpenseEntries] = useState<FinancialEntry[]>([{ source: '', amount: '', category: '' }]);
+
+  // Section 6 — Health Metrics
+  const [waterGlasses, setWaterGlasses] = useState(0);
+  const [stepsTaken, setStepsTaken] = useState('');
+  const [sleepHours, setSleepHours] = useState('');
+  const [sleepQuality, setSleepQuality] = useState('');
+  const [bodyWeight, setBodyWeight] = useState('');
+  const [supplementsTaken, setSupplementsTaken] = useState(false);
+  const [workoutDone, setWorkoutDone] = useState(false);
+  const [workoutType, setWorkoutType] = useState('');
+  const [workoutDuration, setWorkoutDuration] = useState('');
+  const [screenTime, setScreenTime] = useState('');
+  const [endEnergyLevel, setEndEnergyLevel] = useState([5]);
+
+  // Section 7 — Wins & AHA
+  const [wins, setWins] = useState(['']);
+  const [ahaMoment, setAhaMoment] = useState('');
+
   const slots = useMemo(() => generateTimeSlots(), []);
   const dayInfo = DAY_NAMES[selectedDate.getDay()];
   const morningReadiness = ((clarity[0] + energy[0] + peace[0]) / 3).toFixed(1);
