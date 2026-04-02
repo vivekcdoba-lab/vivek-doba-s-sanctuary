@@ -5,6 +5,7 @@ import {
   Home, Sun, ClipboardList, TrendingUp, Sparkles, User, Bell, Flame, Moon,
   MessageSquare, CreditCard, BookOpen, Target, CalendarDays, Menu, LogOut, ScrollText
 } from 'lucide-react';
+import FloatingMusicButton from '@/components/FloatingMusicButton';
 import {
   Sidebar,
   SidebarContent,
