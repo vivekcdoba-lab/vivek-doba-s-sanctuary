@@ -33,13 +33,6 @@ const Index = () => (
             <MessageSquare className="w-4 h-4" /> <span className="hidden sm:inline">WhatsApp</span>
           </a>
           <Link
-            to="/coaching"
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-colors hover:opacity-90"
-            style={{ backgroundColor: '#1D9E75' }}
-          >
-            Coaching Tools
-          </Link>
-          <Link
             to="/login"
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium border-2 transition-colors hover:opacity-90"
             style={{ borderColor: '#B8860B', color: '#B8860B' }}
