@@ -64,6 +64,27 @@ const DailyWorksheet = () => {
   const [wins, setWins] = useState(['']);
   const [ahaMoment, setAhaMoment] = useState('');
 
+  // Section 8 — End of Day Reflection
+  const [reflectionOpen, setReflectionOpen] = useState(false);
+  const [eveningMood, setEveningMood] = useState('');
+  const [evMentalPeace, setEvMentalPeace] = useState([5]);
+  const [evEmotionalSat, setEvEmotionalSat] = useState([5]);
+  const [evFulfillment, setEvFulfillment] = useState([5]);
+  const [whatWentWell, setWhatWentWell] = useState('');
+  const [whatLearned, setWhatLearned] = useState('');
+  const [doDifferently, setDoDifferently] = useState('');
+  const [gratitudes, setGratitudes] = useState(['', '', '']);
+  const [showExtraGratitude, setShowExtraGratitude] = useState(false);
+  const [dharmaScore, setDharmaScore] = useState([5]);
+  const [arthaScore, setArthaScore] = useState([5]);
+  const [kamaScore, setKamaScore] = useState([5]);
+  const [mokshaScore, setMokshaScore] = useState([5]);
+  const [tomorrowSankalp, setTomorrowSankalp] = useState('');
+  const [tomorrowPrep, setTomorrowPrep] = useState<Record<number, boolean>>({});
+
+  // Section 9 — Templates
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+
   const slots = useMemo(() => generateTimeSlots(), []);
   const dayInfo = DAY_NAMES[selectedDate.getDay()];
   const morningReadiness = ((clarity[0] + energy[0] + peace[0]) / 3).toFixed(1);
