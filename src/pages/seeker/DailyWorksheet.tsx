@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { format, addDays, subDays } from 'date-fns';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -10,114 +10,46 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   ACTIVITY_GROUPS, DEFAULT_NON_NEGOTIABLES, MOOD_OPTIONS, PILLAR_CONFIG,
   DAY_NAMES, MONEY_AFFIRMATIONS, generateTimeSlots, getPhaseForTime,
-  getPillarForActivity, type PillarKey,
+  type PillarKey,
 } from '@/data/worksheetData';
+import { useWorksheet } from '@/hooks/useWorksheet';
 import { toast } from 'sonner';
-
-interface TimeSlotData {
-  activity: string;
-  pillar: PillarKey | '';
-  energy: string;
-  notes: string;
-  actualStatus: string;
-  skipReason: string;
-}
 
 const DailyWorksheet = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const [intention, setIntention] = useState('');
-  const [morningMood, setMorningMood] = useState('');
-  const [clarity, setClarity] = useState([5]);
-  const [energy, setEnergy] = useState([5]);
-  const [peace, setPeace] = useState([5]);
   const [actualsMode, setActualsMode] = useState(false);
-  const [nonNegotiables, setNonNegotiables] = useState<Record<number, boolean>>(
-    Object.fromEntries(DEFAULT_NON_NEGOTIABLES.map((_, i) => [i, false]))
-  );
-  const [timeSlots, setTimeSlots] = useState<Record<string, TimeSlotData>>({});
-
-  // Section 5 — Financial Log
-  interface FinancialEntry { source: string; amount: string; category: string; }
-  const [incomeEntries, setIncomeEntries] = useState<FinancialEntry[]>([{ source: '', amount: '', category: '' }]);
-  const [expenseEntries, setExpenseEntries] = useState<FinancialEntry[]>([{ source: '', amount: '', category: '' }]);
-
-  // Section 6 — Health Metrics
-  const [waterGlasses, setWaterGlasses] = useState(0);
-  const [stepsTaken, setStepsTaken] = useState('');
-  const [sleepHours, setSleepHours] = useState('');
-  const [sleepQuality, setSleepQuality] = useState('');
-  const [bodyWeight, setBodyWeight] = useState('');
-  const [supplementsTaken, setSupplementsTaken] = useState(false);
-  const [workoutDone, setWorkoutDone] = useState(false);
-  const [workoutType, setWorkoutType] = useState('');
-  const [workoutDuration, setWorkoutDuration] = useState('');
-  const [screenTime, setScreenTime] = useState('');
-  const [endEnergyLevel, setEndEnergyLevel] = useState([5]);
-
-  // Section 7 — Wins & AHA
-  const [wins, setWins] = useState(['']);
-  const [ahaMoment, setAhaMoment] = useState('');
-
-  // Section 8 — End of Day Reflection
   const [reflectionOpen, setReflectionOpen] = useState(false);
-  const [eveningMood, setEveningMood] = useState('');
-  const [evMentalPeace, setEvMentalPeace] = useState([5]);
-  const [evEmotionalSat, setEvEmotionalSat] = useState([5]);
-  const [evFulfillment, setEvFulfillment] = useState([5]);
-  const [whatWentWell, setWhatWentWell] = useState('');
-  const [whatLearned, setWhatLearned] = useState('');
-  const [doDifferently, setDoDifferently] = useState('');
-  const [gratitudes, setGratitudes] = useState(['', '', '']);
   const [showExtraGratitude, setShowExtraGratitude] = useState(false);
-  const [dharmaScore, setDharmaScore] = useState([5]);
-  const [arthaScore, setArthaScore] = useState([5]);
-  const [kamaScore, setKamaScore] = useState([5]);
-  const [mokshaScore, setMokshaScore] = useState([5]);
-  const [tomorrowSankalp, setTomorrowSankalp] = useState('');
-  const [tomorrowPrep, setTomorrowPrep] = useState<Record<number, boolean>>({});
-
-  // Section 9 — Templates
   const [templatesOpen, setTemplatesOpen] = useState(false);
+
+  const { state, updateField, updateSlot, saveWorksheet, copyYesterday } = useWorksheet(selectedDate);
 
   const slots = useMemo(() => generateTimeSlots(), []);
   const dayInfo = DAY_NAMES[selectedDate.getDay()];
-  const morningReadiness = ((clarity[0] + energy[0] + peace[0]) / 3).toFixed(1);
+  const morningReadiness = ((state.clarity[0] + state.energy[0] + state.peace[0]) / 3).toFixed(1);
   const readinessNum = parseFloat(morningReadiness);
-  const nnCompleted = Object.values(nonNegotiables).filter(Boolean).length;
+  const nnCompleted = Object.values(state.nonNegotiables).filter(Boolean).length;
   const nnTotal = DEFAULT_NON_NEGOTIABLES.length;
   const allNNDone = nnCompleted === nnTotal;
   const todayAffirmation = MONEY_AFFIRMATIONS[selectedDate.getDate() % MONEY_AFFIRMATIONS.length];
 
-  // Pillar hour calculation
   const pillarHours = useMemo(() => {
     const hours: Record<PillarKey, number> = { dharma: 0, artha: 0, kama: 0, moksha: 0 };
-    Object.entries(timeSlots).forEach(([, slot]) => {
+    Object.entries(state.timeSlots).forEach(([, slot]) => {
       if (slot.pillar && slot.activity) {
         hours[slot.pillar as PillarKey] += 0.5;
       }
     });
     return hours;
-  }, [timeSlots]);
+  }, [state.timeSlots]);
 
   const totalPlanned = Object.values(pillarHours).reduce((a, b) => a + b, 0);
-
-  const updateSlot = (key: string, field: keyof TimeSlotData, value: string) => {
-    setTimeSlots(prev => {
-      const current = prev[key] || { activity: '', pillar: '', energy: '', notes: '', actualStatus: '', skipReason: '' };
-      const updated = { ...current, [field]: value };
-      if (field === 'activity' && value) {
-        const autoPillar = getPillarForActivity(value);
-        if (autoPillar) updated.pillar = autoPillar;
-      }
-      return { ...prev, [key]: updated };
-    });
-  };
 
   const TOMORROW_PREP_ITEMS = [
     'Tomorrow\'s outfit/clothes ready',
@@ -128,7 +60,7 @@ const DailyWorksheet = () => {
     'Tomorrow\'s meals planned',
     'Pending calls/messages responded to',
   ];
-  const tomorrowPrepDone = Object.values(tomorrowPrep).filter(Boolean).length;
+  const tomorrowPrepDone = Object.values(state.tomorrowPrep).filter(Boolean).length;
 
   const SCHEDULE_TEMPLATES = [
     { emoji: '🧘', name: 'Sadhak Day', desc: 'Spirituality-heavy day', pillar: 'moksha' },
@@ -141,18 +73,26 @@ const DailyWorksheet = () => {
     { emoji: '💰', name: 'Lakshmi Day', desc: 'Money, sales & Artha-focused', pillar: 'artha' },
   ];
 
-  const eveningFulfillmentScore = ((evMentalPeace[0] + evEmotionalSat[0] + evFulfillment[0]) / 3).toFixed(1);
+  const eveningFulfillmentScore = ((state.evMentalPeace[0] + state.evEmotionalSat[0] + state.evFulfillment[0]) / 3).toFixed(1);
   const eveningNum = parseFloat(eveningFulfillmentScore);
-  const lgtBalanceScore = ((dharmaScore[0] + arthaScore[0] + kamaScore[0] + mokshaScore[0]) / 4).toFixed(1);
+  const lgtBalanceScore = ((state.dharmaScore[0] + state.arthaScore[0] + state.kamaScore[0] + state.mokshaScore[0]) / 4).toFixed(1);
 
-  const handleSave = () => {
-    toast.success('Worksheet saved as draft!');
-  };
+  const handleSave = () => saveWorksheet(false);
+  const handleSubmit = () => saveWorksheet(true);
 
   const applyTemplate = (templateName: string) => {
     toast.success(`"${templateName}" template applied!`);
     setTemplatesOpen(false);
   };
+
+  if (state.isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <span className="ml-3 text-muted-foreground">Loading worksheet...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
@@ -184,6 +124,14 @@ const DailyWorksheet = () => {
         </div>
       </div>
 
+      {/* Auto-save indicator */}
+      {state.lastSaved && (
+        <div className="text-xs text-muted-foreground text-right">
+          💾 Last saved: {format(state.lastSaved, 'HH:mm:ss')}
+          {state.isSaving && <span className="ml-2"><Loader2 className="w-3 h-3 inline animate-spin" /> Saving...</span>}
+        </div>
+      )}
+
       {/* Streak Counter */}
       <div className="flex items-center gap-4 text-sm">
         <span className="flex items-center gap-1"><Flame className="w-4 h-4 text-orange-500" /> Streak: <strong>15 days</strong></span>
@@ -196,8 +144,8 @@ const DailyWorksheet = () => {
         <label className="text-sm font-semibold text-foreground block mb-2">🕉️ Aaj Ka Sankalp (Today's Intention)</label>
         <Input
           placeholder="Main aaj... (My intention today is...)"
-          value={intention}
-          onChange={e => setIntention(e.target.value)}
+          value={state.intention}
+          onChange={e => updateField('intention', e.target.value)}
           className="bg-background"
         />
       </div>
@@ -210,10 +158,10 @@ const DailyWorksheet = () => {
             {MOOD_OPTIONS.map(m => (
               <button
                 key={m.label}
-                onClick={() => setMorningMood(m.label)}
+                onClick={() => updateField('morningMood', m.label)}
                 className={cn(
                   'px-3 py-2 rounded-lg text-sm border transition-all',
-                  morningMood === m.label ? 'border-primary bg-primary/10 font-medium' : 'border-border hover:bg-muted'
+                  state.morningMood === m.label ? 'border-primary bg-primary/10 font-medium' : 'border-border hover:bg-muted'
                 )}
               >
                 {m.emoji} {m.label}
@@ -226,21 +174,21 @@ const DailyWorksheet = () => {
           <p className="text-sm font-semibold">🧠 EQ Morning Pulse</p>
           <div>
             <div className="flex justify-between text-xs text-muted-foreground mb-1">
-              <span>Mental Clarity</span><span>{clarity[0]}/10</span>
+              <span>Mental Clarity</span><span>{state.clarity[0]}/10</span>
             </div>
-            <Slider value={clarity} onValueChange={setClarity} max={10} min={1} step={1} />
+            <Slider value={state.clarity} onValueChange={v => updateField('clarity', v)} max={10} min={1} step={1} />
           </div>
           <div>
             <div className="flex justify-between text-xs text-muted-foreground mb-1">
-              <span>Physical Energy</span><span>{energy[0]}/10</span>
+              <span>Physical Energy</span><span>{state.energy[0]}/10</span>
             </div>
-            <Slider value={energy} onValueChange={setEnergy} max={10} min={1} step={1} />
+            <Slider value={state.energy} onValueChange={v => updateField('energy', v)} max={10} min={1} step={1} />
           </div>
           <div>
             <div className="flex justify-between text-xs text-muted-foreground mb-1">
-              <span>Emotional Peace</span><span>{peace[0]}/10</span>
+              <span>Emotional Peace</span><span>{state.peace[0]}/10</span>
             </div>
-            <Slider value={peace} onValueChange={setPeace} max={10} min={1} step={1} />
+            <Slider value={state.peace} onValueChange={v => updateField('peace', v)} max={10} min={1} step={1} />
           </div>
           <div className="flex items-center gap-2 pt-1">
             <span className="text-xs text-muted-foreground">Readiness:</span>
@@ -302,10 +250,10 @@ const DailyWorksheet = () => {
           {DEFAULT_NON_NEGOTIABLES.map((nn, i) => (
             <label key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
               <Checkbox
-                checked={nonNegotiables[i]}
-                onCheckedChange={(c) => setNonNegotiables(prev => ({ ...prev, [i]: !!c }))}
+                checked={state.nonNegotiables[i] || false}
+                onCheckedChange={(c) => updateField('nonNegotiables', { ...state.nonNegotiables, [i]: !!c })}
               />
-              <span className={cn('text-sm', nonNegotiables[i] && 'line-through text-muted-foreground')}>
+              <span className={cn('text-sm', state.nonNegotiables[i] && 'line-through text-muted-foreground')}>
                 {nn.habit_name}
               </span>
               <span className="ml-auto text-xs">{PILLAR_CONFIG[nn.lgt_pillar as PillarKey]?.icon}</span>
@@ -338,7 +286,6 @@ const DailyWorksheet = () => {
 
         <div className="overflow-x-auto">
           <div className="min-w-[700px]">
-            {/* Header */}
             <div className="grid grid-cols-[80px_1fr_100px_60px_80px] gap-1 px-4 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground border-b border-border">
               <span>Time</span>
               <span>Activity</span>
@@ -347,11 +294,10 @@ const DailyWorksheet = () => {
               {actualsMode ? <span>Status</span> : <span>Notes</span>}
             </div>
 
-            {/* Slots */}
             <div className="max-h-[500px] overflow-y-auto">
               {slots.map(slot => {
                 const key = slot.start;
-                const data = timeSlots[key] || { activity: '', pillar: '', energy: '', notes: '', actualStatus: '', skipReason: '' };
+                const data = state.timeSlots[key] || { activity: '', pillar: '', energy: '', notes: '', actualStatus: '', skipReason: '' };
                 const phaseBg = getPhaseForTime(slot.start);
 
                 return (
@@ -375,7 +321,6 @@ const DailyWorksheet = () => {
                       </SelectContent>
                     </Select>
 
-                    {/* Pillar */}
                     <Select value={data.pillar} onValueChange={(v) => updateSlot(key, 'pillar', v)}>
                       <SelectTrigger className="h-8 text-xs bg-background/80">
                         <SelectValue placeholder="Pillar" />
@@ -389,7 +334,6 @@ const DailyWorksheet = () => {
                       </SelectContent>
                     </Select>
 
-                    {/* Energy */}
                     <Select value={data.energy} onValueChange={(v) => updateSlot(key, 'energy', v)}>
                       <SelectTrigger className="h-8 text-xs bg-background/80">
                         <SelectValue placeholder="—" />
@@ -401,7 +345,6 @@ const DailyWorksheet = () => {
                       </SelectContent>
                     </Select>
 
-                    {/* Notes or Status */}
                     {actualsMode ? (
                       <Select value={data.actualStatus} onValueChange={(v) => updateSlot(key, 'actualStatus', v)}>
                         <SelectTrigger className="h-8 text-xs bg-background/80">
@@ -428,7 +371,6 @@ const DailyWorksheet = () => {
           </div>
         </div>
 
-        {/* Timesheet Summary */}
         <div className="p-4 border-t border-border bg-muted/30 flex flex-wrap gap-4 text-sm">
           <span>Planned: <strong>{totalPlanned}h</strong>/24h</span>
           <span>Free: <strong>{24 - totalPlanned}h</strong></span>
@@ -490,12 +432,12 @@ const DailyWorksheet = () => {
         <div>
           <p className="text-sm font-semibold text-foreground mb-2">📥 Income Received Today</p>
           <div className="space-y-2">
-            {incomeEntries.map((entry, i) => (
+            {state.incomeEntries.map((entry, i) => (
               <div key={i} className="flex items-center gap-2">
                 <Input
                   placeholder="Source (e.g., Client payment)"
                   value={entry.source}
-                  onChange={e => { const arr = [...incomeEntries]; arr[i] = { ...arr[i], source: e.target.value }; setIncomeEntries(arr); }}
+                  onChange={e => { const arr = [...state.incomeEntries]; arr[i] = { ...arr[i], source: e.target.value }; updateField('incomeEntries', arr); }}
                   className="flex-1"
                 />
                 <div className="relative">
@@ -504,11 +446,11 @@ const DailyWorksheet = () => {
                     placeholder="Amount"
                     type="number"
                     value={entry.amount}
-                    onChange={e => { const arr = [...incomeEntries]; arr[i] = { ...arr[i], amount: e.target.value }; setIncomeEntries(arr); }}
+                    onChange={e => { const arr = [...state.incomeEntries]; arr[i] = { ...arr[i], amount: e.target.value }; updateField('incomeEntries', arr); }}
                     className="w-28 pl-6"
                   />
                 </div>
-                <Select value={entry.category} onValueChange={v => { const arr = [...incomeEntries]; arr[i] = { ...arr[i], category: v }; setIncomeEntries(arr); }}>
+                <Select value={entry.category} onValueChange={v => { const arr = [...state.incomeEntries]; arr[i] = { ...arr[i], category: v }; updateField('incomeEntries', arr); }}>
                   <SelectTrigger className="w-32 text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="coaching_fee">Coaching Fee</SelectItem>
@@ -518,14 +460,14 @@ const DailyWorksheet = () => {
                     <SelectItem value="other_income">Other</SelectItem>
                   </SelectContent>
                 </Select>
-                {incomeEntries.length > 1 && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setIncomeEntries(incomeEntries.filter((_, j) => j !== i))}>
+                {state.incomeEntries.length > 1 && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => updateField('incomeEntries', state.incomeEntries.filter((_, j) => j !== i))}>
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 )}
               </div>
             ))}
-            <Button variant="outline" size="sm" onClick={() => setIncomeEntries([...incomeEntries, { source: '', amount: '', category: '' }])} className="gap-1">
+            <Button variant="outline" size="sm" onClick={() => updateField('incomeEntries', [...state.incomeEntries, { source: '', amount: '', category: '' }])} className="gap-1">
               <Plus className="w-3 h-3" /> Add Income
             </Button>
           </div>
@@ -535,12 +477,12 @@ const DailyWorksheet = () => {
         <div>
           <p className="text-sm font-semibold text-foreground mb-2">📤 Expense / Investment Today</p>
           <div className="space-y-2">
-            {expenseEntries.map((entry, i) => (
+            {state.expenseEntries.map((entry, i) => (
               <div key={i} className="flex items-center gap-2">
                 <Input
                   placeholder="Source (e.g., Venue booking)"
                   value={entry.source}
-                  onChange={e => { const arr = [...expenseEntries]; arr[i] = { ...arr[i], source: e.target.value }; setExpenseEntries(arr); }}
+                  onChange={e => { const arr = [...state.expenseEntries]; arr[i] = { ...arr[i], source: e.target.value }; updateField('expenseEntries', arr); }}
                   className="flex-1"
                 />
                 <div className="relative">
@@ -549,11 +491,11 @@ const DailyWorksheet = () => {
                     placeholder="Amount"
                     type="number"
                     value={entry.amount}
-                    onChange={e => { const arr = [...expenseEntries]; arr[i] = { ...arr[i], amount: e.target.value }; setExpenseEntries(arr); }}
+                    onChange={e => { const arr = [...state.expenseEntries]; arr[i] = { ...arr[i], amount: e.target.value }; updateField('expenseEntries', arr); }}
                     className="w-28 pl-6"
                   />
                 </div>
-                <Select value={entry.category} onValueChange={v => { const arr = [...expenseEntries]; arr[i] = { ...arr[i], category: v }; setExpenseEntries(arr); }}>
+                <Select value={entry.category} onValueChange={v => { const arr = [...state.expenseEntries]; arr[i] = { ...arr[i], category: v }; updateField('expenseEntries', arr); }}>
                   <SelectTrigger className="w-32 text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="business_investment">Business Investment</SelectItem>
@@ -563,14 +505,14 @@ const DailyWorksheet = () => {
                     <SelectItem value="other_expense">Other</SelectItem>
                   </SelectContent>
                 </Select>
-                {expenseEntries.length > 1 && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setExpenseEntries(expenseEntries.filter((_, j) => j !== i))}>
+                {state.expenseEntries.length > 1 && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => updateField('expenseEntries', state.expenseEntries.filter((_, j) => j !== i))}>
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 )}
               </div>
             ))}
-            <Button variant="outline" size="sm" onClick={() => setExpenseEntries([...expenseEntries, { source: '', amount: '', category: '' }])} className="gap-1">
+            <Button variant="outline" size="sm" onClick={() => updateField('expenseEntries', [...state.expenseEntries, { source: '', amount: '', category: '' }])} className="gap-1">
               <Plus className="w-3 h-3" /> Add Expense
             </Button>
           </div>
@@ -578,8 +520,8 @@ const DailyWorksheet = () => {
 
         {/* Daily Totals */}
         {(() => {
-          const totalIncome = incomeEntries.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
-          const totalExpense = expenseEntries.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+          const totalIncome = state.incomeEntries.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+          const totalExpense = state.expenseEntries.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
           const net = totalIncome - totalExpense;
           return (
             <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
@@ -610,32 +552,29 @@ const DailyWorksheet = () => {
         <h2 className="text-lg font-bold">🏥 Sharir Ka Haal (Body Dashboard)</h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {/* Water Intake */}
           <div className="space-y-2">
             <p className="text-xs font-semibold text-muted-foreground">💧 Water (glasses)</p>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setWaterGlasses(Math.max(0, waterGlasses - 1))}>-</Button>
-              <span className={cn('text-xl font-bold', waterGlasses >= 8 ? 'text-green-600' : 'text-foreground')}>{waterGlasses}</span>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setWaterGlasses(waterGlasses + 1)}>+</Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateField('waterGlasses', Math.max(0, state.waterGlasses - 1))}>-</Button>
+              <span className={cn('text-xl font-bold', state.waterGlasses >= 8 ? 'text-green-600' : 'text-foreground')}>{state.waterGlasses}</span>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateField('waterGlasses', state.waterGlasses + 1)}>+</Button>
               <span className="text-xs text-muted-foreground">/8</span>
             </div>
             <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-              <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${Math.min(100, (waterGlasses / 8) * 100)}%` }} />
+              <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${Math.min(100, (state.waterGlasses / 8) * 100)}%` }} />
             </div>
           </div>
 
-          {/* Steps */}
           <div className="space-y-2">
             <p className="text-xs font-semibold text-muted-foreground">👣 Steps</p>
-            <Input placeholder="0" type="number" value={stepsTaken} onChange={e => setStepsTaken(e.target.value)} className="h-9" />
+            <Input placeholder="0" type="number" value={state.stepsTaken} onChange={e => updateField('stepsTaken', e.target.value)} className="h-9" />
             <p className="text-[10px] text-muted-foreground">Goal: 10,000</p>
           </div>
 
-          {/* Sleep */}
           <div className="space-y-2">
             <p className="text-xs font-semibold text-muted-foreground">😴 Sleep (hrs)</p>
-            <Input placeholder="0" type="number" step="0.5" value={sleepHours} onChange={e => setSleepHours(e.target.value)} className="h-9" />
-            <Select value={sleepQuality} onValueChange={setSleepQuality}>
+            <Input placeholder="0" type="number" step="0.5" value={state.sleepHours} onChange={e => updateField('sleepHours', e.target.value)} className="h-9" />
+            <Select value={state.sleepQuality} onValueChange={v => updateField('sleepQuality', v)}>
               <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Quality" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="deep">😴 Deep</SelectItem>
@@ -646,48 +585,43 @@ const DailyWorksheet = () => {
             </Select>
           </div>
 
-          {/* Body Weight */}
           <div className="space-y-2">
             <p className="text-xs font-semibold text-muted-foreground">⚖️ Weight (kg)</p>
-            <Input placeholder="Optional" type="number" step="0.1" value={bodyWeight} onChange={e => setBodyWeight(e.target.value)} className="h-9" />
+            <Input placeholder="Optional" type="number" step="0.1" value={state.bodyWeight} onChange={e => updateField('bodyWeight', e.target.value)} className="h-9" />
           </div>
 
-          {/* Supplements */}
           <div className="space-y-2">
             <p className="text-xs font-semibold text-muted-foreground">💊 Supplements</p>
             <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox checked={supplementsTaken} onCheckedChange={(c) => setSupplementsTaken(!!c)} />
-              <span className="text-sm">{supplementsTaken ? 'Taken ✅' : 'Not yet'}</span>
+              <Checkbox checked={state.supplementsTaken} onCheckedChange={(c) => updateField('supplementsTaken', !!c)} />
+              <span className="text-sm">{state.supplementsTaken ? 'Taken ✅' : 'Not yet'}</span>
             </label>
           </div>
 
-          {/* Workout */}
           <div className="space-y-2">
             <p className="text-xs font-semibold text-muted-foreground">🏋️ Workout</p>
             <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox checked={workoutDone} onCheckedChange={(c) => setWorkoutDone(!!c)} />
-              <span className="text-sm">{workoutDone ? 'Done ✅' : 'Not yet'}</span>
+              <Checkbox checked={state.workoutDone} onCheckedChange={(c) => updateField('workoutDone', !!c)} />
+              <span className="text-sm">{state.workoutDone ? 'Done ✅' : 'Not yet'}</span>
             </label>
-            {workoutDone && (
+            {state.workoutDone && (
               <div className="flex gap-1">
-                <Input placeholder="Type" value={workoutType} onChange={e => setWorkoutType(e.target.value)} className="h-8 text-xs flex-1" />
-                <Input placeholder="Min" type="number" value={workoutDuration} onChange={e => setWorkoutDuration(e.target.value)} className="h-8 text-xs w-16" />
+                <Input placeholder="Type" value={state.workoutType} onChange={e => updateField('workoutType', e.target.value)} className="h-8 text-xs flex-1" />
+                <Input placeholder="Min" type="number" value={state.workoutDuration} onChange={e => updateField('workoutDuration', e.target.value)} className="h-8 text-xs w-16" />
               </div>
             )}
           </div>
 
-          {/* Screen Time */}
           <div className="space-y-2">
             <p className="text-xs font-semibold text-muted-foreground">📱 Screen Time (hrs)</p>
-            <Input placeholder="0" type="number" step="0.5" value={screenTime} onChange={e => setScreenTime(e.target.value)} className="h-9" />
+            <Input placeholder="0" type="number" step="0.5" value={state.screenTime} onChange={e => updateField('screenTime', e.target.value)} className="h-9" />
           </div>
 
-          {/* End Energy */}
           <div className="space-y-2">
             <p className="text-xs font-semibold text-muted-foreground">⚡ Energy at Day End</p>
-            <Slider value={endEnergyLevel} onValueChange={setEndEnergyLevel} max={10} min={1} step={1} />
+            <Slider value={state.endEnergyLevel} onValueChange={v => updateField('endEnergyLevel', v)} max={10} min={1} step={1} />
             <p className="text-xs text-center">
-              {endEnergyLevel[0] <= 3 ? '🔴' : endEnergyLevel[0] <= 6 ? '🟡' : '🟢'} {endEnergyLevel[0]}/10
+              {state.endEnergyLevel[0] <= 3 ? '🔴' : state.endEnergyLevel[0] <= 6 ? '🟡' : '🟢'} {state.endEnergyLevel[0]}/10
             </p>
           </div>
         </div>
@@ -695,38 +629,36 @@ const DailyWorksheet = () => {
 
       {/* SECTION 7 — Aaj Ki Jeet & AHA Moment */}
       <div className="space-y-4">
-        {/* Wins */}
         <div className="bg-card rounded-xl border-2 border-green-200 dark:border-green-800 p-5">
           <h2 className="text-lg font-bold mb-3">🏆 Aaj Ki Jeet (Today's Win)</h2>
           <p className="text-xs text-muted-foreground mb-3">At least 1 win is required — har jeet celebrate hoti hai!</p>
           <div className="space-y-2">
-            {wins.map((win, i) => (
+            {state.wins.map((win, i) => (
               <div key={i} className="flex items-center gap-2">
                 <span className="text-sm">🏆</span>
                 <Textarea
                   placeholder="Aaj maine kya achieve kiya, bada ya chhota..."
                   value={win}
-                  onChange={e => { const arr = [...wins]; arr[i] = e.target.value; setWins(arr); }}
+                  onChange={e => { const arr = [...state.wins]; arr[i] = e.target.value; updateField('wins', arr); }}
                   className="min-h-[60px] flex-1"
                 />
-                {wins.length > 1 && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setWins(wins.filter((_, j) => j !== i))}>
+                {state.wins.length > 1 && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => updateField('wins', state.wins.filter((_, j) => j !== i))}>
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 )}
               </div>
             ))}
-            {wins.length < 3 && (
-              <Button variant="outline" size="sm" onClick={() => setWins([...wins, ''])} className="gap-1">
+            {state.wins.length < 3 && (
+              <Button variant="outline" size="sm" onClick={() => updateField('wins', [...state.wins, ''])} className="gap-1">
                 <Plus className="w-3 h-3" /> Add Another Win
               </Button>
             )}
           </div>
         </div>
 
-        {/* AHA Moment */}
         <div className="bg-card rounded-xl border-2 border-amber-200 dark:border-amber-800 p-5 relative overflow-hidden">
-          {ahaMoment && (
+          {state.ahaMoment && (
             <div className="absolute inset-0 pointer-events-none">
               <Sparkles className="absolute top-2 right-3 w-5 h-5 text-amber-400 animate-pulse" />
               <Sparkles className="absolute bottom-4 left-5 w-4 h-4 text-amber-300 animate-pulse delay-300" />
@@ -737,8 +669,8 @@ const DailyWorksheet = () => {
           <p className="text-xs text-muted-foreground mb-3">Optional but encouraged — capture your breakthroughs!</p>
           <Textarea
             placeholder="Aaj kuch aisa hua ya socha jo pehle kabhi nahin hua..."
-            value={ahaMoment}
-            onChange={e => setAhaMoment(e.target.value)}
+            value={state.ahaMoment}
+            onChange={e => updateField('ahaMoment', e.target.value)}
             className="min-h-[80px]"
           />
         </div>
@@ -753,14 +685,13 @@ const DailyWorksheet = () => {
           </CollapsibleTrigger>
           <CollapsibleContent>
             <div className="px-5 pb-5 space-y-5 border-t border-border pt-4">
-              {/* Evening Mood */}
               <div>
                 <p className="text-sm font-semibold mb-2">😊 Mood at End of Day</p>
                 <div className="flex flex-wrap gap-2">
                   {MOOD_OPTIONS.map(m => (
-                    <button key={m.label} onClick={() => setEveningMood(m.label)}
+                    <button key={m.label} onClick={() => updateField('eveningMood', m.label)}
                       className={cn('px-3 py-2 rounded-lg text-sm border transition-all',
-                        eveningMood === m.label ? 'border-primary bg-primary/10 font-medium' : 'border-border hover:bg-muted'
+                        state.eveningMood === m.label ? 'border-primary bg-primary/10 font-medium' : 'border-border hover:bg-muted'
                       )}>
                       {m.emoji} {m.label}
                     </button>
@@ -768,26 +699,25 @@ const DailyWorksheet = () => {
                 </div>
               </div>
 
-              {/* EQ Evening Pulse */}
               <div className="bg-muted/30 rounded-lg p-4 space-y-3">
                 <p className="text-sm font-semibold">🧠 EQ Evening Pulse</p>
                 <div>
                   <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>Mental Peace — "Mera mann aaj kitna shant raha?"</span><span>{evMentalPeace[0]}/10</span>
+                    <span>Mental Peace — "Mera mann aaj kitna shant raha?"</span><span>{state.evMentalPeace[0]}/10</span>
                   </div>
-                  <Slider value={evMentalPeace} onValueChange={setEvMentalPeace} max={10} min={1} step={1} />
+                  <Slider value={state.evMentalPeace} onValueChange={v => updateField('evMentalPeace', v)} max={10} min={1} step={1} />
                 </div>
                 <div>
                   <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>Emotional Satisfaction — "Andar se kitna bhar hua feel?"</span><span>{evEmotionalSat[0]}/10</span>
+                    <span>Emotional Satisfaction — "Andar se kitna bhar hua feel?"</span><span>{state.evEmotionalSat[0]}/10</span>
                   </div>
-                  <Slider value={evEmotionalSat} onValueChange={setEvEmotionalSat} max={10} min={1} step={1} />
+                  <Slider value={state.evEmotionalSat} onValueChange={v => updateField('evEmotionalSat', v)} max={10} min={1} step={1} />
                 </div>
                 <div>
                   <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>Overall Fulfillment — "Din kitna meaningful laga?"</span><span>{evFulfillment[0]}/10</span>
+                    <span>Overall Fulfillment — "Din kitna meaningful laga?"</span><span>{state.evFulfillment[0]}/10</span>
                   </div>
-                  <Slider value={evFulfillment} onValueChange={setEvFulfillment} max={10} min={1} step={1} />
+                  <Slider value={state.evFulfillment} onValueChange={v => updateField('evFulfillment', v)} max={10} min={1} step={1} />
                 </div>
                 <div className="flex items-center gap-3 pt-1">
                   <span className="text-xs text-muted-foreground">Evening Score:</span>
@@ -800,50 +730,47 @@ const DailyWorksheet = () => {
                 </div>
               </div>
 
-              {/* Reflection Text Areas */}
               <div className="space-y-3">
                 <div>
                   <p className="text-sm font-semibold mb-1">✅ What went well today?</p>
-                  <Textarea placeholder="Aaj kya accha hua..." value={whatWentWell} onChange={e => setWhatWentWell(e.target.value)} className="min-h-[60px]" />
+                  <Textarea placeholder="Aaj kya accha hua..." value={state.whatWentWell} onChange={e => updateField('whatWentWell', e.target.value)} className="min-h-[60px]" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold mb-1">📚 What did I learn today?</p>
-                  <Textarea placeholder="Aaj maine kya seekha..." value={whatLearned} onChange={e => setWhatLearned(e.target.value)} className="min-h-[60px]" />
+                  <Textarea placeholder="Aaj maine kya seekha..." value={state.whatLearned} onChange={e => updateField('whatLearned', e.target.value)} className="min-h-[60px]" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold mb-1">🔄 What will I do differently tomorrow?</p>
-                  <Textarea placeholder="Kal main differently karunga..." value={doDifferently} onChange={e => setDoDifferently(e.target.value)} className="min-h-[60px]" />
+                  <Textarea placeholder="Kal main differently karunga..." value={state.doDifferently} onChange={e => updateField('doDifferently', e.target.value)} className="min-h-[60px]" />
                 </div>
               </div>
 
-              {/* Gratitude */}
               <div>
                 <p className="text-sm font-semibold mb-2">🙏 Gratitude</p>
                 <div className="space-y-2">
-                  {gratitudes.map((g, i) => (
+                  {state.gratitudes.map((g, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <span className="text-sm">🙏</span>
                       <Input placeholder={`Gratitude ${i + 1}...`} value={g}
-                        onChange={e => { const arr = [...gratitudes]; arr[i] = e.target.value; setGratitudes(arr); }} />
+                        onChange={e => { const arr = [...state.gratitudes]; arr[i] = e.target.value; updateField('gratitudes', arr); }} />
                     </div>
                   ))}
-                  {!showExtraGratitude && gratitudes.length <= 3 && (
-                    <Button variant="outline" size="sm" onClick={() => { setGratitudes([...gratitudes, '', '']); setShowExtraGratitude(true); }} className="gap-1">
+                  {!showExtraGratitude && state.gratitudes.length <= 3 && (
+                    <Button variant="outline" size="sm" onClick={() => { updateField('gratitudes', [...state.gratitudes, '', '']); setShowExtraGratitude(true); }} className="gap-1">
                       <Plus className="w-3 h-3" /> Add More Gratitude
                     </Button>
                   )}
                 </div>
               </div>
 
-              {/* Self-Rating Sliders */}
               <div className="bg-muted/30 rounded-lg p-4 space-y-3">
                 <p className="text-sm font-semibold">📊 Self-Rating (LGT Pillars)</p>
                 {([
-                  { label: '🟠 Dharma', val: dharmaScore, set: setDharmaScore },
-                  { label: '💛 Artha', val: arthaScore, set: setArthaScore },
-                  { label: '🩷 Kama', val: kamaScore, set: setKamaScore },
-                  { label: '🟣 Moksha', val: mokshaScore, set: setMokshaScore },
-                ] as const).map(s => (
+                  { label: '🟠 Dharma', val: state.dharmaScore, set: (v: number[]) => updateField('dharmaScore', v) },
+                  { label: '💛 Artha', val: state.arthaScore, set: (v: number[]) => updateField('arthaScore', v) },
+                  { label: '🩷 Kama', val: state.kamaScore, set: (v: number[]) => updateField('kamaScore', v) },
+                  { label: '🟣 Moksha', val: state.mokshaScore, set: (v: number[]) => updateField('mokshaScore', v) },
+                ]).map(s => (
                   <div key={s.label}>
                     <div className="flex justify-between text-xs text-muted-foreground mb-1">
                       <span>{s.label} Score</span><span>{s.val[0]}/10</span>
@@ -859,13 +786,11 @@ const DailyWorksheet = () => {
                 </div>
               </div>
 
-              {/* Tomorrow's Sankalp */}
               <div>
                 <p className="text-sm font-semibold mb-1">🌅 Tomorrow's Sankalp</p>
-                <Input placeholder="Kal ka sankalp..." value={tomorrowSankalp} onChange={e => setTomorrowSankalp(e.target.value)} />
+                <Input placeholder="Kal ka sankalp..." value={state.tomorrowSankalp} onChange={e => updateField('tomorrowSankalp', e.target.value)} />
               </div>
 
-              {/* Tomorrow Prep Checklist */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-semibold">📋 Tomorrow's Preparation</p>
@@ -878,8 +803,8 @@ const DailyWorksheet = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {TOMORROW_PREP_ITEMS.map((item, i) => (
                     <label key={i} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-                      <Checkbox checked={!!tomorrowPrep[i]} onCheckedChange={(c) => setTomorrowPrep(prev => ({ ...prev, [i]: !!c }))} />
-                      <span className={cn('text-sm', tomorrowPrep[i] && 'line-through text-muted-foreground')}>{item}</span>
+                      <Checkbox checked={!!state.tomorrowPrep[i]} onCheckedChange={(c) => updateField('tomorrowPrep', { ...state.tomorrowPrep, [i]: !!c })} />
+                      <span className={cn('text-sm', state.tomorrowPrep[i] && 'line-through text-muted-foreground')}>{item}</span>
                     </label>
                   ))}
                 </div>
@@ -914,13 +839,14 @@ const DailyWorksheet = () => {
         <Button variant="outline" className="gap-2" onClick={() => setTemplatesOpen(true)}>
           <LayoutTemplate className="w-4 h-4" /> Templates
         </Button>
-        <Button onClick={handleSave} className="gap-2">
-          <Save className="w-4 h-4" /> Save Draft
+        <Button onClick={handleSave} disabled={state.isSaving} className="gap-2">
+          {state.isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          Save Draft
         </Button>
-        <Button variant="default" className="gap-2 bg-green-600 hover:bg-green-700">
+        <Button variant="default" className="gap-2 bg-green-600 hover:bg-green-700" onClick={handleSubmit} disabled={state.isSaving}>
           <Check className="w-4 h-4" /> Submit Day
         </Button>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className="gap-2" onClick={copyYesterday}>
           <Copy className="w-4 h-4" /> Copy Yesterday
         </Button>
         <div className="flex items-center gap-1">
