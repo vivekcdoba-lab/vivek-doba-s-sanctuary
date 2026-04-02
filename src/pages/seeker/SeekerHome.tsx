@@ -1,12 +1,27 @@
 import { Link } from 'react-router-dom';
 import { getGreeting, SEEKERS, SESSIONS, AFFIRMATIONS, MOTIVATIONAL_QUOTES } from '@/data/mockData';
-import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award, ScrollText } from 'lucide-react';
+import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award, ScrollText, X } from 'lucide-react';
+import { useBadgeNotifications } from '@/hooks/useBadgeNotifications';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const SeekerHome = () => {
-  const seeker = SEEKERS[0]; // Mock current seeker as Rahul Patil
+  const seeker = SEEKERS[0];
   const affirmation = AFFIRMATIONS[0];
   const quote = MOTIVATIONAL_QUOTES[3];
   const nextSession = SESSIONS.find((s) => s.seeker_id === seeker.id && s.status === 'scheduled');
+
+  // Resolve profile ID for notifications
+  const [profileId, setProfileId] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      supabase.from('profiles').select('id').eq('user_id', data.user.id).maybeSingle()
+        .then(({ data: p }) => { if (p) setProfileId(p.id); });
+    });
+  }, []);
+
+  const { notifications, dismiss, dismissAll } = useBadgeNotifications(profileId);
 
   const streaks = [
     { label: 'Meditation', emoji: '🧘', count: 15 },
@@ -24,6 +39,28 @@ const SeekerHome = () => {
         <h1 className="text-xl font-bold">{getGreeting()}, {seeker.full_name.split(' ')[0]}!</h1>
         <p className="text-sm text-primary-foreground/80 mt-1">Day 168 of your {seeker.course?.name?.split('—')[0]} journey</p>
       </div>
+
+      {/* 🎉 Badge Congratulations */}
+      {notifications.length > 0 && (
+        <div className="space-y-2">
+          {notifications.map((n) => (
+            <div key={n.id} className="relative bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border-2 border-yellow-300 dark:border-yellow-700 rounded-2xl p-4 animate-in slide-in-from-top">
+              <button onClick={() => dismiss(n.id)} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-yellow-200 dark:bg-yellow-800 flex items-center justify-center text-xl">🏆</div>
+                <p className="text-sm font-medium text-foreground pr-5">{n.message}</p>
+              </div>
+            </div>
+          ))}
+          {notifications.length > 1 && (
+            <button onClick={dismissAll} className="text-xs text-muted-foreground hover:text-foreground underline w-full text-center">
+              Dismiss all
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Today's Affirmation */}
       <div className="glass-card p-5 border-2 border-primary/20 relative">
