@@ -120,6 +120,41 @@ const SeekerProfile = () => {
         </div>
       </div>
 
+      {/* Badges & Achievements */}
+      <div className="bg-card rounded-xl p-4 border border-border shadow-sm space-y-3">
+        <h3 className="text-sm font-semibold text-foreground border-b border-border pb-2">🏅 Badges & Achievements</h3>
+        {earnedBadges.length > 0 ? (
+          <div className="grid grid-cols-3 gap-2">
+            {earnedBadges.map(b => (
+              <div key={b.id} className="text-center p-2 rounded-lg border border-primary/20 bg-primary/5">
+                <span className="text-2xl block">{b.badge.emoji}</span>
+                <p className="text-[10px] font-bold text-foreground mt-0.5">{b.badge.name}</p>
+                <p className="text-[9px] text-muted-foreground">{format(new Date(b.earned_at), 'dd MMM')}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground text-center py-3">Complete streaks on your Daily Worksheet to earn badges! 🔥</p>
+        )}
+
+        {/* Progress toward next badges */}
+        {progress.filter(p => !p.isEarned && p.currentStreak > 0).length > 0 && (
+          <div className="space-y-2 pt-2 border-t border-border">
+            <p className="text-xs font-semibold text-muted-foreground">🔄 In Progress</p>
+            {progress.filter(p => !p.isEarned && p.currentStreak > 0).slice(0, 3).map(p => (
+              <div key={p.badge.id} className="flex items-center gap-2">
+                <span className="text-lg">{p.badge.emoji}</span>
+                <div className="flex-1">
+                  <p className="text-[10px] font-semibold text-foreground">{p.badge.name}</p>
+                  <Progress value={p.progressPercent} className="h-1.5" />
+                </div>
+                <span className="text-[10px] text-muted-foreground">{p.currentStreak}/{p.requiredStreak}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Logout */}
       <button onClick={() => { logout(); window.location.href = '/login'; }} className="w-full py-3 rounded-xl bg-destructive/10 text-destructive font-medium text-sm flex items-center justify-center gap-2">
         <LogOut className="w-4 h-4" /> Logout
