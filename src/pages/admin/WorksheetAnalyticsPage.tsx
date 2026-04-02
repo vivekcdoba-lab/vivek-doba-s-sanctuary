@@ -47,6 +47,14 @@ interface ProfileRow {
   avatar_url: string | null;
 }
 
+interface BadgeWithDef {
+  seeker_id: string;
+  badge_id: string;
+  earned_at: string;
+  emoji: string;
+  name: string;
+}
+
 const PILLAR_COLORS = {
   dharma: '#F97316',
   artha: '#EAB308',
