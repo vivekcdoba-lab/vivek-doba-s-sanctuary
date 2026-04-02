@@ -120,7 +120,7 @@ function SeekerSidebar() {
 
 const SeekerLayoutInner = () => {
   const location = useLocation();
-  const { user, logout, darkMode, toggleDarkMode } = useAuthStore();
+  const { profile, logout, darkMode, toggleDarkMode } = useAuthStore();
   const isActive = (path: string) => location.pathname === path;
 
   return (
