@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { format, addDays, subDays } from 'date-fns';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate, Loader2 } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate, Loader2, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -12,12 +12,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Progress } from '@/components/ui/progress';
 import {
   ACTIVITY_GROUPS, DEFAULT_NON_NEGOTIABLES, MOOD_OPTIONS, PILLAR_CONFIG,
   DAY_NAMES, MONEY_AFFIRMATIONS, generateTimeSlots, getPhaseForTime,
   type PillarKey,
 } from '@/data/worksheetData';
 import { useWorksheet } from '@/hooks/useWorksheet';
+import { useBadges } from '@/hooks/useBadges';
 import { toast } from 'sonner';
 
 const DailyWorksheet = () => {
@@ -27,8 +29,10 @@ const DailyWorksheet = () => {
   const [reflectionOpen, setReflectionOpen] = useState(false);
   const [showExtraGratitude, setShowExtraGratitude] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [badgesOpen, setBadgesOpen] = useState(false);
 
-  const { state, updateField, updateSlot, saveWorksheet, copyYesterday } = useWorksheet(selectedDate);
+  const { state, updateField, updateSlot, saveWorksheet, copyYesterday, seekerProfileId } = useWorksheet(selectedDate);
+  const { progress, earnedBadges, nextBadge, checkAndAwardBadges } = useBadges(seekerProfileId);
 
   const slots = useMemo(() => generateTimeSlots(), []);
   const dayInfo = DAY_NAMES[selectedDate.getDay()];
@@ -78,7 +82,22 @@ const DailyWorksheet = () => {
   const lgtBalanceScore = ((state.dharmaScore[0] + state.arthaScore[0] + state.kamaScore[0] + state.mokshaScore[0]) / 4).toFixed(1);
 
   const handleSave = () => saveWorksheet(false);
-  const handleSubmit = () => saveWorksheet(true);
+  const handleSubmit = async () => {
+    await saveWorksheet(true);
+    // Check badge streaks after submit
+    const totalIncome = state.incomeEntries.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+    const newlyEarned = await checkAndAwardBadges(format(selectedDate, 'yyyy-MM-dd'), {
+      is_submitted: true,
+      water_intake_glasses: state.waterGlasses,
+      sampoorna_din_score: null,
+      non_negotiables_completed: Object.values(state.nonNegotiables).filter(Boolean).length,
+      non_negotiables_total: DEFAULT_NON_NEGOTIABLES.length,
+      has_positive_income: totalIncome > 0,
+    });
+    if (newlyEarned.length) {
+      toast.success(`🏅 New Badge Earned: ${newlyEarned.join(', ')}!`, { duration: 5000 });
+    }
+  };
 
   const applyTemplate = (templateName: string) => {
     toast.success(`"${templateName}" template applied!`);
@@ -132,12 +151,33 @@ const DailyWorksheet = () => {
         </div>
       )}
 
-      {/* Streak Counter */}
-      <div className="flex items-center gap-4 text-sm">
+      {/* Streak Counter & Badge Preview */}
+      <div className="flex items-center gap-4 text-sm flex-wrap">
         <span className="flex items-center gap-1"><Flame className="w-4 h-4 text-orange-500" /> Streak: <strong>15 days</strong></span>
         <span className="flex items-center gap-1"><Star className="w-4 h-4 text-yellow-500" /> Best: <strong>42 days</strong></span>
         <span className="text-muted-foreground">📅 Total: <strong>68</strong></span>
+        {earnedBadges.length > 0 && (
+          <button onClick={() => setBadgesOpen(true)} className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
+            <Award className="w-3.5 h-3.5" /> {earnedBadges.length} Badges
+          </button>
+        )}
       </div>
+
+      {/* Next Badge Progress */}
+      {nextBadge && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 rounded-xl border border-amber-200 dark:border-amber-800 p-3 flex items-center gap-3">
+          <span className="text-2xl">{nextBadge.badge.emoji}</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground">
+              🔥 {nextBadge.daysRemaining} more days to earn <strong>{nextBadge.badge.name}</strong> badge!
+            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <Progress value={nextBadge.progressPercent} className="h-2 flex-1" />
+              <span className="text-[10px] text-muted-foreground font-mono">{nextBadge.currentStreak}/{nextBadge.requiredStreak}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sankalp */}
       <div className="bg-card rounded-xl border border-border p-4">
@@ -859,6 +899,56 @@ const DailyWorksheet = () => {
           </Button>
         </div>
       </div>
+
+      {/* Badges Dialog */}
+      <Dialog open={badgesOpen} onOpenChange={setBadgesOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>🏅 My Badges & Achievements</DialogTitle>
+          </DialogHeader>
+
+          {/* Earned Badges */}
+          {earnedBadges.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-foreground">✅ Earned ({earnedBadges.length})</p>
+              <div className="grid grid-cols-2 gap-2">
+                {earnedBadges.map(b => (
+                  <div key={b.id} className="p-3 rounded-xl border-2 border-primary/30 bg-primary/5 text-center">
+                    <span className="text-3xl block">{b.badge.emoji}</span>
+                    <p className="text-xs font-bold text-foreground mt-1">{b.badge.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{b.badge.description}</p>
+                    <p className="text-[10px] text-primary mt-1">
+                      Earned {format(new Date(b.earned_at), 'dd MMM yyyy')}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* In Progress */}
+          <div className="space-y-2 mt-4">
+            <p className="text-sm font-semibold text-foreground">🔄 In Progress</p>
+            <div className="space-y-2">
+              {progress.filter(p => !p.isEarned).map(p => (
+                <div key={p.badge.id} className="p-3 rounded-xl border border-border flex items-center gap-3">
+                  <span className="text-2xl opacity-50">{p.badge.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-foreground">{p.badge.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{p.badge.description}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Progress value={p.progressPercent} className="h-1.5 flex-1" />
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {p.currentStreak}/{p.requiredStreak}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
