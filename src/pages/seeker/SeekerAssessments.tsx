@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import LGTAssessment from '@/components/LGTAssessment';
 import FIROBAssessment from '@/components/FIROBAssessment';
+import BackToHome from '@/components/BackToHome';
 
 // 9 Life Areas matching Vivek Doba's Wheel of Life framework
 const AREAS = [
@@ -138,6 +139,7 @@ const SeekerAssessments = () => {
 
   return (
     <div className="p-4 space-y-5 max-w-2xl mx-auto animate-fade-up">
+      <BackToHome />
       {/* Header */}
       <div className="text-center">
         <h1 className="text-2xl font-bold text-foreground">My Transformation Assessments</h1>

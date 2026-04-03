@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ASSIGNMENTS, SEEKERS } from '@/data/mockData';
 import { ClipboardList, CheckCircle, Clock, AlertTriangle, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import BackToHome from '@/components/BackToHome';
 
 const SeekerTasks = () => {
   const [activeTab, setActiveTab] = useState<'assignments' | 'actions'>('assignments');
@@ -37,6 +38,7 @@ const SeekerTasks = () => {
 
   return (
     <div className="p-4 space-y-5 max-w-lg mx-auto">
+      <BackToHome />
       <h1 className="text-xl font-bold text-foreground">My Tasks</h1>
 
       {/* Tabs */}

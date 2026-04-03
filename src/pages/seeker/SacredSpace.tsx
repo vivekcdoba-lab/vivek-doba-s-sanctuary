@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Pause, Play, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
+import BackToHome from '@/components/BackToHome';
 import { Slider } from '@/components/ui/slider';
 import {
   SOUND_LIBRARY, MOOD_PRESETS, playSound, stopSound, stopAll, playPreset, playCompletionBell,
@@ -224,6 +225,7 @@ const SacredSpace = () => {
 
   return (
     <div className="p-4 space-y-6 max-w-lg mx-auto" style={{ background: 'linear-gradient(180deg, hsl(252 60% 11%), hsl(260 50% 8%))' }}>
+      <BackToHome light />
       {/* Header */}
       <div className="text-center pt-4">
         <Sparkles className="w-8 h-8 text-gold mx-auto mb-2" />
