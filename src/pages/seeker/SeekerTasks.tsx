@@ -38,6 +38,7 @@ const SeekerTasks = () => {
 
   return (
     <div className="p-4 space-y-5 max-w-lg mx-auto">
+      <BackToHome />
       <h1 className="text-xl font-bold text-foreground">My Tasks</h1>
 
       {/* Tabs */}

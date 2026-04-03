@@ -139,6 +139,7 @@ const SeekerAssessments = () => {
 
   return (
     <div className="p-4 space-y-5 max-w-2xl mx-auto animate-fade-up">
+      <BackToHome />
       {/* Header */}
       <div className="text-center">
         <h1 className="text-2xl font-bold text-foreground">My Transformation Assessments</h1>

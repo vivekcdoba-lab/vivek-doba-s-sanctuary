@@ -136,6 +136,7 @@ const DailyWorksheet = () => {
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
+      <BackToHome />
       {/* Focus Music Bar */}
       <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-3 py-2">
         <Music className="w-4 h-4 text-muted-foreground" />

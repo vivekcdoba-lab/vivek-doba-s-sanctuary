@@ -121,6 +121,7 @@ const SeekerDailyLog = () => {
 
   return (
     <div className="p-4 space-y-4 max-w-lg mx-auto">
+      <BackToHome />
       <div>
         <h1 className="text-xl font-bold text-foreground">Daily Transformation Log</h1>
         <p className="text-sm text-muted-foreground">31/03/2025 · Day 168 · <span className="text-dharma-green">Auto-saved ✓</span></p>
