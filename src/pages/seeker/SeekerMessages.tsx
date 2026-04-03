@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MESSAGES } from '@/data/mockData';
 import { Send, AlertCircle, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import BackToHome from '@/components/BackToHome';
 
 const SeekerMessages = () => {
   const [messages, setMessages] = useState(MESSAGES.filter(m => m.sender_id === 's1' || m.receiver_id === 's1'));
