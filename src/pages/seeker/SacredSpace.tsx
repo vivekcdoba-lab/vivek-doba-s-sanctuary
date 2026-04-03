@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Pause, Play, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
+import BackToHome from '@/components/BackToHome';
 import { Slider } from '@/components/ui/slider';
 import {
   SOUND_LIBRARY, MOOD_PRESETS, playSound, stopSound, stopAll, playPreset, playCompletionBell,
