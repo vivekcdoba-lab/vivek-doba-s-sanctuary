@@ -88,9 +88,16 @@ const LoginPage = () => {
 
         toast.success(`Welcome! 🙏`);
 
-        // Route based on role
+        // Route based on role — admin can access all, so use selected tab
         if (role === 'admin') {
-          navigate('/dashboard');
+          // Admin gets routed based on which tab they selected
+          if (selectedRole === 'seeker') {
+            navigate('/seeker/home');
+          } else if (selectedRole === 'coach') {
+            navigate('/coaching');
+          } else {
+            navigate('/dashboard');
+          }
         } else if (role === 'coach') {
           navigate('/coaching');
         } else {
