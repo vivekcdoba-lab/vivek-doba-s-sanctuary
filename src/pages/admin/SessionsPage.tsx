@@ -117,7 +117,7 @@ const SessionsPage = () => {
       engagement_score: postData.engagement,
     } : s));
     setShowPostSession(null);
-    setPostData({ topics: '', insights: '', breakthroughs: '', challenges: '', mood: '😊', engagement: 7, energy: 7, openness: 7, stories: [], assignments: '', privateNotes: '', focusNext: '' });
+    setPostData({ sessionName: '', pillar: 'all', topics: '', insights: '', breakthroughs: '', challenges: '', therapyGiven: '', mood: '😊', engagement: 7, energy: 7, openness: 7, stories: [], clientGoodThings: ['', '', ''], clientGrowth: { dharma: '', artha: '', kama: '', moksha: '' }, majorWin: '', assignments: '', pendingAssignments: '', privateNotes: '', focusNext: '', nextSessionTime: '', nextWeekAssignments: '', punishments: '', rewards: '', targets: '' });
   };
 
   const markMissed = (sessionId: string) => {
