@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { ASSIGNMENTS, SEEKERS } from '@/data/mockData';
 import { ClipboardList, CheckCircle, Clock, AlertTriangle, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthStore } from '@/store/authStore';
+import { useDbAssignments } from '@/hooks/useDbAssignments';
 import BackToHome from '@/components/BackToHome';
+import { Loader2 } from 'lucide-react';
 
 const SeekerTasks = () => {
   const [activeTab, setActiveTab] = useState<'assignments' | 'actions'>('assignments');
   const { toast } = useToast();
-  const seekerAssignments = ASSIGNMENTS.filter(a => a.seeker_id === 's1');
+  const { profile } = useAuthStore();
+  const { data: assignments = [], isLoading } = useDbAssignments(profile?.id);
 
   const statusConfig: Record<string, { label: string; color: string }> = {
     assigned: { label: '🔵 Assigned', color: 'bg-blue-500/10 text-blue-500' },
@@ -19,40 +22,33 @@ const SeekerTasks = () => {
 
   const priorityConfig: Record<string, string> = { high: '🔴 High', medium: '🟡 Medium', low: '🟢 Low' };
 
-  const actionItems = [
-    { id: 1, text: 'Review Bhagavad Gita Chapter 3 notes', session: '#8', done: false },
-    { id: 2, text: 'Practice delegation exercise with team', session: '#8', done: false },
-    { id: 3, text: 'Update vision board with Q2 goals', session: '#7', done: true },
-    { id: 4, text: 'Complete gratitude journaling for 7 days', session: '#7', done: true },
-    { id: 5, text: 'Schedule team feedback sessions', session: '#6', done: false },
-  ];
-
-  const [items, setItems] = useState(actionItems);
-
   const getDueText = (dueDate: string) => {
-    const diff = Math.ceil((new Date(dueDate).getTime() - new Date('2025-03-31').getTime()) / 86400000);
+    const diff = Math.ceil((new Date(dueDate).getTime() - Date.now()) / 86400000);
     if (diff < 0) return { text: `${Math.abs(diff)} days overdue`, color: 'text-destructive font-semibold' };
     if (diff === 0) return { text: 'Due today', color: 'text-yellow-500' };
     return { text: `Due in ${diff} days`, color: 'text-blue-500' };
   };
 
+  if (isLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
+
   return (
     <div className="p-4 space-y-5 max-w-lg mx-auto">
       <BackToHome />
       <h1 className="text-xl font-bold text-foreground">My Tasks</h1>
-
-      {/* Tabs */}
       <div className="flex gap-2">
-        {[{ key: 'assignments' as const, label: '📝 Assignments', count: seekerAssignments.length }, { key: 'actions' as const, label: '✅ Action Items', count: items.filter(i => !i.done).length }].map(t => (
-          <button key={t.key} onClick={() => setActiveTab(t.key)} className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${activeTab === t.key ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-            {t.label} ({t.count})
-          </button>
-        ))}
+        <button onClick={() => setActiveTab('assignments')} className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${activeTab === 'assignments' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+          📝 Assignments ({assignments.length})
+        </button>
       </div>
 
-      {activeTab === 'assignments' && (
+      {assignments.length === 0 ? (
+        <div className="text-center py-12">
+          <span className="text-4xl block mb-3">📋</span>
+          <p className="text-muted-foreground">No assignments yet. Check back after your next session!</p>
+        </div>
+      ) : (
         <div className="space-y-3">
-          {seekerAssignments.map(a => {
+          {assignments.map(a => {
             const due = getDueText(a.due_date);
             return (
               <div key={a.id} className="bg-card rounded-xl p-4 border border-border shadow-sm">
@@ -65,10 +61,10 @@ const SeekerTasks = () => {
                 </div>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                   <span className={`text-xs ${due.color}`}>{due.text}</span>
-                  <span className="text-[10px] text-muted-foreground">{priorityConfig[a.priority]}</span>
+                  <span className="text-[10px] text-muted-foreground">{priorityConfig[a.priority || 'medium']}</span>
                   {a.category && <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{a.category}</span>}
                 </div>
-                {a.score !== undefined && (
+                {a.score !== null && a.score !== undefined && (
                   <div className="mt-2 p-2 rounded-lg bg-green-500/5 border border-green-500/20">
                     <p className="text-xs text-green-600 font-medium">Score: {a.score}/100 ⭐</p>
                     {a.feedback && <p className="text-xs text-muted-foreground mt-0.5">{a.feedback}</p>}
@@ -82,20 +78,6 @@ const SeekerTasks = () => {
               </div>
             );
           })}
-        </div>
-      )}
-
-      {activeTab === 'actions' && (
-        <div className="space-y-2">
-          {items.map(item => (
-            <label key={item.id} className={`flex items-start gap-3 bg-card rounded-xl p-3 border border-border cursor-pointer transition-all ${item.done ? 'opacity-60' : ''}`}>
-              <input type="checkbox" checked={item.done} onChange={() => { setItems(prev => prev.map(i => i.id === item.id ? { ...i, done: !i.done } : i)); toast({ title: item.done ? 'Unmarked' : '✅ Completed!' }); }} className="mt-1 accent-primary w-4 h-4" />
-              <div className="flex-1">
-                <p className={`text-sm text-foreground ${item.done ? 'line-through' : ''}`}>{item.text}</p>
-                <p className="text-[10px] text-muted-foreground">From Session {item.session}</p>
-              </div>
-            </label>
-          ))}
         </div>
       )}
     </div>

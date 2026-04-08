@@ -2,23 +2,15 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { NavLink } from '@/components/NavLink';
 import NotificationBell from '@/components/NotificationBell';
+import { useStreakCount } from '@/hooks/useStreakCount';
 import {
   Home, Sun, ClipboardList, TrendingUp, Sparkles, User, Bell, Flame, Moon,
   MessageSquare, CreditCard, BookOpen, Target, CalendarDays, Menu, LogOut, ScrollText
 } from 'lucide-react';
 import FloatingMusicButton from '@/components/FloatingMusicButton';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar,
 } from '@/components/ui/sidebar';
 
 const mainTabs = [
@@ -56,22 +48,17 @@ function SeekerSidebar() {
   const { logout } = useAuthStore();
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+  const handleLogout = () => { logout(); navigate('/'); };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarContent className="pt-2">
-        {/* Logo area */}
         <div className={`flex items-center gap-2 px-4 py-3 ${collapsed ? 'justify-center px-2' : ''}`}>
           <div className="w-8 h-8 rounded-full gradient-hero flex items-center justify-center shrink-0">
             <span className="text-xs font-bold text-primary-foreground">VD</span>
           </div>
           {!collapsed && <span className="font-semibold text-sm text-primary">VDTS</span>}
         </div>
-
         <SidebarGroup>
           <SidebarGroupLabel>🧭 Navigate</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -89,7 +76,6 @@ function SeekerSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
         <SidebarGroup>
           <SidebarGroupLabel>📋 More</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -104,7 +90,6 @@ function SeekerSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              {/* Log Off */}
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={handleLogout} className="hover:bg-destructive/10 text-destructive cursor-pointer">
                   <LogOut className="h-4 w-4" />
@@ -122,17 +107,13 @@ function SeekerSidebar() {
 const SeekerLayoutInner = () => {
   const location = useLocation();
   const { profile, logout, darkMode, toggleDarkMode } = useAuthStore();
+  const { data: streak = 0 } = useStreakCount(profile?.id || null);
   const isActive = (path: string) => location.pathname === path;
 
   return (
     <div className="min-h-screen flex w-full">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
-        <SeekerSidebar />
-      </div>
-
+      <div className="hidden lg:block"><SeekerSidebar /></div>
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header */}
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border h-14 flex items-center px-4 justify-between">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="hidden lg:flex" />
@@ -144,11 +125,10 @@ const SeekerLayoutInner = () => {
             </div>
             <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-medium ml-2">👤 Seeker - {profile?.full_name || 'Seeker'}</span>
           </div>
-
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 text-sm">
               <Flame className="w-4 h-4 text-saffron pulse-fire" />
-              <span className="font-semibold text-foreground">15</span>
+              <span className="font-semibold text-foreground">{streak}</span>
             </div>
             <NotificationBell />
             <button onClick={toggleDarkMode} className="p-2 rounded-lg hover:bg-muted">
@@ -156,26 +136,12 @@ const SeekerLayoutInner = () => {
             </button>
           </div>
         </header>
-
-        {/* Page Content */}
-        <main className="flex-1 pb-20 lg:pb-4 overflow-y-auto">
-          <Outlet />
-        </main>
-
-        {/* Global Floating Music Button */}
+        <main className="flex-1 pb-20 lg:pb-4 overflow-y-auto"><Outlet /></main>
         <FloatingMusicButton />
-
-        {/* Bottom Tab Bar (mobile only) */}
         <nav className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border shadow-lg lg:hidden">
           <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
             {bottomTabs.map((tab) => (
-              <Link
-                key={tab.path}
-                to={tab.path}
-                className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors ${
-                  isActive(tab.path) ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
+              <Link key={tab.path} to={tab.path} className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors ${isActive(tab.path) ? 'text-primary' : 'text-muted-foreground'}`}>
                 <tab.icon className="w-5 h-5" />
                 <span className="text-[10px] font-medium">{tab.label}</span>
               </Link>
@@ -187,12 +153,8 @@ const SeekerLayoutInner = () => {
   );
 };
 
-const SeekerLayout = () => {
-  return (
-    <SidebarProvider>
-      <SeekerLayoutInner />
-    </SidebarProvider>
-  );
-};
+const SeekerLayout = () => (
+  <SidebarProvider><SeekerLayoutInner /></SidebarProvider>
+);
 
 export default SeekerLayout;

@@ -1,29 +1,57 @@
-import { useState } from 'react';
-import { MESSAGES } from '@/data/mockData';
+import { useState, useEffect, useRef } from 'react';
 import { Send, AlertCircle, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthStore } from '@/store/authStore';
+import { useDbMessages, useSendMessage } from '@/hooks/useDbMessages';
+import { useAllProfiles } from '@/hooks/useSeekerProfiles';
 import BackToHome from '@/components/BackToHome';
 
 const SeekerMessages = () => {
-  const [messages, setMessages] = useState(MESSAGES.filter(m => m.sender_id === 's1' || m.receiver_id === 's1'));
+  const { profile } = useAuthStore();
+  const profileId = profile?.id || null;
+  const { data: messages = [], isLoading } = useDbMessages(profileId);
+  const { data: allProfiles = [] } = useAllProfiles();
+  const sendMessage = useSendMessage();
   const [newMessage, setNewMessage] = useState('');
   const [showSupport, setShowSupport] = useState(false);
   const [supportForm, setSupportForm] = useState({ category: 'Assignment Help', priority: 'medium', description: '' });
   const { toast } = useToast();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const sendMessage = () => {
-    if (!newMessage.trim()) return;
-    setMessages(prev => [...prev, { id: `m${Date.now()}`, sender_id: 's1', receiver_id: 'admin-1', content: newMessage, is_read: false, created_at: new Date().toISOString() }]);
-    setNewMessage('');
-    toast({ title: '✅ Message sent!' });
+  // Find admin/coach profile for sending messages to
+  const adminProfile = allProfiles.find(p => p.role === 'admin');
+  const adminId = adminProfile?.id;
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = () => {
+    if (!newMessage.trim() || !profileId || !adminId) return;
+    sendMessage.mutate(
+      { sender_id: profileId, receiver_id: adminId, content: newMessage },
+      {
+        onSuccess: () => {
+          setNewMessage('');
+          toast({ title: '✅ Message sent!' });
+        },
+        onError: () => toast({ title: '❌ Failed to send message', variant: 'destructive' }),
+      }
+    );
   };
 
   const submitSupport = () => {
-    if (!supportForm.description.trim()) return;
-    setMessages(prev => [...prev, { id: `m${Date.now()}`, sender_id: 's1', receiver_id: 'admin-1', content: `🆘 Support Request (${supportForm.category}): ${supportForm.description}`, is_read: false, created_at: new Date().toISOString() }]);
-    setShowSupport(false);
-    setSupportForm({ category: 'Assignment Help', priority: 'medium', description: '' });
-    toast({ title: '🆘 Support request sent!', description: 'Coach will respond soon.' });
+    if (!supportForm.description.trim() || !profileId || !adminId) return;
+    sendMessage.mutate(
+      { sender_id: profileId, receiver_id: adminId, content: `🆘 Support Request (${supportForm.category}): ${supportForm.description}` },
+      {
+        onSuccess: () => {
+          setShowSupport(false);
+          setSupportForm({ category: 'Assignment Help', priority: 'medium', description: '' });
+          toast({ title: '🆘 Support request sent!', description: 'Coach will respond soon.' });
+        },
+      }
+    );
   };
 
   const formatTime = (dateStr: string) => {
@@ -32,10 +60,13 @@ const SeekerMessages = () => {
   };
 
   const getDateLabel = (dateStr: string) => {
-    const d = dateStr.split('T')[0];
-    if (d === '2025-03-31') return 'Today';
-    if (d === '2025-03-30') return 'Yesterday';
-    return d.split('-').reverse().join('/');
+    const d = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return 'Today';
+    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   let lastDate = '';
@@ -50,7 +81,7 @@ const SeekerMessages = () => {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-sm font-bold">VD</div>
           <div>
-            <p className="font-semibold text-foreground text-sm">Vivek Doba</p>
+            <p className="font-semibold text-foreground text-sm">{adminProfile?.full_name || 'Coach'}</p>
             <p className="text-xs text-muted-foreground">Coach • Online</p>
           </div>
         </div>
@@ -61,11 +92,15 @@ const SeekerMessages = () => {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {isLoading && <p className="text-center text-muted-foreground text-sm">Loading messages...</p>}
+        {!isLoading && messages.length === 0 && (
+          <p className="text-center text-muted-foreground text-sm py-8">No messages yet. Say hello to your coach! 👋</p>
+        )}
         {messages.map(m => {
           const dateLabel = getDateLabel(m.created_at);
           const showDate = dateLabel !== lastDate;
           lastDate = dateLabel;
-          const isMine = m.sender_id === 's1';
+          const isMine = m.sender_id === profileId;
           return (
             <div key={m.id}>
               {showDate && <div className="text-center my-3"><span className="text-[10px] bg-muted px-3 py-1 rounded-full text-muted-foreground">{dateLabel}</span></div>}
@@ -78,14 +113,15 @@ const SeekerMessages = () => {
             </div>
           );
         })}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
       <div className="px-4 py-3 border-t border-border bg-background">
         <div className="flex gap-2">
-          <input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()}
+          <input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()}
             placeholder="Type a message..." className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm" />
-          <button onClick={sendMessage} className="p-2.5 rounded-xl bg-primary text-primary-foreground"><Send className="w-4 h-4" /></button>
+          <button onClick={handleSend} disabled={sendMessage.isPending} className="p-2.5 rounded-xl bg-primary text-primary-foreground"><Send className="w-4 h-4" /></button>
         </div>
       </div>
 
