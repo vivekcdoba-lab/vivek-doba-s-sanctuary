@@ -52,6 +52,22 @@ const SeekerGrowth = () => {
 
   const { earnedBadges, progress } = useBadges(profileId ?? null);
 
+  // Fetch worksheets for heatmap & LGT
+  const { data: worksheets = [] } = useQuery({
+    queryKey: ['my-worksheets-growth', profileId],
+    queryFn: async () => {
+      if (!profileId) return [];
+      const { data, error } = await supabase
+        .from('daily_worksheets')
+        .select('worksheet_date, is_submitted, dharma_score, artha_score, kama_score, moksha_score, morning_mood, evening_mood, morning_energy_score, end_energy_level')
+        .eq('seeker_id', profileId)
+        .order('worksheet_date', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profileId,
+  });
+
   // Build wheel data from latest assessment
   const latest = assessments[assessments.length - 1];
   const latestScores = latest?.scores_json as Record<string, number> | null;
@@ -75,6 +91,31 @@ const SeekerGrowth = () => {
     name: p.badge.name,
     emoji: p.badge.emoji,
     earned: p.isEarned,
+  }));
+
+  // Streak heatmap data (last 84 days)
+  const streakDays = Array.from({ length: 84 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (83 - i));
+    const dateStr = d.toISOString().split('T')[0];
+    const ws = worksheets.find((w: any) => w.worksheet_date === dateStr);
+    return { date: dateStr, completed: !!(ws && ws.is_submitted) };
+  });
+
+  // LGT scores from latest worksheet
+  const latestWs = worksheets[worksheets.length - 1] as any;
+  const lgtScores = {
+    dharma: Number(latestWs?.dharma_score || 0),
+    artha: Number(latestWs?.artha_score || 0),
+    kama: Number(latestWs?.kama_score || 0),
+    moksha: Number(latestWs?.moksha_score || 0),
+  };
+
+  // Energy trend (last 14 worksheets)
+  const energyData = worksheets.slice(-14).map((w: any) => ({
+    date: w.worksheet_date?.slice(5) || '',
+    morning: Number(w.morning_energy_score || 0),
+    evening: Number(w.end_energy_level || 0),
   }));
 
   if (isLoading) {
