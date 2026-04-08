@@ -470,6 +470,13 @@ const SessionsPage = () => {
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${config.color}`}>
                       {config.emoji} {config.label}
                     </span>
+                    {['submitted', 'reviewing', 'approved'].includes(session.status) && (
+                      <div className="flex gap-0.5 mt-1.5">
+                        {getFlowStatus(session.status).map((step, i) => (
+                          <div key={step.key} className={`h-1 flex-1 rounded-full ${step.done ? 'bg-dharma-green' : 'bg-muted'}`} title={step.label} />
+                        ))}
+                      </div>
+                    )}
                   </td>
                   <td className="p-3">{session.location_type === 'online' ? <Video className="w-4 h-4 text-sky-blue" /> : <MapPin className="w-4 h-4 text-dharma-green" />}</td>
                   <td className="p-3">
