@@ -105,7 +105,7 @@ const SeekerHome = () => {
               <p className="font-semibold text-foreground">{nextSession.date} at {nextSession.start_time}</p>
               <p className="text-xs text-muted-foreground">Session #{nextSession.session_number}</p>
             </div>
-            <button className="px-3 py-1.5 rounded-lg text-xs font-medium bg-chakra-indigo text-primary-foreground">Prepare</button>
+            <Link to="/seeker/tasks" className="px-3 py-1.5 rounded-lg text-xs font-medium bg-chakra-indigo text-primary-foreground">Prepare</Link>
           </div>
         </div>
       )}
