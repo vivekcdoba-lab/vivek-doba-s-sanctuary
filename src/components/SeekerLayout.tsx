@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { NavLink } from '@/components/NavLink';
+import NotificationBell from '@/components/NotificationBell';
 import {
   Home, Sun, ClipboardList, TrendingUp, Sparkles, User, Bell, Flame, Moon,
   MessageSquare, CreditCard, BookOpen, Target, CalendarDays, Menu, LogOut, ScrollText
@@ -149,10 +150,7 @@ const SeekerLayoutInner = () => {
               <Flame className="w-4 h-4 text-saffron pulse-fire" />
               <span className="font-semibold text-foreground">15</span>
             </div>
-            <button className="relative p-2 rounded-lg hover:bg-muted">
-              <Bell className="w-4 h-4 text-muted-foreground" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-destructive" />
-            </button>
+            <NotificationBell />
             <button onClick={toggleDarkMode} className="p-2 rounded-lg hover:bg-muted">
               {darkMode ? <Sun className="w-4 h-4 text-muted-foreground" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
             </button>

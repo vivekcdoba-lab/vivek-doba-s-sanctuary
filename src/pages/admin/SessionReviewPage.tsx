@@ -183,6 +183,15 @@ const SessionReviewPage = () => {
         action: 'approved',
       });
 
+      // Send notification to seeker
+      await supabase.from('session_notifications').insert({
+        recipient_id: session.seeker_id,
+        type: 'session_approved',
+        title: `Session #${session.session_number} Approved ✅`,
+        body: 'Your session has been approved and certified by your coach.',
+        session_id: session.id,
+      });
+
       setSession({ ...session, status: 'approved' });
       setShowApproveModal(false);
       toast.success('Session approved ✅');
