@@ -6,6 +6,7 @@ import { getPillarForActivity, type PillarKey } from '@/data/worksheetData';
 
 export interface TimeSlotData {
   activity: string;
+  customActivity: string;
   pillar: PillarKey | '';
   energy: string;
   notes: string;
@@ -185,6 +186,7 @@ export function useWorksheet(selectedDate: Date) {
       slots?.forEach(s => {
         timeSlotsMap[s.slot_start_time.slice(0, 5)] = {
           activity: s.activity_name || '',
+          customActivity: s.modified_activity_name || '',
           pillar: (s.lgt_pillar as PillarKey) || '',
           energy: s.energy_level || '',
           notes: s.notes || '',
@@ -263,7 +265,7 @@ export function useWorksheet(selectedDate: Date) {
   // Update time slot
   const updateSlot = useCallback((slotKey: string, field: keyof TimeSlotData, value: string) => {
     setState(prev => {
-      const current = prev.timeSlots[slotKey] || { activity: '', pillar: '', energy: '', notes: '', actualStatus: '', skipReason: '' };
+      const current = prev.timeSlots[slotKey] || { activity: '', customActivity: '', pillar: '', energy: '', notes: '', actualStatus: '', skipReason: '' };
       const updated = { ...current, [field]: value };
       if (field === 'activity' && value) {
         const autoPillar = getPillarForActivity(value);
@@ -369,6 +371,7 @@ export function useWorksheet(selectedDate: Date) {
             slot_start_time: startTime,
             slot_end_time: endTime,
             activity_name: d.activity,
+            modified_activity_name: d.customActivity || null,
             lgt_pillar: d.pillar || null,
             energy_level: d.energy || null,
             notes: d.notes || null,
@@ -458,8 +461,9 @@ export function useWorksheet(selectedDate: Date) {
     if (ySlots?.length) {
       const copied: Record<string, TimeSlotData> = {};
       ySlots.forEach(s => {
-        copied[s.slot_start_time.slice(0, 5)] = {
+      copied[s.slot_start_time.slice(0, 5)] = {
           activity: s.activity_name || '',
+          customActivity: s.modified_activity_name || '',
           pillar: (s.lgt_pillar as PillarKey) || '',
           energy: s.energy_level || '',
           notes: '',
@@ -475,10 +479,51 @@ export function useWorksheet(selectedDate: Date) {
     }
   }, [seekerProfileId, selectedDate]);
 
+  // Bulk fill multiple time slots with the same activity
+  const bulkFillSlots = useCallback((fromTime: string, toTime: string, activity: string, customActivity: string, pillar: PillarKey | '') => {
+    setState(prev => {
+      const newSlots = { ...prev.timeSlots };
+      // Generate all slot keys between fromTime and toTime
+      const fromH = parseInt(fromTime.split(':')[0]);
+      const fromM = parseInt(fromTime.split(':')[1]);
+      const toH = parseInt(toTime.split(':')[0]);
+      const toM = parseInt(toTime.split(':')[1]);
+
+      // Convert to minutes from 3 AM base for ordering
+      const toMinutes = (h: number, m: number) => {
+        const adjusted = h < 3 ? h + 24 : h;
+        return adjusted * 60 + m;
+      };
+
+      const startMin = toMinutes(fromH, fromM);
+      const endMin = toMinutes(toH, toM);
+
+      for (let min = startMin; min < endMin; min += 30) {
+        const actualMin = min % (24 * 60);
+        const h = Math.floor(actualMin / 60) % 24;
+        const m = actualMin % 60;
+        const key = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        newSlots[key] = {
+          activity,
+          customActivity: customActivity || '',
+          pillar,
+          energy: '',
+          notes: '',
+          actualStatus: '',
+          skipReason: '',
+        };
+      }
+
+      return { ...prev, timeSlots: newSlots };
+    });
+    dirtyRef.current = true;
+  }, []);
+
   return {
     state,
     updateField,
     updateSlot,
+    bulkFillSlots,
     saveWorksheet,
     copyYesterday,
     seekerProfileId,
