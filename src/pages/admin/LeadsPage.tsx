@@ -1,20 +1,25 @@
 import { useState, useMemo } from 'react';
 import { useDbLeads, useCreateLead, useUpdateLead } from '@/hooks/useDbLeads';
 import { useDbCourses } from '@/hooks/useDbCourses';
-import { Plus, ChevronLeft, ChevronRight, X, Phone, Mail, MessageSquare, Loader2, Search, Filter } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, X, Phone, Mail, MessageSquare, Loader2, Search, Filter, BarChart3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
-type LeadStage = 'new' | 'contacted' | 'discovery' | 'proposal' | 'negotiating' | 'converted' | 'lost';
+type LeadStage = 'new' | 'contacted' | 'discovery' | 'consultation_scheduled' | 'consultation_done' | 'proposal' | 'followup' | 'converted' | 'lost';
 
 const STAGES: { key: LeadStage; label: string; color: string; bg: string }[] = [
-  { key: 'new', label: 'New', color: 'bg-gray-400', bg: 'bg-muted/30' },
+  { key: 'new', label: 'Enquiry', color: 'bg-gray-400', bg: 'bg-muted/30' },
   { key: 'contacted', label: 'Contacted', color: 'bg-blue-500', bg: 'bg-blue-500/5' },
-  { key: 'discovery', label: 'Discovery', color: 'bg-purple-600', bg: 'bg-purple-500/5' },
-  { key: 'proposal', label: 'Proposal', color: 'bg-orange-500', bg: 'bg-orange-500/5' },
-  { key: 'negotiating', label: 'Negotiating', color: 'bg-yellow-500', bg: 'bg-yellow-500/5' },
-  { key: 'converted', label: 'Converted ✅', color: 'bg-green-500', bg: 'bg-green-500/5' },
+  { key: 'discovery', label: 'Interested', color: 'bg-purple-600', bg: 'bg-purple-500/5' },
+  { key: 'consultation_scheduled', label: 'Consult Scheduled', color: 'bg-indigo-500', bg: 'bg-indigo-500/5' },
+  { key: 'consultation_done', label: 'Consult Done', color: 'bg-cyan-500', bg: 'bg-cyan-500/5' },
+  { key: 'proposal', label: 'Proposal Sent', color: 'bg-orange-500', bg: 'bg-orange-500/5' },
+  { key: 'followup', label: 'Follow-up', color: 'bg-yellow-500', bg: 'bg-yellow-500/5' },
+  { key: 'converted', label: 'Won ✅', color: 'bg-green-500', bg: 'bg-green-500/5' },
   { key: 'lost', label: 'Lost ✗', color: 'bg-red-500', bg: 'bg-red-500/5' },
 ];
+
+const CHART_COLORS = ['#6B7280', '#3B82F6', '#9333EA', '#6366F1', '#06B6D4', '#F97316', '#EAB308', '#22C55E', '#EF4444'];
 
 const sourceIcons: Record<string, string> = { Website: '🌐', 'Social Media': '📱', Referral: '👥', 'Live Event': '🎪', 'Cold Call': '❄️', LinkedIn: '💼' };
 const priorityDots: Record<string, string> = { hot: '🔴', warm: '🟡', cold: '❄️' };
@@ -26,6 +31,7 @@ const LeadsPage = () => {
   const updateLead = useUpdateLead();
   const [showAdd, setShowAdd] = useState(false);
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
+  const [showReports, setShowReports] = useState(false);
   const [newLead, setNewLead] = useState({ name: '', phone: '', email: '', source: 'Website', interested_course_id: '', priority: 'warm', current_challenge: '', notes: '' });
   const { toast } = useToast();
 
@@ -33,6 +39,27 @@ const LeadsPage = () => {
   const [search, setSearch] = useState('');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterSource, setFilterSource] = useState<string>('all');
+
+  const filteredLeads = useMemo(() => {
+    return leads.filter(l => {
+      const matchSearch = !search || l.name.toLowerCase().includes(search.toLowerCase()) ||
+        l.phone?.toLowerCase().includes(search.toLowerCase()) || l.email?.toLowerCase().includes(search.toLowerCase());
+      const matchPriority = filterPriority === 'all' || l.priority === filterPriority;
+      const matchSource = filterSource === 'all' || l.source === filterSource;
+      return matchSearch && matchPriority && matchSource;
+    });
+  }, [leads, search, filterPriority, filterSource]);
+
+  // Report data
+  const funnelData = useMemo(() => STAGES.map((s, i) => ({
+    name: s.label, count: leads.filter(l => (l.stage || 'new') === s.key).length, fill: CHART_COLORS[i],
+  })), [leads]);
+
+  const sourceData = useMemo(() => {
+    const map: Record<string, number> = {};
+    leads.forEach(l => { const s = l.source || 'Unknown'; map[s] = (map[s] || 0) + 1; });
+    return Object.entries(map).map(([name, value]) => ({ name, value }));
+  }, [leads]);
 
   const filteredLeads = useMemo(() => {
     return leads.filter(l => {
@@ -91,9 +118,14 @@ const LeadsPage = () => {
           <h1 className="text-2xl font-bold text-foreground">Sales Pipeline</h1>
           <p className="text-sm text-muted-foreground">{filteredLeads.length} of {leads.length} leads</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm">
-          <Plus className="w-4 h-4" /> Add Lead
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowReports(!showReports)} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm text-foreground hover:bg-muted">
+            <BarChart3 className="w-4 h-4" /> Reports
+          </button>
+          <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm">
+            <Plus className="w-4 h-4" /> Add Lead
+          </button>
+        </div>
       </div>
 
       {/* Search & Filters */}
@@ -113,6 +145,74 @@ const LeadsPage = () => {
           {sources.map(s => <option key={s} value={s!}>{s}</option>)}
         </select>
       </div>
+
+      {/* Reports Section */}
+      {showReports && (
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="bg-card rounded-xl border border-border p-4">
+            <h3 className="text-sm font-bold text-foreground mb-3">📊 Conversion Funnel</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={funnelData} layout="vertical" margin={{ left: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis type="number" tick={{ fontSize: 10 }} />
+                  <YAxis dataKey="name" type="category" tick={{ fontSize: 9 }} width={100} />
+                  <Tooltip />
+                  <Bar dataKey="count" radius={[0, 6, 6, 0]}>
+                    {funnelData.map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="bg-card rounded-xl border border-border p-4">
+            <h3 className="text-sm font-bold text-foreground mb-3">🥧 Leads by Source</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={sourceData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value}`}>
+                    {sourceData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="bg-card rounded-xl border border-border p-4 md:col-span-2">
+            <h3 className="text-sm font-bold text-foreground mb-3">📈 Pipeline Summary</h3>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+              <div className="text-center p-3 rounded-lg bg-muted">
+                <p className="text-2xl font-bold text-foreground">{leads.length}</p>
+                <p className="text-xs text-muted-foreground">Total Leads</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-green-500/10">
+                <p className="text-2xl font-bold text-green-600">{leads.filter(l => l.stage === 'converted').length}</p>
+                <p className="text-xs text-muted-foreground">Converted</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-red-500/10">
+                <p className="text-2xl font-bold text-red-500">{leads.filter(l => l.stage === 'lost').length}</p>
+                <p className="text-xs text-muted-foreground">Lost</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-primary/10">
+                <p className="text-2xl font-bold text-primary">
+                  {leads.length > 0 ? ((leads.filter(l => l.stage === 'converted').length / leads.length) * 100).toFixed(0) : 0}%
+                </p>
+                <p className="text-xs text-muted-foreground">Conversion Rate</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-orange-500/10">
+                <p className="text-2xl font-bold text-orange-500">
+                  {leads.filter(l => (l.days_in_pipeline || 0) > 30 && l.stage !== 'converted' && l.stage !== 'lost').length}
+                </p>
+                <p className="text-xs text-muted-foreground">Stale (&gt;30d)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Lead Modal */}
       {showAdd && (
