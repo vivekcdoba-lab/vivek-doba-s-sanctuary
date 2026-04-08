@@ -104,6 +104,10 @@ const CoursesPage = () => {
                 <div><label className="block text-sm font-medium text-foreground mb-1">Max Participants *</label><input className={inputCls} type="number" value={form.max_participants} onChange={e => set('max_participants', e.target.value)} /></div>
               </div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Tier</label><div className="flex flex-wrap gap-2">{TIERS.map(t => (<button key={t} onClick={() => set('tier', t)} className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize ${form.tier === t ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground'}`}>{t}</button>))}</div></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-sm font-medium text-foreground mb-1">Event Date</label><input className={inputCls} type="date" value={form.event_date} onChange={e => set('event_date', e.target.value)} /></div>
+                <div><label className="block text-sm font-medium text-foreground mb-1">Location</label><input className={inputCls} value={form.location} onChange={e => set('location', e.target.value.slice(0, 60))} placeholder="e.g., Mumbai, Andheri West" maxLength={60} /></div>
+              </div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Color Theme</label><div className="flex flex-wrap gap-2">{GRADIENT_PRESETS.map((g, i) => (<button key={i} onClick={() => set('gradient_index', i)} className={`w-10 h-10 rounded-lg border-2 ${form.gradient_index === i ? 'border-primary scale-110 shadow-md' : 'border-transparent'}`} style={{ background: `linear-gradient(135deg, ${g[0]}, ${g[1]})` }} />))}</div></div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground">Cancel</button>
