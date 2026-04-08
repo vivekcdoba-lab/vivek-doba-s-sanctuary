@@ -3,6 +3,7 @@ import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarC
 import LGTAssessment from '@/components/LGTAssessment';
 import FIROBAssessment from '@/components/FIROBAssessment';
 import BackToHome from '@/components/BackToHome';
+import { ChevronDown } from 'lucide-react';
 
 // 9 Life Areas matching Vivek Doba's Wheel of Life framework
 const AREAS = [
