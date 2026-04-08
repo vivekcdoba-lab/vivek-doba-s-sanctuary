@@ -1,26 +1,33 @@
 import { Link } from 'react-router-dom';
-import { getGreeting, SEEKERS, SESSIONS, AFFIRMATIONS, MOTIVATIONAL_QUOTES } from '@/data/mockData';
+import { getGreeting, AFFIRMATIONS, MOTIVATIONAL_QUOTES } from '@/data/mockData';
 import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, LogOut as AlertCircle, BookOpen, Award, ScrollText, X } from 'lucide-react';
 import { useBadgeNotifications } from '@/hooks/useBadgeNotifications';
 import { useAuthStore } from '@/store/authStore';
+import { useDbSessions } from '@/hooks/useDbSessions';
+import { useDbAssignments } from '@/hooks/useDbAssignments';
+import { useStreakCount } from '@/hooks/useStreakCount';
 
 const SeekerHome = () => {
   const { profile, logout } = useAuthStore();
-  const seeker = SEEKERS[0];
+  const profileId = profile?.id || null;
+  const displayName = profile?.full_name?.split(' ')[0] || 'Seeker';
+
+  const { data: sessions = [] } = useDbSessions(profileId ?? undefined);
+  const { data: assignments = [] } = useDbAssignments(profileId ?? undefined);
+  const { data: streak = 0 } = useStreakCount(profileId);
+  const { notifications, dismiss, dismissAll } = useBadgeNotifications(profileId);
+
   const affirmation = AFFIRMATIONS[0];
   const quote = MOTIVATIONAL_QUOTES[3];
-  const nextSession = SESSIONS.find((s) => s.seeker_id === seeker.id && s.status === 'scheduled');
-  const displayName = profile?.full_name?.split(' ')[0] || seeker.full_name.split(' ')[0];
-
-  // Use profile ID directly for notifications
-  const { notifications, dismiss, dismissAll } = useBadgeNotifications(profile?.id || null);
+  const nextSession = sessions.find(s => s.status === 'scheduled');
+  const completedSessions = sessions.filter(s => s.status === 'completed' || s.status === 'approved').length;
+  const totalSessions = sessions.length || 1;
+  const pendingAssignments = assignments.filter(a => ['assigned', 'in_progress', 'overdue'].includes(a.status)).length;
 
   const streaks = [
-    { label: 'Meditation', emoji: '🧘', count: 15 },
-    { label: 'Journal', emoji: '📝', count: 12 },
-    { label: 'Exercise', emoji: '💪', count: 8 },
-    { label: 'Gratitude', emoji: '🙏', count: 15 },
-    { label: 'Reading', emoji: '📖', count: 10 },
+    { label: 'Worksheet', emoji: '📝', count: streak },
+    { label: 'Sessions', emoji: '📅', count: completedSessions },
+    { label: 'Tasks', emoji: '✅', count: assignments.filter(a => a.status === 'reviewed').length },
   ];
 
   return (
@@ -29,7 +36,7 @@ const SeekerHome = () => {
       <div className="gradient-saffron rounded-2xl p-5 text-primary-foreground relative overflow-hidden">
         <div className="absolute top-2 right-4 text-4xl opacity-10">✿</div>
         <h1 className="text-xl font-bold">{getGreeting()}, {displayName}!</h1>
-        <p className="text-sm text-primary-foreground/80 mt-1">Day 168 of your {seeker.course?.name?.split('—')[0]} journey</p>
+        <p className="text-sm text-primary-foreground/80 mt-1">🔥 {streak} day worksheet streak</p>
       </div>
 
       {/* 🎉 Badge Congratulations */}
@@ -68,7 +75,7 @@ const SeekerHome = () => {
 
       {/* Streak Dashboard */}
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-2">🔥 Your Streaks</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-2">🔥 Your Progress</h3>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {streaks.map((s) => (
             <div key={s.label} className="bg-card rounded-xl p-3 shadow-sm border border-border text-center min-w-[72px] flex-shrink-0">
@@ -89,7 +96,7 @@ const SeekerHome = () => {
             </div>
             <div>
               <p className="font-semibold text-foreground">Today's Dharmic Worksheet</p>
-              <p className="text-xs text-muted-foreground">🔥 15 day streak • Fill your sacred planner</p>
+              <p className="text-xs text-muted-foreground">🔥 {streak} day streak • Fill your sacred planner</p>
             </div>
           </div>
           <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-600 dark:bg-orange-900/30">Open →</span>
@@ -113,7 +120,7 @@ const SeekerHome = () => {
       {/* Pending Items */}
       <div className="flex gap-2">
         {[
-          { label: '2 assignments due', color: 'bg-saffron/10 text-saffron', icon: '📝' },
+          { label: `${pendingAssignments} assignments pending`, color: 'bg-saffron/10 text-saffron', icon: '📝' },
           { label: 'Daily log pending', color: 'bg-lotus-pink/10 text-lotus-pink', icon: '🌅' },
         ].map((item) => (
           <div key={item.label} className={`flex-1 rounded-xl p-3 text-center text-xs font-medium ${item.color}`}>
@@ -149,23 +156,13 @@ const SeekerHome = () => {
         <svg className="w-24 h-24 mx-auto" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--muted))" strokeWidth="6" />
           <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--primary))" strokeWidth="6"
-            strokeDasharray="283" strokeDashoffset={283 - (283 * seeker.sessions_completed / seeker.total_sessions)}
+            strokeDasharray="283" strokeDashoffset={283 - (283 * completedSessions / totalSessions)}
             strokeLinecap="round" transform="rotate(-90 50 50)" className="progress-ring" />
           <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" className="fill-foreground text-xl font-bold" style={{ fontSize: '18px' }}>
-            {Math.round((seeker.sessions_completed / seeker.total_sessions) * 100)}%
+            {Math.round((completedSessions / totalSessions) * 100)}%
           </text>
         </svg>
-        <p className="text-sm text-muted-foreground mt-2">{seeker.sessions_completed}/{seeker.total_sessions} sessions completed</p>
-      </div>
-
-      {/* Achievements */}
-      <div>
-        <h3 className="text-sm font-semibold text-foreground mb-2">🏆 Achievements</h3>
-        <div className="flex gap-2 flex-wrap">
-          {['7-Day Streak 🔥', 'First Assessment ✅', '30-Day Warrior 💪', 'Perfect Attendance ⭐'].map((b) => (
-            <span key={b} className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-medium">{b}</span>
-          ))}
-        </div>
+        <p className="text-sm text-muted-foreground mt-2">{completedSessions}/{totalSessions} sessions completed</p>
       </div>
 
       {/* Quote */}
