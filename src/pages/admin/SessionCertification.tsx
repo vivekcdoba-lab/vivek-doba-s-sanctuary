@@ -59,7 +59,10 @@ const SessionCertification = () => {
         .eq('id', id!)
         .single();
       if (sessionErr) throw sessionErr;
-      setSession(sessionData);
+      setSession({
+        ...sessionData,
+        topics_covered: sessionData.topics_covered as string[] | null,
+      } as SessionData);
 
       // Load seeker profile
       const { data: seekerData } = await supabase
