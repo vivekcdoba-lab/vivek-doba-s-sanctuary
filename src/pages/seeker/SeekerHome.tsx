@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import { getGreeting, SEEKERS, SESSIONS, AFFIRMATIONS, MOTIVATIONAL_QUOTES } from '@/data/mockData';
-import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, AlertCircle, BookOpen, Award, ScrollText, X } from 'lucide-react';
+import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, LogOut as AlertCircle, BookOpen, Award, ScrollText, X } from 'lucide-react';
 import { useBadgeNotifications } from '@/hooks/useBadgeNotifications';
 import { useAuthStore } from '@/store/authStore';
 
 const SeekerHome = () => {
-  const { profile } = useAuthStore();
+  const { profile, logout } = useAuthStore();
   const seeker = SEEKERS[0];
   const affirmation = AFFIRMATIONS[0];
   const quote = MOTIVATIONAL_QUOTES[3];
@@ -127,12 +127,17 @@ const SeekerHome = () => {
         {[
           { label: 'Daily Check-in', icon: Sparkles, path: '/seeker/daily-log', gradient: 'gradient-saffron' },
           { label: 'Submit Task', icon: ClipboardList, path: '/seeker/tasks', gradient: 'gradient-sacred' },
-          { label: 'Message Coach', icon: MessageSquare, path: '/seeker/messages', gradient: 'gradient-growth' },
+          { label: 'Connect with Coach', icon: MessageSquare, path: '/seeker/messages', gradient: 'gradient-growth' },
           { label: 'Meditate Now', icon: Sparkles, path: '/seeker/sacred-space', gradient: 'gradient-hero' },
           { label: 'Assessments', icon: BookOpen, path: '/seeker/assessments', gradient: 'gradient-chakravartin' },
-          { label: 'I Need Help', icon: AlertCircle, path: '/seeker/messages', gradient: 'bg-lotus-pink' },
+          { label: 'Log Out', icon: AlertCircle, path: '#logout', gradient: 'bg-lotus-pink' },
         ].map((a) => (
-          <Link key={a.label} to={a.path} className={`${a.gradient} rounded-xl p-3 text-center text-primary-foreground card-hover`}>
+          <Link
+            key={a.label}
+            to={a.path === '#logout' ? '#' : a.path}
+            onClick={a.path === '#logout' ? (e) => { e.preventDefault(); logout(); window.location.href = '/'; } : undefined}
+            className={`${a.gradient} rounded-xl p-3 text-center text-primary-foreground card-hover`}
+          >
             <a.icon className="w-5 h-5 mx-auto mb-1" />
             <p className="text-[10px] font-medium">{a.label}</p>
           </Link>
