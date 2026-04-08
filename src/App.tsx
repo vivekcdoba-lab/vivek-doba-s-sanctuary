@@ -51,6 +51,7 @@ import SeekerMessages from "./pages/seeker/SeekerMessages";
 import SeekerWeeklyReview from "./pages/seeker/SeekerWeeklyReview";
 import DailyWorksheet from "./pages/seeker/DailyWorksheet";
 import SeekerTopics from "./pages/seeker/SeekerTopics";
+import SeekerSessionDetail from "./pages/seeker/SeekerSessionDetail";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
@@ -121,6 +122,7 @@ const App = () => (
             <Route path="/seeker/worksheet" element={<DailyWorksheet />} />
             <Route path="/seeker/topics" element={<SeekerTopics />} />
             <Route path="/seeker/sessions/:id/certify" element={<SessionCertification />} />
+            <Route path="/seeker/sessions/:id" element={<SeekerSessionDetail />} />
           </Route>
 
           {/* Coaching Management Routes */}
