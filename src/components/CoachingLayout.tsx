@@ -93,6 +93,13 @@ function CoachingSidebar() {
                   </SidebarMenuItem>
                 );
               })}
+              {/* Log Out */}
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleLogout} className="hover:bg-destructive/10 text-destructive cursor-pointer">
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span>{lang === "en" ? "Log Out" : "लॉग आउट"}</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
