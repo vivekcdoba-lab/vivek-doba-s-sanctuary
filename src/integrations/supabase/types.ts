@@ -1921,6 +1921,72 @@ export type Database = {
         }
         Relationships: []
       }
+      swot_competitors: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          opportunity_for_vdts: Json
+          sort_order: number
+          strengths: Json
+          threat_level: string
+          updated_at: string
+          weaknesses: Json
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          opportunity_for_vdts?: Json
+          sort_order?: number
+          strengths?: Json
+          threat_level?: string
+          updated_at?: string
+          weaknesses?: Json
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          opportunity_for_vdts?: Json
+          sort_order?: number
+          strengths?: Json
+          threat_level?: string
+          updated_at?: string
+          weaknesses?: Json
+        }
+        Relationships: []
+      }
+      swot_entries: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          sort_order: number
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       topics: {
         Row: {
           category: string | null
