@@ -1472,6 +1472,93 @@ export type Database = {
           },
         ]
       }
+      session_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string | null
+          diff: Json | null
+          id: string
+          session_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string | null
+          diff?: Json | null
+          id?: string
+          session_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string | null
+          diff?: Json | null
+          id?: string
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_audit_log_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_audit_log_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          section_name: string
+          session_id: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          section_name: string
+          session_id: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          section_name?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_comments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_signatures: {
         Row: {
           content_hash: string | null
@@ -1544,6 +1631,7 @@ export type Database = {
           missed_reason: string | null
           post_session_feedback: Json | null
           reschedule_reason: string | null
+          revision_note: string | null
           seeker_id: string
           seeker_mood: string | null
           session_notes: string | null
@@ -1570,6 +1658,7 @@ export type Database = {
           missed_reason?: string | null
           post_session_feedback?: Json | null
           reschedule_reason?: string | null
+          revision_note?: string | null
           seeker_id: string
           seeker_mood?: string | null
           session_notes?: string | null
@@ -1596,6 +1685,7 @@ export type Database = {
           missed_reason?: string | null
           post_session_feedback?: Json | null
           reschedule_reason?: string | null
+          revision_note?: string | null
           seeker_id?: string
           seeker_mood?: string | null
           session_notes?: string | null

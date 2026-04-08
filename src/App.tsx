@@ -35,6 +35,7 @@ import ApplicationsPage from "./pages/admin/ApplicationsPage";
 import CoachDayView from "./pages/admin/CoachDayView";
 import WorksheetAnalyticsPage from "./pages/admin/WorksheetAnalyticsPage";
 import SessionCertification from "./pages/admin/SessionCertification";
+import SessionReviewPage from "./pages/admin/SessionReviewPage";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -98,6 +99,7 @@ const App = () => (
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/worksheet-analytics" element={<WorksheetAnalyticsPage />} />
             <Route path="/sessions/:id/certify" element={<SessionCertification />} />
+            <Route path="/sessions/:id/review" element={<SessionReviewPage />} />
           </Route>
 
           {/* Seeker Routes */}
