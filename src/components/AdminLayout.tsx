@@ -23,6 +23,7 @@ const navGroups = [
     label: 'PROGRAMS', items: [
       { icon: BookOpen, label: 'Courses', path: '/courses' },
       { icon: CalendarDays, label: 'Sessions', path: '/sessions' },
+      { icon: ScrollText, label: 'Session Templates', path: '/session-templates' },
       { icon: Calendar, label: 'Calendar', path: '/calendar' },
     ]
   },
