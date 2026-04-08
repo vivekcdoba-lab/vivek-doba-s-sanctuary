@@ -15,7 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Progress } from '@/components/ui/progress';
 import {
   ACTIVITY_GROUPS, DEFAULT_NON_NEGOTIABLES, MOOD_OPTIONS, PILLAR_CONFIG,
-  DAY_NAMES, MONEY_AFFIRMATIONS, generateTimeSlots, getPhaseForTime,
+  DAY_NAMES, MONEY_AFFIRMATIONS, generateTimeSlots, getPhaseForTime, getPillarForActivity,
   type PillarKey,
 } from '@/data/worksheetData';
 import { useWorksheet } from '@/hooks/useWorksheet';
