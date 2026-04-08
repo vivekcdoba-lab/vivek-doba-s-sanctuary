@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface DbCourse {
@@ -12,6 +12,10 @@ export interface DbCourse {
   is_active: boolean;
   tagline: string | null;
   max_participants: number | null;
+  gradient_colors: any;
+  event_date: string | null;
+  location: string | null;
+  location_type: string | null;
 }
 
 export function useDbCourses() {
@@ -26,5 +30,38 @@ export function useDbCourses() {
       if (error) throw error;
       return (data || []) as DbCourse[];
     },
+  });
+}
+
+export function useCreateCourse() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (course: Omit<DbCourse, 'id'>) => {
+      const { data, error } = await supabase
+        .from('courses')
+        .insert(course as any)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['db-courses'] }),
+  });
+}
+
+export function useUpdateCourse() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string } & Partial<DbCourse>) => {
+      const { data, error } = await supabase
+        .from('courses')
+        .update(updates as any)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['db-courses'] }),
   });
 }
