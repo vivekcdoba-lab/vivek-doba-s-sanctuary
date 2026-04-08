@@ -470,9 +470,18 @@ const SessionsPage = () => {
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${config.color}`}>
                       {config.emoji} {config.label}
                     </span>
+                    {session.status === 'submitted' && (
+                      <p className="text-[10px] text-warning-amber mt-1 animate-pulse">⏳ Waiting for seeker to review & accept</p>
+                    )}
+                    {session.status === 'reviewing' && (
+                      <p className="text-[10px] text-chakra-indigo mt-1 animate-pulse">📝 Seeker accepted — Ready for your approval</p>
+                    )}
+                    {session.status === 'approved' && (
+                      <p className="text-[10px] text-dharma-green mt-1">✅ Approved — Awaiting digital signatures</p>
+                    )}
                     {['submitted', 'reviewing', 'approved'].includes(session.status) && (
                       <div className="flex gap-0.5 mt-1.5">
-                        {getFlowStatus(session.status).map((step, i) => (
+                        {getFlowStatus(session.status).map((step) => (
                           <div key={step.key} className={`h-1 flex-1 rounded-full ${step.done ? 'bg-dharma-green' : 'bg-muted'}`} title={step.label} />
                         ))}
                       </div>
