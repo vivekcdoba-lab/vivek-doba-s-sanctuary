@@ -1661,6 +1661,74 @@ export type Database = {
           },
         ]
       }
+      session_templates: {
+        Row: {
+          coach_id: string
+          created_at: string | null
+          default_assignments: Json | null
+          default_topic_ids: string[] | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string | null
+          default_assignments?: Json | null
+          default_topic_ids?: string[] | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string | null
+          default_assignments?: Json | null
+          default_topic_ids?: string[] | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_templates_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_topics: {
+        Row: {
+          session_id: string
+          topic_id: string
+        }
+        Insert: {
+          session_id: string
+          topic_id: string
+        }
+        Update: {
+          session_id?: string
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_topics_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_topics_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           attendance: string | null
@@ -1801,6 +1869,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      topics: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          icon_emoji: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          icon_emoji?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          icon_emoji?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topics_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       worksheet_notifications: {
         Row: {
