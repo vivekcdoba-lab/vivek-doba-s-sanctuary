@@ -82,6 +82,17 @@ const DailyWorksheet = () => {
 
   const totalPlanned = Object.values(pillarHours).reduce((a, b) => a + b, 0);
 
+  // Auto-calculate sleep hours from timesheet
+  const autoSleepHours = useMemo(() => {
+    let count = 0;
+    Object.entries(state.timeSlots).forEach(([, slot]) => {
+      if (slot.activity && (slot.activity.toLowerCase().includes('sleep') || slot.activity === 'Power Nap')) {
+        count += 0.5;
+      }
+    });
+    return count;
+  }, [state.timeSlots]);
+
   const TOMORROW_PREP_ITEMS = [
     'Tomorrow\'s outfit/clothes ready',
     'Tomorrow\'s schedule reviewed',
