@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SESSIONS, SEEKERS, COURSES, formatTime12 } from '@/data/mockData';
 import { JOURNEY_STAGES } from '@/types';
 import { calculateRiskScore, getRiskEmoji } from '@/lib/riskEngine';
-import { Plus, Video, MapPin, Bell, Play, X, RotateCcw, AlertTriangle, Check, Clock, Shield, Eye } from 'lucide-react';
+import { Plus, Video, MapPin, Bell, Play, X, RotateCcw, AlertTriangle, Check, Clock, Shield, Eye, FileText } from 'lucide-react';
 import SendReminderModal from '@/components/SendReminderModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const SESSION_STATUS_CONFIG: Record<string, { label: string; emoji: string; color: string }> = {
   requested: { label: 'Requested', emoji: '📋', color: 'bg-muted text-muted-foreground' },
