@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN marriage_anniversary date DEFAULT NULL;

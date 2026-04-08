@@ -4,6 +4,7 @@ import { Users, CalendarDays, Clock, IndianRupee, Video, MapPin, Plus, PhoneCall
 import { SEEKERS, SESSIONS, ASSIGNMENTS, PAYMENTS, MOTIVATIONAL_QUOTES, formatINR, getGreeting, getHealthColor } from '@/data/mockData';
 import { calculateRiskScore, getRiskEmoji } from '@/lib/riskEngine';
 import { JOURNEY_STAGES } from '@/types';
+import BirthdayAnniversaryReminders from '@/components/BirthdayAnniversaryReminders';
 
 const CountUp = ({ end, prefix = '' }: { end: number; prefix?: string }) => {
   const [count, setCount] = useState(0);
@@ -109,6 +110,9 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Birthday & Anniversary Reminders */}
+      <BirthdayAnniversaryReminders />
 
       {/* Alerts + Health */}
       <div className="grid lg:grid-cols-2 gap-4">
