@@ -36,6 +36,7 @@ import CoachDayView from "./pages/admin/CoachDayView";
 import WorksheetAnalyticsPage from "./pages/admin/WorksheetAnalyticsPage";
 import SessionCertification from "./pages/admin/SessionCertification";
 import SessionReviewPage from "./pages/admin/SessionReviewPage";
+import SessionTemplatesPage from "./pages/admin/SessionTemplatesPage";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -49,6 +50,7 @@ import SeekerJourney from "./pages/seeker/SeekerJourney";
 import SeekerMessages from "./pages/seeker/SeekerMessages";
 import SeekerWeeklyReview from "./pages/seeker/SeekerWeeklyReview";
 import DailyWorksheet from "./pages/seeker/DailyWorksheet";
+import SeekerTopics from "./pages/seeker/SeekerTopics";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
@@ -100,6 +102,7 @@ const App = () => (
             <Route path="/worksheet-analytics" element={<WorksheetAnalyticsPage />} />
             <Route path="/sessions/:id/certify" element={<SessionCertification />} />
             <Route path="/sessions/:id/review" element={<SessionReviewPage />} />
+            <Route path="/session-templates" element={<SessionTemplatesPage />} />
           </Route>
 
           {/* Seeker Routes */}
@@ -116,6 +119,7 @@ const App = () => (
             <Route path="/seeker/weekly-review" element={<SeekerWeeklyReview />} />
             <Route path="/seeker/payments" element={<SeekerPayments />} />
             <Route path="/seeker/worksheet" element={<DailyWorksheet />} />
+            <Route path="/seeker/topics" element={<SeekerTopics />} />
             <Route path="/seeker/sessions/:id/certify" element={<SessionCertification />} />
           </Route>
 

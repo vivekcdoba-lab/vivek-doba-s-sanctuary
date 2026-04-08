@@ -183,6 +183,15 @@ const SessionReviewPage = () => {
         action: 'approved',
       });
 
+      // Send notification to seeker
+      await supabase.from('session_notifications').insert({
+        recipient_id: session.seeker_id,
+        type: 'session_approved',
+        title: `Session #${session.session_number} Approved ✅`,
+        body: 'Your session has been approved and certified by your coach.',
+        session_id: session.id,
+      });
+
       setSession({ ...session, status: 'approved' });
       setShowApproveModal(false);
       toast.success('Session approved ✅');
@@ -208,6 +217,15 @@ const SessionReviewPage = () => {
         actor_id: profile?.id,
         action: 'revision_requested',
         diff: { revision_note: revisionNote },
+      });
+
+      // Send notification to seeker
+      await supabase.from('session_notifications').insert({
+        recipient_id: session.seeker_id,
+        type: 'revision_requested',
+        title: `Session #${session.session_number} — Revision Requested`,
+        body: revisionNote,
+        session_id: session.id,
       });
 
       setSession({ ...session, status: 'revision_requested', revision_note: revisionNote });

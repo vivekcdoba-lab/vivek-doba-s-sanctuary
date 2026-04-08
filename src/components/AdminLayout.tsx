@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import NotificationBell from '@/components/NotificationBell';
 import {
   LayoutDashboard, Users, Target, BookOpen, CalendarDays, Calendar,
   ClipboardList, BarChart3, Sun, TrendingUp, RefreshCw, IndianRupee,
   MessageSquare, FolderOpen, PieChart, Settings, LogOut, Moon,
   Menu, X, Bell, Search, ChevronRight, Inbox, ScrollText
 } from 'lucide-react';
-import { NOTIFICATIONS } from '@/data/mockData';
 
 const navGroups = [
   {
@@ -50,7 +50,6 @@ const navGroups = [
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const location = useLocation();
   const { profile, logout, darkMode, toggleDarkMode } = useAuthStore();
 
@@ -182,35 +181,7 @@ const AdminLayout = () => {
           </div>
 
           {/* Notifications */}
-          <div className="relative">
-            <button onClick={() => setNotifOpen(!notifOpen)} className="relative p-2 rounded-lg hover:bg-muted transition-colors">
-              <Bell className="w-5 h-5 text-muted-foreground" />
-              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-destructive text-[9px] text-primary-foreground flex items-center justify-center font-bold">5</span>
-            </button>
-            {notifOpen && (
-              <div className="absolute right-0 top-full mt-2 w-80 bg-card rounded-xl border border-border shadow-xl z-50">
-                <div className="p-3 border-b border-border">
-                  <h4 className="font-semibold text-foreground text-sm">Notifications</h4>
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  {NOTIFICATIONS.map((n) => (
-                    <div key={n.id} className="p-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                      <div className="flex items-start gap-2">
-                        <span className="text-sm">{n.icon}</span>
-                        <div>
-                          <p className="text-sm text-foreground">{n.text}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{n.time}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="p-3 border-t border-border">
-                  <button onClick={() => setNotifOpen(false)} className="text-xs text-primary hover:underline font-medium w-full text-center">Mark All Read</button>
-                </div>
-              </div>
-            )}
-          </div>
+          <NotificationBell />
         </header>
 
         {/* Page Content */}
