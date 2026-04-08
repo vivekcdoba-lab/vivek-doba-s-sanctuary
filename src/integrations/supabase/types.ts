@@ -369,10 +369,13 @@ export type Database = {
           created_at: string
           description: string | null
           duration: string | null
+          event_date: string | null
           format: string | null
           gradient_colors: Json | null
           id: string
           is_active: boolean | null
+          location: string | null
+          location_type: string | null
           max_participants: number | null
           name: string
           price: number
@@ -384,10 +387,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: string | null
+          event_date?: string | null
           format?: string | null
           gradient_colors?: Json | null
           id?: string
           is_active?: boolean | null
+          location?: string | null
+          location_type?: string | null
           max_participants?: number | null
           name: string
           price?: number
@@ -399,10 +405,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: string | null
+          event_date?: string | null
           format?: string | null
           gradient_colors?: Json | null
           id?: string
           is_active?: boolean | null
+          location?: string | null
+          location_type?: string | null
           max_participants?: number | null
           name?: string
           price?: number
@@ -1072,6 +1081,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      otp_codes: {
+        Row: {
+          attempts: number
+          created_at: string
+          expires_at: string
+          id: string
+          identifier: string
+          is_used: boolean
+          otp_code: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          expires_at: string
+          id?: string
+          identifier: string
+          is_used?: boolean
+          otp_code: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          identifier?: string
+          is_used?: boolean
+          otp_code?: string
+        }
+        Relationships: []
       }
       payments: {
         Row: {

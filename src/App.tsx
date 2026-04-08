@@ -54,6 +54,7 @@ import AgreementsPage from "./pages/coaching/AgreementsPage";
 import FiroBPage from "./pages/coaching/FiroBPage";
 import PlaceholderModule from "./pages/coaching/PlaceholderModule";
 
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -71,6 +72,7 @@ const App = () => (
           <Route path="/book-appointment" element={<BookAppointment />} />
           <Route path="/register-workshop" element={<RegisterWorkshop />} />
           <Route path="/apply-lgt" element={<ApplyLGT />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Admin Routes */}
           <Route element={<AuthGuard requiredRole="admin"><AdminLayout /></AuthGuard>}>

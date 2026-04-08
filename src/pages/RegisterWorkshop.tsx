@@ -166,17 +166,12 @@ const RegisterWorkshop = () => {
               </button>
             ))}
           </div>
-          <div className="grid sm:grid-cols-2 gap-4 mt-4">
-            <Field label="Preferred Date" required><input className={inputCls} type="date" value={form.preferredDate} onChange={e => set('preferredDate', e.target.value)} /></Field>
-            <Field label="Preferred Location" required>
-              <select className={inputCls} value={form.location} onChange={e => set('location', e.target.value)}>
-                <option value="pune">Pune (Hinjewadi/Kothrud)</option>
-                <option value="mumbai">Mumbai</option>
-                <option value="online">Online (Zoom)</option>
-                <option value="venue">At My Office/Venue</option>
-              </select>
-            </Field>
-          </div>
+          {selected && (
+            <div className="mt-4 p-3 bg-muted/50 rounded-lg text-sm text-foreground">
+              <p className="font-medium mb-1">📅 Workshop Details:</p>
+              <p className="text-muted-foreground">Date & Location will be confirmed by the VDTS team after registration.</p>
+            </div>
+          )}
           {form.location === 'venue' && (
             <div className="grid sm:grid-cols-2 gap-4 mt-3">
               <Field label="Venue Address">

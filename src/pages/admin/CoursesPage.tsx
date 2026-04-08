@@ -26,12 +26,13 @@ const CoursesPage = () => {
   const [form, setForm] = useState({
     name: '', tagline: '', duration: '', format: 'Workshop', tier: 'standard',
     price: '', max_participants: '', gradient_index: 0,
+    event_date: '', location: '', location_type: 'in_person',
   });
 
   const getEnrolledCount = (courseId: string) => SEEKERS.filter((s) => s.course?.id === courseId && s.enrollment?.status === 'active').length;
 
   const resetForm = () => {
-    setForm({ name: '', tagline: '', duration: '', format: 'Workshop', tier: 'standard', price: '', max_participants: '', gradient_index: 0 });
+    setForm({ name: '', tagline: '', duration: '', format: 'Workshop', tier: 'standard', price: '', max_participants: '', gradient_index: 0, event_date: '', location: '', location_type: 'in_person' });
     setEditId(null);
   };
 
@@ -45,6 +46,7 @@ const CoursesPage = () => {
       name: c.name, tagline: c.tagline || '', duration: c.duration, format: c.format,
       tier: c.tier, price: String(c.price), max_participants: String(c.max_participants),
       gradient_index: gi >= 0 ? gi : 0,
+      event_date: (c as any).event_date || '', location: (c as any).location || '', location_type: (c as any).location_type || 'in_person',
     });
     setEditId(id);
     setShowModal(true);
@@ -59,6 +61,7 @@ const CoursesPage = () => {
       name: form.name, tagline: form.tagline, duration: form.duration, format: form.format,
       tier: form.tier as any, price: Number(form.price), max_participants: Number(form.max_participants),
       gradient_colors: GRADIENT_PRESETS[form.gradient_index] as [string, string], is_active: true,
+      event_date: form.event_date || null, location: form.location || null, location_type: form.location_type,
     };
 
     if (editId) {
@@ -201,6 +204,25 @@ const CoursesPage = () => {
                     <button key={i} onClick={() => set('gradient_index', i)} className={`w-10 h-10 rounded-lg border-2 transition-all ${form.gradient_index === i ? 'border-primary scale-110 shadow-md' : 'border-transparent'}`} style={{ background: `linear-gradient(135deg, ${g[0]}, ${g[1]})` }} />
                   ))}
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Event Date</label>
+                  <input className={inputCls} type="date" value={form.event_date} onChange={e => set('event_date', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Location Type *</label>
+                  <select className={inputCls} value={form.location_type} onChange={e => set('location_type', e.target.value)}>
+                    <option value="in_person">In Person</option>
+                    <option value="online">Online</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Location</label>
+                <input className={inputCls} value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g., Pune, Mumbai, Zoom" />
               </div>
 
               <div className="flex gap-3 pt-2">

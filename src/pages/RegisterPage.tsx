@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { User, Mail, Phone, Lock, Flower2, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, Lock, Flower2, Loader2, ArrowLeft } from 'lucide-react';
 import { COURSES } from '@/data/mockData';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -102,7 +102,10 @@ const RegisterPage = () => {
 
       <div className="lg:w-[45%] flex items-center justify-center p-6 lg:p-12 bg-background overflow-y-auto">
         <div className="w-full max-w-md space-y-5 animate-fade-up">
-          <div className="text-center mb-4">
+          <div className="text-center mb-4 relative">
+            <Link to="/login" className="absolute left-0 top-1 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-4 h-4" /> Back
+            </Link>
             <Flower2 className="w-7 h-7 text-primary mx-auto mb-2" />
             <h2 className="text-xl font-bold text-foreground">Create Your Account</h2>
           </div>

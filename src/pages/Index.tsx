@@ -24,7 +24,7 @@ const Index = () => (
             <Phone className="w-4 h-4" /> 9607050111
           </a>
           <a
-            href="https://wa.me/919607050111"
+            href="https://wa.me/919607050111?text=Hello"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white"
