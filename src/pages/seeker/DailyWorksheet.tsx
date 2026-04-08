@@ -394,10 +394,10 @@ const DailyWorksheet = () => {
 
         <div className="overflow-x-auto">
           <div className="min-w-[700px]">
-            <div className="grid grid-cols-[80px_1fr_100px_60px_80px] gap-1 px-4 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground border-b border-border">
+            <div className="grid grid-cols-[80px_100px_1fr_60px_80px] gap-1 px-4 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground border-b border-border">
               <span>Time</span>
-              <span>Activity</span>
               <span>Pillar</span>
+              <span>Activity</span>
               <span>Energy</span>
               {actualsMode ? <span>Status</span> : <span>Notes</span>}
             </div>
@@ -409,17 +409,53 @@ const DailyWorksheet = () => {
                 const phaseBg = getPhaseForTime(slot.start);
                 const isCustom = data.activity === 'Custom';
 
+                // Filter activities by selected pillar
+                const filteredGroups = data.pillar
+                  ? ACTIVITY_GROUPS.filter(g => g.pillar === data.pillar)
+                  : ACTIVITY_GROUPS;
+
                 return (
                   <div key={key} className={cn('border-b border-border/50', phaseBg)}>
-                    <div className="grid grid-cols-[80px_1fr_100px_60px_80px] gap-1 px-4 py-1.5 items-center text-sm">
+                    <div className="grid grid-cols-[80px_100px_1fr_60px_80px] gap-1 px-4 py-1.5 items-center text-sm">
                       <span className="text-xs font-mono text-muted-foreground">{slot.display}</span>
 
-                      <Select value={data.activity} onValueChange={(v) => updateSlot(key, 'activity', v)}>
+                      {/* Pillar first */}
+                      <Select value={data.pillar || 'all'} onValueChange={(v) => {
+                        const pillarVal = v === 'all' ? '' : v;
+                        updateSlot(key, 'pillar', pillarVal);
+                        // Clear activity if it doesn't belong to new pillar
+                        if (pillarVal && data.activity && data.activity !== 'Custom') {
+                          const belongs = ACTIVITY_GROUPS.some(g => g.pillar === pillarVal && g.items.includes(data.activity));
+                          if (!belongs) updateSlot(key, 'activity', '');
+                        }
+                      }}>
+                        <SelectTrigger className="h-8 text-xs bg-background/80">
+                          <SelectValue placeholder="Pillar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all" className="text-xs">🔵 All</SelectItem>
+                          {(Object.keys(PILLAR_CONFIG) as PillarKey[]).map(p => (
+                            <SelectItem key={p} value={p} className="text-xs">
+                              {PILLAR_CONFIG[p].icon} {PILLAR_CONFIG[p].label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      {/* Activity filtered by pillar */}
+                      <Select value={data.activity} onValueChange={(v) => {
+                        updateSlot(key, 'activity', v);
+                        // Auto-set pillar if not already set
+                        if (!data.pillar && v !== 'Custom') {
+                          const autoPillar = getPillarForActivity(v);
+                          if (autoPillar) updateSlot(key, 'pillar', autoPillar);
+                        }
+                      }}>
                         <SelectTrigger className="h-8 text-xs bg-background/80">
                           <SelectValue placeholder="Select activity..." />
                         </SelectTrigger>
                         <SelectContent className="max-h-60">
-                          {ACTIVITY_GROUPS.map(g => (
+                          {filteredGroups.map(g => (
                             <SelectGroup key={g.group}>
                               <SelectLabel className="text-xs">{g.group}</SelectLabel>
                               {g.items.map(item => (
@@ -428,19 +464,6 @@ const DailyWorksheet = () => {
                             </SelectGroup>
                           ))}
                           <SelectItem value="Custom" className="text-xs font-medium">⭕ Custom (type your own)</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      <Select value={data.pillar} onValueChange={(v) => updateSlot(key, 'pillar', v)}>
-                        <SelectTrigger className="h-8 text-xs bg-background/80">
-                          <SelectValue placeholder="Pillar" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(Object.keys(PILLAR_CONFIG) as PillarKey[]).map(p => (
-                            <SelectItem key={p} value={p} className="text-xs">
-                              {PILLAR_CONFIG[p].icon} {PILLAR_CONFIG[p].label}
-                            </SelectItem>
-                          ))}
                         </SelectContent>
                       </Select>
 
