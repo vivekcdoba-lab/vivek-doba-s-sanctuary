@@ -516,10 +516,36 @@ const DailyWorksheet = () => {
           </div>
         </div>
 
-        <div className="p-4 border-t border-border bg-muted/30 flex flex-wrap gap-4 text-sm">
-          <span>Planned: <strong>{totalPlanned}h</strong>/24h</span>
-          <span>Free: <strong>{24 - totalPlanned}h</strong></span>
-          {autoSleepHours > 0 && <span>😴 Sleep: <strong>{autoSleepHours}h</strong></span>}
+        <div className="p-4 border-t border-border bg-muted/30 space-y-3">
+          <div className="flex flex-wrap gap-4 text-sm">
+            <span>Planned: <strong>{totalPlanned}h</strong>/24h</span>
+            <span>Free: <strong>{24 - totalPlanned}h</strong></span>
+            {autoSleepHours > 0 && <span>😴 Sleep: <strong>{autoSleepHours}h</strong></span>}
+          </div>
+          {(() => {
+            const totalSlots = slots.length;
+            const filledSlots = slots.filter(s => state.timeSlots[s.start]?.activity).length;
+            const emptySlots = totalSlots - filledSlots;
+            const pct = Math.round((filledSlots / totalSlots) * 100);
+            const doneSlots = actualsMode ? slots.filter(s => state.timeSlots[s.start]?.actualStatus === 'done').length : 0;
+            const skippedSlots = actualsMode ? slots.filter(s => state.timeSlots[s.start]?.actualStatus === 'skipped').length : 0;
+            return (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>✅ Filled: <strong className="text-foreground">{filledSlots}</strong> / {totalSlots} slots ({pct}%)</span>
+                  <span>⬜ Empty: <strong className="text-foreground">{emptySlots}</strong></span>
+                </div>
+                <Progress value={pct} className="h-2.5" />
+                {actualsMode && filledSlots > 0 && (
+                  <div className="flex gap-4 text-xs text-muted-foreground pt-1">
+                    <span>✅ Done: <strong className="text-foreground">{doneSlots}</strong></span>
+                    <span>❌ Skipped: <strong className="text-foreground">{skippedSlots}</strong></span>
+                    <span>📝 Pending: <strong className="text-foreground">{filledSlots - doneSlots - skippedSlots}</strong></span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
 
