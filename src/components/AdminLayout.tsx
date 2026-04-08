@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from 'react';
+import { useState, createContext, useContext, useCallback } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import NotificationBell from '@/components/NotificationBell';
@@ -48,15 +48,34 @@ const navGroups = [
   },
 ];
 
+// Context so child pages can override breadcrumb segments (e.g. replace a UUID with a name)
+export const BreadcrumbOverrideContext = createContext<{
+  overrides: Record<string, string>;
+  setOverride: (segment: string, label: string) => void;
+}>({ overrides: {}, setOverride: () => {} });
+
+export const useBreadcrumbOverride = () => useContext(BreadcrumbOverrideContext);
+
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [breadcrumbOverrides, setBreadcrumbOverrides] = useState<Record<string, string>>({});
   const location = useLocation();
   const { profile, logout, darkMode, toggleDarkMode } = useAuthStore();
 
+  const setOverride = useCallback((segment: string, label: string) => {
+    setBreadcrumbOverrides(prev => prev[segment] === label ? prev : { ...prev, [segment]: label });
+  }, []);
+
   const isActive = (path: string) => location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path + '/'));
 
-  const breadcrumbs = location.pathname.split('/').filter(Boolean).map((seg) => seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' '));
+  // Replace UUID-looking segments with override labels
+  const isUUID = (s: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+  const breadcrumbs = location.pathname.split('/').filter(Boolean).map((seg) => {
+    if (breadcrumbOverrides[seg]) return breadcrumbOverrides[seg];
+    if (isUUID(seg)) return '...';
+    return seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
+  });
 
   const sidebarWidth = collapsed ? 'w-[72px]' : 'w-[260px]';
 
