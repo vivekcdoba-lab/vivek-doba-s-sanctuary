@@ -120,7 +120,7 @@ const AdminLayout = () => {
           <button onClick={toggleDarkMode} className="flex-1 p-1.5 rounded-md text-sidebar-foreground/60 hover:bg-sidebar-accent/50 transition-colors">
             {darkMode ? <Sun className="w-4 h-4 mx-auto" /> : <Moon className="w-4 h-4 mx-auto" />}
           </button>
-          <button onClick={() => { logout(); }} className="flex-1 p-1.5 rounded-md text-sidebar-foreground/60 hover:bg-sidebar-accent/50 transition-colors">
+          <button onClick={() => { logout().then(() => window.location.href = '/login'); }} className="flex-1 p-1.5 rounded-md text-sidebar-foreground/60 hover:bg-sidebar-accent/50 transition-colors">
             <LogOut className="w-4 h-4 mx-auto" />
           </button>
         </div>
