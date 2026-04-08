@@ -1,7 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { PAYMENTS, SEEKERS, formatINR } from '@/data/mockData';
-import { toast } from 'sonner';
 
 export interface DbPayment {
   id: string;
@@ -25,24 +23,13 @@ export function usePayments(seekerId?: string) {
   const query = useQuery({
     queryKey: ['payments', seekerId ?? 'all'],
     queryFn: async (): Promise<DbPayment[]> => {
-      let q = supabase.from('payments' as any).select('*').order('created_at', { ascending: false });
+      let q = supabase.from('payments').select('*').order('created_at', { ascending: false });
       if (seekerId) {
         q = q.eq('seeker_id', seekerId);
       }
       const { data, error } = await q;
       if (error) throw error;
-
-      // Merge with mock data for existing demo records
-      const dbPayments = (data || []) as unknown as DbPayment[];
-      const dbIds = new Set(dbPayments.map((p) => p.id));
-
-      let mockPayments = PAYMENTS as DbPayment[];
-      if (seekerId) {
-        mockPayments = mockPayments.filter((p) => p.seeker_id === seekerId);
-      }
-      const filteredMock = mockPayments.filter((p) => !dbIds.has(p.id));
-
-      return [...dbPayments, ...filteredMock];
+      return (data || []) as unknown as DbPayment[];
     },
   });
 
@@ -57,7 +44,7 @@ export function usePayments(seekerId?: string) {
       transaction_id?: string;
     }) => {
       const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
-      const { data, error } = await supabase.from('payments' as any).insert({
+      const { data, error } = await supabase.from('payments').insert({
         seeker_id: payment.seeker_id,
         invoice_number: invoiceNumber,
         amount: payment.amount,
