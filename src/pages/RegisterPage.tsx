@@ -49,7 +49,12 @@ const RegisterPage = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        // Generic message to avoid leaking whether email exists
+        if (error.message.includes('already registered')) {
+          toast.error('Unable to create account. Please try a different email or sign in.');
+        } else {
+          toast.error(error.message);
+        }
         return;
       }
 

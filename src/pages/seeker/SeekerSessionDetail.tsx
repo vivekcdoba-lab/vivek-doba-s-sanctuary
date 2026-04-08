@@ -70,12 +70,26 @@ const SeekerSessionDetail = () => {
   const loadSession = async () => {
     setLoading(true);
     try {
+      // Verify seeker owns this session (data isolation)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { navigate('/login'); return; }
+      
+      const { data: myProfile } = await supabase.from('profiles').select('id').eq('user_id', user.id).maybeSingle();
+      
       const { data, error } = await supabase
         .from('sessions')
         .select('*')
         .eq('id', id!)
         .single();
       if (error) throw error;
+      
+      // Check seeker owns this session (unless admin)
+      const isAdmin = profile?.role === 'admin';
+      if (!isAdmin && data.seeker_id !== myProfile?.id) {
+        toast.error('You do not have access to this session');
+        navigate('/seeker/home');
+        return;
+      }
 
       const s = {
         ...data,

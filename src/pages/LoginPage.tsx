@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ChevronRight, Eye, EyeOff, Mail, Lock, Sparkles, Loader2, Shield, Users, UserCheck, MessageSquare } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
@@ -35,7 +35,15 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<LoginRole>('seeker');
   const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
+  const { setAuth, isAuthenticated, profile: authProfile } = useAuthStore();
+
+  // Redirect already logged-in users
+  useEffect(() => {
+    if (isAuthenticated && authProfile) {
+      if (authProfile.role === 'admin') navigate('/dashboard');
+      else navigate('/seeker/home');
+    }
+  }, [isAuthenticated, authProfile, navigate]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -46,7 +54,8 @@ const LoginPage = () => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        toast.error(error.message);
+        // Generic error message to avoid leaking whether email exists
+        toast.error('Invalid email or password');
         return;
       }
       if (data.user) {
