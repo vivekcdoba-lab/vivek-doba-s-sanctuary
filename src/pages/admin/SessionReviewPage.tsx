@@ -142,9 +142,11 @@ const SessionReviewPage = () => {
       const oldValue = (session as any)[section] || '';
       const newValue = editValues[section] || '';
       
+      const updatePayload: Record<string, string> = {};
+      updatePayload[section] = newValue;
       const { error } = await supabase
         .from('sessions')
-        .update({ [section]: newValue })
+        .update(updatePayload as any)
         .eq('id', session.id);
       if (error) throw error;
 
