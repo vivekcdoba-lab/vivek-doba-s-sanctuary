@@ -187,49 +187,81 @@ const SessionsPage = () => {
   if (showPostSession) {
     const session = sessions.find(s => s.id === showPostSession);
     const seeker = SEEKERS.find(s => s.id === session?.seeker_id);
+    const TOTAL_STEPS = 8;
+    const STEP_LABELS = ['Session Identity', 'Session Summary', 'Client Assessment', 'Client Growth & Wins', 'Stories & Therapy', 'Assignments', 'Next Week Plan', 'Coach Reflection'];
 
     return (
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="bg-card rounded-xl p-4 border border-border">
           <h2 className="text-lg font-bold text-foreground">Post-Session Notes — {seeker?.full_name}</h2>
-          <p className="text-sm text-muted-foreground">Session #{session?.session_number} • Step {postStep} of 5</p>
+          <p className="text-sm text-muted-foreground">Session #{session?.session_number} • Step {postStep} of {TOTAL_STEPS}: {STEP_LABELS[postStep - 1]}</p>
           <div className="flex gap-1 mt-3">
-            {[1, 2, 3, 4, 5].map(s => (
-              <div key={s} className={`h-1.5 flex-1 rounded-full ${s <= postStep ? 'bg-primary' : 'bg-muted'}`} />
+            {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map(s => (
+              <div key={s} className={`h-1.5 flex-1 rounded-full transition-colors ${s <= postStep ? 'bg-primary' : 'bg-muted'}`} />
             ))}
           </div>
         </div>
 
+        {/* Step 1: Session Identity */}
         {postStep === 1 && (
           <div className="bg-card rounded-xl p-5 border border-border space-y-4">
-            <h3 className="font-semibold text-foreground">Step 1: Session Summary</h3>
+            <h3 className="font-semibold text-foreground">🏷️ Step 1: Session Identity</h3>
+            <div>
+              <label className="text-sm font-medium text-foreground">Session Name *</label>
+              <input value={postData.sessionName} onChange={e => setPostData(p => ({ ...p, sessionName: e.target.value }))} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="e.g., Leadership Breakthrough Session" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Pillar Focus</label>
+              <div className="grid grid-cols-5 gap-2 mt-2">
+                {[
+                  { key: 'dharma', label: '🙏 Dharma', desc: 'Purpose & Duty' },
+                  { key: 'artha', label: '💰 Artha', desc: 'Wealth & Career' },
+                  { key: 'kama', label: '❤️ Kama', desc: 'Desires & Joy' },
+                  { key: 'moksha', label: '🕉️ Moksha', desc: 'Liberation & Growth' },
+                  { key: 'all', label: '✨ All', desc: 'Holistic' },
+                ].map(p => (
+                  <button key={p.key} onClick={() => setPostData(prev => ({ ...prev, pillar: p.key }))} className={`p-3 rounded-xl border text-center transition-all ${postData.pillar === p.key ? 'border-primary bg-primary/10 ring-2 ring-primary/20' : 'border-border hover:border-primary/30'}`}>
+                    <span className="text-lg block">{p.label.split(' ')[0]}</span>
+                    <span className="text-[10px] text-muted-foreground block mt-1">{p.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
             <div>
               <label className="text-sm font-medium text-foreground">Topics Covered (comma-separated)</label>
-              <input value={postData.topics} onChange={e => setPostData(p => ({ ...p, topics: e.target.value }))} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="e.g., Delegation, Leadership mindset" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Key Insights</label>
-              <textarea value={postData.insights || liveNotes} onChange={e => setPostData(p => ({ ...p, insights: e.target.value }))} className="mt-1 w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Breakthroughs</label>
-              <textarea value={postData.breakthroughs} onChange={e => setPostData(p => ({ ...p, breakthroughs: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Challenges</label>
-              <textarea value={postData.challenges} onChange={e => setPostData(p => ({ ...p, challenges: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+              <input value={postData.topics} onChange={e => setPostData(p => ({ ...p, topics: e.target.value }))} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="e.g., Delegation, Leadership mindset, Time management" />
             </div>
           </div>
         )}
 
+        {/* Step 2: Session Summary */}
         {postStep === 2 && (
           <div className="bg-card rounded-xl p-5 border border-border space-y-4">
-            <h3 className="font-semibold text-foreground">Step 2: Seeker Assessment</h3>
+            <h3 className="font-semibold text-foreground">📝 Step 2: Session Summary</h3>
+            <div>
+              <label className="text-sm font-medium text-foreground">Key Insights</label>
+              <textarea value={postData.insights || liveNotes} onChange={e => setPostData(p => ({ ...p, insights: e.target.value }))} className="mt-1 w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="What were the key takeaways?" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Breakthroughs</label>
+              <textarea value={postData.breakthroughs} onChange={e => setPostData(p => ({ ...p, breakthroughs: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Any breakthrough moments?" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Challenges Discussed</label>
+              <textarea value={postData.challenges} onChange={e => setPostData(p => ({ ...p, challenges: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="What challenges came up?" />
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Client Assessment */}
+        {postStep === 3 && (
+          <div className="bg-card rounded-xl p-5 border border-border space-y-4">
+            <h3 className="font-semibold text-foreground">📊 Step 3: Client Assessment</h3>
             <div>
               <label className="text-sm font-medium text-foreground">Mood</label>
               <div className="flex gap-3 mt-2">
-                {['😊', '😐', '😔', '😰'].map(m => (
-                  <button key={m} onClick={() => setPostData(p => ({ ...p, mood: m }))} className={`text-2xl p-2 rounded-lg border ${postData.mood === m ? 'border-primary bg-primary/10' : 'border-border'}`}>{m}</button>
+                {['😊', '😐', '😔', '😰', '🔥', '😤'].map(m => (
+                  <button key={m} onClick={() => setPostData(p => ({ ...p, mood: m }))} className={`text-2xl p-2 rounded-lg border transition-all ${postData.mood === m ? 'border-primary bg-primary/10 scale-110' : 'border-border'}`}>{m}</button>
                 ))}
               </div>
             </div>
@@ -239,47 +271,128 @@ const SessionsPage = () => {
               { key: 'openness', label: 'Openness to Change' },
             ].map(item => (
               <div key={item.key}>
-                <label className="text-sm font-medium text-foreground">{item.label}: {postData[item.key as keyof typeof postData]}/10</label>
-                <input type="range" min={1} max={10} value={postData[item.key as keyof typeof postData] as number} onChange={e => setPostData(p => ({ ...p, [item.key]: Number(e.target.value) }))} className="w-full accent-primary mt-1" />
+                <label className="text-sm font-medium text-foreground">{item.label}: {(postData as any)[item.key]}/10</label>
+                <input type="range" min={1} max={10} value={(postData as any)[item.key] as number} onChange={e => setPostData(p => ({ ...p, [item.key]: Number(e.target.value) }))} className="w-full accent-primary mt-1" />
               </div>
             ))}
           </div>
         )}
 
-        {postStep === 3 && (
-          <div className="bg-card rounded-xl p-5 border border-border space-y-4">
-            <h3 className="font-semibold text-foreground">Step 3: Stories & Teaching Used</h3>
-            <p className="text-xs text-muted-foreground">Select stories used during this session</p>
-            <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
-              {[
-                "Ram's Exile", "Hanuman's Leap", "Sita's Strength", "Lakshman Rekha",
-                "Arjuna's Dilemma", "Karna's Loyalty", "Krishna's Flute", "Eklavya's Dedication",
-                "Vibhishan's Choice", "Ram's Bridge", "Draupadi's Courage", "Bhishma's Vow"
-              ].map(story => (
-                <button key={story} onClick={() => setPostData(p => ({
-                  ...p,
-                  stories: p.stories.includes(story) ? p.stories.filter(s => s !== story) : [...p.stories, story]
-                }))} className={`text-left p-2 rounded-lg text-xs border ${postData.stories.includes(story) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'}`}>
-                  📖 {story}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
+        {/* Step 4: Client Growth & Wins */}
         {postStep === 4 && (
           <div className="bg-card rounded-xl p-5 border border-border space-y-4">
-            <h3 className="font-semibold text-foreground">Step 4: Action Items & Next Steps</h3>
+            <h3 className="font-semibold text-foreground">🌱 Step 4: Client Growth & Wins</h3>
             <div>
-              <label className="text-sm font-medium text-foreground">New Assignments (one per line)</label>
-              <textarea value={postData.assignments} onChange={e => setPostData(p => ({ ...p, assignments: e.target.value }))} className="mt-1 w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Vision Board v2&#10;Daily journaling for 7 days" />
+              <label className="text-sm font-medium text-foreground">🏆 One Major Win / Success This Week</label>
+              <textarea value={postData.majorWin} onChange={e => setPostData(p => ({ ...p, majorWin: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="What was their biggest win or success recently?" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">🌟 Client's 3 Good Things</label>
+              {[0, 1, 2].map(i => (
+                <input key={i} value={postData.clientGoodThings[i]} onChange={e => {
+                  const updated = [...postData.clientGoodThings];
+                  updated[i] = e.target.value;
+                  setPostData(p => ({ ...p, clientGoodThings: updated }));
+                }} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder={`Good thing ${i + 1}...`} />
+              ))}
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">📈 Growth Across 4 Pillars</label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { key: 'dharma', emoji: '🙏', label: 'Dharma (Purpose)' },
+                  { key: 'artha', emoji: '💰', label: 'Artha (Wealth)' },
+                  { key: 'kama', emoji: '❤️', label: 'Kama (Desire)' },
+                  { key: 'moksha', emoji: '🕉️', label: 'Moksha (Liberation)' },
+                ].map(pillar => (
+                  <div key={pillar.key}>
+                    <label className="text-xs text-muted-foreground">{pillar.emoji} {pillar.label}</label>
+                    <textarea value={postData.clientGrowth[pillar.key as keyof typeof postData.clientGrowth]} onChange={e => setPostData(p => ({ ...p, clientGrowth: { ...p.clientGrowth, [pillar.key]: e.target.value } }))} className="mt-1 w-full min-h-[50px] rounded-lg border border-input bg-background px-3 py-2 text-xs" placeholder={`Update on ${pillar.label}...`} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
+        {/* Step 5: Stories & Therapy */}
         {postStep === 5 && (
           <div className="bg-card rounded-xl p-5 border border-border space-y-4">
-            <h3 className="font-semibold text-foreground">Step 5: Coach's Private Reflection</h3>
+            <h3 className="font-semibold text-foreground">📖 Step 5: Stories & Therapy</h3>
+            <div>
+              <label className="text-sm font-medium text-foreground">Therapy Given</label>
+              <textarea value={postData.therapyGiven} onChange={e => setPostData(p => ({ ...p, therapyGiven: e.target.value }))} className="mt-1 w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="What therapy or technique was used?" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Stories Used</label>
+              <p className="text-xs text-muted-foreground mb-2">Select stories used during this session</p>
+              <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+                {[
+                  "Ram's Exile", "Hanuman's Leap", "Sita's Strength", "Lakshman Rekha",
+                  "Arjuna's Dilemma", "Karna's Loyalty", "Krishna's Flute", "Eklavya's Dedication",
+                  "Vibhishan's Choice", "Ram's Bridge", "Draupadi's Courage", "Bhishma's Vow",
+                  "Shabari's Devotion", "Jatayu's Sacrifice", "Ahilya's Redemption", "Krishna's Vishwaroop"
+                ].map(story => (
+                  <button key={story} onClick={() => setPostData(p => ({
+                    ...p,
+                    stories: p.stories.includes(story) ? p.stories.filter(s => s !== story) : [...p.stories, story]
+                  }))} className={`text-left p-2 rounded-lg text-xs border transition-all ${postData.stories.includes(story) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:border-primary/30'}`}>
+                    📖 {story}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 6: Assignments */}
+        {postStep === 6 && (
+          <div className="bg-card rounded-xl p-5 border border-border space-y-4">
+            <h3 className="font-semibold text-foreground">📋 Step 6: Assignments</h3>
+            <div>
+              <label className="text-sm font-medium text-foreground">New Assignments Given (one per line)</label>
+              <textarea value={postData.assignments} onChange={e => setPostData(p => ({ ...p, assignments: e.target.value }))} className="mt-1 w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Vision Board v2&#10;Daily journaling for 7 days&#10;Read Chapter 5" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Last Week Pending Assignments Review</label>
+              <textarea value={postData.pendingAssignments} onChange={e => setPostData(p => ({ ...p, pendingAssignments: e.target.value }))} className="mt-1 w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Which assignments were completed? Which are pending? Why?" />
+            </div>
+          </div>
+        )}
+
+        {/* Step 7: Next Week Plan */}
+        {postStep === 7 && (
+          <div className="bg-card rounded-xl p-5 border border-border space-y-4">
+            <h3 className="font-semibold text-foreground">📅 Step 7: Next Week Plan</h3>
+            <div>
+              <label className="text-sm font-medium text-foreground">Next Session Time</label>
+              <input value={postData.nextSessionTime} onChange={e => setPostData(p => ({ ...p, nextSessionTime: e.target.value }))} className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="e.g., Thursday 10:00 AM" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Next Week Assignments</label>
+              <textarea value={postData.nextWeekAssignments} onChange={e => setPostData(p => ({ ...p, nextWeekAssignments: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Assignments for next week..." />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">🎯 Targets</label>
+              <textarea value={postData.targets} onChange={e => setPostData(p => ({ ...p, targets: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Targets for the coming week..." />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium text-foreground">🏆 Rewards</label>
+                <textarea value={postData.rewards} onChange={e => setPostData(p => ({ ...p, rewards: e.target.value }))} className="mt-1 w-full min-h-[50px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Rewards for achieving targets..." />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground">⚡ Punishments</label>
+                <textarea value={postData.punishments} onChange={e => setPostData(p => ({ ...p, punishments: e.target.value }))} className="mt-1 w-full min-h-[50px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Consequences for missing targets..." />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 8: Coach Reflection */}
+        {postStep === 8 && (
+          <div className="bg-card rounded-xl p-5 border border-border space-y-4">
+            <h3 className="font-semibold text-foreground">🔒 Step 8: Coach's Private Reflection</h3>
             <div>
               <label className="text-sm font-medium text-foreground">Private Notes (only you can see)</label>
               <textarea value={postData.privateNotes} onChange={e => setPostData(p => ({ ...p, privateNotes: e.target.value }))} className="mt-1 w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm" />
@@ -295,7 +408,7 @@ const SessionsPage = () => {
           <button onClick={() => postStep > 1 ? setPostStep(postStep - 1) : setShowPostSession(null)} className="px-4 py-2 rounded-xl text-sm font-medium border border-border text-foreground">
             {postStep === 1 ? 'Cancel' : '← Back'}
           </button>
-          {postStep < 5 ? (
+          {postStep < TOTAL_STEPS ? (
             <button onClick={() => setPostStep(postStep + 1)} className="px-4 py-2 rounded-xl text-sm font-medium gradient-sacred text-primary-foreground">
               Next →
             </button>
