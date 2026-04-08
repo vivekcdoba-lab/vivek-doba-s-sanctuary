@@ -491,14 +491,19 @@ const SessionsPage = () => {
                          <Bell className="w-3 h-3" /> Remind
                         </button>
                       )}
+                      {['submitted', 'reviewing'].includes(session.status) && (
+                        <button onClick={() => approveSession(session.id)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-dharma-green/10 text-dharma-green flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Approve
+                        </button>
+                      )}
                       {['completed', 'submitted', 'reviewing', 'approved', 'revision_requested'].includes(session.status) && (
                         <button onClick={() => navigate(`/sessions/${session.id}/review`)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-chakra-indigo/10 text-chakra-indigo flex items-center gap-1">
                           <Eye className="w-3 h-3" /> Review
                         </button>
                       )}
-                      {session.status === 'completed' && (
+                      {session.status === 'approved' && (
                         <button onClick={() => navigate(`/sessions/${session.id}/certify`)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-primary/10 text-primary flex items-center gap-1">
-                          <Shield className="w-3 h-3" /> Certify
+                          <Shield className="w-3 h-3" /> Sign
                         </button>
                       )}
                     </div>
