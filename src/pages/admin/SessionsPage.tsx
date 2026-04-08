@@ -14,6 +14,10 @@ const SESSION_STATUS_CONFIG: Record<string, { label: string; emoji: string; colo
   confirmed: { label: 'Confirmed', emoji: '✅', color: 'bg-chakra-indigo/10 text-chakra-indigo' },
   in_progress: { label: 'In Progress', emoji: '▶️', color: 'bg-saffron/10 text-saffron animate-pulse' },
   completed: { label: 'Completed', emoji: '✅', color: 'bg-dharma-green/10 text-dharma-green' },
+  submitted: { label: 'Submitted', emoji: '📤', color: 'bg-chakra-indigo/10 text-chakra-indigo' },
+  reviewing: { label: 'Reviewing', emoji: '👁️', color: 'bg-saffron/10 text-saffron' },
+  approved: { label: 'Approved', emoji: '🏆', color: 'bg-dharma-green/10 text-dharma-green' },
+  revision_requested: { label: 'Revision', emoji: '🔄', color: 'bg-warning-amber/10 text-warning-amber' },
   missed: { label: 'Missed', emoji: '❌', color: 'bg-destructive/10 text-destructive' },
   rescheduled: { label: 'Rescheduled', emoji: '🔄', color: 'bg-warning-amber/10 text-warning-amber' },
   cancelled: { label: 'Cancelled', emoji: '🚫', color: 'bg-muted text-muted-foreground' },
@@ -360,6 +364,11 @@ const SessionsPage = () => {
                         <button onClick={() => setReminder({ seeker, session })}
                           className="px-2 py-1 rounded-lg text-[10px] font-medium bg-sky-blue/10 text-sky-blue flex items-center gap-1">
                          <Bell className="w-3 h-3" /> Remind
+                        </button>
+                      )}
+                      {['completed', 'submitted', 'reviewing', 'approved', 'revision_requested'].includes(session.status) && (
+                        <button onClick={() => navigate(`/sessions/${session.id}/review`)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-chakra-indigo/10 text-chakra-indigo flex items-center gap-1">
+                          <Eye className="w-3 h-3" /> Review
                         </button>
                       )}
                       {session.status === 'completed' && (
