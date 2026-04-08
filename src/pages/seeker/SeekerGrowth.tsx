@@ -3,8 +3,11 @@ import { useAuthStore } from '@/store/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useBadges } from '@/hooks/useBadges';
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area } from 'recharts';
 import { Loader2 } from 'lucide-react';
+import LGTQuadrant from '@/components/charts/LGTQuadrant';
+import StreakHeatmap from '@/components/charts/StreakHeatmap';
+import ChartWrapper from '@/components/charts/ChartWrapper';
 
 const ZONE_COLORS = { red: '#E63946', yellow: '#F4A61C', white: '#BDC3C7', blue: '#3498DB', green: '#2ECC71' };
 
