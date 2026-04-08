@@ -83,6 +83,9 @@ const App = () => (
           <Route path="/register-workshop" element={<RegisterWorkshop />} />
           <Route path="/apply-lgt" element={<ApplyLGT />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/help" element={<HelpPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
 
           {/* Admin Routes */}
           <Route element={<AuthGuard requiredRole="admin"><AdminLayout /></AuthGuard>}>
