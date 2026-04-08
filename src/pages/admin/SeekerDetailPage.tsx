@@ -945,7 +945,7 @@ const SeekerDetailPage = () => {
                 <div className="gradient-chakravartin rounded-t-xl p-4 -mx-6 -mt-6">
                   <h2 className="text-white font-bold text-lg">🪷 VIVEK DOBA TRAINING SOLUTIONS</h2>
                   <p className="text-white/80 text-xs">Spiritual Business Coach</p>
-                  <p className="text-white/80 text-xs">Contact: 9607050111 | vivekdoba.in</p>
+                  <p className="text-white/80 text-xs">Contact: 9607050111 | vivekdoba.com</p>
                 </div>
                 <div className="flex justify-between items-start">
                   <div>

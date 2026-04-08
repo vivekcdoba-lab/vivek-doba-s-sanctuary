@@ -89,7 +89,7 @@ function buildApplicantEmailHtml(data: NotificationRequest): string {
         <p style="color:#333;font-size:14px">Dear ${data.applicant_name},</p>
         <p style="color:#555;font-size:14px;line-height:1.6">${status.message}</p>
         ${data.admin_notes ? `<div style="margin:16px 0;padding:12px;background:#F3F4F6;border-left:4px solid ${status.color};border-radius:4px"><p style="margin:0;font-size:13px;color:#333"><strong>Notes from Vivek Sir:</strong><br/>${data.admin_notes}</p></div>` : ""}
-        <p style="color:#555;font-size:14px;margin-top:20px">For any questions, reach out:<br/>📞 9607050111 | 📧 info@vivekdoba.in</p>
+        <p style="color:#555;font-size:14px;margin-top:20px">For any questions, reach out:<br/>📞 9607050111 | 📧 info@vivekdoba.com</p>
         <p style="color:#999;font-size:12px;margin-top:24px;border-top:1px solid #eee;padding-top:12px">Made with 🙏 for seekers of transformation</p>
       </div>
     </div>`;

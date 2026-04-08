@@ -48,7 +48,7 @@ const CHANNELS: { key: Channel; label: string; icon: typeof MessageSquare; color
 ];
 
 function generateMessage(template: TemplateKey, seekerName: string, data?: SendReminderModalProps['contextData']): string {
-  const sign = '\n\n🙏 Vivek Doba\nVivek Doba Training Solutions\nvivekdoba.in | 9607050111';
+  const sign = '\n\n🙏 Vivek Doba\nVivek Doba Training Solutions\nvivekdoba.com | 9607050111';
 
   switch (template) {
     case 'assignment_overdue':
