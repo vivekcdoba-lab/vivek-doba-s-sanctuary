@@ -1,6 +1,7 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useState, createContext, useContext } from "react";
 import { NavLink } from "@/components/NavLink";
+import { useAuthStore } from "@/store/authStore";
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +24,7 @@ import {
   CalendarClock,
   BookCheck,
   TrendingUp,
+  LogOut,
 } from "lucide-react";
 
 type Lang = "en" | "hi";
@@ -49,7 +51,14 @@ function CoachingSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
   const { lang } = useCoachingLang();
+  const { logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border bg-card">
@@ -84,6 +93,13 @@ function CoachingSidebar() {
                   </SidebarMenuItem>
                 );
               })}
+              {/* Log Out */}
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleLogout} className="hover:bg-destructive/10 text-destructive cursor-pointer">
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span>{lang === "en" ? "Log Out" : "लॉग आउट"}</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

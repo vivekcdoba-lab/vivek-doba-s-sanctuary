@@ -3,6 +3,7 @@ import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarC
 import LGTAssessment from '@/components/LGTAssessment';
 import FIROBAssessment from '@/components/FIROBAssessment';
 import BackToHome from '@/components/BackToHome';
+import { ChevronDown } from 'lucide-react';
 
 // 9 Life Areas matching Vivek Doba's Wheel of Life framework
 const AREAS = [
@@ -112,6 +113,9 @@ const SeekerAssessments = () => {
   const [firobAssessing, setFirobAssessing] = useState(false);
   const [scores, setScores] = useState<number[]>(INITIAL_SCORES);
   const [showResults, setShowResults] = useState(false);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+
+  const toggleCard = (key: string) => setExpandedCard(prev => prev === key ? null : key);
 
   const analysis = useMemo(() => {
     const total = scores.reduce((a, b) => a + b, 0);
@@ -146,50 +150,51 @@ const SeekerAssessments = () => {
         <p className="text-xs text-muted-foreground mt-1">Jeevan Chakra — Discover Your Life Balance</p>
       </div>
 
-      {/* Assessment Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <div className="bg-card rounded-xl p-4 border-l-4 border-l-[#2ECC71] border border-border">
-          <p className="text-xs text-muted-foreground">📋 SWOT</p>
-          <p className="text-lg font-bold text-foreground">S:5 W:3</p>
-          <p className="text-[10px] text-muted-foreground">Last: 15/02/2026</p>
-          <button className="text-xs text-primary mt-2">View Details</button>
-        </div>
-        <div className="bg-card rounded-xl p-4 border-l-4 border-l-primary border border-border">
-          <p className="text-xs text-muted-foreground">☸ Wheel of Life</p>
-          <p className="text-lg font-bold text-foreground">{analysis.avg}/10</p>
-          <p className="text-[10px] text-muted-foreground">Last: 01/03/2026</p>
-          <button onClick={() => { setSelfAssessing(true); setShowResults(false); }} className="text-xs text-primary mt-2 font-medium">🎯 Self-Assess</button>
-        </div>
-        <div className="bg-card rounded-xl p-4 border-l-4 border-l-[#FF9933] border border-border">
-          <p className="text-xs text-muted-foreground">🔺 LGT</p>
-          <p className="text-lg font-bold text-foreground">68%</p>
-          <p className="text-[10px] text-muted-foreground">Balance</p>
-          <button onClick={() => { setLgtAssessing(true); }} className="text-xs text-primary mt-2 font-medium">🔺 Take LGT Test</button>
-        </div>
-        <div className="bg-card rounded-xl p-4 border-l-4 border-l-[#7B1FA2] border border-border">
-          <p className="text-xs text-muted-foreground">🕉️ Purusharthas</p>
-          <p className="text-sm font-bold text-foreground">D:8 A:5 K:4 M:7</p>
-          <p className="text-[10px] text-muted-foreground">Last: 01/03/2026</p>
-          <button className="text-xs text-primary mt-2">View Details</button>
-        </div>
-        <div className="bg-card rounded-xl p-4 border-l-4 border-l-[#2ECC71] border border-border">
-          <p className="text-xs text-muted-foreground">😊 Happiness</p>
-          <p className="text-lg font-bold text-foreground">7.2/10</p>
-          <p className="text-[10px] text-[#2ECC71]">↑0.5</p>
-          <button className="text-xs text-primary mt-2">😊 Quick Check</button>
-        </div>
-        <div className="bg-card rounded-xl p-4 border-l-4 border-l-[#3F51B5] border border-border">
-          <p className="text-xs text-muted-foreground">🧠 MOOCH</p>
-          <p className="text-sm font-bold text-foreground">5 patterns</p>
-          <p className="text-[10px] text-muted-foreground">Awareness: 6.5</p>
-          <button className="text-xs text-primary mt-2">View Details</button>
-        </div>
-        <div className="bg-card rounded-xl p-4 border-l-4 border-l-[#E91E63] border border-border">
-          <p className="text-xs text-muted-foreground">🧠 FIRO-B</p>
-          <p className="text-sm font-bold text-foreground">6 dims</p>
-          <p className="text-[10px] text-muted-foreground">Interpersonal Style</p>
-          <button onClick={() => setFirobAssessing(true)} className="text-xs text-primary mt-2 font-medium">🧠 Take FIRO-B</button>
-        </div>
+      {/* Assessment Cards - Expandable */}
+      <div className="space-y-3">
+        {[
+          { key: 'swot', icon: '📋', label: 'SWOT Analysis', borderColor: '#2ECC71', summary: 'S:5 W:3 O:4 T:2', lastDate: '15/02/2026',
+            detail: 'Strengths: Leadership, Communication, Discipline, Spiritual Practice, Persistence. Weaknesses: Time Management, Delegation, Financial Planning. Opportunities: Market Expansion, Digital Presence, Network Growth. Threats: Competition, Economic Slowdown.' },
+          { key: 'wheel', icon: '☸', label: 'Wheel of Life', borderColor: 'hsl(var(--primary))', summary: `${analysis.avg}/10 avg`, lastDate: '01/03/2026',
+            detail: `Total Score: ${analysis.total}/90 (${((analysis.total / 90) * 100).toFixed(0)}%). Strongest: ${AREAS[analysis.strongIdx].icon} ${AREAS[analysis.strongIdx].name} (${analysis.max}). Weakest: ${AREAS[analysis.weakIdx].icon} ${AREAS[analysis.weakIdx].name} (${analysis.min}). Balance Index: ${analysis.balance}/10.`,
+            action: () => { setSelfAssessing(true); setShowResults(false); }, actionLabel: '🎯 Self-Assess' },
+          { key: 'lgt', icon: '🔺', label: 'LGT (Life\'s Golden Triangle)', borderColor: '#FF9933', summary: '68% Balance', lastDate: '01/03/2026',
+            detail: 'Life: 72% — Strong spiritual foundation. Growth: 65% — Good learning trajectory. Triangle: 68% — Career and financial pillars need strengthening.',
+            action: () => setLgtAssessing(true), actionLabel: '🔺 Take LGT Test' },
+          { key: 'purushartha', icon: '🕉️', label: 'Purusharthas', borderColor: '#7B1FA2', summary: 'D:8 A:5 K:4 M:7', lastDate: '01/03/2026',
+            detail: 'Dharma (Purpose): 8/10 — Strong sense of purpose. Artha (Wealth): 5/10 — Financial stability needs attention. Kama (Desires): 4/10 — Enjoyment areas under-served. Moksha (Liberation): 7/10 — Good spiritual progress.' },
+          { key: 'happiness', icon: '😊', label: 'Happiness Index', borderColor: '#2ECC71', summary: '7.2/10 ↑0.5', lastDate: '01/03/2026',
+            detail: 'Overall: 7.2/10. Life Satisfaction: 7.5. Positive Emotions: 7.0. Engagement: 7.8. Relationships: 6.8. Meaning: 7.5. Accomplishment: 6.5.' },
+          { key: 'mooch', icon: '🧠', label: 'MOOCH (Mind Patterns)', borderColor: '#3F51B5', summary: '5 patterns • 6.5', lastDate: '01/03/2026',
+            detail: 'Overthinking (7/10), Procrastination (5/10), People Pleasing (6/10), Perfectionism (8/10), Catastrophizing (4/10). Awareness Score: 6.5/10.' },
+          { key: 'firob', icon: '🧠', label: 'FIRO-B (Interpersonal)', borderColor: '#E91E63', summary: '6 dimensions', lastDate: '01/03/2026',
+            detail: 'Inclusion — Expressed: 5, Wanted: 7. Control — Expressed: 6, Wanted: 4. Affection — Expressed: 4, Wanted: 6. You seek belonging but may hesitate to express affection openly.',
+            action: () => setFirobAssessing(true), actionLabel: '🧠 Take FIRO-B' },
+        ].map(card => (
+          <div key={card.key} className="bg-card rounded-xl border border-border overflow-hidden" style={{ borderLeftWidth: 4, borderLeftColor: card.borderColor }}>
+            <button
+              onClick={() => toggleCard(card.key)}
+              className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted-foreground">{card.icon} {card.label}</p>
+                <p className="text-lg font-bold text-foreground">{card.summary}</p>
+                <p className="text-[10px] text-muted-foreground">Last: {card.lastDate}</p>
+              </div>
+              <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform shrink-0 ${expandedCard === card.key ? 'rotate-180' : ''}`} />
+            </button>
+            {expandedCard === card.key && (
+              <div className="px-4 pb-4 border-t border-border pt-3 animate-in slide-in-from-top-2">
+                <p className="text-sm text-foreground leading-relaxed">{card.detail}</p>
+                {card.action && (
+                  <button onClick={card.action} className="mt-3 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity">
+                    {card.actionLabel}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* ═══ LGT ASSESSMENT ═══ */}
