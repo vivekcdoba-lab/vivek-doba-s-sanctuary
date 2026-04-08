@@ -21,6 +21,12 @@ export interface FinancialEntry {
   category: string;
 }
 
+export interface PriorityItem {
+  task: string;
+  pillar: string;
+  done: boolean;
+}
+
 export interface WorksheetState {
   worksheetId: string | null;
   isLoading: boolean;
@@ -34,6 +40,8 @@ export interface WorksheetState {
   peace: number[];
   // Section 2
   timeSlots: Record<string, TimeSlotData>;
+  // Section 4 — MIT Priorities
+  priorities: PriorityItem[];
   // Section 5
   incomeEntries: FinancialEntry[];
   expenseEntries: FinancialEntry[];
@@ -78,6 +86,7 @@ const DEFAULT_STATE: Omit<WorksheetState, 'worksheetId' | 'isLoading' | 'isSavin
   energy: [5],
   peace: [5],
   timeSlots: {},
+  priorities: [{ task: '', pillar: '', done: false }, { task: '', pillar: '', done: false }, { task: '', pillar: '', done: false }],
   incomeEntries: [{ source: '', amount: '', category: '' }],
   expenseEntries: [{ source: '', amount: '', category: '' }],
   waterGlasses: 0,
