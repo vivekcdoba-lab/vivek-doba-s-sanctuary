@@ -394,16 +394,17 @@ const DailyWorksheet = () => {
 
         <div className="overflow-x-auto">
           <div className="min-w-[700px]">
-            <div className="grid grid-cols-[80px_100px_1fr_60px_80px] gap-1 px-4 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground border-b border-border">
+            <div className="grid grid-cols-[80px_100px_1fr_60px_60px_80px] gap-1 px-4 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground border-b border-border">
               <span>Time</span>
               <span>Pillar</span>
               <span>Activity</span>
+              <span>Dur.</span>
               <span>Energy</span>
               {actualsMode ? <span>Status</span> : <span>Notes</span>}
             </div>
 
             <div className="max-h-[500px] overflow-y-auto">
-              {slots.map(slot => {
+              {slots.map((slot, slotIndex) => {
                 const key = slot.start;
                 const data = state.timeSlots[key] || { activity: '', customActivity: '', pillar: '', energy: '', notes: '', actualStatus: '', skipReason: '' };
                 const phaseBg = getPhaseForTime(slot.start);
@@ -414,16 +415,53 @@ const DailyWorksheet = () => {
                   ? ACTIVITY_GROUPS.filter(g => g.pillar === data.pillar)
                   : ACTIVITY_GROUPS;
 
+                // Check if this slot is a "continuation" of a previous multi-slot activity
+                const isContinuation = slotIndex > 0 && (() => {
+                  const prevKey = slots[slotIndex - 1].start;
+                  const prevData = state.timeSlots[prevKey];
+                  return prevData?.activity && prevData.activity === data.activity && prevData.pillar === data.pillar;
+                })();
+
+                const DURATION_OPTIONS = [
+                  { value: '0.5', label: '30m' },
+                  { value: '1', label: '1h' },
+                  { value: '1.5', label: '1.5h' },
+                  { value: '2', label: '2h' },
+                  { value: '2.5', label: '2.5h' },
+                  { value: '3', label: '3h' },
+                  { value: '4', label: '4h' },
+                  { value: '5', label: '5h' },
+                  { value: '6', label: '6h' },
+                  { value: '7', label: '7h' },
+                  { value: '8', label: '8h' },
+                ];
+
+                const handleDurationChange = (duration: string) => {
+                  const hrs = parseFloat(duration);
+                  const slotsToFill = Math.round(hrs / 0.5);
+                  if (slotsToFill <= 1) return;
+                  // Fill subsequent slots with same activity
+                  for (let i = 1; i < slotsToFill && (slotIndex + i) < slots.length; i++) {
+                    const fillKey = slots[slotIndex + i].start;
+                    updateSlot(fillKey, 'activity', data.activity);
+                    if (data.pillar) updateSlot(fillKey, 'pillar', data.pillar);
+                    if (data.customActivity) updateSlot(fillKey, 'customActivity', data.customActivity);
+                  }
+                  toast.success(`${data.activity === 'Custom' ? (data.customActivity || 'Custom') : data.activity} → ${duration}h filled`);
+                };
+
                 return (
-                  <div key={key} className={cn('border-b border-border/50', phaseBg)}>
-                    <div className="grid grid-cols-[80px_100px_1fr_60px_80px] gap-1 px-4 py-1.5 items-center text-sm">
-                      <span className="text-xs font-mono text-muted-foreground">{slot.display}</span>
+                  <div key={key} className={cn('border-b border-border/50', phaseBg, isContinuation && 'opacity-70')}>
+                    <div className="grid grid-cols-[80px_100px_1fr_60px_60px_80px] gap-1 px-4 py-1.5 items-center text-sm">
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {slot.display}
+                        {isContinuation && <span className="text-[10px] block text-muted-foreground/60">↳ cont.</span>}
+                      </span>
 
                       {/* Pillar first */}
                       <Select value={data.pillar || 'all'} onValueChange={(v) => {
                         const pillarVal = v === 'all' ? '' : v;
                         updateSlot(key, 'pillar', pillarVal);
-                        // Clear activity if it doesn't belong to new pillar
                         if (pillarVal && data.activity && data.activity !== 'Custom') {
                           const belongs = ACTIVITY_GROUPS.some(g => g.pillar === pillarVal && g.items.includes(data.activity));
                           if (!belongs) updateSlot(key, 'activity', '');
@@ -445,7 +483,6 @@ const DailyWorksheet = () => {
                       {/* Activity filtered by pillar */}
                       <Select value={data.activity} onValueChange={(v) => {
                         updateSlot(key, 'activity', v);
-                        // Auto-set pillar if not already set
                         if (!data.pillar && v !== 'Custom') {
                           const autoPillar = getPillarForActivity(v);
                           if (autoPillar) updateSlot(key, 'pillar', autoPillar);
@@ -466,6 +503,22 @@ const DailyWorksheet = () => {
                           <SelectItem value="Custom" className="text-xs font-medium">⭕ Custom (type your own)</SelectItem>
                         </SelectContent>
                       </Select>
+
+                      {/* Duration selector */}
+                      {data.activity ? (
+                        <Select onValueChange={handleDurationChange}>
+                          <SelectTrigger className="h-8 text-xs bg-background/80">
+                            <SelectValue placeholder="30m" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DURATION_OPTIONS.map(d => (
+                              <SelectItem key={d.value} value={d.value} className="text-xs">{d.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span className="text-xs text-muted-foreground text-center">—</span>
+                      )}
 
                       <Select value={data.energy} onValueChange={(v) => updateSlot(key, 'energy', v)}>
                         <SelectTrigger className="h-8 text-xs bg-background/80">
