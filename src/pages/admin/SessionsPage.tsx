@@ -78,6 +78,31 @@ const SessionsPage = () => {
   });
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      const { data } = await supabase
+        .from('session_templates')
+        .select('id, name, default_topic_ids, default_assignments')
+        .order('name');
+      if (data) setTemplates(data as SessionTemplate[]);
+    };
+    fetchTemplates();
+  }, []);
+
+  const applyTemplate = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    if (!templateId) return;
+    const tpl = templates.find(t => t.id === templateId);
+    if (!tpl) return;
+    const assignments = (tpl.default_assignments || [])
+      .map((a: any) => a.title || a)
+      .join('\n');
+    if (assignments) {
+      setNewSession(p => ({ ...p, notes: assignments }));
+    }
+    toast.success(`Template "${tpl.name}" applied`);
+  };
+
   const filtered = sessions.filter(s => statusFilter === 'all' || s.status === statusFilter)
     .sort((a, b) => b.date.localeCompare(a.date) || b.start_time.localeCompare(a.start_time));
 
