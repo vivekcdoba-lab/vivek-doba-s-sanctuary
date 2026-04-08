@@ -549,7 +549,130 @@ const DailyWorksheet = () => {
         </div>
       </div>
 
-      {/* Bulk Fill Dialog */}
+      {/* SECTION 2b — Evening Analysis (active after 9 PM) */}
+      {(() => {
+        const currentHour = new Date().getHours();
+        const isAnalysisTime = currentHour >= 21 || currentHour < 3;
+        const plannedSlots = slots.filter(s => state.timeSlots[s.start]?.activity);
+        const doneSlots = plannedSlots.filter(s => state.timeSlots[s.start]?.actualStatus === 'done');
+        const skippedSlots = plannedSlots.filter(s => state.timeSlots[s.start]?.actualStatus === 'skipped');
+        const modifiedSlots = plannedSlots.filter(s => state.timeSlots[s.start]?.actualStatus === 'modified');
+        const pendingSlots = plannedSlots.filter(s => !state.timeSlots[s.start]?.actualStatus);
+
+        if (!isAnalysisTime && plannedSlots.length === 0) return null;
+
+        return (
+          <div className={cn(
+            'bg-card rounded-xl border overflow-hidden',
+            isAnalysisTime ? 'border-primary/50 shadow-md' : 'border-border opacity-60'
+          )}>
+            <div className="p-4 border-b border-border bg-muted/30">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold">🌙 Raat Ki Samikhsha (Evening Analysis)</h2>
+                {!isAnalysisTime && (
+                  <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">🔒 Opens after 9 PM</span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Review your day — what you did, what you missed, and why</p>
+            </div>
+
+            {isAnalysisTime ? (
+              <div className="p-4 space-y-4">
+                {/* Summary Stats */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="bg-primary/5 rounded-lg p-3 text-center border border-primary/10">
+                    <p className="text-2xl font-bold text-primary">{doneSlots.length}</p>
+                    <p className="text-xs text-muted-foreground">✅ Completed</p>
+                  </div>
+                  <div className="bg-destructive/5 rounded-lg p-3 text-center border border-destructive/10">
+                    <p className="text-2xl font-bold text-destructive">{skippedSlots.length}</p>
+                    <p className="text-xs text-muted-foreground">❌ Skipped</p>
+                  </div>
+                  <div className="bg-accent/50 rounded-lg p-3 text-center border border-border">
+                    <p className="text-2xl font-bold text-foreground">{modifiedSlots.length}</p>
+                    <p className="text-xs text-muted-foreground">🔄 Modified</p>
+                  </div>
+                  <div className="bg-muted rounded-lg p-3 text-center border border-border">
+                    <p className="text-2xl font-bold text-muted-foreground">{pendingSlots.length}</p>
+                    <p className="text-xs text-muted-foreground">📝 Not Tracked</p>
+                  </div>
+                </div>
+
+                {/* Missed / Skipped / Pending items with reason */}
+                {(skippedSlots.length > 0 || pendingSlots.length > 0) && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-foreground">❓ What didn't happen and why?</h3>
+                    <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                      {[...skippedSlots, ...pendingSlots].map(s => {
+                        const key = s.start;
+                        const data = state.timeSlots[key];
+                        const displayActivity = data.activity === 'Custom' ? (data.customActivity || 'Custom') : data.activity;
+                        return (
+                          <div key={key} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border">
+                            <div className="flex-shrink-0 min-w-[120px]">
+                              <span className="text-xs font-mono text-muted-foreground">{s.display}</span>
+                              <p className="text-sm font-medium">{displayActivity}</p>
+                              {data.pillar && (
+                                <span className="text-xs">{PILLAR_CONFIG[data.pillar as PillarKey]?.icon} {PILLAR_CONFIG[data.pillar as PillarKey]?.label}</span>
+                              )}
+                            </div>
+                            <div className="flex-1 space-y-1.5">
+                              <Select
+                                value={data.actualStatus || ''}
+                                onValueChange={(v) => updateSlot(key, 'actualStatus', v)}
+                              >
+                                <SelectTrigger className="h-7 text-xs w-28 bg-background">
+                                  <SelectValue placeholder="Status?" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="done" className="text-xs">✅ Done</SelectItem>
+                                  <SelectItem value="modified" className="text-xs">🔄 Modified</SelectItem>
+                                  <SelectItem value="skipped" className="text-xs">❌ Skipped</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Input
+                                placeholder="Why was this skipped? What happened?"
+                                value={data.skipReason}
+                                onChange={e => updateSlot(key, 'skipReason', e.target.value)}
+                                className="h-7 text-xs bg-background"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Completed items celebration */}
+                {doneSlots.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-foreground">🎉 What you accomplished today</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {doneSlots.map(s => {
+                        const data = state.timeSlots[s.start];
+                        const displayActivity = data.activity === 'Custom' ? (data.customActivity || 'Custom') : data.activity;
+                        return (
+                          <span key={s.start} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-xs text-primary border border-primary/20">
+                            ✅ {displayActivity}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-8 text-center text-muted-foreground">
+                <p className="text-3xl mb-2">🌅</p>
+                <p className="text-sm">Focus on your day now. This section unlocks at <strong>9:00 PM</strong> for your evening reflection.</p>
+                <p className="text-xs mt-1">Fill your timesheet & switch to "Actuals" mode to track what you did.</p>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       <Dialog open={bulkFillOpen} onOpenChange={setBulkFillOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
