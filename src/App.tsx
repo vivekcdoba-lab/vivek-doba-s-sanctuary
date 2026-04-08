@@ -62,6 +62,10 @@ import PlaceholderModule from "./pages/coaching/PlaceholderModule";
 
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import HelpPage from "./pages/HelpPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import WhatsAppSupportButton from "./components/WhatsAppSupportButton";
 
 const queryClient = new QueryClient();
 
