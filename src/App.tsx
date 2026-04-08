@@ -102,6 +102,7 @@ const App = () => (
             <Route path="/worksheet-analytics" element={<WorksheetAnalyticsPage />} />
             <Route path="/sessions/:id/certify" element={<SessionCertification />} />
             <Route path="/sessions/:id/review" element={<SessionReviewPage />} />
+            <Route path="/session-templates" element={<SessionTemplatesPage />} />
           </Route>
 
           {/* Seeker Routes */}
@@ -118,6 +119,7 @@ const App = () => (
             <Route path="/seeker/weekly-review" element={<SeekerWeeklyReview />} />
             <Route path="/seeker/payments" element={<SeekerPayments />} />
             <Route path="/seeker/worksheet" element={<DailyWorksheet />} />
+            <Route path="/seeker/topics" element={<SeekerTopics />} />
             <Route path="/seeker/sessions/:id/certify" element={<SessionCertification />} />
           </Route>
 
