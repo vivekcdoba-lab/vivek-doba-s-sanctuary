@@ -660,6 +660,7 @@ const SessionsPage = () => {
                 toast.success(`Session scheduled for ${seeker?.full_name}`);
                 setShowSchedule(false);
                 setNewSession({ seeker_id: '', course_id: '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '' });
+                setSelectedTemplateId('');
               }}
               className="w-full py-2.5 rounded-xl gradient-sacred text-primary-foreground font-medium text-sm"
             >
