@@ -117,6 +117,11 @@ const SeekerAssessments = () => {
   const [scores, setScores] = useState<number[]>(INITIAL_SCORES);
   const [showResults, setShowResults] = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+
+  const { history: wolHistory, saveAssessment: saveWol } = useAssessmentHistory('wheel_of_life');
+  const { saveAssessment: saveLgt } = useAssessmentHistory('lgt');
+  const { saveAssessment: saveFirob } = useAssessmentHistory('firo_b');
 
   const toggleCard = (key: string) => setExpandedCard(prev => prev === key ? null : key);
 
