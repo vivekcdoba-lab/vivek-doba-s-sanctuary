@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { format, addDays, subDays } from 'date-fns';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate, Loader2, Award, Music } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Check, Copy, Flame, Star, Plus, Trash2, Sparkles, ChevronDown, LayoutTemplate, Loader2, Award, Music, Trophy } from 'lucide-react';
+import { useStreakCount } from '@/hooks/useStreakCount';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -45,6 +46,8 @@ const DailyWorksheet = () => {
 
   const { state, updateField, updateSlot, bulkFillSlots, saveWorksheet, copyYesterday, seekerProfileId } = useWorksheet(selectedDate);
   const { progress, earnedBadges, nextBadge, checkAndAwardBadges } = useBadges(seekerProfileId);
+  const { data: currentStreak = 0 } = useStreakCount(seekerProfileId);
+  const { data: totalSubmitted = 0 } = useStreakCount(seekerProfileId); // reuse for display
 
   // Page visibility — pause music when tab hidden
   useEffect(() => {
@@ -213,13 +216,32 @@ const DailyWorksheet = () => {
 
       {/* Streak Counter & Badge Preview */}
       <div className="flex items-center gap-4 text-sm flex-wrap">
-        <span className="flex items-center gap-1"><Flame className="w-4 h-4 text-orange-500" /> Streak: <strong>15 days</strong></span>
-        <span className="flex items-center gap-1"><Star className="w-4 h-4 text-yellow-500" /> Best: <strong>42 days</strong></span>
-        <span className="text-muted-foreground">📅 Total: <strong>68</strong></span>
+        <span className="flex items-center gap-1">
+          <Flame className={`w-4 h-4 ${currentStreak >= 7 ? 'text-orange-500 animate-pulse' : 'text-orange-400'}`} />
+          Streak: <strong>{currentStreak} days</strong>
+          {currentStreak >= 21 && <Trophy className="w-3.5 h-3.5 text-yellow-500 ml-0.5" />}
+        </span>
+        {progress.length > 0 && (
+          <span className="flex items-center gap-1">
+            <Star className="w-4 h-4 text-yellow-500" /> Best: <strong>{Math.max(...progress.map(p => p.best_streak || 0), 0)} days</strong>
+          </span>
+        )}
         {earnedBadges.length > 0 && (
           <button onClick={() => setBadgesOpen(true)} className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
             <Award className="w-3.5 h-3.5" /> {earnedBadges.length} Badges
           </button>
+        )}
+        {/* Points indicator */}
+        {state.worksheetId && (
+          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+            ⭐ {(() => {
+              let pts = 0;
+              if (state.intention) pts += 10;
+              if (state.eveningMood) pts += 10;
+              if (state.intention && state.eveningMood) pts += 5;
+              return pts;
+            })()} pts today
+          </span>
         )}
       </div>
 
@@ -846,25 +868,61 @@ const DailyWorksheet = () => {
       {/* SECTION 4 — MIT Priorities */}
       <div className="bg-card rounded-xl border border-border p-5">
         <h2 className="text-lg font-bold mb-3">🎯 Aaj Ke Teen Kaam (MIT)</h2>
+        <p className="text-xs text-muted-foreground mb-3">Your 3 Most Important Tasks for today</p>
         <div className="space-y-3">
-          {[1, 2, 3].map(n => (
-            <div key={n} className="flex items-center gap-3">
-              <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">{n}</span>
-              <Input placeholder={`Priority task ${n}...`} className="flex-1" />
-              <Select>
-                <SelectTrigger className="w-24 h-9 text-xs">
-                  <SelectValue placeholder="Pillar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(PILLAR_CONFIG) as PillarKey[]).map(p => (
-                    <SelectItem key={p} value={p} className="text-xs">{PILLAR_CONFIG[p].icon} {PILLAR_CONFIG[p].label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Checkbox />
-            </div>
-          ))}
+          {[0, 1, 2].map(n => {
+            const priority = state.priorities?.[n] || { task: '', pillar: '', done: false };
+            return (
+              <div key={n} className="flex items-center gap-3">
+                <span className={cn(
+                  'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
+                  priority.done ? 'bg-green-500 text-white' : 'bg-primary/10 text-primary'
+                )}>{n + 1}</span>
+                <Input
+                  placeholder={`Priority task ${n + 1}...`}
+                  className={cn('flex-1', priority.done && 'line-through text-muted-foreground')}
+                  value={priority.task}
+                  onChange={e => {
+                    const arr = [...(state.priorities || [{ task: '', pillar: '', done: false }, { task: '', pillar: '', done: false }, { task: '', pillar: '', done: false }])];
+                    arr[n] = { ...arr[n], task: e.target.value };
+                    updateField('priorities', arr);
+                  }}
+                />
+                <Select
+                  value={priority.pillar || 'none'}
+                  onValueChange={v => {
+                    const arr = [...(state.priorities || [{ task: '', pillar: '', done: false }, { task: '', pillar: '', done: false }, { task: '', pillar: '', done: false }])];
+                    arr[n] = { ...arr[n], pillar: v === 'none' ? '' : v };
+                    updateField('priorities', arr);
+                  }}
+                >
+                  <SelectTrigger className="w-24 h-9 text-xs">
+                    <SelectValue placeholder="Pillar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none" className="text-xs">—</SelectItem>
+                    {(Object.keys(PILLAR_CONFIG) as PillarKey[]).map(p => (
+                      <SelectItem key={p} value={p} className="text-xs">{PILLAR_CONFIG[p].icon} {PILLAR_CONFIG[p].label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Checkbox
+                  checked={priority.done}
+                  onCheckedChange={c => {
+                    const arr = [...(state.priorities || [{ task: '', pillar: '', done: false }, { task: '', pillar: '', done: false }, { task: '', pillar: '', done: false }])];
+                    arr[n] = { ...arr[n], done: !!c };
+                    updateField('priorities', arr);
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
+        {(state.priorities || []).filter(p => p.done).length === 3 && (
+          <div className="mt-3 p-2 rounded-lg bg-green-500/10 text-center text-xs font-semibold text-green-600">
+            🎯 All 3 MITs completed! Outstanding discipline! 🏆
+          </div>
+        )}
       </div>
 
       {/* SECTION 5 — Daily Financial Log */}
