@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react';
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, LineChart, Line, Legend } from 'recharts';
 import LGTAssessment from '@/components/LGTAssessment';
 import FIROBAssessment from '@/components/FIROBAssessment';
 import BackToHome from '@/components/BackToHome';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Save, History } from 'lucide-react';
+import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 // 9 Life Areas matching Vivek Doba's Wheel of Life framework
 const AREAS = [
