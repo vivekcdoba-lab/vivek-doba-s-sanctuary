@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 const SeekersPage = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [courseFilter, setCourseFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newSeeker, setNewSeeker] = useState({
@@ -35,7 +36,8 @@ const SeekersPage = () => {
       s.email.toLowerCase().includes(search.toLowerCase()) ||
       s.city.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === 'all' || s.enrollment?.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchCourse = courseFilter === 'all' || s.course?.id === courseFilter;
+    return matchSearch && matchStatus && matchCourse;
   });
 
   return (
@@ -123,7 +125,18 @@ const SeekersPage = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Search by name, email, city..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Select value={courseFilter} onValueChange={setCourseFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All Courses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Courses</SelectItem>
+              {COURSES.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {['all', 'active', 'paused', 'completed'].map((s) => (
             <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${statusFilter === s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}>
               {s.charAt(0).toUpperCase() + s.slice(1)}
