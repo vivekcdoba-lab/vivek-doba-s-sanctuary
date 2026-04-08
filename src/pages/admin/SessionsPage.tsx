@@ -26,11 +26,20 @@ const SESSION_STATUS_CONFIG: Record<string, { label: string; emoji: string; colo
 
 const STATUS_FILTERS = ['all', 'scheduled', 'confirmed', 'in_progress', 'completed', 'missed', 'rescheduled', 'cancelled'];
 
+interface SessionTemplate {
+  id: string;
+  name: string;
+  default_topic_ids: string[] | null;
+  default_assignments: any[] | null;
+}
+
 const SessionsPage = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sessions, setSessions] = useState(SESSIONS);
   const [reminder, setReminder] = useState<{ seeker: typeof SEEKERS[0]; session: typeof SESSIONS[0] } | null>(null);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [templates, setTemplates] = useState<SessionTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [newSession, setNewSession] = useState({
     seeker_id: '', course_id: '', date: '', start_time: '10:00', end_time: '11:00',
     session_type: 'video' as 'video' | 'in_person', duration_minutes: 60, notes: '',
