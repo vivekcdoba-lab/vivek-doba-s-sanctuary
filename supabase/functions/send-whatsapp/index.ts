@@ -44,7 +44,7 @@ serve(async (req) => {
       },
       body: new URLSearchParams({
         To: `whatsapp:${toNumber}`,
-        From: "whatsapp:+14155238886",
+        From: "whatsapp:+919607050111",
         Body: message,
       }),
     });
