@@ -51,6 +51,7 @@ export function useCreateSession() {
       duration_minutes?: number;
       course_id?: string;
       status?: string;
+      session_notes?: string;
     }) => {
       const { data, error } = await supabase.from('sessions').insert({
         seeker_id: session.seeker_id,
@@ -62,7 +63,27 @@ export function useCreateSession() {
         duration_minutes: session.duration_minutes || 60,
         course_id: session.course_id || null,
         status: session.status || 'scheduled',
+        session_notes: session.session_notes || null,
       } as any).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['db-sessions'] });
+    },
+  });
+}
+
+export function useUpdateSession() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; [key: string]: any }) => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .update(updates as any)
+        .eq('id', id)
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
