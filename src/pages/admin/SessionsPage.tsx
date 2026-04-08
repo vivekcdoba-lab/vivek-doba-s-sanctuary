@@ -48,8 +48,7 @@ const SessionsPage = () => {
   const [liveNotes, setLiveNotes] = useState('');
   const [liveTimer, setLiveTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
-  const [showPostSession, setShowPostSession] = useState<string | null>(null);
-  const [postStep, setPostStep] = useState(1);
+  // Post-session wizard removed — all fields are on live session page now
   const [postData, setPostData] = useState({
     sessionName: '',
     pillar: 'all' as string,
