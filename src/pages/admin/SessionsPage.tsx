@@ -567,6 +567,25 @@ const SessionsPage = () => {
             <DialogTitle>📅 Schedule New Session</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            {/* Template Selector */}
+            {templates.length > 0 && (
+              <div className="bg-muted/30 rounded-lg p-3 border border-dashed border-border">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" /> Apply Template
+                </label>
+                <select
+                  value={selectedTemplateId}
+                  onChange={e => applyTemplate(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                >
+                  <option value="">No template (blank session)</option>
+                  {templates.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-muted-foreground mt-1">Pre-fills assignments from the template</p>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-foreground">Seeker *</label>
               <select value={newSession.seeker_id} onChange={e => setNewSession(p => ({ ...p, seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
