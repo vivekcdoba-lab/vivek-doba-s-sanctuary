@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react';
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, LineChart, Line, Legend } from 'recharts';
 import LGTAssessment from '@/components/LGTAssessment';
 import FIROBAssessment from '@/components/FIROBAssessment';
 import BackToHome from '@/components/BackToHome';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Save, History } from 'lucide-react';
+import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 // 9 Life Areas matching Vivek Doba's Wheel of Life framework
 const AREAS = [
@@ -114,6 +117,11 @@ const SeekerAssessments = () => {
   const [scores, setScores] = useState<number[]>(INITIAL_SCORES);
   const [showResults, setShowResults] = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+
+  const { history: wolHistory, saveAssessment: saveWol } = useAssessmentHistory('wheel_of_life');
+  const { saveAssessment: saveLgt } = useAssessmentHistory('lgt');
+  const { saveAssessment: saveFirob } = useAssessmentHistory('firo_b');
 
   const toggleCard = (key: string) => setExpandedCard(prev => prev === key ? null : key);
 
@@ -201,8 +209,11 @@ const SeekerAssessments = () => {
       {lgtAssessing && (
         <LGTAssessment
           onClose={() => setLgtAssessing(false)}
-          onSave={(scores, sectionScores) => {
-            console.log('LGT saved:', { scores, sectionScores });
+          onSave={async (scores, sectionScores) => {
+            try {
+              await saveLgt.mutateAsync({ scores: { scores, sectionScores } });
+              toast.success('✅ LGT Assessment saved!');
+            } catch { toast.error('Failed to save'); }
             setLgtAssessing(false);
           }}
         />
@@ -212,8 +223,11 @@ const SeekerAssessments = () => {
       {firobAssessing && (
         <FIROBAssessment
           onClose={() => setFirobAssessing(false)}
-          onSave={(scores) => {
-            console.log('FIRO-B saved:', scores);
+          onSave={async (scores) => {
+            try {
+              await saveFirob.mutateAsync({ scores });
+              toast.success('✅ FIRO-B Assessment saved!');
+            } catch { toast.error('Failed to save'); }
             setFirobAssessing(false);
           }}
         />
@@ -418,14 +432,71 @@ const SeekerAssessments = () => {
                 </button>
               </div>
 
-              {/* Save */}
+              {/* Save to DB */}
               <button
-                onClick={() => { setSelfAssessing(false); setShowResults(false); }}
-                className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
+                onClick={async () => {
+                  try {
+                    const scoresObj = Object.fromEntries(AREAS.map((a, i) => [a.name, scores[i]]));
+                    await saveWol.mutateAsync({
+                      scores: scoresObj,
+                      analysis: getOverallRemark(scores, analysis.total, analysis.avg, 'Seeker'),
+                    });
+                    toast.success('✅ Assessment saved to your profile!');
+                    setSelfAssessing(false);
+                    setShowResults(false);
+                  } catch {
+                    toast.error('Failed to save assessment');
+                  }
+                }}
+                disabled={saveWol.isPending}
+                className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
                 style={{ background: 'linear-gradient(135deg, #FF9933, #B8860B)' }}
               >
-                💾 Save Self-Assessment
+                {saveWol.isPending ? '💾 Saving...' : '💾 Save Self-Assessment'}
               </button>
+
+              {/* History Comparison */}
+              {wolHistory.length > 1 && (
+                <div className="space-y-3">
+                  <button onClick={() => setShowHistory(!showHistory)} className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    <History className="w-4 h-4" /> {showHistory ? 'Hide' : 'Show'} Progress Over Time ({wolHistory.length} records)
+                  </button>
+                  {showHistory && (
+                    <div className="bg-card rounded-xl p-4 border border-border">
+                      <h3 className="text-sm font-bold mb-3">📈 Score Trend Over Time</h3>
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={wolHistory.slice(0, 10).reverse().map(h => {
+                            const s = h.scores_json as Record<string, number>;
+                            const avg = Object.values(s).reduce((a, b) => a + b, 0) / Object.values(s).length;
+                            return { date: format(new Date(h.created_at), 'dd MMM'), avg: parseFloat(avg.toFixed(1)), ...s };
+                          })}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                            <YAxis domain={[0, 10]} tick={{ fontSize: 10 }} />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="avg" stroke="hsl(var(--primary))" strokeWidth={2} name="Average" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                      {/* Day 0 comparison */}
+                      {wolHistory.length >= 2 && (() => {
+                        const latest = wolHistory[0].scores_json as Record<string, number>;
+                        const baseline = wolHistory[wolHistory.length - 1].scores_json as Record<string, number>;
+                        const latestAvg = Object.values(latest).reduce((a, b) => a + b, 0) / Object.values(latest).length;
+                        const baselineAvg = Object.values(baseline).reduce((a, b) => a + b, 0) / Object.values(baseline).length;
+                        const improvement = latestAvg - baselineAvg;
+                        return (
+                          <div className={`mt-3 p-3 rounded-lg text-center text-sm font-semibold ${improvement >= 0 ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-500'}`}>
+                            {improvement >= 0 ? '📈' : '📉'} {Math.abs(improvement).toFixed(1)} points {improvement >= 0 ? 'improvement' : 'decline'} since Day 0
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
