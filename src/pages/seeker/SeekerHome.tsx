@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { getGreeting, AFFIRMATIONS, MOTIVATIONAL_QUOTES } from '@/data/mockData';
 import { Flame, Heart, CalendarDays, ClipboardList, MessageSquare, Sparkles, LogOut as AlertCircle, BookOpen, Award, ScrollText, X } from 'lucide-react';
+import OnboardingTour from '@/components/OnboardingTour';
 import { useBadgeNotifications } from '@/hooks/useBadgeNotifications';
 import { useAuthStore } from '@/store/authStore';
 import { useDbSessions } from '@/hooks/useDbSessions';
@@ -33,7 +34,8 @@ const SeekerHome = () => {
   return (
     <div className="p-4 space-y-5 max-w-lg mx-auto stagger-children">
       {/* Greeting Banner */}
-      <div className="gradient-saffron rounded-2xl p-5 text-primary-foreground relative overflow-hidden">
+      <OnboardingTour />
+      <div data-tour="greeting" className="gradient-saffron rounded-2xl p-5 text-primary-foreground relative overflow-hidden">
         <div className="absolute top-2 right-4 text-4xl opacity-10">✿</div>
         <h1 className="text-xl font-bold">{getGreeting()}, {displayName}!</h1>
         <p className="text-sm text-primary-foreground/80 mt-1">🔥 {streak} day worksheet streak</p>
@@ -74,7 +76,7 @@ const SeekerHome = () => {
       </div>
 
       {/* Streak Dashboard */}
-      <div>
+      <div data-tour="progress">
         <h3 className="text-sm font-semibold text-foreground mb-2">🔥 Your Progress</h3>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {streaks.map((s) => (
@@ -88,7 +90,7 @@ const SeekerHome = () => {
       </div>
 
       {/* Daily Worksheet Quick Card */}
-      <Link to="/seeker/worksheet" className="block bg-card rounded-xl p-4 shadow-sm border-2 border-orange-200 dark:border-orange-800 hover:shadow-md transition-shadow">
+      <Link data-tour="worksheet" to="/seeker/worksheet" className="block bg-card rounded-xl p-4 shadow-sm border-2 border-orange-200 dark:border-orange-800 hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F97316' }}>
@@ -130,7 +132,7 @@ const SeekerHome = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-3 gap-3">
+      <div data-tour="quick-actions" className="grid grid-cols-3 gap-3">
         {[
           { label: 'Daily Check-in', icon: Sparkles, path: '/seeker/daily-log', gradient: 'gradient-saffron' },
           { label: 'Submit Task', icon: ClipboardList, path: '/seeker/tasks', gradient: 'gradient-sacred' },
@@ -152,7 +154,7 @@ const SeekerHome = () => {
       </div>
 
       {/* Progress Ring */}
-      <div className="bg-card rounded-xl p-5 shadow-sm border border-border text-center">
+      <div data-tour="session-progress" className="bg-card rounded-xl p-5 shadow-sm border border-border text-center">
         <svg className="w-24 h-24 mx-auto" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--muted))" strokeWidth="6" />
           <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--primary))" strokeWidth="6"
