@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SESSIONS, SEEKERS, COURSES, formatTime12 } from '@/data/mockData';
 import { JOURNEY_STAGES } from '@/types';
 import { calculateRiskScore, getRiskEmoji } from '@/lib/riskEngine';
-import { Plus, Video, MapPin, Bell, Play, X, RotateCcw, AlertTriangle, Check, Clock, Shield, Eye } from 'lucide-react';
+import { Plus, Video, MapPin, Bell, Play, X, RotateCcw, AlertTriangle, Check, Clock, Shield, Eye, FileText } from 'lucide-react';
 import SendReminderModal from '@/components/SendReminderModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const SESSION_STATUS_CONFIG: Record<string, { label: string; emoji: string; color: string }> = {
   requested: { label: 'Requested', emoji: '📋', color: 'bg-muted text-muted-foreground' },
@@ -25,11 +26,20 @@ const SESSION_STATUS_CONFIG: Record<string, { label: string; emoji: string; colo
 
 const STATUS_FILTERS = ['all', 'scheduled', 'confirmed', 'in_progress', 'completed', 'missed', 'rescheduled', 'cancelled'];
 
+interface SessionTemplate {
+  id: string;
+  name: string;
+  default_topic_ids: string[] | null;
+  default_assignments: any[] | null;
+}
+
 const SessionsPage = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sessions, setSessions] = useState(SESSIONS);
   const [reminder, setReminder] = useState<{ seeker: typeof SEEKERS[0]; session: typeof SESSIONS[0] } | null>(null);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [templates, setTemplates] = useState<SessionTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [newSession, setNewSession] = useState({
     seeker_id: '', course_id: '', date: '', start_time: '10:00', end_time: '11:00',
     session_type: 'video' as 'video' | 'in_person', duration_minutes: 60, notes: '',
@@ -67,6 +77,31 @@ const SessionsPage = () => {
     targets: '',
   });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      const { data } = await supabase
+        .from('session_templates')
+        .select('id, name, default_topic_ids, default_assignments')
+        .order('name');
+      if (data) setTemplates(data as SessionTemplate[]);
+    };
+    fetchTemplates();
+  }, []);
+
+  const applyTemplate = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    if (!templateId) return;
+    const tpl = templates.find(t => t.id === templateId);
+    if (!tpl) return;
+    const assignments = (tpl.default_assignments || [])
+      .map((a: any) => a.title || a)
+      .join('\n');
+    if (assignments) {
+      setNewSession(p => ({ ...p, notes: assignments }));
+    }
+    toast.success(`Template "${tpl.name}" applied`);
+  };
 
   const filtered = sessions.filter(s => statusFilter === 'all' || s.status === statusFilter)
     .sort((a, b) => b.date.localeCompare(a.date) || b.start_time.localeCompare(a.start_time));
@@ -532,6 +567,25 @@ const SessionsPage = () => {
             <DialogTitle>📅 Schedule New Session</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            {/* Template Selector */}
+            {templates.length > 0 && (
+              <div className="bg-muted/30 rounded-lg p-3 border border-dashed border-border">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" /> Apply Template
+                </label>
+                <select
+                  value={selectedTemplateId}
+                  onChange={e => applyTemplate(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                >
+                  <option value="">No template (blank session)</option>
+                  {templates.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-muted-foreground mt-1">Pre-fills assignments from the template</p>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-foreground">Seeker *</label>
               <select value={newSession.seeker_id} onChange={e => setNewSession(p => ({ ...p, seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
@@ -606,6 +660,7 @@ const SessionsPage = () => {
                 toast.success(`Session scheduled for ${seeker?.full_name}`);
                 setShowSchedule(false);
                 setNewSession({ seeker_id: '', course_id: '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '' });
+                setSelectedTemplateId('');
               }}
               className="w-full py-2.5 rounded-xl gradient-sacred text-primary-foreground font-medium text-sm"
             >
