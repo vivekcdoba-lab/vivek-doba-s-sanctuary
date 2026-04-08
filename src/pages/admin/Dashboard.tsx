@@ -111,6 +111,9 @@ const AdminDashboard = () => {
         )}
       </div>
 
+      {/* Birthday & Anniversary Reminders */}
+      <BirthdayAnniversaryReminders />
+
       {/* Alerts + Health */}
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Alerts */}
