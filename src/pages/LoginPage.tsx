@@ -191,7 +191,16 @@ const LoginPage = () => {
           </button>
 
           <div className="text-center space-y-2">
-            <button className="text-xs text-muted-foreground hover:text-foreground">Forgot Password?</button>
+            <button onClick={async () => {
+              if (!email) { toast.error('Please enter your email first'); return; }
+              try {
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                  redirectTo: `${window.location.origin}/reset-password`,
+                });
+                if (error) { toast.error(error.message); return; }
+                toast.success('Password reset link sent to your email! 📧');
+              } catch { toast.error('Failed to send reset email'); }
+            }} className="text-xs text-muted-foreground hover:text-foreground">Forgot Password?</button>
             <p className="text-sm text-muted-foreground">
               New seeker? <Link to="/register" className="text-primary hover:underline font-medium">Create Account →</Link>
             </p>
@@ -200,7 +209,7 @@ const LoginPage = () => {
           {/* WhatsApp + Journey */}
           <div className="pt-4 border-t border-border space-y-3">
             <a
-              href="https://wa.me/919607050111"
+              href="https://wa.me/919607050111?text=Hello"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90"
