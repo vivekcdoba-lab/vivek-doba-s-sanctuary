@@ -99,6 +99,7 @@ const App = () => (
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/worksheet-analytics" element={<WorksheetAnalyticsPage />} />
             <Route path="/sessions/:id/certify" element={<SessionCertification />} />
+            <Route path="/sessions/:id/review" element={<SessionReviewPage />} />
           </Route>
 
           {/* Seeker Routes */}

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { SESSIONS, SEEKERS, COURSES, formatTime12 } from '@/data/mockData';
 import { JOURNEY_STAGES } from '@/types';
 import { calculateRiskScore, getRiskEmoji } from '@/lib/riskEngine';
-import { Plus, Video, MapPin, Bell, Play, X, RotateCcw, AlertTriangle, Check, Clock, Shield } from 'lucide-react';
+import { Plus, Video, MapPin, Bell, Play, X, RotateCcw, AlertTriangle, Check, Clock, Shield, Eye } from 'lucide-react';
 import SendReminderModal from '@/components/SendReminderModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
