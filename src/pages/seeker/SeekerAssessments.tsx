@@ -113,6 +113,9 @@ const SeekerAssessments = () => {
   const [firobAssessing, setFirobAssessing] = useState(false);
   const [scores, setScores] = useState<number[]>(INITIAL_SCORES);
   const [showResults, setShowResults] = useState(false);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+
+  const toggleCard = (key: string) => setExpandedCard(prev => prev === key ? null : key);
 
   const analysis = useMemo(() => {
     const total = scores.reduce((a, b) => a + b, 0);
