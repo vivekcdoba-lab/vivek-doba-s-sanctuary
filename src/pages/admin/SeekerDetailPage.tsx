@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useBreadcrumbOverride } from '@/components/AdminLayout';
 import { useState, useEffect, useCallback } from 'react';
 import {
   Phone, MessageSquare, Mail, Edit, Archive, Calendar, ClipboardList, TrendingUp,
@@ -39,6 +40,7 @@ const moodEmoji = (score?: number | null) => {
 const SeekerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { setOverride } = useBreadcrumbOverride();
   const [activeTab, setActiveTab] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [expandedSession, setExpandedSession] = useState<string | null>(null);
@@ -89,6 +91,9 @@ const SeekerDetailPage = () => {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', id).maybeSingle();
       if (profile) {
         setSeeker(profile);
+        // Set breadcrumb to show name instead of UUID
+        if (id) setOverride(id, profile.full_name);
+        document.title = `${profile.full_name} — VDTS`;
         // Fetch enrollment
         const { data: enr } = await supabase.from('enrollments').select('*').eq('seeker_id', id).order('created_at', { ascending: false }).limit(1).maybeSingle();
         setEnrollment(enr);
