@@ -142,7 +142,7 @@ const SeekerLayoutInner = () => {
               </div>
               <span className="font-semibold text-sm text-primary">VDTS</span>
             </div>
-            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-medium ml-2">👤 Seeker</span>
+            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-medium ml-2">👤 Seeker - {profile?.full_name || 'Seeker'}</span>
           </div>
 
           <div className="flex items-center gap-2">
