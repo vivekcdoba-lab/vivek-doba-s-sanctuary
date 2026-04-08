@@ -388,6 +388,32 @@ const SessionReviewPage = () => {
       {renderSection('session_notes', 'Session Notes', '📝', session.session_notes)}
       {renderSection('key_insights', 'Key Insights', '💡', session.key_insights)}
       {renderSection('breakthroughs', 'Breakthroughs', '🚀', session.breakthroughs)}
+      {renderSection('therapy_given', 'Therapy Given', '🧘', (session as any).therapy_given)}
+      {renderSection('major_win', 'Major Win This Week', '🏆', (session as any).major_win)}
+      {renderSection('pending_assignments_review', 'Pending Assignments Review', '📝', (session as any).pending_assignments_review)}
+      {renderSection('next_week_assignments', 'Next Week Assignments', '📋', (session as any).next_week_assignments)}
+      {renderSection('targets', 'Targets', '🎯', (session as any).targets)}
+      {renderSection('rewards', 'Rewards', '🏆', (session as any).rewards)}
+      {renderSection('punishments', 'Consequences', '⚡', (session as any).punishments)}
+
+      {/* Seeker Reflection (read-only for coach) */}
+      {((session as any).seeker_what_learned || (session as any).seeker_where_to_apply || (session as any).seeker_how_to_apply) && (
+        <div className="bg-card rounded-xl border-2 border-chakra-indigo/20 p-5 space-y-3">
+          <h3 className="text-sm font-semibold text-foreground">💭 Seeker's Reflection</h3>
+          {(session as any).seeker_what_learned && (
+            <div><p className="text-xs font-medium text-muted-foreground">What I Learned</p><p className="text-sm text-foreground/80 whitespace-pre-wrap">{(session as any).seeker_what_learned}</p></div>
+          )}
+          {(session as any).seeker_where_to_apply && (
+            <div><p className="text-xs font-medium text-muted-foreground">Where to Apply</p><p className="text-sm text-foreground/80 whitespace-pre-wrap">{(session as any).seeker_where_to_apply}</p></div>
+          )}
+          {(session as any).seeker_how_to_apply && (
+            <div><p className="text-xs font-medium text-muted-foreground">How to Apply</p><p className="text-sm text-foreground/80 whitespace-pre-wrap">{(session as any).seeker_how_to_apply}</p></div>
+          )}
+          {(session as any).seeker_accepted_at && (
+            <p className="text-xs text-dharma-green font-medium">✅ Accepted on {new Date((session as any).seeker_accepted_at).toLocaleDateString()}</p>
+          )}
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
