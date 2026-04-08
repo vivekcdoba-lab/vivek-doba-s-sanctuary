@@ -201,13 +201,74 @@
   .stagger-children > *:nth-child(5) { animation-delay: 200ms; }
   .stagger-children > *:nth-child(6) { animation-delay: 250ms; }
 
-  /* Card hover */
+  .stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+  .stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+  .stagger-children > *:nth-child(9) { animation-delay: 400ms; }
+  .stagger-children > *:nth-child(10) { animation-delay: 450ms; }
+
+  /* Card hover lift */
   .card-hover {
     @apply transition-all duration-200;
   }
   .card-hover:hover {
     @apply shadow-lg;
-    transform: scale(1.02);
+    transform: translateY(-2px) scale(1.02);
+  }
+  .card-hover:active {
+    transform: scale(0.98);
+  }
+
+  /* Button press */
+  .btn-press {
+    @apply transition-transform duration-100;
+  }
+  .btn-press:active {
+    transform: scale(0.96);
+  }
+
+  /* Streak fire glow */
+  .streak-glow {
+    @apply relative;
+    text-shadow: 0 0 8px hsl(var(--saffron) / 0.5);
+  }
+  .streak-glow::after {
+    content: '';
+    @apply absolute inset-0 rounded-full;
+    box-shadow: 0 0 12px 4px hsl(var(--saffron) / 0.3);
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+  @keyframes glow-pulse-css {
+    0%, 100% { box-shadow: 0 0 6px 2px hsl(var(--saffron) / 0.2); }
+    50% { box-shadow: 0 0 16px 6px hsl(var(--saffron) / 0.5); }
+  }
+
+  /* Input focus glow */
+  input:focus, textarea:focus, select:focus {
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+    transition: box-shadow 0.2s ease;
+  }
+
+  /* Checkmark animation */
+  .checkmark-animate {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: checkmark-draw-css 0.4s ease-out forwards;
+  }
+  @keyframes checkmark-draw-css {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* Bell shake on notification */
+  .bell-shake {
+    animation: bell-shake-css 0.6s ease-in-out;
+  }
+  @keyframes bell-shake-css {
+    0%, 100% { transform: rotate(0deg); }
+    15% { transform: rotate(14deg); }
+    30% { transform: rotate(-14deg); }
+    45% { transform: rotate(10deg); }
+    60% { transform: rotate(-6deg); }
+    75% { transform: rotate(2deg); }
   }
 
   /* Progress ring */
@@ -225,8 +286,27 @@
   }
   .skeleton {
     @apply rounded-lg;
-    background: hsl(var(--muted));
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted-foreground) / 0.08) 50%, hsl(var(--muted)) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  }
+  @keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Number count up utility */
+  .count-animate {
+    animation: count-up-css 0.4s ease-out forwards;
+  }
+  @keyframes count-up-css {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Tooltip rise */
+  .tooltip-rise {
+    animation: fade-up 0.2s ease-out forwards;
   }
 }
 
