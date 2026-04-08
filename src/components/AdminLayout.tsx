@@ -50,7 +50,6 @@ const navGroups = [
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const location = useLocation();
   const { profile, logout, darkMode, toggleDarkMode } = useAuthStore();
 
