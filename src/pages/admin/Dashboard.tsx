@@ -6,8 +6,15 @@ import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { useDbSessions } from '@/hooks/useDbSessions';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { usePayments } from '@/hooks/usePayments';
+import { useDbLeads } from '@/hooks/useDbLeads';
+import { useDbCourses } from '@/hooks/useDbCourses';
 import BirthdayAnniversaryReminders from '@/components/BirthdayAnniversaryReminders';
-import { Loader2 } from 'lucide-react';
+import { SkeletonDashboard } from '@/components/SkeletonCard';
+import DonutChart from '@/components/charts/DonutChart';
+import StackedBarChart from '@/components/charts/StackedBarChart';
+import FunnelChart from '@/components/charts/FunnelChart';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import ChartWrapper from '@/components/charts/ChartWrapper';
 
 const CountUp = ({ end, prefix = '' }: { end: number; prefix?: string }) => {
   const [count, setCount] = useState(0);
@@ -38,6 +45,8 @@ const AdminDashboard = () => {
   const { data: sessions = [], isLoading: sessionsLoading } = useDbSessions();
   const { data: assignments = [] } = useDbAssignments();
   const { payments } = usePayments();
+  const { data: leads = [] } = useDbLeads();
+  const { data: courses = [] } = useDbCourses();
   const quote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
 
   const activeSeekers = seekers.length;
@@ -49,12 +58,46 @@ const AdminDashboard = () => {
   const todayStr = now.toISOString().split('T')[0];
   const todaysSessions = sessions.filter(s => s.date === todayStr);
 
+  // Session status distribution
+  const sessionStatusData = [
+    { name: 'Completed', value: sessions.filter(s => ['completed', 'approved'].includes(s.status)).length },
+    { name: 'Scheduled', value: sessions.filter(s => s.status === 'scheduled').length },
+    { name: 'In Progress', value: sessions.filter(s => s.status === 'in_progress').length },
+    { name: 'Missed', value: sessions.filter(s => s.status === 'missed').length },
+  ].filter(d => d.value > 0);
+
+  // Lead funnel
+  const funnelStages = [
+    { name: 'Total Leads', value: leads.length, emoji: '🎯' },
+    { name: 'Contacted', value: leads.filter(l => l.stage !== 'new').length, emoji: '📞' },
+    { name: 'Interested', value: leads.filter(l => ['interested', 'proposal', 'negotiation', 'converted'].includes(l.stage || '')).length, emoji: '🤝' },
+    { name: 'Converted', value: leads.filter(l => l.stage === 'converted').length, emoji: '✅' },
+  ];
+
+  // Revenue trend (last 6 months)
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const revenueTrend = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const total = payments.filter(p => p.status === 'received' && p.payment_date?.startsWith(key)).reduce((s, p) => s + Number(p.total_amount), 0);
+    return { name: monthNames[d.getMonth()], revenue: total };
+  });
+
+  // Assignment status breakdown
+  const assignmentData = [
+    { name: 'Completed', value: assignments.filter(a => a.status === 'reviewed').length },
+    { name: 'In Progress', value: assignments.filter(a => a.status === 'in_progress').length },
+    { name: 'Assigned', value: assignments.filter(a => a.status === 'assigned').length },
+    { name: 'Overdue', value: assignments.filter(a => a.status === 'overdue').length },
+  ].filter(d => d.value > 0);
+
   if (seekersLoading || sessionsLoading) {
-    return <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+    return <div className="p-4"><SkeletonDashboard /></div>;
   }
 
   return (
     <div className="space-y-6 stagger-children">
+      {/* Hero Banner */}
       <div className="gradient-hero rounded-2xl p-6 lg:p-8 text-primary-foreground relative overflow-hidden">
         <div className="absolute top-2 right-6 text-6xl opacity-10">ॐ</div>
         <h1 className="text-2xl lg:text-3xl font-bold">{getGreeting()}, Vivek Sir</h1>
@@ -65,13 +108,51 @@ const AdminDashboard = () => {
         </Link>
       </div>
 
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users} label="Active Seekers" value={activeSeekers} gradient="gradient-chakravartin" />
+        <StatCard icon={Users} label="Active Seekers" value={activeSeekers} gradient="gradient-chakravartin" trend={`${activeSeekers} total`} trendUp />
         <StatCard icon={CalendarDays} label="Total Sessions" value={sessionsThisMonth} gradient="gradient-sacred" />
-        <StatCard icon={Clock} label="Pending Tasks" value={pendingTasks} gradient="gradient-saffron" />
+        <StatCard icon={Clock} label="Pending Tasks" value={pendingTasks} gradient="gradient-saffron" trend={pendingTasks > 5 ? 'Needs attention' : ''} trendUp={false} />
         <StatCard icon={IndianRupee} label="Revenue (This Month)" value={monthRevenue} prefix="₹" gradient="gradient-growth" />
       </div>
 
+      {/* Charts Row 1 */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        {/* Revenue Trend */}
+        <ChartWrapper title="Revenue Trend" emoji="💰" className="lg:col-span-2">
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={revenueTrend}>
+              <defs>
+                <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(27, 100%, 60%)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(27, 100%, 60%)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
+              <Tooltip formatter={(v: number) => `₹${v.toLocaleString('en-IN')}`} />
+              <Area type="monotone" dataKey="revenue" stroke="hsl(27, 100%, 60%)" fill="url(#revGrad)" strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartWrapper>
+
+        <DonutChart
+          title="Session Status"
+          emoji="📅"
+          data={sessionStatusData}
+          centerLabel="Total"
+          centerValue={sessions.length}
+        />
+      </div>
+
+      {/* Charts Row 2 */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <FunnelChart title="Lead Conversion Funnel" emoji="🔻" stages={funnelStages} />
+        <DonutChart title="Assignment Status" emoji="📋" data={assignmentData} centerLabel="Total" centerValue={assignments.length} />
+      </div>
+
+      {/* Today's Schedule */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-3">Today's Schedule</h2>
         {todaysSessions.length > 0 ? (
@@ -106,9 +187,10 @@ const AdminDashboard = () => {
 
       <BirthdayAnniversaryReminders />
 
+      {/* Seeker & Assignments */}
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
-          <h3 className="font-semibold text-foreground mb-3">Seeker Overview</h3>
+          <h3 className="font-semibold text-foreground mb-3">👤 Seeker Overview</h3>
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {seekers.map(s => (
               <Link key={s.id} to={`/seekers/${s.id}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
@@ -121,7 +203,7 @@ const AdminDashboard = () => {
           </div>
         </div>
         <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
-          <h3 className="font-semibold text-foreground mb-3">Recent Assignments</h3>
+          <h3 className="font-semibold text-foreground mb-3">📝 Recent Assignments</h3>
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {assignments.slice(0, 5).map(a => {
               const seeker = seekers.find(s => s.id === a.seeker_id);
@@ -138,6 +220,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Quick Actions */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-3">Quick Actions</h2>
         <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
@@ -149,7 +232,7 @@ const AdminDashboard = () => {
             { label: 'Send Reminder', icon: Bell, gradient: 'gradient-hero', path: '/messages' },
             { label: 'Add Lead', icon: Target, gradient: 'bg-lotus-pink', path: '/leads' },
           ].map(action => (
-            <Link key={action.label} to={action.path} className={`${action.gradient} rounded-xl p-4 text-center text-primary-foreground card-hover`}>
+            <Link key={action.label} to={action.path} className={`${action.gradient} rounded-xl p-4 text-center text-primary-foreground card-hover btn-press`}>
               <action.icon className="w-6 h-6 mx-auto mb-2" />
               <p className="text-xs font-medium">{action.label}</p>
             </Link>

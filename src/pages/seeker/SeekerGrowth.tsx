@@ -3,8 +3,11 @@ import { useAuthStore } from '@/store/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useBadges } from '@/hooks/useBadges';
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area } from 'recharts';
 import { Loader2 } from 'lucide-react';
+import LGTQuadrant from '@/components/charts/LGTQuadrant';
+import StreakHeatmap from '@/components/charts/StreakHeatmap';
+import ChartWrapper from '@/components/charts/ChartWrapper';
 
 const ZONE_COLORS = { red: '#E63946', yellow: '#F4A61C', white: '#BDC3C7', blue: '#3498DB', green: '#2ECC71' };
 
@@ -49,6 +52,22 @@ const SeekerGrowth = () => {
 
   const { earnedBadges, progress } = useBadges(profileId ?? null);
 
+  // Fetch worksheets for heatmap & LGT
+  const { data: worksheets = [] } = useQuery({
+    queryKey: ['my-worksheets-growth', profileId],
+    queryFn: async () => {
+      if (!profileId) return [];
+      const { data, error } = await supabase
+        .from('daily_worksheets')
+        .select('worksheet_date, is_submitted, dharma_score, artha_score, kama_score, moksha_score, morning_mood, evening_mood, morning_energy_score, end_energy_level')
+        .eq('seeker_id', profileId)
+        .order('worksheet_date', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profileId,
+  });
+
   // Build wheel data from latest assessment
   const latest = assessments[assessments.length - 1];
   const latestScores = latest?.scores_json as Record<string, number> | null;
@@ -72,6 +91,31 @@ const SeekerGrowth = () => {
     name: p.badge.name,
     emoji: p.badge.emoji,
     earned: p.isEarned,
+  }));
+
+  // Streak heatmap data (last 84 days)
+  const streakDays = Array.from({ length: 84 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (83 - i));
+    const dateStr = d.toISOString().split('T')[0];
+    const ws = worksheets.find((w: any) => w.worksheet_date === dateStr);
+    return { date: dateStr, completed: !!(ws && ws.is_submitted) };
+  });
+
+  // LGT scores from latest worksheet
+  const latestWs = worksheets[worksheets.length - 1] as any;
+  const lgtScores = {
+    dharma: Number(latestWs?.dharma_score || 0),
+    artha: Number(latestWs?.artha_score || 0),
+    kama: Number(latestWs?.kama_score || 0),
+    moksha: Number(latestWs?.moksha_score || 0),
+  };
+
+  // Energy trend (last 14 worksheets)
+  const energyData = worksheets.slice(-14).map((w: any) => ({
+    date: w.worksheet_date?.slice(5) || '',
+    morning: Number(w.morning_energy_score || 0),
+    evening: Number(w.end_energy_level || 0),
   }));
 
   if (isLoading) {
@@ -176,7 +220,38 @@ const SeekerGrowth = () => {
         </div>
       </div>
 
-      {/* Achievement Badges */}
+      {/* LGT Quadrant */}
+      <LGTQuadrant dharma={lgtScores.dharma} artha={lgtScores.artha} kama={lgtScores.kama} moksha={lgtScores.moksha} />
+
+      {/* Streak Heatmap */}
+      <StreakHeatmap days={streakDays} />
+
+      {/* Energy Trend */}
+      {energyData.length > 0 && (
+        <ChartWrapper title="Energy Levels" emoji="⚡">
+          <ResponsiveContainer width="100%" height={160}>
+            <AreaChart data={energyData}>
+              <defs>
+                <linearGradient id="mornGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(27, 100%, 60%)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(27, 100%, 60%)" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="eveGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(231, 47%, 47%)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(231, 47%, 47%)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="date" tick={{ fontSize: 9 }} />
+              <YAxis domain={[0, 10]} tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Area type="monotone" dataKey="morning" stroke="hsl(27, 100%, 60%)" fill="url(#mornGrad)" strokeWidth={2} name="Morning" />
+              <Area type="monotone" dataKey="evening" stroke="hsl(231, 47%, 47%)" fill="url(#eveGrad)" strokeWidth={2} name="Evening" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartWrapper>
+      )}
+
       {badgeList.length > 0 && (
         <div className="bg-card rounded-xl p-5 border border-border">
           <h3 className="font-semibold text-foreground text-sm mb-3">🏆 Achievements</h3>
