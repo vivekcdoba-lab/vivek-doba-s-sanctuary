@@ -1733,6 +1733,8 @@ export type Database = {
         Row: {
           attendance: string | null
           breakthroughs: string | null
+          client_good_things: Json | null
+          client_growth_json: Json | null
           coach_private_notes: string | null
           course_id: string | null
           created_at: string
@@ -1743,23 +1745,40 @@ export type Database = {
           id: string
           key_insights: string | null
           location_type: string | null
+          major_win: string | null
           meeting_link: string | null
           missed_reason: string | null
+          next_session_time: string | null
+          next_week_assignments: string | null
+          pending_assignments_review: string | null
+          pillar: string | null
           post_session_feedback: Json | null
+          punishments: string | null
           reschedule_reason: string | null
           revision_note: string | null
+          rewards: string | null
+          seeker_accepted_at: string | null
+          seeker_how_to_apply: string | null
           seeker_id: string
           seeker_mood: string | null
+          seeker_what_learned: string | null
+          seeker_where_to_apply: string | null
+          session_name: string | null
           session_notes: string | null
           session_number: number
           start_time: string
           status: string
+          stories_used: Json | null
+          targets: string | null
+          therapy_given: string | null
           topics_covered: Json | null
           updated_at: string
         }
         Insert: {
           attendance?: string | null
           breakthroughs?: string | null
+          client_good_things?: Json | null
+          client_growth_json?: Json | null
           coach_private_notes?: string | null
           course_id?: string | null
           created_at?: string
@@ -1770,23 +1789,40 @@ export type Database = {
           id?: string
           key_insights?: string | null
           location_type?: string | null
+          major_win?: string | null
           meeting_link?: string | null
           missed_reason?: string | null
+          next_session_time?: string | null
+          next_week_assignments?: string | null
+          pending_assignments_review?: string | null
+          pillar?: string | null
           post_session_feedback?: Json | null
+          punishments?: string | null
           reschedule_reason?: string | null
           revision_note?: string | null
+          rewards?: string | null
+          seeker_accepted_at?: string | null
+          seeker_how_to_apply?: string | null
           seeker_id: string
           seeker_mood?: string | null
+          seeker_what_learned?: string | null
+          seeker_where_to_apply?: string | null
+          session_name?: string | null
           session_notes?: string | null
           session_number?: number
           start_time: string
           status?: string
+          stories_used?: Json | null
+          targets?: string | null
+          therapy_given?: string | null
           topics_covered?: Json | null
           updated_at?: string
         }
         Update: {
           attendance?: string | null
           breakthroughs?: string | null
+          client_good_things?: Json | null
+          client_growth_json?: Json | null
           coach_private_notes?: string | null
           course_id?: string | null
           created_at?: string
@@ -1797,17 +1833,32 @@ export type Database = {
           id?: string
           key_insights?: string | null
           location_type?: string | null
+          major_win?: string | null
           meeting_link?: string | null
           missed_reason?: string | null
+          next_session_time?: string | null
+          next_week_assignments?: string | null
+          pending_assignments_review?: string | null
+          pillar?: string | null
           post_session_feedback?: Json | null
+          punishments?: string | null
           reschedule_reason?: string | null
           revision_note?: string | null
+          rewards?: string | null
+          seeker_accepted_at?: string | null
+          seeker_how_to_apply?: string | null
           seeker_id?: string
           seeker_mood?: string | null
+          seeker_what_learned?: string | null
+          seeker_where_to_apply?: string | null
+          session_name?: string | null
           session_notes?: string | null
           session_number?: number
           start_time?: string
           status?: string
+          stories_used?: Json | null
+          targets?: string | null
+          therapy_given?: string | null
           topics_covered?: Json | null
           updated_at?: string
         }
