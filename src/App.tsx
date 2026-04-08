@@ -62,6 +62,10 @@ import PlaceholderModule from "./pages/coaching/PlaceholderModule";
 
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import HelpPage from "./pages/HelpPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import WhatsAppSupportButton from "./components/WhatsAppSupportButton";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +83,9 @@ const App = () => (
           <Route path="/register-workshop" element={<RegisterWorkshop />} />
           <Route path="/apply-lgt" element={<ApplyLGT />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/help" element={<HelpPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
 
           {/* Admin Routes */}
           <Route element={<AuthGuard requiredRole="admin"><AdminLayout /></AuthGuard>}>
@@ -141,6 +148,7 @@ const App = () => (
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <WhatsAppSupportButton />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
