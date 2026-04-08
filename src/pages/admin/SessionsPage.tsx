@@ -41,18 +41,30 @@ const SessionsPage = () => {
   const [showPostSession, setShowPostSession] = useState<string | null>(null);
   const [postStep, setPostStep] = useState(1);
   const [postData, setPostData] = useState({
+    sessionName: '',
+    pillar: 'all' as string,
     topics: '',
     insights: '',
     breakthroughs: '',
     challenges: '',
+    therapyGiven: '',
     mood: '😊',
     engagement: 7,
     energy: 7,
     openness: 7,
     stories: [] as string[],
+    clientGoodThings: ['', '', ''],
+    clientGrowth: { dharma: '', artha: '', kama: '', moksha: '' },
+    majorWin: '',
     assignments: '',
+    pendingAssignments: '',
     privateNotes: '',
     focusNext: '',
+    nextSessionTime: '',
+    nextWeekAssignments: '',
+    punishments: '',
+    rewards: '',
+    targets: '',
   });
   const navigate = useNavigate();
 
