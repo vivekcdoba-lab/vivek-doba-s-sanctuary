@@ -402,8 +402,8 @@ const SessionsPage = () => {
           <button onClick={() => setTimerRunning(!timerRunning)} className="px-4 py-2 rounded-xl text-sm font-medium bg-warning-amber/10 text-warning-amber flex items-center gap-2">
             {timerRunning ? '⏸️ Pause' : '▶️ Resume'}
           </button>
-          <button onClick={() => endSession(liveSession)} className="px-4 py-2 rounded-xl text-sm font-medium bg-destructive/10 text-destructive flex items-center gap-2">
-            ⏹️ End Session
+          <button onClick={() => submitToSeeker(liveSession)} className="px-6 py-2 rounded-xl text-sm font-medium gradient-sacred text-primary-foreground flex items-center gap-2">
+            📤 End & Submit to Seeker
           </button>
         </div>
       </div>
