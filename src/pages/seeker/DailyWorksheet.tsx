@@ -33,11 +33,17 @@ const DailyWorksheet = () => {
   const [showExtraGratitude, setShowExtraGratitude] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [badgesOpen, setBadgesOpen] = useState(false);
+  const [bulkFillOpen, setBulkFillOpen] = useState(false);
+  const [bulkFrom, setBulkFrom] = useState('23:00');
+  const [bulkTo, setBulkTo] = useState('06:00');
+  const [bulkActivity, setBulkActivity] = useState('Sleep (Night / Main)');
+  const [bulkCustom, setBulkCustom] = useState('');
+  const [bulkPillar, setBulkPillar] = useState<PillarKey | ''>('dharma');
 
   const [worksheetMusic, setWorksheetMusic] = useState<string | null>(null);
   const { setPlaying } = useAudioStore();
 
-  const { state, updateField, updateSlot, saveWorksheet, copyYesterday, seekerProfileId } = useWorksheet(selectedDate);
+  const { state, updateField, updateSlot, bulkFillSlots, saveWorksheet, copyYesterday, seekerProfileId } = useWorksheet(selectedDate);
   const { progress, earnedBadges, nextBadge, checkAndAwardBadges } = useBadges(seekerProfileId);
 
   // Page visibility — pause music when tab hidden
