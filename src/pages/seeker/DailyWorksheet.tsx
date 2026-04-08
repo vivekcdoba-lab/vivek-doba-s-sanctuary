@@ -223,7 +223,7 @@ const DailyWorksheet = () => {
         </span>
         {progress.length > 0 && (
           <span className="flex items-center gap-1">
-            <Star className="w-4 h-4 text-yellow-500" /> Best: <strong>{Math.max(...progress.map(p => p.best_streak || 0), 0)} days</strong>
+            <Star className="w-4 h-4 text-yellow-500" /> Best: <strong>{Math.max(...progress.map(p => p.bestStreak || 0), 0)} days</strong>
           </span>
         )}
         {earnedBadges.length > 0 && (
