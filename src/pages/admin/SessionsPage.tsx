@@ -135,24 +135,27 @@ const SessionsPage = () => {
     setTimerRunning(true);
   };
 
-  const endSession = (sessionId: string) => {
+  const submitToSeeker = (sessionId: string) => {
     setTimerRunning(false);
-    setLiveSession(null);
-    setShowPostSession(sessionId);
-    setPostStep(1);
-  };
-
-  const completeSession = (sessionId: string) => {
+    // Save all data and mark as submitted → seeker can now see it
     setSessions(prev => prev.map(s => s.id === sessionId ? {
       ...s,
-      status: 'completed' as const,
+      status: 'submitted' as const,
       topics_covered: postData.topics.split(',').map(t => t.trim()).filter(Boolean),
       key_insights: postData.insights,
+      breakthroughs: postData.breakthroughs,
       session_notes: liveNotes,
       engagement_score: postData.engagement,
     } : s));
-    setShowPostSession(null);
+    setLiveSession(null);
+    toast.success('✅ Session submitted to seeker! They can now read, reflect & accept.');
     setPostData({ sessionName: '', pillar: 'all', topics: '', insights: '', breakthroughs: '', challenges: '', therapyGiven: '', mood: '😊', engagement: 7, energy: 7, openness: 7, stories: [], clientGoodThings: ['', '', ''], clientGrowth: { dharma: '', artha: '', kama: '', moksha: '' }, majorWin: '', assignments: '', pendingAssignments: '', privateNotes: '', focusNext: '', nextSessionTime: '', nextWeekAssignments: '', punishments: '', rewards: '', targets: '' });
+    setLiveNotes('');
+  };
+
+  const approveSession = (sessionId: string) => {
+    setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: 'approved' as const } : s));
+    toast.success('✅ Session approved! Both parties can now sign.');
   };
 
   const markMissed = (sessionId: string) => {
