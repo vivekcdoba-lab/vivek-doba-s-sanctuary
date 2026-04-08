@@ -1138,6 +1138,7 @@ export type Database = {
           id: string
           industry: string | null
           linkedin_url: string | null
+          marriage_anniversary: string | null
           occupation: string | null
           phone: string | null
           pincode: string | null
@@ -1165,6 +1166,7 @@ export type Database = {
           id?: string
           industry?: string | null
           linkedin_url?: string | null
+          marriage_anniversary?: string | null
           occupation?: string | null
           phone?: string | null
           pincode?: string | null
@@ -1192,6 +1194,7 @@ export type Database = {
           id?: string
           industry?: string | null
           linkedin_url?: string | null
+          marriage_anniversary?: string | null
           occupation?: string | null
           phone?: string | null
           pincode?: string | null
