@@ -37,7 +37,7 @@ const SeekerDailyLog = () => {
   const [openSections, setOpenSections] = useState<string[]>([getActivePhase()]);
 
   // Morning Sadhana state
-  const [wakeTime, setWakeTime] = useState('05:30');
+  const [wakeTime, setWakeTime] = useState('');
   const [moodScore, setMoodScore] = useState(7);
   const [energyScore, setEnergyScore] = useState(8);
   const [gratitudes, setGratitudes] = useState(['', '', '']);
