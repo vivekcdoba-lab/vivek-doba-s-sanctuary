@@ -69,8 +69,8 @@ const SeekerGrowth = () => {
   const weakest = wheelAreas.length > 0 ? wheelAreas.reduce((min, w) => w.score < min.score ? w : min) : { name: '—', score: 0 };
 
   const badgeList = progress.map(p => ({
-    name: p.badgeName,
-    emoji: p.emoji,
+    name: p.badge.name,
+    emoji: p.badge.emoji,
     earned: p.isEarned,
   }));
 
