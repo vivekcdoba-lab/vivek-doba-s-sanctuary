@@ -219,6 +219,15 @@ const SessionReviewPage = () => {
         diff: { revision_note: revisionNote },
       });
 
+      // Send notification to seeker
+      await supabase.from('session_notifications').insert({
+        recipient_id: session.seeker_id,
+        type: 'revision_requested',
+        title: `Session #${session.session_number} — Revision Requested`,
+        body: revisionNote,
+        session_id: session.id,
+      });
+
       setSession({ ...session, status: 'revision_requested', revision_note: revisionNote });
       setShowRevisionModal(false);
       setRevisionNote('');
