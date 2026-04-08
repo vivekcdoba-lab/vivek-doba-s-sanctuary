@@ -120,7 +120,7 @@ const SeekerProfile = () => {
           {profile.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
         </div>
         <div>
-          <h1 className="text-lg font-bold text-foreground">{profile.full_name}</h1>
+          <h1 className="text-lg font-bold text-foreground">Seeker - {profile.full_name}</h1>
           <p className="text-xs text-muted-foreground">{profile.email}</p>
         </div>
       </div>
