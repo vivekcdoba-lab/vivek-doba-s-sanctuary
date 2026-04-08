@@ -114,12 +114,12 @@ const SessionsPage = () => {
   };
 
   // Timer effect
-  useState(() => {
+  useEffect(() => {
     if (timerRunning) {
       const interval = setInterval(() => setLiveTimer(t => t + 1), 1000);
       return () => clearInterval(interval);
     }
-  });
+  }, [timerRunning]);
 
   const formatTimer = (secs: number) => {
     const h = Math.floor(secs / 3600);
