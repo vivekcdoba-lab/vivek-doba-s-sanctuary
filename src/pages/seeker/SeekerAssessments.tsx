@@ -209,8 +209,11 @@ const SeekerAssessments = () => {
       {lgtAssessing && (
         <LGTAssessment
           onClose={() => setLgtAssessing(false)}
-          onSave={(scores, sectionScores) => {
-            console.log('LGT saved:', { scores, sectionScores });
+          onSave={async (scores, sectionScores) => {
+            try {
+              await saveLgt.mutateAsync({ scores: { scores, sectionScores } });
+              toast.success('✅ LGT Assessment saved!');
+            } catch { toast.error('Failed to save'); }
             setLgtAssessing(false);
           }}
         />
@@ -220,8 +223,11 @@ const SeekerAssessments = () => {
       {firobAssessing && (
         <FIROBAssessment
           onClose={() => setFirobAssessing(false)}
-          onSave={(scores) => {
-            console.log('FIRO-B saved:', scores);
+          onSave={async (scores) => {
+            try {
+              await saveFirob.mutateAsync({ scores });
+              toast.success('✅ FIRO-B Assessment saved!');
+            } catch { toast.error('Failed to save'); }
             setFirobAssessing(false);
           }}
         />
