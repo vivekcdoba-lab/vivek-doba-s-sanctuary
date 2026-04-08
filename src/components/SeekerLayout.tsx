@@ -138,7 +138,7 @@ const SeekerLayoutInner = () => {
         </header>
         <main className="flex-1 pb-20 lg:pb-4 overflow-y-auto"><Outlet /></main>
         <FloatingMusicButton />
-        <nav className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border shadow-lg lg:hidden">
+        <nav data-tour="bottom-nav" className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border shadow-lg lg:hidden">
           <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
             {bottomTabs.map((tab) => (
               <Link key={tab.path} to={tab.path} className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors ${isActive(tab.path) ? 'text-primary' : 'text-muted-foreground'}`}>
