@@ -220,7 +220,38 @@ const SeekerGrowth = () => {
         </div>
       </div>
 
-      {/* Achievement Badges */}
+      {/* LGT Quadrant */}
+      <LGTQuadrant dharma={lgtScores.dharma} artha={lgtScores.artha} kama={lgtScores.kama} moksha={lgtScores.moksha} />
+
+      {/* Streak Heatmap */}
+      <StreakHeatmap days={streakDays} />
+
+      {/* Energy Trend */}
+      {energyData.length > 0 && (
+        <ChartWrapper title="Energy Levels" emoji="⚡">
+          <ResponsiveContainer width="100%" height={160}>
+            <AreaChart data={energyData}>
+              <defs>
+                <linearGradient id="mornGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(27, 100%, 60%)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(27, 100%, 60%)" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="eveGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(231, 47%, 47%)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(231, 47%, 47%)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="date" tick={{ fontSize: 9 }} />
+              <YAxis domain={[0, 10]} tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Area type="monotone" dataKey="morning" stroke="hsl(27, 100%, 60%)" fill="url(#mornGrad)" strokeWidth={2} name="Morning" />
+              <Area type="monotone" dataKey="evening" stroke="hsl(231, 47%, 47%)" fill="url(#eveGrad)" strokeWidth={2} name="Evening" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartWrapper>
+      )}
+
       {badgeList.length > 0 && (
         <div className="bg-card rounded-xl p-5 border border-border">
           <h3 className="font-semibold text-foreground text-sm mb-3">🏆 Achievements</h3>
