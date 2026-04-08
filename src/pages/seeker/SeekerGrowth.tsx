@@ -47,7 +47,7 @@ const SeekerGrowth = () => {
     enabled: !!profileId,
   });
 
-  const { earnedBadges, definitions } = useBadges(profileId);
+  const { earnedBadges, progress } = useBadges(profileId ?? null);
 
   // Build wheel data from latest assessment
   const latest = assessments[assessments.length - 1];
@@ -68,10 +68,10 @@ const SeekerGrowth = () => {
   const strongest = wheelAreas.length > 0 ? wheelAreas.reduce((max, w) => w.score > max.score ? w : max) : { name: '—', score: 0 };
   const weakest = wheelAreas.length > 0 ? wheelAreas.reduce((min, w) => w.score < min.score ? w : min) : { name: '—', score: 0 };
 
-  const badgeList = definitions.map(d => ({
-    name: d.name,
-    emoji: d.emoji,
-    earned: earnedBadges.some(eb => eb.badge_id === d.id),
+  const badgeList = progress.map(p => ({
+    name: p.badgeName,
+    emoji: p.emoji,
+    earned: p.isEarned,
   }));
 
   if (isLoading) {
