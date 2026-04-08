@@ -61,16 +61,6 @@ const LeadsPage = () => {
     return Object.entries(map).map(([name, value]) => ({ name, value }));
   }, [leads]);
 
-  const filteredLeads = useMemo(() => {
-    return leads.filter(l => {
-      const matchSearch = !search || l.name.toLowerCase().includes(search.toLowerCase()) ||
-        l.phone?.toLowerCase().includes(search.toLowerCase()) || l.email?.toLowerCase().includes(search.toLowerCase());
-      const matchPriority = filterPriority === 'all' || l.priority === filterPriority;
-      const matchSource = filterSource === 'all' || l.source === filterSource;
-      return matchSearch && matchPriority && matchSource;
-    });
-  }, [leads, search, filterPriority, filterSource]);
-
   const sources = useMemo(() => [...new Set(leads.map(l => l.source).filter(Boolean))], [leads]);
 
   const moveLead = (leadId: string, direction: 'left' | 'right') => {
