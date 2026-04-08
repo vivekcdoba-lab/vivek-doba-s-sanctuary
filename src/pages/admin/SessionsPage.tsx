@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { SESSIONS, SEEKERS, COURSES, formatTime12 } from '@/data/mockData';
 import { JOURNEY_STAGES } from '@/types';
 import { calculateRiskScore, getRiskEmoji } from '@/lib/riskEngine';
-import { Plus, Video, MapPin, Bell, Play, X, RotateCcw, AlertTriangle, Check, Clock } from 'lucide-react';
+import { Plus, Video, MapPin, Bell, Play, X, RotateCcw, AlertTriangle, Check, Clock, Shield } from 'lucide-react';
 import SendReminderModal from '@/components/SendReminderModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -359,7 +359,12 @@ const SessionsPage = () => {
                       {canRemind && seeker && (
                         <button onClick={() => setReminder({ seeker, session })}
                           className="px-2 py-1 rounded-lg text-[10px] font-medium bg-sky-blue/10 text-sky-blue flex items-center gap-1">
-                          <Bell className="w-3 h-3" /> Remind
+                         <Bell className="w-3 h-3" /> Remind
+                        </button>
+                      )}
+                      {session.status === 'completed' && (
+                        <button onClick={() => navigate(`/sessions/${session.id}/certify`)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-primary/10 text-primary flex items-center gap-1">
+                          <Shield className="w-3 h-3" /> Certify
                         </button>
                       )}
                     </div>
