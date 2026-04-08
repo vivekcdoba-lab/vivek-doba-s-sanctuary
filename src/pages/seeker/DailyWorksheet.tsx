@@ -364,23 +364,31 @@ const DailyWorksheet = () => {
 
       {/* SECTION 2 — 24-Hour Timesheet */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex items-center justify-between p-4 border-b border-border flex-wrap gap-2">
           <h2 className="text-lg font-bold">📋 24-Hour Sacred Timesheet</h2>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Plan</span>
-            <button
-              onClick={() => setActualsMode(!actualsMode)}
-              className={cn(
-                'relative w-12 h-6 rounded-full transition-colors',
-                actualsMode ? 'bg-green-500' : 'bg-muted'
-              )}
-            >
-              <span className={cn(
-                'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform',
-                actualsMode ? 'translate-x-6' : 'translate-x-0.5'
-              )} />
-            </button>
-            <span className="text-xs text-muted-foreground">Actuals</span>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button size="sm" variant="outline" onClick={() => setBulkFillOpen(true)} className="text-xs">
+              <Plus className="w-3 h-3 mr-1" /> Bulk Fill (e.g. Sleep)
+            </Button>
+            {autoSleepHours > 0 && (
+              <span className="text-xs bg-muted px-2 py-1 rounded-full">😴 Sleep: {autoSleepHours}h</span>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Plan</span>
+              <button
+                onClick={() => setActualsMode(!actualsMode)}
+                className={cn(
+                  'relative w-12 h-6 rounded-full transition-colors',
+                  actualsMode ? 'bg-primary' : 'bg-muted'
+                )}
+              >
+                <span className={cn(
+                  'absolute top-0.5 w-5 h-5 rounded-full bg-background shadow transition-transform',
+                  actualsMode ? 'translate-x-6' : 'translate-x-0.5'
+                )} />
+              </button>
+              <span className="text-xs text-muted-foreground">Actuals</span>
+            </div>
           </div>
         </div>
 
@@ -397,72 +405,86 @@ const DailyWorksheet = () => {
             <div className="max-h-[500px] overflow-y-auto">
               {slots.map(slot => {
                 const key = slot.start;
-                const data = state.timeSlots[key] || { activity: '', pillar: '', energy: '', notes: '', actualStatus: '', skipReason: '' };
+                const data = state.timeSlots[key] || { activity: '', customActivity: '', pillar: '', energy: '', notes: '', actualStatus: '', skipReason: '' };
                 const phaseBg = getPhaseForTime(slot.start);
+                const isCustom = data.activity === 'Custom';
 
                 return (
-                  <div key={key} className={cn('grid grid-cols-[80px_1fr_100px_60px_80px] gap-1 px-4 py-1.5 border-b border-border/50 items-center text-sm', phaseBg)}>
-                    <span className="text-xs font-mono text-muted-foreground">{slot.display}</span>
+                  <div key={key} className={cn('border-b border-border/50', phaseBg)}>
+                    <div className="grid grid-cols-[80px_1fr_100px_60px_80px] gap-1 px-4 py-1.5 items-center text-sm">
+                      <span className="text-xs font-mono text-muted-foreground">{slot.display}</span>
 
-                    <Select value={data.activity} onValueChange={(v) => updateSlot(key, 'activity', v)}>
-                      <SelectTrigger className="h-8 text-xs bg-background/80">
-                        <SelectValue placeholder="Select activity..." />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {ACTIVITY_GROUPS.map(g => (
-                          <SelectGroup key={g.group}>
-                            <SelectLabel className="text-xs">{g.group}</SelectLabel>
-                            {g.items.map(item => (
-                              <SelectItem key={item} value={item} className="text-xs">{item}</SelectItem>
-                            ))}
-                          </SelectGroup>
-                        ))}
-                        <SelectItem value="Custom" className="text-xs">⭕ Custom</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      <Select value={data.activity} onValueChange={(v) => updateSlot(key, 'activity', v)}>
+                        <SelectTrigger className="h-8 text-xs bg-background/80">
+                          <SelectValue placeholder="Select activity..." />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {ACTIVITY_GROUPS.map(g => (
+                            <SelectGroup key={g.group}>
+                              <SelectLabel className="text-xs">{g.group}</SelectLabel>
+                              {g.items.map(item => (
+                                <SelectItem key={item} value={item} className="text-xs">{item}</SelectItem>
+                              ))}
+                            </SelectGroup>
+                          ))}
+                          <SelectItem value="Custom" className="text-xs font-medium">⭕ Custom (type your own)</SelectItem>
+                        </SelectContent>
+                      </Select>
 
-                    <Select value={data.pillar} onValueChange={(v) => updateSlot(key, 'pillar', v)}>
-                      <SelectTrigger className="h-8 text-xs bg-background/80">
-                        <SelectValue placeholder="Pillar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(Object.keys(PILLAR_CONFIG) as PillarKey[]).map(p => (
-                          <SelectItem key={p} value={p} className="text-xs">
-                            {PILLAR_CONFIG[p].icon} {PILLAR_CONFIG[p].label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      <Select value={data.pillar} onValueChange={(v) => updateSlot(key, 'pillar', v)}>
+                        <SelectTrigger className="h-8 text-xs bg-background/80">
+                          <SelectValue placeholder="Pillar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(Object.keys(PILLAR_CONFIG) as PillarKey[]).map(p => (
+                            <SelectItem key={p} value={p} className="text-xs">
+                              {PILLAR_CONFIG[p].icon} {PILLAR_CONFIG[p].label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
-                    <Select value={data.energy} onValueChange={(v) => updateSlot(key, 'energy', v)}>
-                      <SelectTrigger className="h-8 text-xs bg-background/80">
-                        <SelectValue placeholder="—" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low" className="text-xs">🔴 Low</SelectItem>
-                        <SelectItem value="medium" className="text-xs">🟡 Med</SelectItem>
-                        <SelectItem value="high" className="text-xs">🟢 High</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    {actualsMode ? (
-                      <Select value={data.actualStatus} onValueChange={(v) => updateSlot(key, 'actualStatus', v)}>
+                      <Select value={data.energy} onValueChange={(v) => updateSlot(key, 'energy', v)}>
                         <SelectTrigger className="h-8 text-xs bg-background/80">
                           <SelectValue placeholder="—" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="done" className="text-xs">✅ Done</SelectItem>
-                          <SelectItem value="modified" className="text-xs">🔄 Modified</SelectItem>
-                          <SelectItem value="skipped" className="text-xs">❌ Skipped</SelectItem>
+                          <SelectItem value="low" className="text-xs">🔴 Low</SelectItem>
+                          <SelectItem value="medium" className="text-xs">🟡 Med</SelectItem>
+                          <SelectItem value="high" className="text-xs">🟢 High</SelectItem>
                         </SelectContent>
                       </Select>
-                    ) : (
-                      <Input
-                        placeholder="..."
-                        value={data.notes}
-                        onChange={e => updateSlot(key, 'notes', e.target.value)}
-                        className="h-8 text-xs bg-background/80"
-                      />
+
+                      {actualsMode ? (
+                        <Select value={data.actualStatus} onValueChange={(v) => updateSlot(key, 'actualStatus', v)}>
+                          <SelectTrigger className="h-8 text-xs bg-background/80">
+                            <SelectValue placeholder="—" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="done" className="text-xs">✅ Done</SelectItem>
+                            <SelectItem value="modified" className="text-xs">🔄 Modified</SelectItem>
+                            <SelectItem value="skipped" className="text-xs">❌ Skipped</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          placeholder="..."
+                          value={data.notes}
+                          onChange={e => updateSlot(key, 'notes', e.target.value)}
+                          className="h-8 text-xs bg-background/80"
+                        />
+                      )}
+                    </div>
+                    {/* Custom activity text box */}
+                    {isCustom && (
+                      <div className="px-4 pb-2 pl-[88px]">
+                        <Input
+                          placeholder="Type your custom activity..."
+                          value={data.customActivity}
+                          onChange={e => updateSlot(key, 'customActivity', e.target.value)}
+                          className="h-7 text-xs bg-background border-dashed"
+                        />
+                      </div>
                     )}
                   </div>
                 );
@@ -474,8 +496,104 @@ const DailyWorksheet = () => {
         <div className="p-4 border-t border-border bg-muted/30 flex flex-wrap gap-4 text-sm">
           <span>Planned: <strong>{totalPlanned}h</strong>/24h</span>
           <span>Free: <strong>{24 - totalPlanned}h</strong></span>
+          {autoSleepHours > 0 && <span>😴 Sleep: <strong>{autoSleepHours}h</strong></span>}
         </div>
       </div>
+
+      {/* Bulk Fill Dialog */}
+      <Dialog open={bulkFillOpen} onOpenChange={setBulkFillOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>⏰ Bulk Fill Time Slots</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-3">Fill multiple time slots at once — e.g. Sleep from 11 PM to 6 AM</p>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">From</label>
+                <Select value={bulkFrom} onValueChange={setBulkFrom}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {slots.map(s => (
+                      <SelectItem key={s.start} value={s.start} className="text-sm">{s.display}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">To</label>
+                <Select value={bulkTo} onValueChange={setBulkTo}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {slots.map(s => (
+                      <SelectItem key={s.start} value={s.start} className="text-sm">{s.display}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Activity</label>
+              <Select value={bulkActivity} onValueChange={(v) => {
+                setBulkActivity(v);
+                const autoPillar = getPillarForActivity(v);
+                if (autoPillar) setBulkPillar(autoPillar);
+              }}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {ACTIVITY_GROUPS.map(g => (
+                    <SelectGroup key={g.group}>
+                      <SelectLabel className="text-xs">{g.group}</SelectLabel>
+                      {g.items.map(item => (
+                        <SelectItem key={item} value={item} className="text-sm">{item}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                  <SelectItem value="Custom" className="text-sm font-medium">⭕ Custom</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {bulkActivity === 'Custom' && (
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Custom Activity Name</label>
+                <Input
+                  placeholder="Type your custom activity..."
+                  value={bulkCustom}
+                  onChange={e => setBulkCustom(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Pillar</label>
+              <Select value={bulkPillar} onValueChange={(v) => setBulkPillar(v as PillarKey)}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(PILLAR_CONFIG) as PillarKey[]).map(p => (
+                    <SelectItem key={p} value={p} className="text-sm">
+                      {PILLAR_CONFIG[p].icon} {PILLAR_CONFIG[p].label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button
+              className="w-full"
+              onClick={() => {
+                bulkFillSlots(bulkFrom, bulkTo, bulkActivity, bulkActivity === 'Custom' ? bulkCustom : '', bulkPillar);
+                setBulkFillOpen(false);
+                toast.success(`Filled ${bulkActivity === 'Custom' ? bulkCustom : bulkActivity} from ${bulkFrom} to ${bulkTo}`);
+              }}
+            >
+              <Check className="w-4 h-4 mr-2" /> Fill Slots
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* SECTION 3 — Pillar Summary */}
       <div>
