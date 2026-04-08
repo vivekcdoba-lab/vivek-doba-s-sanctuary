@@ -1186,7 +1186,7 @@ export type Database = {
           state: string | null
           team_size: number | null
           updated_at: string
-          user_id: string | null
+          user_id: string
           whatsapp: string | null
         }
         Insert: {
@@ -1214,7 +1214,7 @@ export type Database = {
           state?: string | null
           team_size?: number | null
           updated_at?: string
-          user_id?: string | null
+          user_id: string
           whatsapp?: string | null
         }
         Update: {
@@ -1242,7 +1242,7 @@ export type Database = {
           state?: string | null
           team_size?: number | null
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
           whatsapp?: string | null
         }
         Relationships: []
