@@ -1472,6 +1472,60 @@ export type Database = {
           },
         ]
       }
+      session_signatures: {
+        Row: {
+          content_hash: string | null
+          id: string
+          ip_address: string | null
+          session_id: string
+          signed_at: string
+          signer_id: string
+          signer_role: string
+          storage_path: string
+          typed_name: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          content_hash?: string | null
+          id?: string
+          ip_address?: string | null
+          session_id: string
+          signed_at?: string
+          signer_id: string
+          signer_role: string
+          storage_path: string
+          typed_name?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          content_hash?: string | null
+          id?: string
+          ip_address?: string | null
+          session_id?: string
+          signed_at?: string
+          signer_id?: string
+          signer_role?: string
+          storage_path?: string
+          typed_name?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_signatures_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_signatures_signer_id_fkey"
+            columns: ["signer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           attendance: string | null
