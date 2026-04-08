@@ -58,7 +58,10 @@ import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
 import AgreementsPage from "./pages/coaching/AgreementsPage";
 import FiroBPage from "./pages/coaching/FiroBPage";
-import PlaceholderModule from "./pages/coaching/PlaceholderModule";
+import CoachingSessionNotes from "./pages/coaching/CoachingSessionNotes";
+import CoachingPlanner from "./pages/coaching/CoachingPlanner";
+import CoachingHomework from "./pages/coaching/CoachingHomework";
+import CoachingProgress from "./pages/coaching/CoachingProgress";
 
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -140,10 +143,10 @@ const App = () => (
             <Route path="/coaching/intake" element={<ClientIntakePage />} />
             <Route path="/coaching/agreements" element={<AgreementsPage />} />
             <Route path="/coaching/firo-b" element={<FiroBPage />} />
-            <Route path="/coaching/sessions" element={<PlaceholderModule />} />
-            <Route path="/coaching/planner" element={<PlaceholderModule />} />
-            <Route path="/coaching/homework" element={<PlaceholderModule />} />
-            <Route path="/coaching/progress" element={<PlaceholderModule />} />
+            <Route path="/coaching/sessions" element={<CoachingSessionNotes />} />
+            <Route path="/coaching/planner" element={<CoachingPlanner />} />
+            <Route path="/coaching/homework" element={<CoachingHomework />} />
+            <Route path="/coaching/progress" element={<CoachingProgress />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
