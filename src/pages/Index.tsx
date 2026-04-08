@@ -153,7 +153,7 @@ const Index = () => (
     <footer className="bg-muted/50 border-t border-border py-10">
       <div className="max-w-4xl mx-auto px-4 text-center">
         <p className="font-semibold text-foreground mb-1">Vivek Doba Training Solutions | Pune, Maharashtra</p>
-        <p className="text-sm text-muted-foreground mb-4">📞 9607050111 | 📧 info@vivekdoba.in | 🌐 vivekdoba.in</p>
+        <p className="text-sm text-muted-foreground mb-4">📞 9607050111 | 📧 info@vivekdoba.com | 🌐 vivekdoba.com</p>
         <div className="flex justify-center gap-3 mb-4">
           {[
             { name: 'Instagram', url: 'https://www.instagram.com/coachvivekdoba/', icon: Instagram, hoverColor: '#E4405F' },

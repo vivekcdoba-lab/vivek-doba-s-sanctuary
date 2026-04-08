@@ -160,8 +160,8 @@ const SettingsPage = () => {
           <div className="grid sm:grid-cols-2 gap-4">
             <div><label className="text-sm font-medium text-foreground">Business Name</label><input defaultValue="Vivek Doba Training Solutions" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
             <div><label className="text-sm font-medium text-foreground">Phone</label><input defaultValue="9607050111" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
-            <div><label className="text-sm font-medium text-foreground">Email</label><input defaultValue="info@vivekdoba.in" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
-            <div><label className="text-sm font-medium text-foreground">Website</label><input defaultValue="vivekdoba.in" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
+            <div><label className="text-sm font-medium text-foreground">Email</label><input defaultValue="info@vivekdoba.com" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
+            <div><label className="text-sm font-medium text-foreground">Website</label><input defaultValue="vivekdoba.com" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
             <div><label className="text-sm font-medium text-foreground">GSTIN</label><input defaultValue="27XXXXXXXXXXXZX" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
             <div><label className="text-sm font-medium text-foreground">PAN</label><input defaultValue="XXXXX1234X" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
             <div><label className="text-sm font-medium text-foreground">Bank Name</label><input defaultValue="State Bank of India" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
