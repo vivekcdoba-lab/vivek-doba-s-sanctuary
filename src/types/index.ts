@@ -1,7 +1,7 @@
 export type UserRole = 'admin' | 'seeker';
 export type EnrollmentStatus = 'active' | 'paused' | 'completed' | 'dropped';
 export type CourseTier = 'standard' | 'premium' | 'platinum' | 'chakravartin';
-export type SessionStatus = 'requested' | 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'missed' | 'rescheduled' | 'cancelled';
+export type SessionStatus = 'requested' | 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'submitted' | 'reviewing' | 'approved' | 'revision_requested' | 'missed' | 'rescheduled' | 'cancelled';
 export type AssignmentStatus = 'assigned' | 'in_progress' | 'submitted' | 'under_review' | 'reviewed' | 'overdue' | 'revision_requested';
 export type LeadStage = 'new' | 'contacted' | 'discovery' | 'proposal' | 'negotiating' | 'converted' | 'lost';
 export type LeadPriority = 'hot' | 'warm' | 'cold';
