@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { X, Volume2, Play, Pause, SkipForward, Shuffle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Volume2, Play, Pause, SkipForward, Shuffle, Timer } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import {
   SOUND_LIBRARY, MOOD_PRESETS, playSound, stopSound, stopAll, playPreset,
@@ -14,10 +14,42 @@ const categories = [
   { key: 'music', label: '🎵 Music' },
 ];
 
+const TIMER_OPTIONS = [
+  { label: '15m', minutes: 15 },
+  { label: '30m', minutes: 30 },
+  { label: '1h', minutes: 60 },
+  { label: '∞', minutes: null as number | null },
+];
+
 export default function SacredMusicPlayer({ onClose }: { onClose: () => void }) {
-  const { playing, masterVolume, activePreset, setMasterVolume, addPlaying, removePlaying, setPlaying, setActivePreset } = useAudioStore();
+  const { playing, masterVolume, activePreset, sleepTimerEnd, lastPreset,
+    setMasterVolume, addPlaying, removePlaying, setPlaying, setActivePreset,
+    setSleepTimer, setSleepTimerEnd } = useAudioStore();
   const [tab, setTab] = useState('sacred');
   const [mixMode, setMixMode] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
+  const [timerDisplay, setTimerDisplay] = useState('');
+
+  // Sleep timer countdown
+  useEffect(() => {
+    if (!sleepTimerEnd) { setTimerDisplay(''); return; }
+    const interval = setInterval(() => {
+      const remaining = sleepTimerEnd - Date.now();
+      if (remaining <= 0) {
+        stopAll();
+        setPlaying([]);
+        setActivePreset(null);
+        setSleepTimer(null);
+        setSleepTimerEnd(null);
+        setTimerDisplay('');
+      } else {
+        const m = Math.floor(remaining / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        setTimerDisplay(`${m}:${s.toString().padStart(2, '0')}`);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [sleepTimerEnd, setPlaying, setActivePreset, setSleepTimer, setSleepTimerEnd]);
 
   const toggle = (id: SoundId) => {
     if (playing.includes(id)) {
@@ -25,10 +57,7 @@ export default function SacredMusicPlayer({ onClose }: { onClose: () => void }) 
       removePlaying(id);
       setActivePreset(null);
     } else {
-      if (!mixMode) {
-        stopAll();
-        setPlaying([]);
-      }
+      if (!mixMode) { stopAll(); setPlaying([]); }
       playSound(id, masterVolume);
       addPlaying(id);
       setActivePreset(null);
@@ -48,6 +77,17 @@ export default function SacredMusicPlayer({ onClose }: { onClose: () => void }) 
     playing.forEach(id => setVolume(id, vol));
   };
 
+  const startTimer = (minutes: number | null) => {
+    if (minutes === null) {
+      setSleepTimer(null);
+      setSleepTimerEnd(null);
+    } else {
+      setSleepTimer(minutes);
+      setSleepTimerEnd(Date.now() + minutes * 60000);
+    }
+    setShowTimer(false);
+  };
+
   const filtered = SOUND_LIBRARY.filter(s => s.category === tab);
 
   return (
@@ -62,7 +102,10 @@ export default function SacredMusicPlayer({ onClose }: { onClose: () => void }) 
               : 'Sacred Sounds'}
           </span>
         </div>
-        <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
+        <div className="flex items-center gap-1">
+          {timerDisplay && <span className="text-[10px] font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded">⏱ {timerDisplay}</span>}
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
+        </div>
       </div>
 
       {/* Category tabs */}
@@ -100,13 +143,32 @@ export default function SacredMusicPlayer({ onClose }: { onClose: () => void }) 
           <span className="text-xs text-muted-foreground w-8">{Math.round(masterVolume * 100)}%</span>
         </div>
         <div className="flex items-center justify-between">
-          <button onClick={() => setMixMode(!mixMode)}
-            className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg ${mixMode ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-            <Shuffle className="w-3 h-3" /> Mix
-          </button>
-          <button onClick={() => { stopAll(); setPlaying([]); setActivePreset(null); }}
+          <div className="flex gap-1">
+            <button onClick={() => setMixMode(!mixMode)}
+              className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg ${mixMode ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+              <Shuffle className="w-3 h-3" /> Mix
+            </button>
+            <button onClick={() => setShowTimer(!showTimer)}
+              className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg ${sleepTimerEnd ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+              <Timer className="w-3 h-3" /> Timer
+            </button>
+          </div>
+          <button onClick={() => { stopAll(); setPlaying([]); setActivePreset(null); setSleepTimer(null); setSleepTimerEnd(null); }}
             className="text-xs text-destructive hover:underline">Stop All</button>
         </div>
+        {showTimer && (
+          <div className="flex gap-1 bg-muted/30 rounded-lg p-2">
+            {TIMER_OPTIONS.map(opt => (
+              <button key={opt.label} onClick={() => startTimer(opt.minutes)}
+                className={`flex-1 text-xs py-1.5 rounded-lg font-medium transition-colors ${
+                  (opt.minutes === null && !sleepTimerEnd) || false
+                    ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted border border-border'
+                }`}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Mood Presets */}
@@ -120,6 +182,11 @@ export default function SacredMusicPlayer({ onClose }: { onClose: () => void }) 
             </button>
           ))}
         </div>
+        {lastPreset && !activePreset && (
+          <button onClick={() => handlePreset(lastPreset)} className="mt-2 text-[10px] text-primary hover:underline">
+            ↩ Resume: {MOOD_PRESETS[lastPreset]?.emoji} {MOOD_PRESETS[lastPreset]?.label}
+          </button>
+        )}
       </div>
 
       {playing.some(id => id === 'binaural-alpha') && (

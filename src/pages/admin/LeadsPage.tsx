@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useDbLeads, useCreateLead, useUpdateLead } from '@/hooks/useDbLeads';
 import { useDbCourses } from '@/hooks/useDbCourses';
-import { Plus, ChevronLeft, ChevronRight, X, Phone, Mail, MessageSquare, Loader2 } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, X, Phone, Mail, MessageSquare, Loader2, Search, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type LeadStage = 'new' | 'contacted' | 'discovery' | 'proposal' | 'negotiating' | 'converted' | 'lost';
@@ -29,6 +29,23 @@ const LeadsPage = () => {
   const [newLead, setNewLead] = useState({ name: '', phone: '', email: '', source: 'Website', interested_course_id: '', priority: 'warm', current_challenge: '', notes: '' });
   const { toast } = useToast();
 
+  // Search & Filters
+  const [search, setSearch] = useState('');
+  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [filterSource, setFilterSource] = useState<string>('all');
+
+  const filteredLeads = useMemo(() => {
+    return leads.filter(l => {
+      const matchSearch = !search || l.name.toLowerCase().includes(search.toLowerCase()) ||
+        l.phone?.toLowerCase().includes(search.toLowerCase()) || l.email?.toLowerCase().includes(search.toLowerCase());
+      const matchPriority = filterPriority === 'all' || l.priority === filterPriority;
+      const matchSource = filterSource === 'all' || l.source === filterSource;
+      return matchSearch && matchPriority && matchSource;
+    });
+  }, [leads, search, filterPriority, filterSource]);
+
+  const sources = useMemo(() => [...new Set(leads.map(l => l.source).filter(Boolean))], [leads]);
+
   const moveLead = (leadId: string, direction: 'left' | 'right') => {
     const lead = leads.find(l => l.id === leadId);
     if (!lead) return;
@@ -51,14 +68,9 @@ const LeadsPage = () => {
   const addLead = () => {
     if (!newLead.name || !newLead.phone) return;
     createLead.mutate({
-      name: newLead.name,
-      phone: newLead.phone,
-      email: newLead.email || undefined,
-      source: newLead.source,
-      interested_course_id: newLead.interested_course_id || undefined,
-      priority: newLead.priority,
-      current_challenge: newLead.current_challenge || undefined,
-      notes: newLead.notes || undefined,
+      name: newLead.name, phone: newLead.phone, email: newLead.email || undefined,
+      source: newLead.source, interested_course_id: newLead.interested_course_id || undefined,
+      priority: newLead.priority, current_challenge: newLead.current_challenge || undefined, notes: newLead.notes || undefined,
     }, {
       onSuccess: () => {
         setShowAdd(false);
@@ -77,13 +89,32 @@ const LeadsPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Sales Pipeline</h1>
-          <p className="text-sm text-muted-foreground">{leads.length} leads in pipeline</p>
+          <p className="text-sm text-muted-foreground">{filteredLeads.length} of {leads.length} leads</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm">
           <Plus className="w-4 h-4" /> Add Lead
         </button>
       </div>
 
+      {/* Search & Filters */}
+      <div className="flex flex-wrap gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search leads..." className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
+        </div>
+        <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm">
+          <option value="all">All Priority</option>
+          <option value="hot">🔴 Hot</option>
+          <option value="warm">🟡 Warm</option>
+          <option value="cold">❄️ Cold</option>
+        </select>
+        <select value={filterSource} onChange={e => setFilterSource(e.target.value)} className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm">
+          <option value="all">All Sources</option>
+          {sources.map(s => <option key={s} value={s!}>{s}</option>)}
+        </select>
+      </div>
+
+      {/* Add Lead Modal */}
       {showAdd && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 backdrop-blur-sm" onClick={() => setShowAdd(false)}>
           <div className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-md p-6 m-4" onClick={e => e.stopPropagation()}>
@@ -106,6 +137,7 @@ const LeadsPage = () => {
                 <option value="hot">🔴 Hot</option><option value="warm">🟡 Warm</option><option value="cold">❄️ Cold</option>
               </select>
               <textarea placeholder="Current Challenge" value={newLead.current_challenge} onChange={e => setNewLead(p => ({ ...p, current_challenge: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" rows={2} />
+              <textarea placeholder="Notes" value={newLead.notes} onChange={e => setNewLead(p => ({ ...p, notes: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" rows={2} />
               <button onClick={addLead} disabled={createLead.isPending} className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm disabled:opacity-50">
                 {createLead.isPending ? 'Saving...' : 'Save Lead'}
               </button>
@@ -114,9 +146,10 @@ const LeadsPage = () => {
         </div>
       )}
 
+      {/* Pipeline */}
       <div className="flex gap-3 overflow-x-auto pb-4">
         {STAGES.map(stage => {
-          const stageLeads = leads.filter(l => (l.stage || 'new') === stage.key);
+          const stageLeads = filteredLeads.filter(l => (l.stage || 'new') === stage.key);
           return (
             <div key={stage.key} className={`min-w-[240px] max-w-[260px] flex-shrink-0 rounded-xl ${stage.bg} border border-border`}>
               <div className="p-3 border-b border-border flex items-center gap-2">
@@ -146,6 +179,7 @@ const LeadsPage = () => {
                         <div className="mt-3 pt-3 border-t border-border space-y-2" onClick={e => e.stopPropagation()}>
                           {lead.current_challenge && <p className="text-xs text-foreground"><span className="font-medium">Challenge:</span> {lead.current_challenge}</p>}
                           {lead.notes && <p className="text-xs text-muted-foreground">{lead.notes}</p>}
+                          {lead.next_followup_date && <p className="text-xs text-primary">📅 Follow-up: {lead.next_followup_date}</p>}
                           <div className="flex gap-1.5">
                             {lead.phone && <button onClick={() => window.open(`tel:${lead.phone}`)} className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-primary/10"><Phone className="w-3 h-3" /></button>}
                             {lead.phone && <button onClick={() => window.open(`https://wa.me/91${lead.phone?.replace(/\D/g, '')}`)} className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-primary/10"><MessageSquare className="w-3 h-3" /></button>}
