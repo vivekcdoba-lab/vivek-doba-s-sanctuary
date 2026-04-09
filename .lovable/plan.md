@@ -1,39 +1,45 @@
 
 
-## Fix: Login Routing, Coach Role Support, and Flickering
+## Fix: Login Screen Flickering
 
-### Problems Identified
+### Root Cause
 
-1. **Seeker lands on admin page**: The `useEffect` redirect in LoginPage (line 41-46) checks `authProfile.role === 'admin'` and navigates to `/dashboard`. During login, `validateSessionOnInit` from `authStore.ts` can fire and set auth state before the LoginPage's `handleLogin` finishes routing — causing seekers to briefly get routed wrong, or the redirect `useEffect` to fire with stale state.
+When the login page loads, **three separate async events** all trigger state changes that cause re-renders:
 
-2. **Coach role not supported**: The `Profile` interface in `authStore.ts` only allows `'admin' | 'seeker'`. The `AuthGuard` `requiredRole` also only accepts `'admin' | 'seeker'`. Coaching routes require `requiredRole="admin"`, so only admins can access coaching — a user with `role='coach'` gets redirected to `/seeker/home`.
+1. `getSession()` resolves → calls `setAuth(null, null)` → sets `loading: false` → re-render
+2. `onAuthStateChange` fires with no user → calls `setAuth(null, null)` → re-render  
+3. If user was previously logged in, `onAuthStateChange` may fire `SIGNED_IN` before `getSession` completes, causing additional state flips
 
-3. **Flickering**: Multiple auth state changes happen during login — `signInWithPassword` triggers `onAuthStateChange(SIGNED_IN)`, then `getSession()` runs `validateSessionOnInit`, plus LoginPage's own `setAuth`. Each state change re-renders the component tree.
+Each `setAuth` call changes `loading` from `true` → `false`, and potentially flips `isAuthenticated`, causing the login form to mount/unmount/remount.
 
 ### Solution
 
-#### 1. Add `coach` to the role type everywhere
-- **`src/store/authStore.ts`**: Change `Profile.role` from `'admin' | 'seeker'` to `'admin' | 'seeker' | 'coach'`
-- **`src/components/AuthGuard.tsx`**: Change `requiredRole` to `'admin' | 'seeker' | 'coach'`. Update the role check so coaches can access coaching routes, admins can access everything, and seekers only access seeker routes.
-- **`src/App.tsx`**: Change coaching routes from `requiredRole="admin"` to `requiredRole="coach"`. AuthGuard will allow both `coach` and `admin` roles.
+**File: `src/store/authStore.ts`**
 
-#### 2. Fix LoginPage redirect logic
-- The `useEffect` that redirects authenticated users should also handle `coach` role → navigate to `/coaching`
-- In `handleLogin`, route based on the actual profile role from the database, not just admin vs other:
-  - `admin` → route by selected tab (existing logic)
-  - `coach` → `/coaching`
-  - `seeker` → `/seeker/home`
+1. **Gate the `onAuthStateChange` listener** — Only process events after `getSession()` has completed. Add an `initialized` flag that starts `false` and is set `true` after `getSession()` resolves. The listener ignores events until initialized, preventing the double-fire.
 
-#### 3. Fix flickering by preventing double state updates
-- In `validateSessionOnInit`, skip validation if we're on the login page (check `window.location.pathname === '/login'`) — let LoginPage handle its own flow
-- This prevents the race between `validateSessionOnInit` setting auth state and LoginPage's `handleLogin` doing the same
+2. **On login page, set loading false immediately** — Instead of waiting for `getSession()` to finish async work, detect `/login` path and set `loading: false` synchronously in the store initializer, so the login page renders instantly without any async flicker.
 
-### Files to Change
+### Changes
 
-| File | Changes |
-|------|---------|
-| `src/store/authStore.ts` | Add `'coach'` to Profile role type; skip init validation on login page |
-| `src/components/AuthGuard.tsx` | Add `'coach'` to requiredRole; allow admin to pass all guards; allow coach to pass coach guard |
-| `src/App.tsx` | Change coaching routes to `requiredRole="coach"` |
-| `src/pages/LoginPage.tsx` | Add coach routing in useEffect redirect; ensure handleLogin coach routing works |
+| File | Change |
+|------|--------|
+| `src/store/authStore.ts` | Add `initialized` flag; gate `onAuthStateChange` behind it; set `loading: false` immediately for `/login` path before any async work |
+
+### Technical Detail
+
+```text
+Current flow (causes 2-3 re-renders):
+  Store init: loading=true
+  → onAuthStateChange fires → setAuth(null,null) → loading=false (render 1)
+  → getSession resolves → setAuth(null,null) → loading=false (render 2)
+
+Fixed flow (single render):
+  Store init: loading=true
+  → getSession resolves → sets initialized=true → setAuth(null,null) → loading=false (render 1)
+  → onAuthStateChange fires but initialized already, no redundant call
+  
+  On /login specifically:
+  → loading set to false immediately, no async wait needed
+```
 
