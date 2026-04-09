@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Loader2 } from 'lucide-react';
@@ -9,7 +8,7 @@ interface AuthGuardProps {
 }
 
 const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
-  const { isAuthenticated, profile, loading, sessionId, logout } = useAuthStore();
+  const { isAuthenticated, profile, loading, sessionId } = useAuthStore();
 
   // No useEffect logout here — the Navigate below handles redirect.
   // Forcing logout in useEffect caused race conditions with fresh login flow.
