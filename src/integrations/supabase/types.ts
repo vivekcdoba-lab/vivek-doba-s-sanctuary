@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      accounting_records: {
+        Row: {
+          business_id: string
+          created_at: string
+          expenses: number | null
+          id: string
+          month: number
+          notes: string | null
+          payables: number | null
+          profit: number | null
+          receivables: number | null
+          revenue: number | null
+          taxes: number | null
+          year: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          expenses?: number | null
+          id?: string
+          month: number
+          notes?: string | null
+          payables?: number | null
+          profit?: number | null
+          receivables?: number | null
+          revenue?: number | null
+          taxes?: number | null
+          year: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          expenses?: number | null
+          id?: string
+          month?: number
+          notes?: string | null
+          payables?: number | null
+          profit?: number | null
+          receivables?: number | null
+          revenue?: number | null
+          taxes?: number | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounting_records_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agreements: {
         Row: {
           client_id: string
@@ -213,6 +266,273 @@ export type Database = {
         }
         Relationships: []
       }
+      branding_strategy: {
+        Row: {
+          brand_colors: Json | null
+          brand_personality: string | null
+          brand_story: string | null
+          brand_voice: string | null
+          business_id: string
+          created_at: string
+          id: string
+          logo_description: string | null
+          positioning_statement: string | null
+          tagline: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand_colors?: Json | null
+          brand_personality?: string | null
+          brand_story?: string | null
+          brand_voice?: string | null
+          business_id: string
+          created_at?: string
+          id?: string
+          logo_description?: string | null
+          positioning_statement?: string | null
+          tagline?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand_colors?: Json | null
+          brand_personality?: string | null
+          brand_story?: string | null
+          brand_voice?: string | null
+          business_id?: string
+          created_at?: string
+          id?: string
+          logo_description?: string | null
+          positioning_statement?: string | null
+          tagline?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branding_strategy_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_competitors: {
+        Row: {
+          business_id: string
+          competitor_name: string
+          created_at: string
+          id: string
+          notes: string | null
+          pricing: string | null
+          strengths: string | null
+          threat_level: string | null
+          weaknesses: string | null
+          website: string | null
+        }
+        Insert: {
+          business_id: string
+          competitor_name: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          pricing?: string | null
+          strengths?: string | null
+          threat_level?: string | null
+          weaknesses?: string | null
+          website?: string | null
+        }
+        Update: {
+          business_id?: string
+          competitor_name?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          pricing?: string | null
+          strengths?: string | null
+          threat_level?: string | null
+          weaknesses?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_competitors_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_mission_vision: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          mission_statement: string | null
+          purpose_statement: string | null
+          updated_at: string
+          vision_statement: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          mission_statement?: string | null
+          purpose_statement?: string | null
+          updated_at?: string
+          vision_statement?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          mission_statement?: string | null
+          purpose_statement?: string | null
+          updated_at?: string
+          vision_statement?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_mission_vision_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_profiles: {
+        Row: {
+          business_name: string
+          created_at: string
+          founded_year: number | null
+          id: string
+          industry: string | null
+          logo_url: string | null
+          revenue_range: string | null
+          seeker_id: string
+          tagline: string | null
+          team_size: number | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          business_name: string
+          created_at?: string
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          revenue_range?: string | null
+          seeker_id: string
+          tagline?: string | null
+          team_size?: number | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          business_name?: string
+          created_at?: string
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          revenue_range?: string | null
+          seeker_id?: string
+          tagline?: string | null
+          team_size?: number | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_profiles_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_swot_items: {
+        Row: {
+          action_plan: string | null
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          importance: number | null
+          title: string
+          type: string
+        }
+        Insert: {
+          action_plan?: string | null
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          importance?: number | null
+          title: string
+          type: string
+        }
+        Update: {
+          action_plan?: string | null
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          importance?: number | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_swot_items_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_values: {
+        Row: {
+          business_id: string
+          created_at: string
+          icon_emoji: string | null
+          id: string
+          priority_order: number
+          value_description: string | null
+          value_name: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          icon_emoji?: string | null
+          id?: string
+          priority_order?: number
+          value_description?: string | null
+          value_name: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          icon_emoji?: string | null
+          id?: string
+          priority_order?: number
+          value_description?: string | null
+          value_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_values_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_events: {
         Row: {
           color: string | null
@@ -259,6 +579,97 @@ export type Database = {
             columns: ["seeker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cashflow_records: {
+        Row: {
+          amount: number
+          balance_after: number | null
+          business_id: string
+          category: string | null
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          type: string
+        }
+        Insert: {
+          amount?: number
+          balance_after?: number | null
+          business_id: string
+          category?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number | null
+          business_id?: string
+          category?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cashflow_records_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_feedback: {
+        Row: {
+          business_id: string
+          category: string | null
+          client_name: string
+          created_at: string
+          feedback_date: string
+          feedback_text: string | null
+          id: string
+          rating: number
+          resolved: boolean | null
+          response_action: string | null
+        }
+        Insert: {
+          business_id: string
+          category?: string | null
+          client_name: string
+          created_at?: string
+          feedback_date?: string
+          feedback_text?: string | null
+          id?: string
+          rating: number
+          resolved?: boolean | null
+          response_action?: string | null
+        }
+        Update: {
+          business_id?: string
+          category?: string | null
+          client_name?: string
+          created_at?: string
+          feedback_date?: string
+          feedback_text?: string | null
+          id?: string
+          rating?: number
+          resolved?: boolean | null
+          response_action?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_feedback_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -839,6 +1250,53 @@ export type Database = {
           },
         ]
       }
+      department_health: {
+        Row: {
+          action_plan: string | null
+          business_id: string
+          challenges: string | null
+          created_at: string
+          department_name: string
+          health_score: number
+          id: string
+          key_metrics: Json | null
+          month: number
+          year: number
+        }
+        Insert: {
+          action_plan?: string | null
+          business_id: string
+          challenges?: string | null
+          created_at?: string
+          department_name: string
+          health_score?: number
+          id?: string
+          key_metrics?: Json | null
+          month: number
+          year: number
+        }
+        Update: {
+          action_plan?: string | null
+          business_id?: string
+          challenges?: string | null
+          created_at?: string
+          department_name?: string
+          health_score?: number
+          id?: string
+          key_metrics?: Json | null
+          month?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_health_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enrollments: {
         Row: {
           course_id: string
@@ -1036,6 +1494,56 @@ export type Database = {
             columns: ["interested_course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_strategy: {
+        Row: {
+          budget_monthly: number | null
+          business_id: string
+          content_strategy: string | null
+          created_at: string
+          goals_quarterly: string | null
+          id: string
+          marketing_channels: Json | null
+          metrics_tracked: Json | null
+          target_audience: string | null
+          unique_selling_proposition: string | null
+          updated_at: string
+        }
+        Insert: {
+          budget_monthly?: number | null
+          business_id: string
+          content_strategy?: string | null
+          created_at?: string
+          goals_quarterly?: string | null
+          id?: string
+          marketing_channels?: Json | null
+          metrics_tracked?: Json | null
+          target_audience?: string | null
+          unique_selling_proposition?: string | null
+          updated_at?: string
+        }
+        Update: {
+          budget_monthly?: number | null
+          business_id?: string
+          content_strategy?: string | null
+          created_at?: string
+          goals_quarterly?: string | null
+          id?: string
+          marketing_channels?: Json | null
+          metrics_tracked?: Json | null
+          target_audience?: string | null
+          unique_selling_proposition?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_strategy_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "business_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1299,6 +1807,106 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rnd_projects: {
+        Row: {
+          budget: number | null
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          outcomes: string | null
+          progress_percent: number | null
+          project_name: string
+          start_date: string | null
+          status: string
+          target_completion: string | null
+        }
+        Insert: {
+          budget?: number | null
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          outcomes?: string | null
+          progress_percent?: number | null
+          project_name: string
+          start_date?: string | null
+          status?: string
+          target_completion?: string | null
+        }
+        Update: {
+          budget?: number | null
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          outcomes?: string | null
+          progress_percent?: number | null
+          project_name?: string
+          start_date?: string | null
+          status?: string
+          target_completion?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rnd_projects_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_strategy: {
+        Row: {
+          business_id: string
+          conversion_goals: string | null
+          created_at: string
+          id: string
+          key_objections: Json | null
+          pricing_strategy: string | null
+          sales_channels: string | null
+          sales_process: Json | null
+          sales_scripts: string | null
+          sales_targets_monthly: number | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          conversion_goals?: string | null
+          created_at?: string
+          id?: string
+          key_objections?: Json | null
+          pricing_strategy?: string | null
+          sales_channels?: string | null
+          sales_process?: Json | null
+          sales_scripts?: string | null
+          sales_targets_monthly?: number | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          conversion_goals?: string | null
+          created_at?: string
+          id?: string
+          key_objections?: Json | null
+          pricing_strategy?: string | null
+          sales_channels?: string | null
+          sales_process?: Json | null
+          sales_scripts?: string | null
+          sales_targets_monthly?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_strategy_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "business_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1986,6 +2594,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      team_members: {
+        Row: {
+          business_id: string
+          created_at: string
+          department: string | null
+          hire_date: string | null
+          id: string
+          name: string
+          notes: string | null
+          performance_rating: number | null
+          role: string | null
+          skills: Json | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          department?: string | null
+          hire_date?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          performance_rating?: number | null
+          role?: string | null
+          skills?: Json | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          department?: string | null
+          hire_date?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          performance_rating?: number | null
+          role?: string | null
+          skills?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       topics: {
         Row: {
