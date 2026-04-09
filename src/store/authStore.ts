@@ -100,11 +100,10 @@ async function fetchProfile(userId: string, userEmail?: string, metadata?: any):
   }
 }
 
-async function validateSessionOnInit(userId: string, userEmail?: string, metadata?: any) {
+async function validateSessionOnInit(userId: string, accessToken: string, userEmail?: string, metadata?: any) {
   const storedSessionId = localStorage.getItem('vdts_session_id');
   
   if (!storedSessionId) {
-    // No tracked session — force sign out
     await supabase.auth.signOut();
     clearAllAuthStorage();
     useAuthStore.getState().setAuth(null, null);
@@ -112,22 +111,31 @@ async function validateSessionOnInit(userId: string, userEmail?: string, metadat
   }
 
   try {
-    const { data, error } = await supabase.functions.invoke('session-heartbeat', {
-      body: { action: 'heartbeat', session_id: storedSessionId },
-    });
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/session-heartbeat`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ action: 'heartbeat', session_id: storedSessionId }),
+      }
+    );
 
-    if (error || !data?.active) {
-      // Session closed/expired — force sign out
+    const data = await response.json();
+
+    if (!response.ok || !data?.active) {
       await supabase.auth.signOut();
       clearAllAuthStorage();
       useAuthStore.getState().setAuth(null, null);
       return;
     }
   } catch {
-    // If heartbeat fails, allow through (network issue) but keep session
+    // Network issue — allow through
   }
 
-  // Session is valid — load profile
   const profile = await fetchProfile(userId, userEmail, metadata);
   useAuthStore.getState().setAuth({ id: userId } as User, profile);
 }
