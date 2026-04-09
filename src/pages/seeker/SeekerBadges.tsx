@@ -1,7 +1,7 @@
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { BackToHome } from '@/components/BackToHome';
+import BackToHome from '@/components/BackToHome';
 import { Medal, Star, Trophy, Lock } from 'lucide-react';
 
 export default function SeekerBadges() {

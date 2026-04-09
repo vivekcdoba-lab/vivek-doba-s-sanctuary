@@ -1,7 +1,7 @@
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { BackToHome } from '@/components/BackToHome';
+import BackToHome from '@/components/BackToHome';
 import { BookOpen, CalendarDays, Clock, CheckCircle, XCircle, ChevronRight } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BackToHome } from '@/components/BackToHome';
+import BackToHome from '@/components/BackToHome';
 import { Heart, Save, CheckCircle, X, GripVertical } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 

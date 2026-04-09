@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BackToHome } from '@/components/BackToHome';
+import BackToHome from '@/components/BackToHome';
 import { Sunrise, Clock, Play, Pause, RotateCcw, CheckCircle } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/integrations/supabase/client';

@@ -1,7 +1,7 @@
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BackToHome } from '@/components/BackToHome';
+import BackToHome from '@/components/BackToHome';
 import { ClipboardList, Clock, AlertTriangle, CheckCircle, Send, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { useState } from 'react';

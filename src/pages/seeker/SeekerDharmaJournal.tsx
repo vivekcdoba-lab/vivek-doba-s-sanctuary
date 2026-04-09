@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BackToHome } from '@/components/BackToHome';
+import BackToHome from '@/components/BackToHome';
 import { BookOpen, Plus, Calendar, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';

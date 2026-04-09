@@ -1,4 +1,4 @@
-import { BackToHome } from '@/components/BackToHome';
+import BackToHome from '@/components/BackToHome';
 import { Star, Flame, Award, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useStreakCount } from '@/hooks/useStreakCount';
