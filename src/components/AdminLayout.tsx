@@ -64,6 +64,7 @@ const AdminLayout = () => {
   const [breadcrumbOverrides, setBreadcrumbOverrides] = useState<Record<string, string>>({});
   const location = useLocation();
   const { profile, logout, darkMode, toggleDarkMode } = useAuthStore();
+  useSessionHeartbeat();
 
   const setOverride = useCallback((segment: string, label: string) => {
     setBreadcrumbOverrides(prev => prev[segment] === label ? prev : { ...prev, [segment]: label });
