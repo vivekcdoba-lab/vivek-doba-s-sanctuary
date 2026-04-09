@@ -41,6 +41,7 @@ const LoginPage = () => {
   useEffect(() => {
     if (isAuthenticated && authProfile) {
       if (authProfile.role === 'admin') navigate('/dashboard');
+      else if (authProfile.role === 'coach') navigate('/coaching');
       else navigate('/seeker/home');
     }
   }, [isAuthenticated, authProfile, navigate]);

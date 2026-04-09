@@ -4,14 +4,11 @@ import { Loader2 } from 'lucide-react';
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  requiredRole: 'admin' | 'seeker';
+  requiredRole: 'admin' | 'seeker' | 'coach';
 }
 
 const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
   const { isAuthenticated, profile, loading, sessionId } = useAuthStore();
-
-  // No useEffect logout here — the Navigate below handles redirect.
-  // Forcing logout in useEffect caused race conditions with fresh login flow.
 
   if (loading) {
     return (
@@ -25,16 +22,30 @@ const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Also redirect if no sessionId (will be caught by useEffect above)
   if (!sessionId) {
     return <Navigate to="/login" replace />;
   }
 
-  if (profile.role !== requiredRole && profile.role !== 'admin') {
-    return <Navigate to="/seeker/home" replace />;
+  // Admin can access everything
+  if (profile.role === 'admin') {
+    return <>{children}</>;
   }
 
-  return <>{children}</>;
+  // Coach can access coach routes
+  if (profile.role === 'coach' && requiredRole === 'coach') {
+    return <>{children}</>;
+  }
+
+  // Seeker can access seeker routes
+  if (profile.role === 'seeker' && requiredRole === 'seeker') {
+    return <>{children}</>;
+  }
+
+  // Redirect mismatched roles to their home
+  if (profile.role === 'coach') {
+    return <Navigate to="/coaching" replace />;
+  }
+  return <Navigate to="/seeker/home" replace />;
 };
 
 export default AuthGuard;
