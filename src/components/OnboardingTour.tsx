@@ -67,9 +67,8 @@ const OnboardingTour = ({ forceShow = false, onComplete }: OnboardingTourProps) 
       setCurrentStep(0);
       return;
     }
-    const completed = localStorage.getItem(STORAGE_KEY);
-    if (!completed) {
-      // small delay to let the dashboard render
+    const count = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+    if (count < 2) {
       const t = setTimeout(() => setIsVisible(true), 800);
       return () => clearTimeout(t);
     }
@@ -115,7 +114,8 @@ const OnboardingTour = ({ forceShow = false, onComplete }: OnboardingTourProps) 
 
   const finish = useCallback(() => {
     setIsVisible(false);
-    localStorage.setItem(STORAGE_KEY, 'true');
+    const count = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+    localStorage.setItem(STORAGE_KEY, String(count + 1));
     onComplete?.();
   }, [onComplete]);
 
