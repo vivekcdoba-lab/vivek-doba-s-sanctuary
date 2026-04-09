@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ChevronRight, Eye, EyeOff, Mail, Lock, Sparkles, Loader2, Shield, Users, UserCheck, MessageSquare } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
@@ -34,19 +34,19 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<LoginRole>('seeker');
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const loggingInRef = useRef(false);
   const navigate = useNavigate();
   const { setAuth, setSessionId, isAuthenticated, profile: authProfile } = useAuthStore();
 
   // Redirect already logged-in users — but NOT during active login flow
   useEffect(() => {
-    if (isLoggingIn) return;
+    if (loggingInRef.current) return;
     if (isAuthenticated && authProfile) {
       if (authProfile.role === 'admin') navigate('/dashboard', { replace: true });
       else if (authProfile.role === 'coach') navigate('/coaching', { replace: true });
       else navigate('/seeker/home', { replace: true });
     }
-  }, [isAuthenticated, authProfile, navigate, isLoggingIn]);
+  }, [isAuthenticated, authProfile, navigate]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -54,7 +54,7 @@ const LoginPage = () => {
       return;
     }
     setLoading(true);
-    setIsLoggingIn(true);
+    loggingInRef.current = true;
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
@@ -134,7 +134,6 @@ const LoginPage = () => {
       toast.error('An error occurred');
     } finally {
       setLoading(false);
-      setIsLoggingIn(false);
     }
   };
 
