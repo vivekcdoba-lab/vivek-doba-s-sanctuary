@@ -1,45 +1,54 @@
 
 
-## Fix: Login Redirect Loop and Flickering
+## Plan: Loading Skeleton After Login + Verify Session Monitoring + Inactivity Logout
 
-### Root Cause
+### 1. Add Loading Skeleton During Post-Login Redirect
 
-The console shows **"Maximum update depth exceeded"** originating from LoginPage. The infinite loop happens because:
+**Problem**: After clicking "Sign In", the user sees a brief flash or blank state while the session-heartbeat call completes and navigation happens.
 
-1. `handleLogin` calls `setAuth(user, profile)` which sets `isAuthenticated = true`
-2. This triggers the `useEffect` redirect, which calls `navigate('/dashboard', { replace: true })`
-3. But `handleLogin` hasn't finished yet — it also calls `navigate()` at the end
-4. When `isLoggingIn` becomes `false` in `finally`, the useEffect re-evaluates and fires `navigate` again
-5. React-router's `replace` triggers a re-render of LoginPage (still mounted during transition), causing an infinite loop
+**Fix in `src/pages/LoginPage.tsx`**:
+- Add a `redirecting` state that becomes `true` after successful auth + session start, before `navigate()` is called
+- When `redirecting` is true, render a full-screen skeleton/loading overlay instead of the login form
+- This gives smooth visual feedback during the ~500ms between auth completion and route mount
 
-Additionally, the seeker-to-admin redirect happens because the `useEffect` fires based on `authProfile.role` before `handleLogin`'s own routing logic executes.
+**Fix in `src/components/AuthGuard.tsx`**:
+- Replace the plain `Loader2` spinner with a proper skeleton layout (import `SkeletonDashboard` from existing component) for a more polished loading state
 
-### Fix
+### 2. Verify Active Session Monitoring
 
-**File: `src/pages/LoginPage.tsx`**
+**File: `src/pages/admin/ActiveSessionsPage.tsx`** — already exists with:
+- Real-time active user count
+- Live duration timers
+- Session history with filters
+- Force logout capability
 
-1. **Replace `isLoggingIn` state with a ref** — A ref doesn't trigger re-renders, so changing it won't cause the useEffect to re-evaluate. The useEffect checks the ref value directly.
+No code changes needed — will verify it works via the admin dashboard after login.
 
-2. **Remove `isLoggingIn` from useEffect dependencies** — Since it's a ref, it's not a dependency. The useEffect only runs when `isAuthenticated` or `authProfile` change.
+### 3. Verify Inactivity Auto-Logout
 
-3. **Set the ref to `true` before login and never set it back to `false`** — Once `handleLogin` starts, the useEffect redirect is permanently disabled for this component instance. The `handleLogin` function handles all navigation itself.
+**File: `src/hooks/useSessionHeartbeat.ts`** — already implements:
+- 60-minute inactivity timeout with 30-second check interval
+- Activity tracking via mouse/keyboard/touch/scroll events
+- `forceLogout()` that calls `logout()` (clears all storage) and redirects to `/login`
 
-```text
-Before (causes loop):
-  setIsLoggingIn(true)  ← state change
-  ...setAuth(...)       ← triggers useEffect
-  ...navigate(...)      ← handleLogin navigates
-  setIsLoggingIn(false) ← triggers useEffect AGAIN → navigate → loop
-
-After (no loop):
-  loggingInRef.current = true  ← no re-render
-  ...setAuth(...)              ← triggers useEffect → ref is true → early return
-  ...navigate(...)             ← only handleLogin navigates
-```
+No code changes needed — the implementation is correct.
 
 ### Files to Change
 
 | File | Change |
 |------|--------|
-| `src/pages/LoginPage.tsx` | Replace `isLoggingIn` useState with useRef; remove from useEffect deps; remove `finally` reset |
+| `src/pages/LoginPage.tsx` | Add `redirecting` state; show skeleton overlay when redirecting |
+| `src/components/AuthGuard.tsx` | Replace spinner with `SkeletonDashboard` for better loading UX |
+
+### Technical Details
+
+**LoginPage redirecting state flow**:
+```text
+User clicks Sign In → loading=true (button shows spinner)
+→ Auth succeeds → session starts → redirecting=true
+→ Full-screen skeleton renders (covers login form)
+→ navigate() fires → AuthGuard loading skeleton → dashboard renders
+```
+
+This creates a seamless transition: login form → skeleton → dashboard, with no flicker or blank screens.
 
