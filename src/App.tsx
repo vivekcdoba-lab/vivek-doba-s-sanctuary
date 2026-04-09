@@ -13,6 +13,7 @@ import AuthGuard from "./components/AuthGuard";
 import AdminLayout from "./components/AdminLayout";
 import SeekerLayout from "./components/SeekerLayout";
 import CoachingLayout from "./components/CoachingLayout";
+import PlaceholderPage from "./pages/PlaceholderPage";
 
 import AdminDashboard from "./pages/admin/Dashboard";
 import SeekersPage from "./pages/admin/SeekersPage";
@@ -73,6 +74,8 @@ import WhatsAppSupportButton from "./components/WhatsAppSupportButton";
 
 const queryClient = new QueryClient();
 
+const P = PlaceholderPage;
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -118,6 +121,49 @@ const App = () => (
             <Route path="/session-templates" element={<SessionTemplatesPage />} />
             <Route path="/swot" element={<SwotPage />} />
             <Route path="/active-sessions" element={<ActiveSessionsPage />} />
+            {/* Admin placeholder routes */}
+            <Route path="/admin/coaches" element={<P />} />
+            <Route path="/admin/admins" element={<P />} />
+            <Route path="/admin/add-user" element={<P />} />
+            <Route path="/admin/user-analytics" element={<P />} />
+            <Route path="/admin/search-users" element={<P />} />
+            <Route path="/admin/create-program" element={<P />} />
+            <Route path="/admin/edit-programs" element={<P />} />
+            <Route path="/admin/program-analytics" element={<P />} />
+            <Route path="/admin/enrollments" element={<P />} />
+            <Route path="/admin/new-enrollment" element={<P />} />
+            <Route path="/admin/batches" element={<P />} />
+            <Route path="/admin/enrollment-stats" element={<P />} />
+            <Route path="/admin/add-lead" element={<P />} />
+            <Route path="/admin/all-leads" element={<P />} />
+            <Route path="/admin/hot-leads" element={<P />} />
+            <Route path="/admin/conversion-funnel" element={<P />} />
+            <Route path="/admin/lead-sources" element={<P />} />
+            <Route path="/admin/record-payment" element={<P />} />
+            <Route path="/admin/invoices" element={<P />} />
+            <Route path="/admin/overdue-payments" element={<P />} />
+            <Route path="/admin/revenue" element={<P />} />
+            <Route path="/admin/export-financials" element={<P />} />
+            <Route path="/admin/videos" element={<P />} />
+            <Route path="/admin/audios" element={<P />} />
+            <Route path="/admin/upload-resource" element={<P />} />
+            <Route path="/admin/categories" element={<P />} />
+            <Route path="/admin/question-bank" element={<P />} />
+            <Route path="/admin/create-assessment" element={<P />} />
+            <Route path="/admin/announcements" element={<P />} />
+            <Route path="/admin/competitors" element={<P />} />
+            <Route path="/admin/business-metrics" element={<P />} />
+            <Route path="/admin/strategic-goals" element={<P />} />
+            <Route path="/admin/user-growth" element={<P />} />
+            <Route path="/admin/engagement" element={<P />} />
+            <Route path="/admin/coach-performance" element={<P />} />
+            <Route path="/admin/retention" element={<P />} />
+            <Route path="/admin/export-reports" element={<P />} />
+            <Route path="/admin/branding" element={<P />} />
+            <Route path="/admin/notifications" element={<P />} />
+            <Route path="/admin/integrations" element={<P />} />
+            <Route path="/admin/audit-logs" element={<P />} />
+            <Route path="/admin/backup" element={<P />} />
           </Route>
 
           {/* Seeker Routes */}
@@ -137,6 +183,60 @@ const App = () => (
             <Route path="/seeker/topics" element={<SeekerTopics />} />
             <Route path="/seeker/sessions/:id/certify" element={<SessionCertification />} />
             <Route path="/seeker/sessions/:id" element={<SeekerSessionDetail />} />
+            {/* Seeker placeholder routes */}
+            <Route path="/seeker/worksheet-history" element={<P />} />
+            <Route path="/seeker/streaks" element={<P />} />
+            <Route path="/seeker/lgt-score" element={<P />} />
+            <Route path="/seeker/personality" element={<P />} />
+            <Route path="/seeker/progress-charts" element={<P />} />
+            <Route path="/seeker/assessment-history" element={<P />} />
+            <Route path="/seeker/upcoming-sessions" element={<P />} />
+            <Route path="/seeker/live-session" element={<P />} />
+            <Route path="/seeker/session-notes" element={<P />} />
+            <Route path="/seeker/session-history" element={<P />} />
+            <Route path="/seeker/feedback" element={<P />} />
+            <Route path="/seeker/completed-tasks" element={<P />} />
+            <Route path="/seeker/submit-assignment" element={<P />} />
+            <Route path="/seeker/coach-feedback" element={<P />} />
+            <Route path="/seeker/dharma/mission" element={<P />} />
+            <Route path="/seeker/dharma/values" element={<P />} />
+            <Route path="/seeker/dharma/journal" element={<P />} />
+            <Route path="/seeker/dharma/practices" element={<P />} />
+            <Route path="/seeker/artha/profile" element={<P />} />
+            <Route path="/seeker/artha/vision" element={<P />} />
+            <Route path="/seeker/artha/values" element={<P />} />
+            <Route path="/seeker/artha/swot" element={<P />} />
+            <Route path="/seeker/artha/marketing" element={<P />} />
+            <Route path="/seeker/artha/branding" element={<P />} />
+            <Route path="/seeker/artha/sales" element={<P />} />
+            <Route path="/seeker/artha/accounting" element={<P />} />
+            <Route path="/seeker/artha/cashflow" element={<P />} />
+            <Route path="/seeker/artha/team" element={<P />} />
+            <Route path="/seeker/artha/rnd" element={<P />} />
+            <Route path="/seeker/artha/satisfaction" element={<P />} />
+            <Route path="/seeker/artha/competitors" element={<P />} />
+            <Route path="/seeker/artha/departments" element={<P />} />
+            <Route path="/seeker/artha/dashboard" element={<P />} />
+            <Route path="/seeker/kama/goals" element={<P />} />
+            <Route path="/seeker/kama/family" element={<P />} />
+            <Route path="/seeker/kama/social" element={<P />} />
+            <Route path="/seeker/kama/desires" element={<P />} />
+            <Route path="/seeker/moksha/meditation" element={<P />} />
+            <Route path="/seeker/moksha/goals" element={<P />} />
+            <Route path="/seeker/moksha/journal" element={<P />} />
+            <Route path="/seeker/moksha/consciousness" element={<P />} />
+            <Route path="/seeker/learning/videos" element={<P />} />
+            <Route path="/seeker/learning/audio" element={<P />} />
+            <Route path="/seeker/learning/pdfs" element={<P />} />
+            <Route path="/seeker/learning/frameworks" element={<P />} />
+            <Route path="/seeker/learning/bookmarks" element={<P />} />
+            <Route path="/seeker/announcements" element={<P />} />
+            <Route path="/seeker/badges" element={<P />} />
+            <Route path="/seeker/points" element={<P />} />
+            <Route path="/seeker/leaderboard" element={<P />} />
+            <Route path="/seeker/notifications" element={<P />} />
+            <Route path="/seeker/privacy-settings" element={<P />} />
+            <Route path="/seeker/help" element={<P />} />
           </Route>
 
           {/* Coaching Management Routes */}
@@ -149,6 +249,37 @@ const App = () => (
             <Route path="/coaching/planner" element={<CoachingPlanner />} />
             <Route path="/coaching/homework" element={<CoachingHomework />} />
             <Route path="/coaching/progress" element={<CoachingProgress />} />
+            {/* Coach placeholder routes */}
+            <Route path="/coaching/seekers" element={<P />} />
+            <Route path="/coaching/seekers-active" element={<P />} />
+            <Route path="/coaching/seekers-attention" element={<P />} />
+            <Route path="/coaching/seekers-ontrack" element={<P />} />
+            <Route path="/coaching/seekers-search" element={<P />} />
+            <Route path="/coaching/worksheet-pending" element={<P />} />
+            <Route path="/coaching/worksheet-reviewed" element={<P />} />
+            <Route path="/coaching/worksheet-stats" element={<P />} />
+            <Route path="/coaching/worksheet-missed" element={<P />} />
+            <Route path="/coaching/schedule" element={<P />} />
+            <Route path="/coaching/today-sessions" element={<P />} />
+            <Route path="/coaching/past-sessions" element={<P />} />
+            <Route path="/coaching/session-analytics" element={<P />} />
+            <Route path="/coaching/create-assignment" element={<P />} />
+            <Route path="/coaching/pending-submissions" element={<P />} />
+            <Route path="/coaching/reviewed" element={<P />} />
+            <Route path="/coaching/completion-rate" element={<P />} />
+            <Route path="/coaching/generate-reports" element={<P />} />
+            <Route path="/coaching/businesses" element={<P />} />
+            <Route path="/coaching/swot-reviews" element={<P />} />
+            <Route path="/coaching/dept-health" element={<P />} />
+            <Route path="/coaching/business-notes" element={<P />} />
+            <Route path="/coaching/messages" element={<P />} />
+            <Route path="/coaching/templates" element={<P />} />
+            <Route path="/coaching/announcements" element={<P />} />
+            <Route path="/coaching/engagement" element={<P />} />
+            <Route path="/coaching/progress-report" element={<P />} />
+            <Route path="/coaching/artha-progress" element={<P />} />
+            <Route path="/coaching/export" element={<P />} />
+            <Route path="/coaching/settings" element={<P />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
