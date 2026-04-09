@@ -2118,7 +2118,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_sessions: { Args: never; Returns: number }
       close_inactive_sessions: { Args: never; Returns: number }
+      get_daily_session_report: { Args: never; Returns: Json }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
