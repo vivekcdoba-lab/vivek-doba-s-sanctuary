@@ -28,27 +28,38 @@ export function useSessionHeartbeat() {
   const sendHeartbeat = async () => {
     if (!sessionId || !user) return;
     try {
-      const { data, error } = await supabase.functions.invoke('session-heartbeat', {
-        body: { action: 'heartbeat', session_id: sessionId },
-      });
-
-      if (error) {
-        // If 401/unauthorized, session token is invalid — force logout
-        if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
-          await logout();
-          navigate('/login');
-        }
+      // Get fresh access token — if expired, force logout
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+      if (!accessToken) {
+        await forceLogout('Session expired. Please log in again.');
         return;
       }
 
-      if (data && !data.active) {
-        const reason = data.reason;
-        await logout();
-        if (reason === 'forced') {
-          toast.error('You have been logged in from another device');
-        } else {
-          toast.error('Session expired due to inactivity');
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/session-heartbeat`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ action: 'heartbeat', session_id: sessionId }),
         }
+      );
+
+      if (response.status === 401) {
+        await forceLogout('Session expired. Please log in again.');
+        return;
+      }
+
+      const data = await response.json();
+      if (data && !data.active) {
+        await logout();
+        toast.error(data.reason === 'forced'
+          ? 'You have been logged in from another device'
+          : 'Session expired due to inactivity');
         navigate('/login');
       }
     } catch {
