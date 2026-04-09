@@ -129,9 +129,12 @@ async function validateSessionOnInit(userId: string, accessToken: string, userEm
     const data = await response.json();
 
     if (!response.ok || !data?.active) {
-      await supabase.auth.signOut();
-      clearAllAuthStorage();
-      useAuthStore.getState().setAuth(null, null);
+      // Don't sign out on network errors, only on definitive rejection
+      if (response.status === 401 || data?.reason === 'invalid_token' || data?.active === false) {
+        await supabase.auth.signOut();
+        clearAllAuthStorage();
+        useAuthStore.getState().setAuth(null, null);
+      }
       return;
     }
   } catch {
