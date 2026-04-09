@@ -54,7 +54,7 @@ const LoginPage = () => {
       return;
     }
     setLoading(true);
-    try {
+    setIsLoggingIn(true);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         // Generic error message to avoid leaking whether email exists
