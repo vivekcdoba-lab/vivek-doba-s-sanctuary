@@ -33,6 +33,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [selectedRole, setSelectedRole] = useState<LoginRole>('seeker');
   const loggingInRef = useRef(false);
   const navigate = useNavigate();
@@ -113,6 +114,7 @@ const LoginPage = () => {
         } catch { /* session tracking is non-blocking */ }
 
         toast.success(`Welcome! 🙏`);
+        setRedirecting(true);
 
         // Route based on role — admin can access all, so use selected tab
         if (role === 'admin') {
@@ -138,6 +140,27 @@ const LoginPage = () => {
   };
 
   const activeTab = roleTabs.find(t => t.role === selectedRole)!;
+
+  if (redirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-full max-w-2xl px-6 space-y-5 animate-fade-in">
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <p className="text-muted-foreground font-medium">Setting up your session...</p>
+          </div>
+          <div className="skeleton h-24 rounded-2xl" />
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 3].map(i => <div key={i} className="skeleton h-20 rounded-xl" />)}
+          </div>
+          <div className="skeleton h-16 rounded-xl" />
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="skeleton h-20 rounded-xl" />)}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">

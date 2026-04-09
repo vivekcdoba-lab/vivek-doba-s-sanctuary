@@ -1,6 +1,5 @@
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { Loader2 } from 'lucide-react';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -13,7 +12,17 @@ const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="w-full max-w-2xl px-6 space-y-5 animate-fade-in">
+          <div className="skeleton h-24 rounded-2xl" />
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 3].map(i => <div key={i} className="skeleton h-20 rounded-xl" />)}
+          </div>
+          <div className="skeleton h-16 rounded-xl" />
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="skeleton h-20 rounded-xl" />)}
+          </div>
+          <div className="skeleton h-40 rounded-xl" />
+        </div>
       </div>
     );
   }
