@@ -34,17 +34,19 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<LoginRole>('seeker');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const navigate = useNavigate();
   const { setAuth, setSessionId, isAuthenticated, profile: authProfile } = useAuthStore();
 
-  // Redirect already logged-in users
+  // Redirect already logged-in users — but NOT during active login flow
   useEffect(() => {
+    if (isLoggingIn) return;
     if (isAuthenticated && authProfile) {
-      if (authProfile.role === 'admin') navigate('/dashboard');
-      else if (authProfile.role === 'coach') navigate('/coaching');
-      else navigate('/seeker/home');
+      if (authProfile.role === 'admin') navigate('/dashboard', { replace: true });
+      else if (authProfile.role === 'coach') navigate('/coaching', { replace: true });
+      else navigate('/seeker/home', { replace: true });
     }
-  }, [isAuthenticated, authProfile, navigate]);
+  }, [isAuthenticated, authProfile, navigate, isLoggingIn]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -52,6 +54,7 @@ const LoginPage = () => {
       return;
     }
     setLoading(true);
+    setIsLoggingIn(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
@@ -131,6 +134,7 @@ const LoginPage = () => {
       toast.error('An error occurred');
     } finally {
       setLoading(false);
+      setIsLoggingIn(false);
     }
   };
 
