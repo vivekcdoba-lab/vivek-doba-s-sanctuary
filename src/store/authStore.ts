@@ -32,6 +32,8 @@ function clearAllAuthStorage() {
   localStorage.removeItem('vdts_session_id');
 }
 
+let _initialized = false;
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   user: null,
@@ -73,15 +75,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   }),
 }));
 
-// Initialize auth listener
+// Helpers
 async function fetchProfile(userId: string, userEmail?: string, metadata?: any): Promise<Profile | null> {
   const profilePromise = supabase
     .from('profiles')
     .select('id, user_id, email, full_name, role')
     .eq('user_id', userId)
     .maybeSingle();
-  
-  const timeoutPromise = new Promise((_, reject) => 
+
+  const timeoutPromise = new Promise((_, reject) =>
     setTimeout(() => reject(new Error('timeout')), 3000)
   );
 
@@ -102,7 +104,7 @@ async function fetchProfile(userId: string, userEmail?: string, metadata?: any):
 
 async function validateSessionOnInit(userId: string, accessToken: string, userEmail?: string, metadata?: any) {
   const storedSessionId = localStorage.getItem('vdts_session_id');
-  
+
   if (!storedSessionId) {
     await supabase.auth.signOut();
     clearAllAuthStorage();
@@ -140,13 +142,14 @@ async function validateSessionOnInit(userId: string, accessToken: string, userEm
   useAuthStore.getState().setAuth({ id: userId } as User, profile);
 }
 
-// Set up auth state change listener
+// Auth state change listener — gated behind _initialized to prevent flicker
 supabase.auth.onAuthStateChange(async (event, session) => {
+  if (!_initialized) return;
+
   const user = session?.user ?? null;
   if (user) {
     if (event === 'SIGNED_IN') {
-      // Fresh login — LoginPage handles setAuth + session start + setSessionId.
-      // Do NOT set auth here to avoid race with AuthGuard (no sessionId yet).
+      // LoginPage handles setAuth + session start + setSessionId
     } else if (event === 'TOKEN_REFRESHED') {
       const currentProfile = useAuthStore.getState().profile;
       if (currentProfile) {
@@ -158,18 +161,20 @@ supabase.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
-// Check initial session with validation
-supabase.auth.getSession().then(async ({ data: { session } }) => {
-  // Skip validation on login page — let LoginPage handle its own flow
-  if (window.location.pathname === '/login') {
-    useAuthStore.getState().setAuth(null, null);
-    return;
-  }
-  const user = session?.user ?? null;
-  if (user) {
-    await validateSessionOnInit(user.id, session!.access_token, user.email, user.user_metadata);
-  } else {
-    clearAllAuthStorage();
-    useAuthStore.getState().setAuth(null, null);
-  }
-});
+// Initial session check
+if (window.location.pathname === '/login') {
+  // Login page — render immediately, no async wait
+  _initialized = true;
+  useAuthStore.setState({ loading: false });
+} else {
+  supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const user = session?.user ?? null;
+    if (user) {
+      await validateSessionOnInit(user.id, session!.access_token, user.email, user.user_metadata);
+    } else {
+      clearAllAuthStorage();
+      useAuthStore.getState().setAuth(null, null);
+    }
+    _initialized = true;
+  });
+}
