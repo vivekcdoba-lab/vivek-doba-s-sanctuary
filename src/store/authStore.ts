@@ -167,7 +167,7 @@ supabase.auth.getSession().then(async ({ data: { session } }) => {
   }
   const user = session?.user ?? null;
   if (user) {
-    await validateSessionOnInit(user.id, user.email, user.user_metadata);
+    await validateSessionOnInit(user.id, session!.access_token, user.email, user.user_metadata);
   } else {
     clearAllAuthStorage();
     useAuthStore.getState().setAuth(null, null);
