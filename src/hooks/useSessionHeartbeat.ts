@@ -32,7 +32,14 @@ export function useSessionHeartbeat() {
         body: { action: 'heartbeat', session_id: sessionId },
       });
 
-      if (error) return;
+      if (error) {
+        // If 401/unauthorized, session token is invalid — force logout
+        if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+          await logout();
+          navigate('/login');
+        }
+        return;
+      }
 
       if (data && !data.active) {
         const reason = data.reason;
