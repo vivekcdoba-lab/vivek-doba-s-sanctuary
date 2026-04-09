@@ -134,6 +134,7 @@ const LoginPage = () => {
       toast.error('An error occurred');
     } finally {
       setLoading(false);
+      setIsLoggingIn(false);
     }
   };
 
