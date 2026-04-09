@@ -11,12 +11,8 @@ interface AuthGuardProps {
 const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
   const { isAuthenticated, profile, loading, sessionId, logout } = useAuthStore();
 
-  useEffect(() => {
-    // If Supabase token is valid but no tracked session exists, force logout
-    if (!loading && isAuthenticated && !sessionId) {
-      logout();
-    }
-  }, [loading, isAuthenticated, sessionId, logout]);
+  // No useEffect logout here — the Navigate below handles redirect.
+  // Forcing logout in useEffect caused race conditions with fresh login flow.
 
   if (loading) {
     return (

@@ -136,17 +136,10 @@ async function validateSessionOnInit(userId: string, userEmail?: string, metadat
 supabase.auth.onAuthStateChange(async (event, session) => {
   const user = session?.user ?? null;
   if (user) {
-    // For SIGNED_IN events (fresh login), profile is set by LoginPage after session-start
-    // For TOKEN_REFRESHED or INITIAL_SESSION, validate the tracked session
     if (event === 'SIGNED_IN') {
-      // Fresh login — profile will be set by login flow calling setAuth
-      // Only set if not already authenticated (avoid re-triggering on token refresh)
-      if (!useAuthStore.getState().isAuthenticated) {
-        const profile = await fetchProfile(user.id, user.email, user.user_metadata);
-        useAuthStore.getState().setAuth(user, profile);
-      }
+      // Fresh login — LoginPage handles setAuth + session start + setSessionId.
+      // Do NOT set auth here to avoid race with AuthGuard (no sessionId yet).
     } else if (event === 'TOKEN_REFRESHED') {
-      // Token refreshed — just update user object
       const currentProfile = useAuthStore.getState().profile;
       if (currentProfile) {
         useAuthStore.getState().setAuth(user, currentProfile);
