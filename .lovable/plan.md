@@ -1,54 +1,82 @@
 
 
-## Plan: Loading Skeleton After Login + Verify Session Monitoring + Inactivity Logout
+## Plan: Complete Sidebar Navigation for All Three Roles
 
-### 1. Add Loading Skeleton During Post-Login Redirect
+### Scope Assessment
 
-**Problem**: After clicking "Sign In", the user sees a brief flash or blank state while the session-heartbeat call completes and navigation happens.
+The request defines ~120+ sidebar menu items across 3 roles. Currently the app has:
+- **Seeker**: 14 routes
+- **Coach**: 8 routes  
+- **Admin**: 21 routes
 
-**Fix in `src/pages/LoginPage.tsx`**:
-- Add a `redirecting` state that becomes `true` after successful auth + session start, before `navigate()` is called
-- When `redirecting` is true, render a full-screen skeleton/loading overlay instead of the login form
-- This gives smooth visual feedback during the ~500ms between auth completion and route mount
+Most requested items (Dharma, Artha/Business, Kama, Moksha, Learning, Achievements, etc.) have **no existing pages**. Building all pages is a separate effort. This plan focuses on:
 
-**Fix in `src/components/AuthGuard.tsx`**:
-- Replace the plain `Loader2` spinner with a proper skeleton layout (import `SkeletonDashboard` from existing component) for a more polished loading state
+1. **Building the sidebar navigation structure** with all requested items
+2. **Linking existing pages** where routes exist
+3. **Routing to a placeholder page** for items without pages yet
+4. **Applying the requested design system** (warm cream, saffron active, collapsible, profile section, scrollable groups)
 
-### 2. Verify Active Session Monitoring
+### Design Specifications
 
-**File: `src/pages/admin/ActiveSessionsPage.tsx`** — already exists with:
-- Real-time active user count
-- Live duration timers
-- Session history with filters
-- Force logout capability
+- Width: 260px expanded, 70px collapsed (icons only)
+- Background: Warm cream `#FFF8F0` with subtle gradient
+- Active item: Saffron `#FF6B00` left border + highlight
+- Collapsible groups with chevron toggles
+- Profile section at top with avatar, name, badge, progress bar (seeker), streak
+- Logout at bottom
+- Mobile: hamburger opens sidebar as overlay sheet
+- Desktop: always visible, collapse toggle at bottom
+- Smooth transitions throughout
 
-No code changes needed — will verify it works via the admin dashboard after login.
+### Files to Create/Edit
 
-### 3. Verify Inactivity Auto-Logout
+| File | Action | Purpose |
+|------|--------|---------|
+| `src/components/SeekerLayout.tsx` | **Rewrite** | New sidebar with all Seeker groups (Purushaarth, Resources, etc.) |
+| `src/components/CoachingLayout.tsx` | **Rewrite** | New sidebar with Coach groups (Seekers, Worksheet Reviews, etc.) |
+| `src/components/AdminLayout.tsx` | **Rewrite** | New sidebar with Admin groups (CRM, Content, Analytics, System) |
+| `src/pages/PlaceholderPage.tsx` | **Edit** | Generic placeholder accepting title param for unbuilt pages |
+| `src/App.tsx` | **Edit** | Add routes for all new sidebar items pointing to PlaceholderPage |
 
-**File: `src/hooks/useSessionHeartbeat.ts`** — already implements:
-- 60-minute inactivity timeout with 30-second check interval
-- Activity tracking via mouse/keyboard/touch/scroll events
-- `forceLogout()` that calls `logout()` (clears all storage) and redirects to `/login`
+### Sidebar Structure Summary
 
-No code changes needed — the implementation is correct.
+**Seeker** (7 groups):
+- Home, Daily Practice (4 items), Assessments (5), Sessions (5), Assignments (4)
+- Purushaarth: Dharma (4), Artha (15 with sub-sections), Kama (4), Moksha (4)
+- Resources: Learning (5), Ambient Sounds (1), Messages (2), Achievements (3)
+- Settings (4) + Logout
 
-### Files to Change
+**Coach** (6 groups):
+- Dashboard, Seekers (5), Worksheet Reviews (4), Sessions (6), Assignments (5), Assessments (3)
+- Artha Coaching: Business Reviews (4)
+- Communication: Messages (3), Reports (4)
+- Settings + Logout
 
-| File | Change |
-|------|--------|
-| `src/pages/LoginPage.tsx` | Add `redirecting` state; show skeleton overlay when redirecting |
-| `src/components/AuthGuard.tsx` | Replace spinner with `SkeletonDashboard` for better loading UX |
+**Admin** (8 groups):
+- Dashboard, Users (6), Programs (4), Enrollments (4)
+- CRM: Leads (6), Payments (6)
+- Content: Resources (5), Assessments (3)
+- Communication: Messages (2)
+- VDTS Business (4), Analytics/Reports (6)
+- System/Settings (5) + Logout
+
+### Implementation Approach
+
+Each layout will use collapsible `<details>`/custom accordion groups (not the shadcn Sidebar component, since the current AdminLayout already uses a custom approach that works well). This keeps the implementation consistent and avoids the shadcn sidebar's mobile behavior conflicts.
+
+Key patterns:
+- Each group uses a collapsible section with chevron rotation animation
+- `localStorage` remembers which groups are expanded per role
+- Profile section fetches streak count (seeker) or seeker count (coach)
+- New routes use `<PlaceholderPage title="Page Name" />` for unbuilt features
+- ~80 new placeholder routes added to App.tsx
 
 ### Technical Details
 
-**LoginPage redirecting state flow**:
-```text
-User clicks Sign In → loading=true (button shows spinner)
-→ Auth succeeds → session starts → redirecting=true
-→ Full-screen skeleton renders (covers login form)
-→ navigate() fires → AuthGuard loading skeleton → dashboard renders
-```
-
-This creates a seamless transition: login form → skeleton → dashboard, with no flicker or blank screens.
+- All nav items use `NavLink` or `Link` from react-router-dom
+- Active state detection: exact match for home, startsWith for nested routes
+- Collapsed mode: only icons shown, group labels hidden, tooltips on hover
+- Mobile: overlay with backdrop blur, closes on nav click
+- Scroll: `overflow-y-auto` on nav section, profile and logout fixed top/bottom
+- Transitions: `transition-all duration-300` on sidebar width, `transition-colors` on items
 
