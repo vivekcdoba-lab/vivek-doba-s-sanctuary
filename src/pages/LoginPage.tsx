@@ -35,7 +35,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<LoginRole>('seeker');
   const navigate = useNavigate();
-  const { setAuth, isAuthenticated, profile: authProfile } = useAuthStore();
+  const { setAuth, setSessionId, isAuthenticated, profile: authProfile } = useAuthStore();
 
   // Redirect already logged-in users
   useEffect(() => {
@@ -94,6 +94,19 @@ const LoginPage = () => {
           full_name: data.user.user_metadata?.full_name || data.user.email || '',
           role: role,
         } as any);
+
+        // Start session tracking
+        try {
+          const { data: sessionData } = await supabase.functions.invoke('session-heartbeat', {
+            body: { action: 'start' },
+          });
+          if (sessionData?.session_id) {
+            setSessionId(sessionData.session_id);
+          }
+          if (sessionData?.forced_previous) {
+            toast.info('Previous session on another device was closed');
+          }
+        } catch { /* session tracking is non-blocking */ }
 
         toast.success(`Welcome! 🙏`);
 
