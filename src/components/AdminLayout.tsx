@@ -1,4 +1,4 @@
-import { useState, createContext, useContext, useCallback } from 'react';
+import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useSessionHeartbeat } from '@/hooks/useSessionHeartbeat';
 import { useAuthStore } from '@/store/authStore';
@@ -7,50 +7,123 @@ import {
   LayoutDashboard, Users, Target, BookOpen, CalendarDays, Calendar,
   ClipboardList, BarChart3, Sun, TrendingUp, RefreshCw, IndianRupee,
   MessageSquare, FolderOpen, PieChart, Settings, LogOut, Moon,
-  Menu, X, Bell, Search, ChevronRight, Inbox, ScrollText, Monitor
+  Menu, ChevronRight, ChevronDown, Inbox, ScrollText, Monitor,
+  UserPlus, Crown, Search as SearchIcon, FileText, CheckCircle,
+  Megaphone, Video, Headphones, Building2, Trophy, Award,
+  PanelLeftClose, PanelLeft, Shield, Bell, Link2, Database, Palette,
+  DollarSign, UserCheck, RotateCcw, Banknote, CreditCard
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-const navGroups = [
+type NavItem = { icon: any; label: string; path: string };
+type NavGroup = { label: string; emoji: string; items: NavItem[]; dividerBefore?: string };
+
+const adminNav: NavGroup[] = [
   {
-    label: 'MAIN', items: [
-      { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+    label: 'DASHBOARD', emoji: '🏠', items: [
+      { icon: LayoutDashboard, label: 'Master Overview', path: '/dashboard' },
       { icon: Sun, label: "Coach's Day", path: '/coach-day' },
-      { icon: Users, label: 'Seekers', path: '/seekers' },
-      { icon: Target, label: 'Leads', path: '/leads' },
-      { icon: Inbox, label: 'Applications', path: '/applications', badge: true },
-    ]
+    ],
   },
   {
-    label: 'PROGRAMS', items: [
-      { icon: BookOpen, label: 'Courses', path: '/courses' },
-      { icon: CalendarDays, label: 'Sessions', path: '/sessions' },
-      { icon: ScrollText, label: 'Session Templates', path: '/session-templates' },
-      { icon: Calendar, label: 'Calendar', path: '/calendar' },
-    ]
+    label: 'USERS', emoji: '👥', dividerBefore: 'USER MANAGEMENT', items: [
+      { icon: Users, label: 'All Seekers', path: '/seekers' },
+      { icon: Crown, label: 'All Coaches', path: '/admin/coaches' },
+      { icon: Shield, label: 'Admins', path: '/admin/admins' },
+      { icon: UserPlus, label: 'Add User', path: '/admin/add-user' },
+      { icon: BarChart3, label: 'User Analytics', path: '/admin/user-analytics' },
+      { icon: SearchIcon, label: 'Search Users', path: '/admin/search-users' },
+    ],
   },
   {
-    label: 'TRANSFORMATION', items: [
-      { icon: ScrollText, label: 'Worksheet Analytics', path: '/worksheet-analytics' },
-      { icon: ClipboardList, label: 'Assignments', path: '/assignments' },
-      { icon: BarChart3, label: 'Assessments', path: '/assessments' },
-      { icon: Sun, label: 'Daily Tracking', path: '/daily-tracking' },
-      { icon: TrendingUp, label: 'Growth Matrix', path: '/growth-matrix' },
-    ]
+    label: 'PROGRAMS', emoji: '📚', items: [
+      { icon: BookOpen, label: 'All Programs', path: '/courses' },
+      { icon: UserPlus, label: 'Create Program', path: '/admin/create-program' },
+      { icon: FileText, label: 'Edit Programs', path: '/admin/edit-programs' },
+      { icon: BarChart3, label: 'Program Analytics', path: '/admin/program-analytics' },
+    ],
   },
   {
-    label: 'OPERATIONS', items: [
-      { icon: RefreshCw, label: 'Follow-ups', path: '/follow-ups' },
-      { icon: IndianRupee, label: 'Payments', path: '/payments' },
-      { icon: MessageSquare, label: 'Messages', path: '/messages' },
-      { icon: FolderOpen, label: 'Resources', path: '/resources' },
-      { icon: PieChart, label: 'Reports', path: '/reports' },
-      { icon: Monitor, label: 'Active Sessions', path: '/active-sessions' },
+    label: 'ENROLLMENTS', emoji: '📝', items: [
+      { icon: ClipboardList, label: 'All Enrollments', path: '/admin/enrollments' },
+      { icon: UserPlus, label: 'New Enrollment', path: '/admin/new-enrollment' },
+      { icon: Users, label: 'Batch Management', path: '/admin/batches' },
+      { icon: BarChart3, label: 'Enrollment Stats', path: '/admin/enrollment-stats' },
+    ],
+  },
+  {
+    label: 'LEADS (CRM)', emoji: '📞', dividerBefore: 'CRM & SALES', items: [
+      { icon: Target, label: 'Pipeline (Kanban)', path: '/leads' },
+      { icon: UserPlus, label: 'Add Lead', path: '/admin/add-lead' },
+      { icon: ClipboardList, label: 'All Leads', path: '/admin/all-leads' },
+      { icon: TrendingUp, label: 'Hot Leads', path: '/admin/hot-leads' },
+      { icon: BarChart3, label: 'Conversion Funnel', path: '/admin/conversion-funnel' },
+      { icon: PieChart, label: 'Lead Sources', path: '/admin/lead-sources' },
+    ],
+  },
+  {
+    label: 'PAYMENTS', emoji: '💰', items: [
+      { icon: IndianRupee, label: 'All Payments', path: '/payments' },
+      { icon: CreditCard, label: 'Record Payment', path: '/admin/record-payment' },
+      { icon: FileText, label: 'Invoices', path: '/admin/invoices' },
+      { icon: Banknote, label: 'Overdue', path: '/admin/overdue-payments' },
+      { icon: DollarSign, label: 'Revenue Dashboard', path: '/admin/revenue' },
+      { icon: FileText, label: 'Export Financials', path: '/admin/export-financials' },
+    ],
+  },
+  {
+    label: 'RESOURCES', emoji: '📚', dividerBefore: 'CONTENT', items: [
+      { icon: Video, label: 'Videos', path: '/admin/videos' },
+      { icon: Headphones, label: 'Audios', path: '/admin/audios' },
+      { icon: FileText, label: 'Documents', path: '/resources' },
+      { icon: UserPlus, label: 'Upload Resource', path: '/admin/upload-resource' },
+      { icon: FolderOpen, label: 'Categories', path: '/admin/categories' },
+    ],
+  },
+  {
+    label: 'ASSESSMENTS', emoji: '📋', items: [
+      { icon: ClipboardList, label: 'Question Bank', path: '/admin/question-bank' },
+      { icon: UserPlus, label: 'Create Assessment', path: '/admin/create-assessment' },
+      { icon: BarChart3, label: 'Assessment Results', path: '/assessments' },
+    ],
+  },
+  {
+    label: 'MESSAGES', emoji: '💬', dividerBefore: 'COMMUNICATION', items: [
+      { icon: MessageSquare, label: 'All Conversations', path: '/messages' },
+      { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
+    ],
+  },
+  {
+    label: 'OUR COMPANY', emoji: '🏢', dividerBefore: 'VDTS BUSINESS', items: [
+      { icon: BarChart3, label: 'VDTS SWOT', path: '/swot' },
+      { icon: Trophy, label: 'Competitor Analysis', path: '/admin/competitors' },
+      { icon: TrendingUp, label: 'Business Metrics', path: '/admin/business-metrics' },
+      { icon: Target, label: 'Strategic Goals', path: '/admin/strategic-goals' },
+    ],
+  },
+  {
+    label: 'REPORTS', emoji: '📊', dividerBefore: 'ANALYTICS', items: [
+      { icon: TrendingUp, label: 'User Growth', path: '/admin/user-growth' },
+      { icon: DollarSign, label: 'Revenue Analytics', path: '/reports' },
+      { icon: BarChart3, label: 'Engagement Metrics', path: '/admin/engagement' },
+      { icon: Award, label: 'Coach Performance', path: '/admin/coach-performance' },
+      { icon: RotateCcw, label: 'Retention Analysis', path: '/admin/retention' },
+      { icon: FileText, label: 'Export Reports', path: '/admin/export-reports' },
+    ],
+  },
+  {
+    label: 'SYSTEM', emoji: '⚙️', dividerBefore: 'SYSTEM', items: [
+      { icon: Palette, label: 'Branding', path: '/admin/branding' },
+      { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
+      { icon: Link2, label: 'Integrations', path: '/admin/integrations' },
+      { icon: ScrollText, label: 'Audit Logs', path: '/admin/audit-logs' },
+      { icon: Database, label: 'Backup', path: '/admin/backup' },
       { icon: Settings, label: 'Settings', path: '/settings' },
-    ]
+      { icon: Monitor, label: 'Active Sessions', path: '/active-sessions' },
+    ],
   },
 ];
 
-// Context so child pages can override breadcrumb segments (e.g. replace a UUID with a name)
 export const BreadcrumbOverrideContext = createContext<{
   overrides: Record<string, string>;
   setOverride: (segment: string, label: string) => void;
@@ -58,23 +131,133 @@ export const BreadcrumbOverrideContext = createContext<{
 
 export const useBreadcrumbOverride = () => useContext(BreadcrumbOverrideContext);
 
+const STORAGE_KEY = 'admin_nav_expanded';
+
+function AdminSidebar({ collapsed, onCollapse, onClose }: { collapsed: boolean; onCollapse?: () => void; onClose?: () => void }) {
+  const location = useLocation();
+  const { profile, logout, darkMode, toggleDarkMode } = useAuthStore();
+
+  const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : { DASHBOARD: true, USERS: true };
+    } catch { return { DASHBOARD: true, USERS: true }; }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(expanded));
+  }, [expanded]);
+
+  const toggle = (label: string) => setExpanded(p => ({ ...p, [label]: !p[label] }));
+  const isActive = (path: string) => location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path + '/'));
+
+  const handleNavClick = () => { onClose?.(); };
+
+  return (
+    <div className="flex flex-col h-full bg-[hsl(30,100%,97%)] dark:bg-[hsl(260,50%,12%)] border-r border-border">
+      {/* Profile */}
+      <Link to="/" className="p-4 border-b border-border hover:bg-muted/50 transition-colors">
+        <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
+          <div className="w-10 h-10 rounded-full gradient-hero flex items-center justify-center flex-shrink-0">
+            <span className="text-sm font-bold text-primary-foreground">👑</span>
+          </div>
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground truncate">{profile?.full_name || 'Vivek Doba'}</p>
+              <p className="text-[10px] text-muted-foreground">Super Admin 👑</p>
+              <p className="text-[9px] text-muted-foreground">VDTS Platform</p>
+            </div>
+          )}
+        </div>
+      </Link>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
+        {adminNav.map(group => {
+          const isExpanded = expanded[group.label] ?? false;
+          return (
+            <div key={group.label}>
+              {group.dividerBefore && !collapsed && (
+                <div className="flex items-center gap-2 px-3 py-2 mt-3">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-[9px] font-bold tracking-widest text-muted-foreground">{group.dividerBefore}</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+              )}
+              {collapsed ? (
+                <div className="py-1">
+                  {group.items.map(item => (
+                    <Tooltip key={item.path}>
+                      <TooltipTrigger asChild>
+                        <Link to={item.path} onClick={handleNavClick}
+                          className={`flex items-center justify-center p-2 rounded-lg transition-all ${isActive(item.path) ? 'bg-[hsl(var(--saffron))]/15 text-[hsl(var(--saffron))] border-l-[3px] border-[hsl(var(--saffron))]' : 'text-muted-foreground hover:bg-muted'}`}>
+                          <item.icon className="w-4 h-4" />
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent side="right"><p>{item.label}</p></TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <button onClick={() => toggle(group.label)}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground hover:text-foreground transition-colors">
+                    <span>{group.emoji}</span>
+                    <span className="flex-1 text-left">{group.label}</span>
+                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                  {isExpanded && (
+                    <div className="space-y-0.5 ml-1">
+                      {group.items.map(item => (
+                        <Link key={item.path} to={item.path} onClick={handleNavClick}
+                          className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-all ${isActive(item.path) ? 'bg-[hsl(var(--saffron))]/15 text-[hsl(var(--saffron))] border-l-[3px] border-[hsl(var(--saffron))] font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                          <item.icon className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })}
+      </nav>
+
+      {/* Bottom */}
+      <div className="p-2 border-t border-border space-y-1">
+        <div className="flex gap-1">
+          {onCollapse && (
+            <button onClick={onCollapse} className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+              {collapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+            </button>
+          )}
+          <button onClick={() => useAuthStore.getState().toggleDarkMode()} className="flex-1 p-2 rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+            {useAuthStore.getState().darkMode ? <Sun className="w-4 h-4 mx-auto" /> : <Moon className="w-4 h-4 mx-auto" />}
+          </button>
+          <button onClick={() => { useAuthStore.getState().logout().then(() => window.location.href = '/login'); }} className="flex-1 p-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors">
+            <LogOut className="w-4 h-4 mx-auto" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [breadcrumbOverrides, setBreadcrumbOverrides] = useState<Record<string, string>>({});
   const location = useLocation();
-  const { profile, logout, darkMode, toggleDarkMode } = useAuthStore();
+  const { profile } = useAuthStore();
   useSessionHeartbeat();
 
   const setOverride = useCallback((segment: string, label: string) => {
     setBreadcrumbOverrides(prev => prev[segment] === label ? prev : { ...prev, [segment]: label });
   }, []);
 
-  const isActive = (path: string) => location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path + '/'));
-
-  // Replace UUID-looking segments with override labels
   const isUUID = (s: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
-  const breadcrumbs = location.pathname.split('/').filter(Boolean).map((seg) => {
+  const breadcrumbs = location.pathname.split('/').filter(Boolean).map(seg => {
     if (breadcrumbOverrides[seg]) return breadcrumbOverrides[seg];
     if (isUUID(seg)) return '...';
     return seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
@@ -82,105 +265,32 @@ const AdminLayout = () => {
 
   const sidebarWidth = collapsed ? 'w-[72px]' : 'w-[260px]';
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full gradient-maroon text-sidebar-foreground">
-      {/* Logo */}
-      <Link to="/" className="p-4 flex items-center gap-3 border-b border-sidebar-border hover:bg-primary/10 transition-colors">
-        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mandala-border">
-          <div className="w-full h-full rounded-full bg-primary/30 flex items-center justify-center">
-            <span className="text-sm font-bold text-primary-foreground">VD</span>
-          </div>
-        </div>
-        {!collapsed && (
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-primary-foreground truncate">Vivek Doba</p>
-            <p className="text-xs text-sidebar-foreground/60 truncate">Training Solutions</p>
-          </div>
-        )}
-      </Link>
-
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
-        {navGroups.map((group) => (
-          <div key={group.label}>
-            {!collapsed && <p className="text-[10px] font-semibold tracking-wider text-primary/80 px-3 mb-1.5">{group.label}</p>}
-            <div className="space-y-0.5">
-              {group.items.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
-                    isActive(item.path)
-                      ? 'bg-primary/20 text-primary border-l-[3px] border-primary'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50'
-                  }`}
-                >
-                  <item.icon className="w-4 h-4 flex-shrink-0" />
-                  {!collapsed && <span>{item.label}</span>}
-                </Link>
-              ))}
-            </div>
-          </div>
-        ))}
-      </nav>
-
-      {/* Bottom */}
-      <div className="p-3 border-t border-sidebar-border space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary/30 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-bold text-primary-foreground">VD</span>
-          </div>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-primary-foreground truncate">{profile?.full_name || 'Coach'}</p>
-              <p className="text-[10px] text-sidebar-foreground/60">Coach</p>
-            </div>
-          )}
-        </div>
-        <div className="flex gap-1">
-          <button onClick={toggleDarkMode} className="flex-1 p-1.5 rounded-md text-sidebar-foreground/60 hover:bg-sidebar-accent/50 transition-colors">
-            {darkMode ? <Sun className="w-4 h-4 mx-auto" /> : <Moon className="w-4 h-4 mx-auto" />}
-          </button>
-          <button onClick={() => { logout().then(() => window.location.href = '/login'); }} className="flex-1 p-1.5 rounded-md text-sidebar-foreground/60 hover:bg-sidebar-accent/50 transition-colors">
-            <LogOut className="w-4 h-4 mx-auto" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen flex bg-background">
-      {/* Desktop Sidebar */}
+      {/* Desktop */}
       <aside className={`hidden lg:block ${sidebarWidth} transition-all duration-300 flex-shrink-0`}>
         <div className="fixed top-0 left-0 h-full" style={{ width: collapsed ? 72 : 260 }}>
-          <SidebarContent />
+          <AdminSidebar collapsed={collapsed} onCollapse={() => setCollapsed(!collapsed)} />
         </div>
       </aside>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
           <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <div className="absolute left-0 top-0 h-full w-[260px] z-10">
-            <SidebarContent />
+          <div className="absolute left-0 top-0 h-full w-[260px] z-10 shadow-xl">
+            <AdminSidebar collapsed={false} onClose={() => setSidebarOpen(false)} />
           </div>
         </div>
       )}
 
-      {/* Main Content */}
+      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border h-14 flex items-center px-4 gap-3">
           <button className="lg:hidden p-1.5" onClick={() => setSidebarOpen(true)}>
             <Menu className="w-5 h-5" />
           </button>
-          <button className="hidden lg:block p-1.5 text-muted-foreground hover:text-foreground" onClick={() => setCollapsed(!collapsed)}>
-            <Menu className="w-4 h-4" />
-          </button>
 
-          {/* Breadcrumbs */}
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             {breadcrumbs.map((crumb, i) => (
               <span key={i} className="flex items-center gap-1">
@@ -192,22 +302,11 @@ const AdminLayout = () => {
 
           <div className="flex-1" />
 
-          {/* Role Badge */}
-          <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-            👤 Coach
-          </span>
+          <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">👑 Admin</span>
 
-          {/* Search */}
-          <div className="hidden md:flex items-center gap-2 bg-muted rounded-lg px-3 py-1.5">
-            <Search className="w-4 h-4 text-muted-foreground" />
-            <input placeholder="Search... (Ctrl+K)" className="bg-transparent text-sm outline-none w-40 placeholder:text-muted-foreground/60" />
-          </div>
-
-          {/* Notifications */}
           <NotificationBell />
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
           <BreadcrumbOverrideContext.Provider value={{ overrides: breadcrumbOverrides, setOverride }}>
             <Outlet />
