@@ -2022,6 +2022,59 @@ export type Database = {
           },
         ]
       }
+      user_sessions: {
+        Row: {
+          duration_seconds: number | null
+          id: string
+          ip_address: string | null
+          last_activity_at: string
+          login_at: string
+          logout_at: string | null
+          logout_reason: string | null
+          profile_id: string | null
+          role: string | null
+          status: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          duration_seconds?: number | null
+          id?: string
+          ip_address?: string | null
+          last_activity_at?: string
+          login_at?: string
+          logout_at?: string | null
+          logout_reason?: string | null
+          profile_id?: string | null
+          role?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          duration_seconds?: number | null
+          id?: string
+          ip_address?: string | null
+          last_activity_at?: string
+          login_at?: string
+          logout_at?: string | null
+          logout_reason?: string | null
+          profile_id?: string | null
+          role?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       worksheet_notifications: {
         Row: {
           created_at: string
@@ -2065,6 +2118,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      close_inactive_sessions: { Args: never; Returns: number }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {

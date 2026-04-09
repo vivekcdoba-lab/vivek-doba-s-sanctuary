@@ -8,6 +8,7 @@ import {
   MessageSquare, CreditCard, BookOpen, Target, CalendarDays, Menu, LogOut, ScrollText
 } from 'lucide-react';
 import FloatingMusicButton from '@/components/FloatingMusicButton';
+import { useSessionHeartbeat } from '@/hooks/useSessionHeartbeat';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar,
@@ -108,6 +109,7 @@ const SeekerLayoutInner = () => {
   const location = useLocation();
   const { profile, logout, darkMode, toggleDarkMode } = useAuthStore();
   const { data: streak = 0 } = useStreakCount(profile?.id || null);
+  useSessionHeartbeat();
   const isActive = (path: string) => location.pathname === path;
 
   return (

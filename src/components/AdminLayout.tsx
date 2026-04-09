@@ -1,12 +1,13 @@
 import { useState, createContext, useContext, useCallback } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useSessionHeartbeat } from '@/hooks/useSessionHeartbeat';
 import { useAuthStore } from '@/store/authStore';
 import NotificationBell from '@/components/NotificationBell';
 import {
   LayoutDashboard, Users, Target, BookOpen, CalendarDays, Calendar,
   ClipboardList, BarChart3, Sun, TrendingUp, RefreshCw, IndianRupee,
   MessageSquare, FolderOpen, PieChart, Settings, LogOut, Moon,
-  Menu, X, Bell, Search, ChevronRight, Inbox, ScrollText
+  Menu, X, Bell, Search, ChevronRight, Inbox, ScrollText, Monitor
 } from 'lucide-react';
 
 const navGroups = [
@@ -43,6 +44,7 @@ const navGroups = [
       { icon: MessageSquare, label: 'Messages', path: '/messages' },
       { icon: FolderOpen, label: 'Resources', path: '/resources' },
       { icon: PieChart, label: 'Reports', path: '/reports' },
+      { icon: Monitor, label: 'Active Sessions', path: '/active-sessions' },
       { icon: Settings, label: 'Settings', path: '/settings' },
     ]
   },
@@ -62,6 +64,7 @@ const AdminLayout = () => {
   const [breadcrumbOverrides, setBreadcrumbOverrides] = useState<Record<string, string>>({});
   const location = useLocation();
   const { profile, logout, darkMode, toggleDarkMode } = useAuthStore();
+  useSessionHeartbeat();
 
   const setOverride = useCallback((segment: string, label: string) => {
     setBreadcrumbOverrides(prev => prev[segment] === label ? prev : { ...prev, [segment]: label });

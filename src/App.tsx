@@ -38,6 +38,7 @@ import SessionCertification from "./pages/admin/SessionCertification";
 import SessionReviewPage from "./pages/admin/SessionReviewPage";
 import SessionTemplatesPage from "./pages/admin/SessionTemplatesPage";
 import SwotPage from "./pages/admin/SwotPage";
+import ActiveSessionsPage from "./pages/admin/ActiveSessionsPage";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -116,6 +117,7 @@ const App = () => (
             <Route path="/sessions/:id/review" element={<SessionReviewPage />} />
             <Route path="/session-templates" element={<SessionTemplatesPage />} />
             <Route path="/swot" element={<SwotPage />} />
+            <Route path="/active-sessions" element={<ActiveSessionsPage />} />
           </Route>
 
           {/* Seeker Routes */}

@@ -14,17 +14,20 @@ interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   profile: Profile | null;
+  sessionId: string | null;
   darkMode: boolean;
   loading: boolean;
   setAuth: (user: User | null, profile: Profile | null) => void;
+  setSessionId: (id: string | null) => void;
   logout: () => Promise<void>;
   toggleDarkMode: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   user: null,
   profile: null,
+  sessionId: null,
   darkMode: false,
   loading: true,
   setAuth: (user, profile) => set({
@@ -33,9 +36,18 @@ export const useAuthStore = create<AuthState>((set) => ({
     profile,
     loading: false,
   }),
+  setSessionId: (id) => set({ sessionId: id }),
   logout: async () => {
+    const { sessionId } = get();
+    if (sessionId) {
+      try {
+        await supabase.functions.invoke('session-heartbeat', {
+          body: { action: 'end', session_id: sessionId },
+        });
+      } catch { /* ignore */ }
+    }
     await supabase.auth.signOut();
-    set({ isAuthenticated: false, user: null, profile: null, loading: false });
+    set({ isAuthenticated: false, user: null, profile: null, sessionId: null, loading: false });
   },
   toggleDarkMode: () => set((state) => {
     const newMode = !state.darkMode;
