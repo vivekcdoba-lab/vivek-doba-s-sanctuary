@@ -241,28 +241,28 @@ const App = () => (
             <Route path="/seeker/submit-assignment" element={<P />} />
             <Route path="/seeker/coach-feedback" element={<P />} />
             <Route path="/seeker/worksheet-history" element={<P />} />
-            <Route path="/seeker/artha/profile" element={<P />} />
-            <Route path="/seeker/artha/vision" element={<P />} />
-            <Route path="/seeker/artha/values" element={<P />} />
-            <Route path="/seeker/artha/swot" element={<P />} />
-            <Route path="/seeker/artha/marketing" element={<P />} />
-            <Route path="/seeker/artha/branding" element={<P />} />
-            <Route path="/seeker/artha/sales" element={<P />} />
-            <Route path="/seeker/artha/accounting" element={<P />} />
-            <Route path="/seeker/artha/cashflow" element={<P />} />
-            <Route path="/seeker/artha/team" element={<P />} />
-            <Route path="/seeker/artha/rnd" element={<P />} />
-            <Route path="/seeker/artha/satisfaction" element={<P />} />
-            <Route path="/seeker/artha/competitors" element={<P />} />
-            <Route path="/seeker/artha/departments" element={<P />} />
-            <Route path="/seeker/artha/dashboard" element={<P />} />
-            <Route path="/seeker/kama/goals" element={<P />} />
-            <Route path="/seeker/kama/family" element={<P />} />
+            <Route path="/seeker/artha/profile" element={<ArthaBusinessProfile />} />
+            <Route path="/seeker/artha/vision" element={<ArthaVisionMission />} />
+            <Route path="/seeker/artha/values" element={<ArthaVisionMission />} />
+            <Route path="/seeker/artha/swot" element={<ArthaSwot />} />
+            <Route path="/seeker/artha/marketing" element={<ArthaMarketing />} />
+            <Route path="/seeker/artha/branding" element={<ArthaBranding />} />
+            <Route path="/seeker/artha/sales" element={<ArthaSales />} />
+            <Route path="/seeker/artha/accounting" element={<ArthaAccounting />} />
+            <Route path="/seeker/artha/cashflow" element={<ArthaCashflow />} />
+            <Route path="/seeker/artha/team" element={<ArthaTeam />} />
+            <Route path="/seeker/artha/rnd" element={<ArthaRnD />} />
+            <Route path="/seeker/artha/satisfaction" element={<ArthaSatisfaction />} />
+            <Route path="/seeker/artha/competitors" element={<ArthaCompetitors />} />
+            <Route path="/seeker/artha/departments" element={<ArthaDepartments />} />
+            <Route path="/seeker/artha/dashboard" element={<SeekerArthaDashboard />} />
+            <Route path="/seeker/kama/goals" element={<SeekerKamaGoals />} />
+            <Route path="/seeker/kama/family" element={<SeekerKamaFamily />} />
             <Route path="/seeker/kama/social" element={<P />} />
             <Route path="/seeker/kama/desires" element={<P />} />
-            <Route path="/seeker/moksha/meditation" element={<P />} />
-            <Route path="/seeker/moksha/goals" element={<P />} />
-            <Route path="/seeker/moksha/journal" element={<P />} />
+            <Route path="/seeker/moksha/meditation" element={<SeekerMokshaMeditation />} />
+            <Route path="/seeker/moksha/goals" element={<SeekerMokshaGoals />} />
+            <Route path="/seeker/moksha/journal" element={<SeekerMokshaJournal />} />
             <Route path="/seeker/moksha/consciousness" element={<P />} />
             <Route path="/seeker/learning/videos" element={<P />} />
             <Route path="/seeker/learning/audio" element={<P />} />
