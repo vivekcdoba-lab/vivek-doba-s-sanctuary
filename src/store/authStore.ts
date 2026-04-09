@@ -23,11 +23,20 @@ interface AuthState {
   toggleDarkMode: () => void;
 }
 
+function clearAllAuthStorage() {
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+  localStorage.removeItem('vdts_session_id');
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   user: null,
   profile: null,
-  sessionId: null,
+  sessionId: localStorage.getItem('vdts_session_id'),
   darkMode: false,
   loading: true,
   setAuth: (user, profile) => set({
@@ -36,7 +45,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     profile,
     loading: false,
   }),
-  setSessionId: (id) => set({ sessionId: id }),
+  setSessionId: (id) => {
+    if (id) {
+      localStorage.setItem('vdts_session_id', id);
+    } else {
+      localStorage.removeItem('vdts_session_id');
+    }
+    set({ sessionId: id });
+  },
   logout: async () => {
     const { sessionId } = get();
     if (sessionId) {
@@ -47,6 +63,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } catch { /* ignore */ }
     }
     await supabase.auth.signOut();
+    clearAllAuthStorage();
     set({ isAuthenticated: false, user: null, profile: null, sessionId: null, loading: false });
   },
   toggleDarkMode: () => set((state) => {
@@ -83,24 +100,70 @@ async function fetchProfile(userId: string, userEmail?: string, metadata?: any):
   }
 }
 
+async function validateSessionOnInit(userId: string, userEmail?: string, metadata?: any) {
+  const storedSessionId = localStorage.getItem('vdts_session_id');
+  
+  if (!storedSessionId) {
+    // No tracked session — force sign out
+    await supabase.auth.signOut();
+    clearAllAuthStorage();
+    useAuthStore.getState().setAuth(null, null);
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke('session-heartbeat', {
+      body: { action: 'heartbeat', session_id: storedSessionId },
+    });
+
+    if (error || !data?.active) {
+      // Session closed/expired — force sign out
+      await supabase.auth.signOut();
+      clearAllAuthStorage();
+      useAuthStore.getState().setAuth(null, null);
+      return;
+    }
+  } catch {
+    // If heartbeat fails, allow through (network issue) but keep session
+  }
+
+  // Session is valid — load profile
+  const profile = await fetchProfile(userId, userEmail, metadata);
+  useAuthStore.getState().setAuth({ id: userId } as User, profile);
+}
+
 // Set up auth state change listener
 supabase.auth.onAuthStateChange(async (event, session) => {
   const user = session?.user ?? null;
   if (user) {
-    const profile = await fetchProfile(user.id, user.email, user.user_metadata);
-    useAuthStore.getState().setAuth(user, profile);
+    // For SIGNED_IN events (fresh login), profile is set by LoginPage after session-start
+    // For TOKEN_REFRESHED or INITIAL_SESSION, validate the tracked session
+    if (event === 'SIGNED_IN') {
+      // Fresh login — profile will be set by login flow calling setAuth
+      // Only set if not already authenticated (avoid re-triggering on token refresh)
+      if (!useAuthStore.getState().isAuthenticated) {
+        const profile = await fetchProfile(user.id, user.email, user.user_metadata);
+        useAuthStore.getState().setAuth(user, profile);
+      }
+    } else if (event === 'TOKEN_REFRESHED') {
+      // Token refreshed — just update user object
+      const currentProfile = useAuthStore.getState().profile;
+      if (currentProfile) {
+        useAuthStore.getState().setAuth(user, currentProfile);
+      }
+    }
   } else {
     useAuthStore.getState().setAuth(null, null);
   }
 });
 
-// Check initial session
+// Check initial session with validation
 supabase.auth.getSession().then(async ({ data: { session } }) => {
   const user = session?.user ?? null;
   if (user) {
-    const profile = await fetchProfile(user.id, user.email, user.user_metadata);
-    useAuthStore.getState().setAuth(user, profile);
+    await validateSessionOnInit(user.id, user.email, user.user_metadata);
   } else {
+    clearAllAuthStorage();
     useAuthStore.getState().setAuth(null, null);
   }
 });
