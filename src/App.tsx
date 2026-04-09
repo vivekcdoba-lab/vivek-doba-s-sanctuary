@@ -140,7 +140,7 @@ const App = () => (
           </Route>
 
           {/* Coaching Management Routes */}
-          <Route element={<AuthGuard requiredRole="admin"><CoachingLayout /></AuthGuard>}>
+          <Route element={<AuthGuard requiredRole="coach"><CoachingLayout /></AuthGuard>}>
             <Route path="/coaching" element={<CoachingDashboard />} />
             <Route path="/coaching/intake" element={<ClientIntakePage />} />
             <Route path="/coaching/agreements" element={<AgreementsPage />} />

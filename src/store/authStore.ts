@@ -7,7 +7,7 @@ interface Profile {
   user_id: string;
   email: string;
   full_name: string;
-  role: 'admin' | 'seeker';
+  role: 'admin' | 'seeker' | 'coach';
 }
 
 interface AuthState {
@@ -152,6 +152,11 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 
 // Check initial session with validation
 supabase.auth.getSession().then(async ({ data: { session } }) => {
+  // Skip validation on login page — let LoginPage handle its own flow
+  if (window.location.pathname === '/login') {
+    useAuthStore.getState().setAuth(null, null);
+    return;
+  }
   const user = session?.user ?? null;
   if (user) {
     await validateSessionOnInit(user.id, user.email, user.user_metadata);
