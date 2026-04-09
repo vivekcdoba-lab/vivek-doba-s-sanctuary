@@ -36,7 +36,7 @@ export function useBusinessProfile() {
   });
 
   const updateBusiness = useMutation({
-    mutationFn: async (vals: Record<string, any>) => {
+    mutationFn: async (vals: { business_name?: string; industry?: string; tagline?: string; founded_year?: number; team_size?: number; revenue_range?: string; website?: string }) => {
       const { error } = await supabase
         .from('business_profiles')
         .update(vals)
