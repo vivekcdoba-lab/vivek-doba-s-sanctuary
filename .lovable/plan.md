@@ -1,87 +1,66 @@
 
 
-## Plan: UI/UX Polish — Sidebar Design, Animations, Empty States, Loading States
+## Plan: Enforce Unique & NOT NULL on Email and Phone
 
-This plan refines the visual quality across all three layout sidebars, adds consistent empty state components, and improves loading/animation patterns.
+### Problem
+- `profiles.phone` is currently nullable with no uniqueness constraint
+- `profiles.email` is NOT NULL but has no unique index
+- No validation prevents duplicate email or phone during registration or profile editing
 
-### What Changes
+### Database Migration
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `src/components/SeekerLayout.tsx` | Edit | Apply gradient background, saffron active style (white text + bg), hover `#FFE5CC`, proper item heights (44px), section divider styling, fire animation on streak, slide-in animation for mobile |
-| `src/components/CoachingLayout.tsx` | Edit | Same sidebar design system as Seeker |
-| `src/components/AdminLayout.tsx` | Edit | Same sidebar design system as Seeker |
-| `src/components/EmptyState.tsx` | Create | Reusable empty state component with icon, title, description, CTA button |
-| `src/components/SkeletonCard.tsx` | Edit | Add `SkeletonAvatar`, `SkeletonTable`, `SkeletonCalendar` variants |
-| `src/index.css` | Edit | Add page transition animation, validation shake keyframe |
-| Multiple seeker pages | Edit | Add empty states where data can be empty (sessions, assignments, assessments, worksheet, business profile) |
+```sql
+-- Fill any existing NULL phones
+UPDATE public.profiles SET phone = '' WHERE phone IS NULL;
 
-### Sidebar Design Changes (All 3 Layouts)
+-- Make phone NOT NULL
+ALTER TABLE public.profiles ALTER COLUMN phone SET NOT NULL;
+ALTER TABLE public.profiles ALTER COLUMN phone SET DEFAULT '';
 
-Current issues:
-- Background is flat `hsl(30,100%,97%)` — needs gradient
-- Active items use transparent saffron bg — spec requires solid `#FF6B00` bg with white text
-- No box-shadow on sidebar
-- Hover is generic `bg-muted` — needs `#FFE5CC`
-- Items are ~32px tall — spec requires 44px
-- Section dividers are small — need small-caps, `#999`, proper spacing
-- Mobile sidebar has no slide animation
-- Streak fire has no flicker animation
+-- Unique index on email (one per account)
+CREATE UNIQUE INDEX profiles_email_unique ON public.profiles (email);
 
-Changes per layout:
-1. Background: `linear-gradient(180deg, #FFF8F0, #FFF0E0)`
-2. Active item: `bg-[#FF6B00] text-white font-medium` with `border-l-4 border-[#FF6B00]`
-3. Hover: `hover:bg-[#FFE5CC]`
-4. Item height: `h-11` (44px), padding `px-4 py-3`
-5. Submenu indent: `ml-6` with 16px icons (vs 20px parent)
-6. Section dividers: `uppercase text-[10px] tracking-[0.15em] text-[#999]`
-7. Sidebar border + shadow: `border-r border-black/10 shadow-[2px_0_10px_rgba(0,0,0,0.05)]`
-8. Collapse button: tooltip "Collapse" / "Expand"
-9. Mobile: `animate-slide-in-left` on open, close on outside click (already works)
-10. Streak fire: CSS `pulse-fire` animation class (already in index.css)
-
-### EmptyState Component
-
-```text
-  ┌──────────────────────────┐
-  │         📅               │
-  │  Your schedule is clear! │
-  │  Book a session with     │
-  │  your Coach              │
-  │                          │
-  │  [ Schedule Session ]    │
-  └──────────────────────────┘
+-- Unique index on phone (exclude empty strings so multiple unset phones are allowed)
+CREATE UNIQUE INDEX profiles_phone_unique ON public.profiles (phone) WHERE phone != '';
 ```
 
-Props: `icon`, `emoji`, `title`, `description`, `actionLabel`, `actionPath`
+Update `handle_new_user` trigger to include phone:
+```sql
+CREATE OR REPLACE FUNCTION public.handle_new_user() ...
+  INSERT INTO public.profiles (user_id, email, full_name, role, phone)
+  VALUES (
+    NEW.id, NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'seeker'),
+    COALESCE(NEW.raw_user_meta_data->>'phone', '')
+  );
+```
 
-Preset empty states used in:
-- `SeekerUpcomingSessions` — "Your schedule is clear!"
-- `SeekerTasksEnhanced` — "All caught up!"
-- `SeekerAssessments` — "Discover yourself"
-- `DailyWorksheet` — "Begin your day mindfully"
-- `ArthaBusinessProfile` — "Set up your business"
+### Registration Page (`RegisterPage.tsx`)
 
-### Loading States
+Before calling `supabase.auth.signUp`, query profiles:
+- Check email: `SELECT id FROM profiles WHERE email = ?`
+- Check phone: `SELECT id FROM profiles WHERE phone = ?`
+- If email exists → toast: **"This email is already registered. Please sign in or use a different email."**
+- If phone exists → toast: **"This mobile number is already in use. Please use a different number."**
+- Block registration if either matches
 
-Enhance `SkeletonCard.tsx` with:
-- `SkeletonAvatar` — circular pulsing placeholder
-- `SkeletonTable` — rows with alternating widths
-- `SkeletonCalendar` — grid of square cells
+### Admin Add Seeker (`SeekersPage.tsx`)
 
-All pages that fetch data already use loading states or can wrap with these.
+Same pre-check in the Add Seeker dialog — query profiles for matching email or phone before proceeding. Show specific alert for whichever field is duplicated.
 
-### Animation Additions (index.css)
+### Seeker Profile Edit (`SeekerProfile.tsx`)
 
-- **Page transition**: Outlet wrapper with `animate-fade-in` (already exists, just needs consistent application)
-- **Validation shake**: `@keyframes shake` for form errors
-- **Progress bar fill**: smooth `transition: width 1s ease` (already have `progress-fill`)
-- **Chart render**: handled by recharts' built-in `isAnimationActive`
+Wrap the `.update()` call with error handling for Postgres error code `23505` (unique violation):
+- If error message contains `profiles_email_unique` → toast: **"This email is already used by another account."**
+- If error message contains `profiles_phone_unique` → toast: **"This mobile number is already used by another account."**
 
-### Implementation Notes
+### Files Changed
 
-- All three layouts share the same design pattern, so changes are mechanical across them
-- The `EmptyState` component is pure presentational — no DB or state changes
-- Active state changes from transparent saffron overlay to solid saffron background with white text — this is the most visible change
-- Mobile slide-in uses existing `slide-in-left` keyframe from tailwind config
+| File | Change |
+|------|--------|
+| Migration SQL | NOT NULL + unique indexes on phone/email, updated trigger |
+| `src/pages/RegisterPage.tsx` | Pre-signup duplicate check for email and phone |
+| `src/pages/admin/SeekersPage.tsx` | Pre-check in Add Seeker dialog |
+| `src/pages/seeker/SeekerProfile.tsx` | Catch unique constraint errors with friendly messages |
 
