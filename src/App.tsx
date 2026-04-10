@@ -271,7 +271,7 @@ const App = () => (
             <Route path="/seeker/submit-assignment" element={<P />} />
             <Route path="/seeker/coach-feedback" element={<P />} />
             <Route path="/seeker/learning/videos" element={<SeekerLearningVideos />} />
-            <Route path="/seeker/learning/audio" element={<P />} />
+            <Route path="/seeker/learning/audio" element={<SeekerLearningAudio />} />
             <Route path="/seeker/learning/pdfs" element={<P />} />
             <Route path="/seeker/learning/frameworks" element={<P />} />
             <Route path="/seeker/learning/bookmarks" element={<P />} />
