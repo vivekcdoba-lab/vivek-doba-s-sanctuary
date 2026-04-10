@@ -89,6 +89,7 @@ import SeekerStreaks from "./pages/seeker/SeekerStreaks";
 import SeekerLeaderboard from "./pages/seeker/SeekerLeaderboard";
 import SeekerProgressCharts from "./pages/seeker/SeekerProgressCharts";
 import SeekerAssessmentHistory from "./pages/seeker/SeekerAssessmentHistory";
+import SeekerPersonality from "./pages/seeker/SeekerPersonality";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
@@ -259,7 +260,7 @@ const App = () => (
             {/* Placeholder routes */}
             <Route path="/seeker/worksheet-history" element={<SeekerWorksheetHistory />} />
             <Route path="/seeker/streaks" element={<SeekerStreaks />} />
-            <Route path="/seeker/personality" element={<P />} />
+            <Route path="/seeker/personality" element={<SeekerPersonality />} />
             <Route path="/seeker/progress-charts" element={<SeekerProgressCharts />} />
             <Route path="/seeker/assessment-history" element={<SeekerAssessmentHistory />} />
             <Route path="/seeker/live-session" element={<P />} />
