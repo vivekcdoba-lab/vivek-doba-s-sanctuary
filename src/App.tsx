@@ -89,6 +89,7 @@ import SeekerStreaks from "./pages/seeker/SeekerStreaks";
 import SeekerLeaderboard from "./pages/seeker/SeekerLeaderboard";
 import SeekerProgressCharts from "./pages/seeker/SeekerProgressCharts";
 import SeekerAssessmentHistory from "./pages/seeker/SeekerAssessmentHistory";
+import SeekerPersonality from "./pages/seeker/SeekerPersonality";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
