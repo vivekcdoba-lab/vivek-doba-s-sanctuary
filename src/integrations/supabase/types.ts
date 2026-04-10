@@ -1498,6 +1498,71 @@ export type Database = {
           },
         ]
       }
+      learning_content: {
+        Row: {
+          category: string | null
+          course_id: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          is_active: boolean
+          language: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          tier: string
+          title: string
+          type: string
+          updated_at: string
+          url: string
+          view_count: number
+        }
+        Insert: {
+          category?: string | null
+          course_id?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          language?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          tier?: string
+          title: string
+          type?: string
+          updated_at?: string
+          url: string
+          view_count?: number
+        }
+        Update: {
+          category?: string | null
+          course_id?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          language?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          tier?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          url?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_content_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_strategy: {
         Row: {
           budget_monthly: number | null
@@ -2677,6 +2742,60 @@ export type Database = {
           {
             foreignKeyName: "topics_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_content_progress: {
+        Row: {
+          content_id: string
+          created_at: string
+          id: string
+          is_bookmarked: boolean
+          is_completed: boolean
+          last_position_seconds: number
+          last_watched_at: string
+          progress_percent: number
+          seeker_id: string
+          updated_at: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          id?: string
+          is_bookmarked?: boolean
+          is_completed?: boolean
+          last_position_seconds?: number
+          last_watched_at?: string
+          progress_percent?: number
+          seeker_id: string
+          updated_at?: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          id?: string
+          is_bookmarked?: boolean
+          is_completed?: boolean
+          last_position_seconds?: number
+          last_watched_at?: string
+          progress_percent?: number
+          seeker_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_content_progress_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "learning_content"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_content_progress_seeker_id_fkey"
+            columns: ["seeker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

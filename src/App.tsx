@@ -90,6 +90,7 @@ import SeekerLeaderboard from "./pages/seeker/SeekerLeaderboard";
 import SeekerProgressCharts from "./pages/seeker/SeekerProgressCharts";
 import SeekerAssessmentHistory from "./pages/seeker/SeekerAssessmentHistory";
 import SeekerPersonality from "./pages/seeker/SeekerPersonality";
+import SeekerLearningVideos from "./pages/seeker/SeekerLearningVideos";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
@@ -268,7 +269,7 @@ const App = () => (
             <Route path="/seeker/feedback" element={<P />} />
             <Route path="/seeker/submit-assignment" element={<P />} />
             <Route path="/seeker/coach-feedback" element={<P />} />
-            <Route path="/seeker/learning/videos" element={<P />} />
+            <Route path="/seeker/learning/videos" element={<SeekerLearningVideos />} />
             <Route path="/seeker/learning/audio" element={<P />} />
             <Route path="/seeker/learning/pdfs" element={<P />} />
             <Route path="/seeker/learning/frameworks" element={<P />} />
