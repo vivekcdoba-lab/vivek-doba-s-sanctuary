@@ -252,7 +252,7 @@ const App = () => (
             {/* Achievements */}
             <Route path="/seeker/badges" element={<SeekerBadges />} />
             <Route path="/seeker/points" element={<SeekerPoints />} />
-            <Route path="/seeker/leaderboard" element={<P />} />
+            <Route path="/seeker/leaderboard" element={<SeekerLeaderboard />} />
             {/* Placeholder routes */}
             <Route path="/seeker/worksheet-history" element={<SeekerWorksheetHistory />} />
             <Route path="/seeker/streaks" element={<SeekerStreaks />} />
