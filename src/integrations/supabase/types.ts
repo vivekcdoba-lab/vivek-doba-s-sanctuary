@@ -2748,6 +2748,50 @@ export type Database = {
           },
         ]
       }
+      user_bookmarks: {
+        Row: {
+          content_id: string | null
+          content_title: string
+          content_type: string
+          content_url: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          seeker_id: string
+          tags: string[] | null
+        }
+        Insert: {
+          content_id?: string | null
+          content_title: string
+          content_type: string
+          content_url?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          seeker_id: string
+          tags?: string[] | null
+        }
+        Update: {
+          content_id?: string | null
+          content_title?: string
+          content_type?: string
+          content_url?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          seeker_id?: string
+          tags?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_bookmarks_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_content_progress: {
         Row: {
           content_id: string
