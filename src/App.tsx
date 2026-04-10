@@ -212,35 +212,17 @@ const App = () => (
             <Route path="/seeker/topics" element={<SeekerTopics />} />
             <Route path="/seeker/sessions/:id/certify" element={<SessionCertification />} />
             <Route path="/seeker/sessions/:id" element={<SeekerSessionDetail />} />
-            {/* Seeker placeholder routes */}
-            <Route path="/seeker/worksheet-history" element={<P />} />
-            <Route path="/seeker/streaks" element={<P />} />
             <Route path="/seeker/lgt-score" element={<SeekerLGTScore />} />
             <Route path="/seeker/upcoming-sessions" element={<SeekerUpcomingSessions />} />
             <Route path="/seeker/session-history" element={<SeekerSessionHistory />} />
             <Route path="/seeker/completed-tasks" element={<SeekerTasksEnhanced />} />
+            {/* Dharma */}
             <Route path="/seeker/dharma/mission" element={<SeekerDharmaMission />} />
             <Route path="/seeker/dharma/values" element={<SeekerDharmaValues />} />
             <Route path="/seeker/dharma/journal" element={<SeekerDharmaJournal />} />
             <Route path="/seeker/dharma/practices" element={<SeekerDharmaPractices />} />
-            <Route path="/seeker/kama/goals" element={<SeekerKamaGoals />} />
-            <Route path="/seeker/kama/family" element={<SeekerKamaFamily />} />
-            <Route path="/seeker/moksha/meditation" element={<SeekerMokshaMeditation />} />
-            <Route path="/seeker/moksha/goals" element={<SeekerMokshaGoals />} />
-            <Route path="/seeker/moksha/journal" element={<SeekerMokshaJournal />} />
-            <Route path="/seeker/badges" element={<SeekerBadges />} />
-            <Route path="/seeker/points" element={<SeekerPoints />} />
+            {/* Artha */}
             <Route path="/seeker/artha/dashboard" element={<SeekerArthaDashboard />} />
-            <Route path="/seeker/streaks" element={<P />} />
-            <Route path="/seeker/personality" element={<P />} />
-            <Route path="/seeker/progress-charts" element={<P />} />
-            <Route path="/seeker/assessment-history" element={<P />} />
-            <Route path="/seeker/live-session" element={<P />} />
-            <Route path="/seeker/session-notes" element={<P />} />
-            <Route path="/seeker/feedback" element={<P />} />
-            <Route path="/seeker/submit-assignment" element={<P />} />
-            <Route path="/seeker/coach-feedback" element={<P />} />
-            <Route path="/seeker/worksheet-history" element={<P />} />
             <Route path="/seeker/artha/profile" element={<ArthaBusinessProfile />} />
             <Route path="/seeker/artha/vision" element={<ArthaVisionMission />} />
             <Route path="/seeker/artha/values" element={<ArthaVisionMission />} />
@@ -255,24 +237,37 @@ const App = () => (
             <Route path="/seeker/artha/satisfaction" element={<ArthaSatisfaction />} />
             <Route path="/seeker/artha/competitors" element={<ArthaCompetitors />} />
             <Route path="/seeker/artha/departments" element={<ArthaDepartments />} />
-            <Route path="/seeker/artha/dashboard" element={<SeekerArthaDashboard />} />
+            {/* Kama */}
             <Route path="/seeker/kama/goals" element={<SeekerKamaGoals />} />
             <Route path="/seeker/kama/family" element={<SeekerKamaFamily />} />
             <Route path="/seeker/kama/social" element={<P />} />
             <Route path="/seeker/kama/desires" element={<P />} />
+            {/* Moksha */}
             <Route path="/seeker/moksha/meditation" element={<SeekerMokshaMeditation />} />
             <Route path="/seeker/moksha/goals" element={<SeekerMokshaGoals />} />
             <Route path="/seeker/moksha/journal" element={<SeekerMokshaJournal />} />
             <Route path="/seeker/moksha/consciousness" element={<P />} />
+            {/* Achievements */}
+            <Route path="/seeker/badges" element={<SeekerBadges />} />
+            <Route path="/seeker/points" element={<SeekerPoints />} />
+            <Route path="/seeker/leaderboard" element={<P />} />
+            {/* Placeholder routes */}
+            <Route path="/seeker/worksheet-history" element={<P />} />
+            <Route path="/seeker/streaks" element={<P />} />
+            <Route path="/seeker/personality" element={<P />} />
+            <Route path="/seeker/progress-charts" element={<P />} />
+            <Route path="/seeker/assessment-history" element={<P />} />
+            <Route path="/seeker/live-session" element={<P />} />
+            <Route path="/seeker/session-notes" element={<P />} />
+            <Route path="/seeker/feedback" element={<P />} />
+            <Route path="/seeker/submit-assignment" element={<P />} />
+            <Route path="/seeker/coach-feedback" element={<P />} />
             <Route path="/seeker/learning/videos" element={<P />} />
             <Route path="/seeker/learning/audio" element={<P />} />
             <Route path="/seeker/learning/pdfs" element={<P />} />
             <Route path="/seeker/learning/frameworks" element={<P />} />
             <Route path="/seeker/learning/bookmarks" element={<P />} />
             <Route path="/seeker/announcements" element={<P />} />
-            <Route path="/seeker/badges" element={<P />} />
-            <Route path="/seeker/points" element={<P />} />
-            <Route path="/seeker/leaderboard" element={<P />} />
             <Route path="/seeker/notifications" element={<P />} />
             <Route path="/seeker/privacy-settings" element={<P />} />
             <Route path="/seeker/help" element={<P />} />
