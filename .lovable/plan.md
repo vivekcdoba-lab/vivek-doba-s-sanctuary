@@ -1,66 +1,40 @@
 
 
-## Plan: Enforce Unique & NOT NULL on Email and Phone
+## Plan: Build Streaks Dashboard Page
 
-### Problem
-- `profiles.phone` is currently nullable with no uniqueness constraint
-- `profiles.email` is NOT NULL but has no unique index
-- No validation prevents duplicate email or phone during registration or profile editing
+### Overview
+Create `src/pages/seeker/SeekerStreaks.tsx` with a full streaks dashboard and wire it into `App.tsx` replacing the placeholder route.
 
-### Database Migration
+### File 1: `src/pages/seeker/SeekerStreaks.tsx` (new)
 
-```sql
--- Fill any existing NULL phones
-UPDATE public.profiles SET phone = '' WHERE phone IS NULL;
+**Data fetching:**
+- `useStreakCount(profile.id)` for current streak
+- `useQuery` on `daily_worksheets` table (same pattern as `SeekerWorksheetHistory`) to get all submissions
+- Derive: best streak, total days logged, monthly consistency %, last 90 days heatmap data, milestone progress
 
--- Make phone NOT NULL
-ALTER TABLE public.profiles ALTER COLUMN phone SET NOT NULL;
-ALTER TABLE public.profiles ALTER COLUMN phone SET DEFAULT '';
+**Sections:**
 
--- Unique index on email (one per account)
-CREATE UNIQUE INDEX profiles_email_unique ON public.profiles (email);
+1. **Hero** — Large streak number with 🔥, status message based on streak count, next milestone countdown (7/21/40/108 thresholds)
 
--- Unique index on phone (exclude empty strings so multiple unset phones are allowed)
-CREATE UNIQUE INDEX profiles_phone_unique ON public.profiles (phone) WHERE phone != '';
-```
+2. **Streak Heatmap Calendar** — Last 90 days grid (like `StreakHeatmap.tsx` but enhanced with completion % color intensity). Hover tooltip with date + stats.
 
-Update `handle_new_user` trigger to include phone:
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user() ...
-  INSERT INTO public.profiles (user_id, email, full_name, role, phone)
-  VALUES (
-    NEW.id, NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'seeker'),
-    COALESCE(NEW.raw_user_meta_data->>'phone', '')
-  );
-```
+3. **Milestones** — 4 cards: 7-day 🌱, 21-day 🌳, 40-day Mandala 🕉️, 108-day 👑. Earned/locked styling matching `SeekerBadges.tsx`. Progress ring showing % toward next milestone.
 
-### Registration Page (`RegisterPage.tsx`)
+4. **Statistics Cards** — 4-card grid: Longest streak, Total days logged, This month's consistency %, Average completion (computed from worksheet data).
 
-Before calling `supabase.auth.signUp`, query profiles:
-- Check email: `SELECT id FROM profiles WHERE email = ?`
-- Check phone: `SELECT id FROM profiles WHERE phone = ?`
-- If email exists → toast: **"This email is already registered. Please sign in or use a different email."**
-- If phone exists → toast: **"This mobile number is already in use. Please use a different number."**
-- Block registration if either matches
+5. **Streak Recovery** — Shown only when streak is 0. Encouraging message, Bhagavad Gita quote, "Restart your journey" link to daily worksheet page.
 
-### Admin Add Seeker (`SeekersPage.tsx`)
+6. **Celebration** — Trigger `Celebration` component when a new milestone is detected (compare current streak against milestones, use `sessionStorage` to avoid repeat triggers).
 
-Same pre-check in the Add Seeker dialog — query profiles for matching email or phone before proceeding. Show specific alert for whichever field is duplicated.
+**Styling:** Saffron/gold gradients, `gradient-sacred` header, `rounded-2xl` cards, Lucide icons (Flame, Trophy, Target, TrendingUp), animated pulse on flame icon for active streaks.
 
-### Seeker Profile Edit (`SeekerProfile.tsx`)
+### File 2: `src/App.tsx` (edit)
 
-Wrap the `.update()` call with error handling for Postgres error code `23505` (unique violation):
-- If error message contains `profiles_email_unique` → toast: **"This email is already used by another account."**
-- If error message contains `profiles_phone_unique` → toast: **"This mobile number is already used by another account."**
+- Add import: `import SeekerStreaks from "./pages/seeker/SeekerStreaks";`
+- Replace `<Route path="/seeker/streaks" element={<P />} />` with `<Route path="/seeker/streaks" element={<SeekerStreaks />} />`
 
-### Files Changed
-
-| File | Change |
-|------|--------|
-| Migration SQL | NOT NULL + unique indexes on phone/email, updated trigger |
-| `src/pages/RegisterPage.tsx` | Pre-signup duplicate check for email and phone |
-| `src/pages/admin/SeekersPage.tsx` | Pre-check in Add Seeker dialog |
-| `src/pages/seeker/SeekerProfile.tsx` | Catch unique constraint errors with friendly messages |
+### Technical Notes
+- All data from existing `daily_worksheets` table — no migration needed
+- Reuses `useStreakCount` hook, `Celebration` component, `BackToHome`, `useAuthStore`
+- Mobile responsive: hero stacks vertically, stats grid goes 2-col on mobile, heatmap scrolls horizontally
 
