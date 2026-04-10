@@ -92,6 +92,7 @@ import SeekerAssessmentHistory from "./pages/seeker/SeekerAssessmentHistory";
 import SeekerPersonality from "./pages/seeker/SeekerPersonality";
 import SeekerLearningVideos from "./pages/seeker/SeekerLearningVideos";
 import SeekerLearningAudio from "./pages/seeker/SeekerLearningAudio";
+import SeekerLearningPdfs from "./pages/seeker/SeekerLearningPdfs";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
