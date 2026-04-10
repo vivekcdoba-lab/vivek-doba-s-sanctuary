@@ -94,6 +94,7 @@ import SeekerLearningVideos from "./pages/seeker/SeekerLearningVideos";
 import SeekerLearningAudio from "./pages/seeker/SeekerLearningAudio";
 import SeekerLearningPdfs from "./pages/seeker/SeekerLearningPdfs";
 import SeekerLearningFrameworks from "./pages/seeker/SeekerLearningFrameworks";
+import SeekerBookmarks from "./pages/seeker/SeekerBookmarks";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
@@ -276,7 +277,7 @@ const App = () => (
             <Route path="/seeker/learning/audio" element={<SeekerLearningAudio />} />
             <Route path="/seeker/learning/pdfs" element={<SeekerLearningPdfs />} />
             <Route path="/seeker/learning/frameworks" element={<SeekerLearningFrameworks />} />
-            <Route path="/seeker/learning/bookmarks" element={<P />} />
+            <Route path="/seeker/learning/bookmarks" element={<SeekerBookmarks />} />
             <Route path="/seeker/announcements" element={<P />} />
             <Route path="/seeker/notifications" element={<P />} />
             <Route path="/seeker/privacy-settings" element={<P />} />
