@@ -2776,6 +2776,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_profile_duplicate: {
+        Args: { _email: string; _phone: string }
+        Returns: string
+      }
       cleanup_old_sessions: { Args: never; Returns: number }
       close_inactive_sessions: { Args: never; Returns: number }
       get_daily_session_report: { Args: never; Returns: Json }
