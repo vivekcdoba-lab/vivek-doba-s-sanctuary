@@ -2366,6 +2366,7 @@ export type Database = {
           revision_note: string | null
           rewards: string | null
           seeker_accepted_at: string | null
+          seeker_feedback_json: Json | null
           seeker_how_to_apply: string | null
           seeker_id: string
           seeker_mood: string | null
@@ -2410,6 +2411,7 @@ export type Database = {
           revision_note?: string | null
           rewards?: string | null
           seeker_accepted_at?: string | null
+          seeker_feedback_json?: Json | null
           seeker_how_to_apply?: string | null
           seeker_id: string
           seeker_mood?: string | null
@@ -2454,6 +2456,7 @@ export type Database = {
           revision_note?: string | null
           rewards?: string | null
           seeker_accepted_at?: string | null
+          seeker_feedback_json?: Json | null
           seeker_how_to_apply?: string | null
           seeker_id?: string
           seeker_mood?: string | null
