@@ -1687,7 +1687,7 @@ export type Database = {
           linkedin_url: string | null
           marriage_anniversary: string | null
           occupation: string | null
-          phone: string | null
+          phone: string
           pincode: string | null
           revenue_range: string | null
           role: string
@@ -1715,7 +1715,7 @@ export type Database = {
           linkedin_url?: string | null
           marriage_anniversary?: string | null
           occupation?: string | null
-          phone?: string | null
+          phone?: string
           pincode?: string | null
           revenue_range?: string | null
           role?: string
@@ -1743,7 +1743,7 @@ export type Database = {
           linkedin_url?: string | null
           marriage_anniversary?: string | null
           occupation?: string | null
-          phone?: string | null
+          phone?: string
           pincode?: string | null
           revenue_range?: string | null
           role?: string
