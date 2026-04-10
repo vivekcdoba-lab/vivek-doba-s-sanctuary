@@ -81,7 +81,19 @@ const SeekerProfile = () => {
         designation: profile.designation,
         industry: profile.industry,
       }).eq('id', seekerProfileId);
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505') {
+          if (error.message.includes('profiles_email_unique')) {
+            toast({ title: 'This email is already used by another account.', variant: 'destructive' });
+          } else if (error.message.includes('profiles_phone_unique')) {
+            toast({ title: 'This mobile number is already used by another account.', variant: 'destructive' });
+          } else {
+            toast({ title: 'Duplicate value detected. Please use unique email and phone.', variant: 'destructive' });
+          }
+          return;
+        }
+        throw error;
+      }
       toast({ title: '✅ Profile saved!' });
       setEditing(false);
     } catch {

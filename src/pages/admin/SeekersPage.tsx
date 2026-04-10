@@ -19,11 +19,48 @@ const SeekersPage = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newSeeker, setNewSeeker] = useState({ full_name: '', email: '', phone: '', city: '' });
 
-  const handleAddSeeker = () => {
-    if (!newSeeker.full_name || !newSeeker.email) { toast.error('Please fill name and email'); return; }
-    toast.success(`Seeker "${newSeeker.full_name}" — please register them via the signup page`);
-    setShowAddDialog(false);
-    setNewSeeker({ full_name: '', email: '', phone: '', city: '' });
+  const [addLoading, setAddLoading] = useState(false);
+
+  const handleAddSeeker = async () => {
+    if (!newSeeker.full_name || !newSeeker.email || !newSeeker.phone) {
+      toast.error('Please fill name, email and phone');
+      return;
+    }
+
+    setAddLoading(true);
+    try {
+      // Check duplicate email
+      const { data: emailMatch } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', newSeeker.email)
+        .maybeSingle();
+      if (emailMatch) {
+        toast.error('This email is already registered. Please use a different email.');
+        setAddLoading(false);
+        return;
+      }
+
+      // Check duplicate phone
+      const { data: phoneMatch } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', newSeeker.phone)
+        .maybeSingle();
+      if (phoneMatch) {
+        toast.error('This mobile number is already in use. Please use a different number.');
+        setAddLoading(false);
+        return;
+      }
+
+      toast.success(`Seeker "${newSeeker.full_name}" — please register them via the signup page`);
+      setShowAddDialog(false);
+      setNewSeeker({ full_name: '', email: '', phone: '', city: '' });
+    } catch {
+      toast.error('Error checking for duplicates');
+    } finally {
+      setAddLoading(false);
+    }
   };
 
   const filtered = seekers.filter(s =>
