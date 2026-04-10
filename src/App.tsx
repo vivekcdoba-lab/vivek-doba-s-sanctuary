@@ -84,6 +84,7 @@ import ArthaSatisfaction from "./pages/seeker/ArthaSatisfaction";
 import ArthaDepartments from "./pages/seeker/ArthaDepartments";
 import ArthaSwot from "./pages/seeker/ArthaSwot";
 import ArthaCompetitors from "./pages/seeker/ArthaCompetitors";
+import SeekerWorksheetHistory from "./pages/seeker/SeekerWorksheetHistory";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
@@ -252,7 +253,7 @@ const App = () => (
             <Route path="/seeker/points" element={<SeekerPoints />} />
             <Route path="/seeker/leaderboard" element={<P />} />
             {/* Placeholder routes */}
-            <Route path="/seeker/worksheet-history" element={<P />} />
+            <Route path="/seeker/worksheet-history" element={<SeekerWorksheetHistory />} />
             <Route path="/seeker/streaks" element={<P />} />
             <Route path="/seeker/personality" element={<P />} />
             <Route path="/seeker/progress-charts" element={<P />} />
