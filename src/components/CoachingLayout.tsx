@@ -124,7 +124,7 @@ function CoachSidebar({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
   const handleNavClick = () => { onClose?.(); };
 
   return (
-    <div className="flex flex-col h-full bg-[hsl(30,100%,97%)] dark:bg-[hsl(260,50%,12%)] border-r border-border">
+    <div className="flex flex-col h-full border-r border-black/10 shadow-[2px_0_10px_rgba(0,0,0,0.05)]" style={{ background: 'linear-gradient(180deg, #FFF8F0, #FFF0E0)' }}>
       {/* Profile */}
       <div className="p-4 border-b border-border">
         <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
@@ -148,9 +148,9 @@ function CoachSidebar({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
           return (
             <div key={group.label}>
               {group.dividerBefore && !collapsed && (
-                <div className="flex items-center gap-2 px-3 py-2 mt-3">
+                <div className="flex items-center gap-2 px-3 py-2 mt-4 mb-1">
                   <div className="flex-1 h-px bg-border" />
-                  <span className="text-[9px] font-bold tracking-widest text-muted-foreground">{group.dividerBefore}</span>
+                  <span className="uppercase text-[10px] tracking-[0.15em] text-[#999] font-semibold">{group.dividerBefore}</span>
                   <div className="flex-1 h-px bg-border" />
                 </div>
               )}
@@ -160,7 +160,7 @@ function CoachSidebar({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
                     <Tooltip key={item.path}>
                       <TooltipTrigger asChild>
                         <Link to={item.path} onClick={handleNavClick}
-                          className={`flex items-center justify-center p-2 rounded-lg transition-all ${isActive(item.path) ? 'bg-[hsl(var(--saffron))]/15 text-[hsl(var(--saffron))] border-l-[3px] border-[hsl(var(--saffron))]' : 'text-muted-foreground hover:bg-muted'}`}>
+                          className={`flex items-center justify-center p-2.5 rounded-lg transition-all ${isActive(item.path) ? 'bg-[#FF6B00] text-white' : 'text-muted-foreground hover:bg-[#FFE5CC]'}`}>
                           <item.icon className="w-4 h-4" />
                         </Link>
                       </TooltipTrigger>
@@ -171,7 +171,7 @@ function CoachSidebar({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
               ) : (
                 <>
                   <button onClick={() => toggle(group.label)}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground hover:text-foreground transition-colors">
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-semibold tracking-[0.15em] uppercase text-[#999] hover:text-foreground transition-colors">
                     <span>{group.emoji}</span>
                     <span className="flex-1 text-left">{group.label}</span>
                     <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-0' : '-rotate-90'}`} />
@@ -180,7 +180,7 @@ function CoachSidebar({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
                     <div className="space-y-0.5 ml-1">
                       {group.items.map(item => (
                         <Link key={item.path} to={item.path} onClick={handleNavClick}
-                          className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-all ${isActive(item.path) ? 'bg-[hsl(var(--saffron))]/15 text-[hsl(var(--saffron))] border-l-[3px] border-[hsl(var(--saffron))] font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                          className={`flex items-center gap-2.5 px-4 py-2.5 h-11 rounded-lg text-sm transition-all ${isActive(item.path) ? 'bg-[#FF6B00] text-white font-medium border-l-4 border-[#FF6B00]' : 'text-muted-foreground hover:bg-[#FFE5CC] hover:text-foreground'}`}>
                           <item.icon className="w-4 h-4 flex-shrink-0" />
                           <span className="truncate">{item.label}</span>
                         </Link>
@@ -234,7 +234,7 @@ export default function CoachingLayout() {
         {sidebarOpen && (
           <div className="lg:hidden fixed inset-0 z-50">
             <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-            <div className="absolute left-0 top-0 h-full w-[260px] z-10 shadow-xl">
+            <div className="absolute left-0 top-0 h-full w-[260px] z-10 shadow-xl animate-sidebar-slide-in">
               <CoachSidebar collapsed={false} onClose={() => setSidebarOpen(false)} />
             </div>
           </div>
