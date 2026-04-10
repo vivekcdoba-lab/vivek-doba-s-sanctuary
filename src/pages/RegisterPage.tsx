@@ -34,25 +34,17 @@ const RegisterPage = () => {
 
     setLoading(true);
     try {
-      // Pre-check for duplicate email
-      const { data: emailMatch } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', form.email)
-        .maybeSingle();
-      if (emailMatch) {
+      // Pre-check for duplicate email or phone using RPC
+      const { data: dupResult } = await supabase.rpc('check_profile_duplicate', {
+        _email: form.email,
+        _phone: form.phone,
+      });
+      if (dupResult === 'email') {
         toast.error('This email is already registered. Please sign in or use a different email.');
         setLoading(false);
         return;
       }
-
-      // Pre-check for duplicate phone
-      const { data: phoneMatch } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('phone', form.phone)
-        .maybeSingle();
-      if (phoneMatch) {
+      if (dupResult === 'phone') {
         toast.error('This mobile number is already in use. Please use a different number.');
         setLoading(false);
         return;

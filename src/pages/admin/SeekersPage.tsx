@@ -30,25 +30,17 @@ const SeekersPage = () => {
 
     setAddLoading(true);
     try {
-      // Check duplicate email
-      const { data: emailMatch } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', newSeeker.email)
-        .maybeSingle();
-      if (emailMatch) {
+      // Check duplicate email or phone using RPC
+      const { data: dupResult } = await supabase.rpc('check_profile_duplicate', {
+        _email: newSeeker.email,
+        _phone: newSeeker.phone,
+      });
+      if (dupResult === 'email') {
         toast.error('This email is already registered. Please use a different email.');
         setAddLoading(false);
         return;
       }
-
-      // Check duplicate phone
-      const { data: phoneMatch } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('phone', newSeeker.phone)
-        .maybeSingle();
-      if (phoneMatch) {
+      if (dupResult === 'phone') {
         toast.error('This mobile number is already in use. Please use a different number.');
         setAddLoading(false);
         return;
