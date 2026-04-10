@@ -59,9 +59,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { sessionId } = get();
     if (sessionId) {
       try {
-        await supabase.functions.invoke('session-heartbeat', {
-          body: { action: 'end', session_id: sessionId },
-        });
+        // Grab access token BEFORE signOut clears it
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
+        if (accessToken) {
+          await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/session-heartbeat`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+                apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              },
+              body: JSON.stringify({ action: 'end', session_id: sessionId }),
+            }
+          );
+        }
       } catch { /* ignore */ }
     }
     await supabase.auth.signOut();
