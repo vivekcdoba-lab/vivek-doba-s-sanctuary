@@ -84,6 +84,7 @@ import ArthaSatisfaction from "./pages/seeker/ArthaSatisfaction";
 import ArthaDepartments from "./pages/seeker/ArthaDepartments";
 import ArthaSwot from "./pages/seeker/ArthaSwot";
 import ArthaCompetitors from "./pages/seeker/ArthaCompetitors";
+import SeekerWorksheetHistory from "./pages/seeker/SeekerWorksheetHistory";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
