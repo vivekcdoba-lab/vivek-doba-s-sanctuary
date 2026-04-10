@@ -1,40 +1,52 @@
 
 
-## Plan: Build Streaks Dashboard Page
+## Plan: Build Seeker Leaderboard Page
 
-### Overview
-Create `src/pages/seeker/SeekerStreaks.tsx` with a full streaks dashboard and wire it into `App.tsx` replacing the placeholder route.
+### 1. Database Migration
 
-### File 1: `src/pages/seeker/SeekerStreaks.tsx` (new)
+**Add `leaderboard_visible` column to profiles:**
+```sql
+ALTER TABLE public.profiles ADD COLUMN leaderboard_visible boolean NOT NULL DEFAULT true;
+```
 
-**Data fetching:**
-- `useStreakCount(profile.id)` for current streak
-- `useQuery` on `daily_worksheets` table (same pattern as `SeekerWorksheetHistory`) to get all submissions
-- Derive: best streak, total days logged, monthly consistency %, last 90 days heatmap data, milestone progress
+**Create a SECURITY DEFINER function `get_leaderboard_data`** that computes rankings server-side and returns only aggregated, privacy-safe data (first name + last initial). This avoids exposing individual worksheet/badge data across seekers.
+
+The function will:
+- Accept parameters: `_period` (text: 'week', 'month', 'all_time', 'batch'), `_course_id` (uuid, nullable), `_city` (text, nullable)
+- Query `profiles` WHERE `role='seeker'` AND `leaderboard_visible=true`
+- For each seeker, calculate:
+  - Worksheet points: count of submitted worksheets × 10 + full completion (100%) × 5
+  - Streak points: current streak × 2
+  - Badge points: count of seeker_badges × 15
+  - Session points: count of sessions with attendance='present' × 25
+- Filter by period (week/month/all_time/batch based on `created_at`)
+- Filter by course (via enrollments join) and city
+- Return: rank, display_name (privacy-masked), avatar_url, total_points, streak_days, badge_count, profile_id
+
+### 2. New Page: `src/pages/seeker/SeekerLeaderboard.tsx`
+
+**Tabs:** Weekly | Monthly | All-Time | My Batch
 
 **Sections:**
+- **Point System Card** — explains Sampoorna Points breakdown
+- **Podium** — Top 3 with trophy emojis (🥇🥈🥉), crown for #1
+- **Rankings Table** — remaining ranks with user's own row highlighted
+- **"Rising Star"** — biggest point gainer this week (derived from data)
+- **Motivational bar** — "X points to reach next rank"
+- **Filters** — Course dropdown, City dropdown
+- **Privacy toggle** — updates `profiles.leaderboard_visible`
 
-1. **Hero** — Large streak number with 🔥, status message based on streak count, next milestone countdown (7/21/40/108 thresholds)
+**Patterns:** useAuthStore, useQuery with RPC call, BackToHome, saffron/gold styling, Card components, Tabs component.
 
-2. **Streak Heatmap Calendar** — Last 90 days grid (like `StreakHeatmap.tsx` but enhanced with completion % color intensity). Hover tooltip with date + stats.
+### 3. Route Update: `src/App.tsx`
 
-3. **Milestones** — 4 cards: 7-day 🌱, 21-day 🌳, 40-day Mandala 🕉️, 108-day 👑. Earned/locked styling matching `SeekerBadges.tsx`. Progress ring showing % toward next milestone.
+Replace `<P />` at `/seeker/leaderboard` with `<SeekerLeaderboard />`.
 
-4. **Statistics Cards** — 4-card grid: Longest streak, Total days logged, This month's consistency %, Average completion (computed from worksheet data).
+### Files Changed
 
-5. **Streak Recovery** — Shown only when streak is 0. Encouraging message, Bhagavad Gita quote, "Restart your journey" link to daily worksheet page.
-
-6. **Celebration** — Trigger `Celebration` component when a new milestone is detected (compare current streak against milestones, use `sessionStorage` to avoid repeat triggers).
-
-**Styling:** Saffron/gold gradients, `gradient-sacred` header, `rounded-2xl` cards, Lucide icons (Flame, Trophy, Target, TrendingUp), animated pulse on flame icon for active streaks.
-
-### File 2: `src/App.tsx` (edit)
-
-- Add import: `import SeekerStreaks from "./pages/seeker/SeekerStreaks";`
-- Replace `<Route path="/seeker/streaks" element={<P />} />` with `<Route path="/seeker/streaks" element={<SeekerStreaks />} />`
-
-### Technical Notes
-- All data from existing `daily_worksheets` table — no migration needed
-- Reuses `useStreakCount` hook, `Celebration` component, `BackToHome`, `useAuthStore`
-- Mobile responsive: hero stacks vertically, stats grid goes 2-col on mobile, heatmap scrolls horizontally
+| File | Change |
+|------|--------|
+| Migration SQL | Add `leaderboard_visible` column, create `get_leaderboard_data` RPC function |
+| `src/pages/seeker/SeekerLeaderboard.tsx` | New page with full leaderboard UI |
+| `src/App.tsx` | Import + route swap |
 
