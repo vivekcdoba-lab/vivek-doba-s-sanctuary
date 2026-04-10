@@ -1,82 +1,87 @@
 
 
-## Plan: Complete Sidebar Navigation for All Three Roles
+## Plan: UI/UX Polish — Sidebar Design, Animations, Empty States, Loading States
 
-### Scope Assessment
+This plan refines the visual quality across all three layout sidebars, adds consistent empty state components, and improves loading/animation patterns.
 
-The request defines ~120+ sidebar menu items across 3 roles. Currently the app has:
-- **Seeker**: 14 routes
-- **Coach**: 8 routes  
-- **Admin**: 21 routes
-
-Most requested items (Dharma, Artha/Business, Kama, Moksha, Learning, Achievements, etc.) have **no existing pages**. Building all pages is a separate effort. This plan focuses on:
-
-1. **Building the sidebar navigation structure** with all requested items
-2. **Linking existing pages** where routes exist
-3. **Routing to a placeholder page** for items without pages yet
-4. **Applying the requested design system** (warm cream, saffron active, collapsible, profile section, scrollable groups)
-
-### Design Specifications
-
-- Width: 260px expanded, 70px collapsed (icons only)
-- Background: Warm cream `#FFF8F0` with subtle gradient
-- Active item: Saffron `#FF6B00` left border + highlight
-- Collapsible groups with chevron toggles
-- Profile section at top with avatar, name, badge, progress bar (seeker), streak
-- Logout at bottom
-- Mobile: hamburger opens sidebar as overlay sheet
-- Desktop: always visible, collapse toggle at bottom
-- Smooth transitions throughout
-
-### Files to Create/Edit
+### What Changes
 
 | File | Action | Purpose |
 |------|--------|---------|
-| `src/components/SeekerLayout.tsx` | **Rewrite** | New sidebar with all Seeker groups (Purushaarth, Resources, etc.) |
-| `src/components/CoachingLayout.tsx` | **Rewrite** | New sidebar with Coach groups (Seekers, Worksheet Reviews, etc.) |
-| `src/components/AdminLayout.tsx` | **Rewrite** | New sidebar with Admin groups (CRM, Content, Analytics, System) |
-| `src/pages/PlaceholderPage.tsx` | **Edit** | Generic placeholder accepting title param for unbuilt pages |
-| `src/App.tsx` | **Edit** | Add routes for all new sidebar items pointing to PlaceholderPage |
+| `src/components/SeekerLayout.tsx` | Edit | Apply gradient background, saffron active style (white text + bg), hover `#FFE5CC`, proper item heights (44px), section divider styling, fire animation on streak, slide-in animation for mobile |
+| `src/components/CoachingLayout.tsx` | Edit | Same sidebar design system as Seeker |
+| `src/components/AdminLayout.tsx` | Edit | Same sidebar design system as Seeker |
+| `src/components/EmptyState.tsx` | Create | Reusable empty state component with icon, title, description, CTA button |
+| `src/components/SkeletonCard.tsx` | Edit | Add `SkeletonAvatar`, `SkeletonTable`, `SkeletonCalendar` variants |
+| `src/index.css` | Edit | Add page transition animation, validation shake keyframe |
+| Multiple seeker pages | Edit | Add empty states where data can be empty (sessions, assignments, assessments, worksheet, business profile) |
 
-### Sidebar Structure Summary
+### Sidebar Design Changes (All 3 Layouts)
 
-**Seeker** (7 groups):
-- Home, Daily Practice (4 items), Assessments (5), Sessions (5), Assignments (4)
-- Purushaarth: Dharma (4), Artha (15 with sub-sections), Kama (4), Moksha (4)
-- Resources: Learning (5), Ambient Sounds (1), Messages (2), Achievements (3)
-- Settings (4) + Logout
+Current issues:
+- Background is flat `hsl(30,100%,97%)` — needs gradient
+- Active items use transparent saffron bg — spec requires solid `#FF6B00` bg with white text
+- No box-shadow on sidebar
+- Hover is generic `bg-muted` — needs `#FFE5CC`
+- Items are ~32px tall — spec requires 44px
+- Section dividers are small — need small-caps, `#999`, proper spacing
+- Mobile sidebar has no slide animation
+- Streak fire has no flicker animation
 
-**Coach** (6 groups):
-- Dashboard, Seekers (5), Worksheet Reviews (4), Sessions (6), Assignments (5), Assessments (3)
-- Artha Coaching: Business Reviews (4)
-- Communication: Messages (3), Reports (4)
-- Settings + Logout
+Changes per layout:
+1. Background: `linear-gradient(180deg, #FFF8F0, #FFF0E0)`
+2. Active item: `bg-[#FF6B00] text-white font-medium` with `border-l-4 border-[#FF6B00]`
+3. Hover: `hover:bg-[#FFE5CC]`
+4. Item height: `h-11` (44px), padding `px-4 py-3`
+5. Submenu indent: `ml-6` with 16px icons (vs 20px parent)
+6. Section dividers: `uppercase text-[10px] tracking-[0.15em] text-[#999]`
+7. Sidebar border + shadow: `border-r border-black/10 shadow-[2px_0_10px_rgba(0,0,0,0.05)]`
+8. Collapse button: tooltip "Collapse" / "Expand"
+9. Mobile: `animate-slide-in-left` on open, close on outside click (already works)
+10. Streak fire: CSS `pulse-fire` animation class (already in index.css)
 
-**Admin** (8 groups):
-- Dashboard, Users (6), Programs (4), Enrollments (4)
-- CRM: Leads (6), Payments (6)
-- Content: Resources (5), Assessments (3)
-- Communication: Messages (2)
-- VDTS Business (4), Analytics/Reports (6)
-- System/Settings (5) + Logout
+### EmptyState Component
 
-### Implementation Approach
+```text
+  ┌──────────────────────────┐
+  │         📅               │
+  │  Your schedule is clear! │
+  │  Book a session with     │
+  │  your Coach              │
+  │                          │
+  │  [ Schedule Session ]    │
+  └──────────────────────────┘
+```
 
-Each layout will use collapsible `<details>`/custom accordion groups (not the shadcn Sidebar component, since the current AdminLayout already uses a custom approach that works well). This keeps the implementation consistent and avoids the shadcn sidebar's mobile behavior conflicts.
+Props: `icon`, `emoji`, `title`, `description`, `actionLabel`, `actionPath`
 
-Key patterns:
-- Each group uses a collapsible section with chevron rotation animation
-- `localStorage` remembers which groups are expanded per role
-- Profile section fetches streak count (seeker) or seeker count (coach)
-- New routes use `<PlaceholderPage title="Page Name" />` for unbuilt features
-- ~80 new placeholder routes added to App.tsx
+Preset empty states used in:
+- `SeekerUpcomingSessions` — "Your schedule is clear!"
+- `SeekerTasksEnhanced` — "All caught up!"
+- `SeekerAssessments` — "Discover yourself"
+- `DailyWorksheet` — "Begin your day mindfully"
+- `ArthaBusinessProfile` — "Set up your business"
 
-### Technical Details
+### Loading States
 
-- All nav items use `NavLink` or `Link` from react-router-dom
-- Active state detection: exact match for home, startsWith for nested routes
-- Collapsed mode: only icons shown, group labels hidden, tooltips on hover
-- Mobile: overlay with backdrop blur, closes on nav click
-- Scroll: `overflow-y-auto` on nav section, profile and logout fixed top/bottom
-- Transitions: `transition-all duration-300` on sidebar width, `transition-colors` on items
+Enhance `SkeletonCard.tsx` with:
+- `SkeletonAvatar` — circular pulsing placeholder
+- `SkeletonTable` — rows with alternating widths
+- `SkeletonCalendar` — grid of square cells
+
+All pages that fetch data already use loading states or can wrap with these.
+
+### Animation Additions (index.css)
+
+- **Page transition**: Outlet wrapper with `animate-fade-in` (already exists, just needs consistent application)
+- **Validation shake**: `@keyframes shake` for form errors
+- **Progress bar fill**: smooth `transition: width 1s ease` (already have `progress-fill`)
+- **Chart render**: handled by recharts' built-in `isAnimationActive`
+
+### Implementation Notes
+
+- All three layouts share the same design pattern, so changes are mechanical across them
+- The `EmptyState` component is pure presentational — no DB or state changes
+- Active state changes from transparent saffron overlay to solid saffron background with white text — this is the most visible change
+- Mobile slide-in uses existing `slide-in-left` keyframe from tailwind config
 
