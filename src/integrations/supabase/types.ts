@@ -1684,6 +1684,7 @@ export type Database = {
           hometown: string | null
           id: string
           industry: string | null
+          leaderboard_visible: boolean
           linkedin_url: string | null
           marriage_anniversary: string | null
           occupation: string | null
@@ -1712,6 +1713,7 @@ export type Database = {
           hometown?: string | null
           id?: string
           industry?: string | null
+          leaderboard_visible?: boolean
           linkedin_url?: string | null
           marriage_anniversary?: string | null
           occupation?: string | null
@@ -1740,6 +1742,7 @@ export type Database = {
           hometown?: string | null
           id?: string
           industry?: string | null
+          leaderboard_visible?: boolean
           linkedin_url?: string | null
           marriage_anniversary?: string | null
           occupation?: string | null
@@ -2783,6 +2786,25 @@ export type Database = {
       cleanup_old_sessions: { Args: never; Returns: number }
       close_inactive_sessions: { Args: never; Returns: number }
       get_daily_session_report: { Args: never; Returns: Json }
+      get_leaderboard_data: {
+        Args: {
+          _batch_user_id?: string
+          _city?: string
+          _course_id?: string
+          _period?: string
+        }
+        Returns: {
+          avatar_url: string
+          badge_count: number
+          display_name: string
+          profile_id: string
+          rank: number
+          session_count: number
+          streak_days: number
+          total_points: number
+          worksheet_count: number
+        }[]
+      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
