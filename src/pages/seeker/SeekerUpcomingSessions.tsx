@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import EmptyState from '@/components/EmptyState';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -102,12 +103,20 @@ export default function SeekerUpcomingSessions() {
       {isLoading ? (
         <div className="space-y-4">{[1, 2, 3].map(i => <div key={i} className="h-40 rounded-xl bg-muted animate-pulse" />)}</div>
       ) : filteredSessions.length === 0 ? (
-        <div className="bg-card rounded-xl border border-border p-8 text-center">
-          <CalendarDays className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">
-            {selectedDate ? 'No sessions on this date' : 'No upcoming sessions scheduled'}
-          </p>
-        </div>
+        selectedDate ? (
+          <div className="bg-card rounded-xl border border-border p-8 text-center">
+            <CalendarDays className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">No sessions on this date</p>
+          </div>
+        ) : (
+          <EmptyState
+            emoji="📅"
+            title="Your schedule is clear!"
+            description="Book a session with your Coach to continue your transformation journey."
+            actionLabel="Schedule Session"
+            actionPath="/seeker/upcoming-sessions"
+          />
+        )
       ) : (
         <div className="space-y-4">
           {filteredSessions.map((session: any) => {

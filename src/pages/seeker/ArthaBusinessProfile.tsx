@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import BackToHome from '@/components/BackToHome';
+import EmptyState from '@/components/EmptyState';
 import { Building2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,12 +22,13 @@ export default function ArthaBusinessProfile() {
     return (
       <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-6">
         <BackToHome />
-        <div className="text-center space-y-4 py-12">
-          <Building2 className="w-16 h-16 mx-auto text-muted-foreground" />
-          <h1 className="text-2xl font-bold text-foreground">Set Up Your Business Profile</h1>
-          <p className="text-muted-foreground">Tell us about your business to unlock the Artha module</p>
-          <Button onClick={() => setEditing(true)} className="bg-primary">Get Started</Button>
-        </div>
+        <EmptyState
+          emoji="💼"
+          title="Set up your business"
+          description="Start tracking your Artha growth by creating your business profile."
+          actionLabel="Create Business Profile"
+          onAction={() => setEditing(true)}
+        />
       </div>
     );
   }
