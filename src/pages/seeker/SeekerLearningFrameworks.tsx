@@ -389,7 +389,7 @@ export default function SeekerLearningFrameworks() {
                           : 'hover:scale-105'
                       }`}
                       style={{
-                        background: revealedLetters.has(i) ? fw.color : `${selectedFw.color}15`,
+                        background: revealedLetters.has(i) ? selectedFw.color : `${selectedFw.color}15`,
                         color: revealedLetters.has(i) ? 'white' : selectedFw.color,
                         border: `2px solid ${selectedFw.color}${revealedLetters.has(i) ? '' : '40'}`,
                       }}
