@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { Search, Plus, Grid3X3, List } from 'lucide-react';
 import { Input } from '@/components/ui/input';
