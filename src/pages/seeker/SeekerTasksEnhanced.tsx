@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/store/authStore';
+import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import BackToHome from '@/components/BackToHome';
@@ -115,10 +116,11 @@ export default function SeekerTasksEnhanced() {
       {isLoading ? (
         <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="bg-card rounded-xl border border-border p-8 text-center">
-          <CheckCircle className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">No {tab === 'overdue' ? 'overdue' : tab} assignments</p>
-        </div>
+        <EmptyState
+          emoji="✅"
+          title="All caught up!"
+          description="No pending assignments. Great work on your journey!"
+        />
       ) : (
         <div className="space-y-3">
           {filtered.map((a: any) => {
