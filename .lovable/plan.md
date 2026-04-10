@@ -1,52 +1,60 @@
 
 
-## Plan: Build Seeker Leaderboard Page
+## Plan: Build Assessment History Page
 
-### 1. Database Migration
+### Overview
+Create `src/pages/seeker/SeekerAssessmentHistory.tsx` — a page listing all past assessments with comparison, trend charts, detail modals, and PDF export. Wire it into App.tsx.
 
-**Add `leaderboard_visible` column to profiles:**
-```sql
-ALTER TABLE public.profiles ADD COLUMN leaderboard_visible boolean NOT NULL DEFAULT true;
-```
+### Data
 
-**Create a SECURITY DEFINER function `get_leaderboard_data`** that computes rankings server-side and returns only aggregated, privacy-safe data (first name + last initial). This avoids exposing individual worksheet/badge data across seekers.
+Uses `seeker_assessments` table (columns: id, type, scores_json, analysis_text, notes, period, created_at, seeker_id). No migration needed — existing hook `useAssessmentHistory` fetches by type; we'll query all types at once with a new inline query.
 
-The function will:
-- Accept parameters: `_period` (text: 'week', 'month', 'all_time', 'batch'), `_course_id` (uuid, nullable), `_city` (text, nullable)
-- Query `profiles` WHERE `role='seeker'` AND `leaderboard_visible=true`
-- For each seeker, calculate:
-  - Worksheet points: count of submitted worksheets × 10 + full completion (100%) × 5
-  - Streak points: current streak × 2
-  - Badge points: count of seeker_badges × 15
-  - Session points: count of sessions with attendance='present' × 25
-- Filter by period (week/month/all_time/batch based on `created_at`)
-- Filter by course (via enrollments join) and city
-- Return: rank, display_name (privacy-masked), avatar_url, total_points, streak_days, badge_count, profile_id
+### File 1: `src/pages/seeker/SeekerAssessmentHistory.tsx` (new)
 
-### 2. New Page: `src/pages/seeker/SeekerLeaderboard.tsx`
-
-**Tabs:** Weekly | Monthly | All-Time | My Batch
+**Data fetching:**
+- `useAuthStore` for profile
+- Single `useQuery` fetching all `seeker_assessments` where `seeker_id = profile.id`, ordered by `created_at desc`
+- Group results by `type` using `useMemo`
 
 **Sections:**
-- **Point System Card** — explains Sampoorna Points breakdown
-- **Podium** — Top 3 with trophy emojis (🥇🥈🥉), crown for #1
-- **Rankings Table** — remaining ranks with user's own row highlighted
-- **"Rising Star"** — biggest point gainer this week (derived from data)
-- **Motivational bar** — "X points to reach next rank"
-- **Filters** — Course dropdown, City dropdown
-- **Privacy toggle** — updates `profiles.leaderboard_visible`
 
-**Patterns:** useAuthStore, useQuery with RPC call, BackToHome, saffron/gold styling, Card components, Tabs component.
+1. **Header** — BackToHome, title "Assessment History", subtitle with total count
 
-### 3. Route Update: `src/App.tsx`
+2. **Assessment Type Tabs** — All | Wheel of Life | LGT | FIRO-B | Other. Filter the list by type.
 
-Replace `<P />` at `/seeker/leaderboard` with `<SeekerLeaderboard />`.
+3. **Score Trend Mini Charts** — For each assessment type with 2+ entries, a small `LineChart` (recharts) showing score over time. Displayed in a horizontal scrollable row of cards.
 
-### Files Changed
+4. **Assessment Cards Grid** — Each card shows:
+   - Type badge (color-coded)
+   - Date taken (formatted)
+   - Overall score with color badge (green >70, yellow 50-70, red <50)
+   - Quick pillar/category breakdown from `scores_json`
+   - "View Details" button → opens detail modal
+   - "Retake" button → links to `/seeker/assessments`
+   - Checkbox for comparison selection
 
-| File | Change |
-|------|--------|
-| Migration SQL | Add `leaderboard_visible` column, create `get_leaderboard_data` RPC function |
-| `src/pages/seeker/SeekerLeaderboard.tsx` | New page with full leaderboard UI |
-| `src/App.tsx` | Import + route swap |
+5. **Comparison Mode** — When 2 cards are checked, a "Compare" button appears. Opens a side-by-side modal with:
+   - Two-column layout showing scores
+   - Green arrows for improvements, red for declines
+   - Delta values for each metric
+
+6. **Detail Modal** (Dialog) — Full breakdown: all scores from `scores_json`, `analysis_text`, `notes` (coach notes), date, period.
+
+7. **PDF Export** — Button using jsPDF to generate a report with assessment scores, date, analysis text.
+
+**Styling:**
+- Card grid (`grid-cols-1 md:grid-cols-2`), `rounded-2xl`, saffron accents
+- Score badges: green/yellow/red based on thresholds
+- Lucide icons: ScrollText, TrendingUp, Download, GitCompare
+- Matches SeekerBadges.tsx patterns (useAuthStore, BackToHome, card layout)
+
+### File 2: `src/App.tsx` (edit)
+
+- Add import for `SeekerAssessmentHistory`
+- Replace `<P />` at `/seeker/assessment-history` with `<SeekerAssessmentHistory />`
+
+### Technical Notes
+- No migration needed — reads existing `seeker_assessments` table
+- Score extraction logic adapts to different `scores_json` shapes per type (WoL: array of 9, LGT: object with sectionScores, FIRO-B: object with dimensions)
+- Comparison normalizes scores to percentages for cross-type display
 
