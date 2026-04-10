@@ -253,7 +253,7 @@ const App = () => (
             <Route path="/seeker/points" element={<SeekerPoints />} />
             <Route path="/seeker/leaderboard" element={<P />} />
             {/* Placeholder routes */}
-            <Route path="/seeker/worksheet-history" element={<P />} />
+            <Route path="/seeker/worksheet-history" element={<SeekerWorksheetHistory />} />
             <Route path="/seeker/streaks" element={<P />} />
             <Route path="/seeker/personality" element={<P />} />
             <Route path="/seeker/progress-charts" element={<P />} />
