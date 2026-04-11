@@ -107,6 +107,10 @@ import CoachingSessionNotes from "./pages/coaching/CoachingSessionNotes";
 import CoachingPlanner from "./pages/coaching/CoachingPlanner";
 import CoachingHomework from "./pages/coaching/CoachingHomework";
 import CoachingProgress from "./pages/coaching/CoachingProgress";
+import CoachWorksheetPending from "./pages/coaching/CoachWorksheetPending";
+import CoachWorksheetReviewed from "./pages/coaching/CoachWorksheetReviewed";
+import CoachWorksheetStats from "./pages/coaching/CoachWorksheetStats";
+import CoachWorksheetMissed from "./pages/coaching/CoachWorksheetMissed";
 
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -303,10 +307,10 @@ const App = () => (
             <Route path="/coaching/seekers-attention" element={<P />} />
             <Route path="/coaching/seekers-ontrack" element={<P />} />
             <Route path="/coaching/seekers-search" element={<P />} />
-            <Route path="/coaching/worksheet-pending" element={<P />} />
-            <Route path="/coaching/worksheet-reviewed" element={<P />} />
-            <Route path="/coaching/worksheet-stats" element={<P />} />
-            <Route path="/coaching/worksheet-missed" element={<P />} />
+            <Route path="/coaching/worksheet-pending" element={<CoachWorksheetPending />} />
+            <Route path="/coaching/worksheet-reviewed" element={<CoachWorksheetReviewed />} />
+            <Route path="/coaching/worksheet-stats" element={<CoachWorksheetStats />} />
+            <Route path="/coaching/worksheet-missed" element={<CoachWorksheetMissed />} />
             <Route path="/coaching/schedule" element={<P />} />
             <Route path="/coaching/today-sessions" element={<P />} />
             <Route path="/coaching/past-sessions" element={<P />} />
