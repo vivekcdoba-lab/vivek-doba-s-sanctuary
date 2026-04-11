@@ -10,7 +10,9 @@ interface Notification {
   type: string;
   title: string;
   body: string | null;
+  message: string | null;
   session_id: string | null;
+  action_url: string | null;
   is_read: boolean;
   created_at: string;
 }
@@ -22,6 +24,13 @@ const TYPE_CONFIG: Record<string, { emoji: string }> = {
   revision_requested: { emoji: '🔄' },
   assignment_due: { emoji: '⏰' },
   comment_added: { emoji: '💬' },
+  session_reminder: { emoji: '📅' },
+  badge_earned: { emoji: '🏆' },
+  coach_message: { emoji: '💬' },
+  announcement: { emoji: '📢' },
+  streak_warning: { emoji: '🔥' },
+  payment_reminder: { emoji: '💳' },
+  system: { emoji: '⚙️' },
 };
 
 const NotificationBell = () => {
