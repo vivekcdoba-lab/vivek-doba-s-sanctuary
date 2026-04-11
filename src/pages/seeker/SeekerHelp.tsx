@@ -125,7 +125,7 @@ export default function SeekerHelp() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <a href="https://wa.me/919607050111?text=Namaste!%20I%20need%20help%20with%20the%20VDTS%20platform." target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow">
-          <div className="p-2 rounded-lg bg-green-500/10"><MessageCircle className="w-5 h-5 text-green-600" /></div>
+          <div className="p-2 rounded-lg bg-accent"><MessageCircle className="w-5 h-5 text-accent-foreground" /></div>
           <div>
             <p className="font-semibold text-sm text-foreground">WhatsApp Support</p>
             <p className="text-xs text-muted-foreground">Fastest way to reach us</p>
@@ -228,7 +228,7 @@ export default function SeekerHelp() {
         {/* Feature Request */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2"><Lightbulb className="w-5 h-5 text-yellow-500" /> Suggest a Feature</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2"><Lightbulb className="w-5 h-5 text-primary" /> Suggest a Feature</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Textarea placeholder="What would make your experience even better?" rows={4} value={featureDesc} onChange={e => setFeatureDesc(e.target.value)} />
