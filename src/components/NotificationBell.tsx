@@ -114,10 +114,10 @@ const NotificationBell = () => {
 
     const promises: Promise<any>[] = [];
     if (unreadSession.length) {
-      promises.push(supabase.from('session_notifications').update({ is_read: true }).in('id', unreadSession.map(n => n.id)));
+      promises.push(supabase.from('session_notifications').update({ is_read: true }).in('id', unreadSession.map(n => n.id)).then());
     }
     if (unreadGeneral.length) {
-      promises.push(supabase.from('notifications').update({ is_read: true }).in('id', unreadGeneral.map(n => n.id)));
+      promises.push(supabase.from('notifications').update({ is_read: true }).in('id', unreadGeneral.map(n => n.id)).then());
     }
     await Promise.all(promises);
 
