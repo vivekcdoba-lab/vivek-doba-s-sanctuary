@@ -2,19 +2,19 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/store/authStore';
-import { Bell, Check, CheckCheck, X } from 'lucide-react';
+import { Bell, CheckCheck, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
-interface Notification {
+interface BellNotification {
   id: string;
+  source: 'session' | 'general';
   type: string;
   title: string;
   body: string | null;
-  message: string | null;
-  session_id: string | null;
-  action_url: string | null;
   is_read: boolean;
   created_at: string;
+  action_url: string | null;
+  session_id: string | null;
 }
 
 const TYPE_CONFIG: Record<string, { emoji: string }> = {
@@ -36,7 +36,7 @@ const TYPE_CONFIG: Record<string, { emoji: string }> = {
 const NotificationBell = () => {
   const { profile } = useAuthStore();
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<BellNotification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -44,59 +44,99 @@ const NotificationBell = () => {
     if (!profile?.id) return;
     loadNotifications();
 
-    // Realtime subscription
-    const channel = supabase
-      .channel(`notifications-${profile.id}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'session_notifications',
-      }, (payload) => {
-        const n = payload.new as Notification;
-        setNotifications(prev => [n, ...prev]);
+    // Realtime for session_notifications
+    const ch1 = supabase
+      .channel(`bell-session-${profile.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'session_notifications' }, (payload) => {
+        const n = payload.new as any;
+        const mapped: BellNotification = {
+          id: n.id, source: 'session', type: n.type, title: n.title,
+          body: n.body, is_read: false, created_at: n.created_at,
+          action_url: null, session_id: n.session_id,
+        };
+        setNotifications(prev => [mapped, ...prev].slice(0, 20));
         setUnreadCount(prev => prev + 1);
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    // Realtime for notifications
+    const ch2 = supabase
+      .channel(`bell-general-${profile.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${profile.id}` }, (payload) => {
+        const n = payload.new as any;
+        const mapped: BellNotification = {
+          id: n.id, source: 'general', type: n.type, title: n.title,
+          body: n.message, is_read: false, created_at: n.created_at,
+          action_url: n.action_url, session_id: null,
+        };
+        setNotifications(prev => [mapped, ...prev].slice(0, 20));
+        setUnreadCount(prev => prev + 1);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(ch1);
+      supabase.removeChannel(ch2);
+    };
   }, [profile?.id]);
 
   const loadNotifications = async () => {
     if (!profile?.id) return;
-    const { data } = await supabase
-      .from('session_notifications')
-      .select('*')
-      .eq('recipient_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(20);
 
-    if (data) {
-      setNotifications(data);
-      setUnreadCount(data.filter(n => !n.is_read).length);
-    }
+    const [sessionRes, generalRes] = await Promise.all([
+      supabase.from('session_notifications').select('*').eq('recipient_id', profile.id).order('created_at', { ascending: false }).limit(10),
+      supabase.from('notifications').select('*').eq('user_id', profile.id).order('created_at', { ascending: false }).limit(10),
+    ]);
+
+    const sessionNotifs: BellNotification[] = (sessionRes.data || []).map((n: any) => ({
+      id: n.id, source: 'session' as const, type: n.type, title: n.title,
+      body: n.body, is_read: n.is_read, created_at: n.created_at,
+      action_url: null, session_id: n.session_id,
+    }));
+
+    const generalNotifs: BellNotification[] = (generalRes.data || []).map((n: any) => ({
+      id: n.id, source: 'general' as const, type: n.type, title: n.title,
+      body: n.message, is_read: n.is_read, created_at: n.created_at,
+      action_url: n.action_url, session_id: null,
+    }));
+
+    const merged = [...sessionNotifs, ...generalNotifs]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 20);
+
+    setNotifications(merged);
+    setUnreadCount(merged.filter(n => !n.is_read).length);
   };
 
   const markAllRead = async () => {
-    const unread = notifications.filter(n => !n.is_read);
-    if (unread.length === 0) return;
-    
-    await supabase
-      .from('session_notifications')
-      .update({ is_read: true })
-      .in('id', unread.map(n => n.id));
+    const unreadSession = notifications.filter(n => !n.is_read && n.source === 'session');
+    const unreadGeneral = notifications.filter(n => !n.is_read && n.source === 'general');
+
+    const promises: Promise<any>[] = [];
+    if (unreadSession.length) {
+      promises.push(supabase.from('session_notifications').update({ is_read: true }).in('id', unreadSession.map(n => n.id)));
+    }
+    if (unreadGeneral.length) {
+      promises.push(supabase.from('notifications').update({ is_read: true }).in('id', unreadGeneral.map(n => n.id)));
+    }
+    await Promise.all(promises);
 
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     setUnreadCount(0);
   };
 
-  const handleClick = async (n: Notification) => {
+  const handleClick = async (n: BellNotification) => {
     if (!n.is_read) {
-      await supabase.from('session_notifications').update({ is_read: true }).eq('id', n.id);
+      const table = n.source === 'session' ? 'session_notifications' : 'notifications';
+      await supabase.from(table).update({ is_read: true }).eq('id', n.id);
       setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x));
       setUnreadCount(prev => Math.max(0, prev - 1));
     }
     setIsOpen(false);
-    if (n.session_id) {
+
+    if (n.action_url) {
+      navigate(n.action_url);
+    } else if (n.session_id) {
       const isAdmin = profile?.role === 'admin';
       navigate(isAdmin ? `/sessions/${n.session_id}/review` : `/seeker/sessions/${n.session_id}/certify`);
     }
@@ -142,36 +182,44 @@ const NotificationBell = () => {
                   <p className="text-xs text-muted-foreground">No notifications yet</p>
                 </div>
               ) : (
-                notifications.map(n => {
-                  const cfg = TYPE_CONFIG[n.type] || { emoji: '📋' };
-                  return (
-                    <button
-                      key={n.id}
-                      onClick={() => handleClick(n)}
-                      className={`w-full text-left p-3 border-b border-border last:border-0 hover:bg-muted/50 transition-colors ${
-                        !n.is_read ? 'bg-primary/5' : ''
-                      }`}
-                    >
-                      <div className="flex items-start gap-2">
-                        <span className="text-sm mt-0.5">{cfg.emoji}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-xs ${!n.is_read ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
-                            {n.title}
-                          </p>
-                          {n.body && (
-                            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{n.body}</p>
+                <>
+                  {notifications.slice(0, 5).map(n => {
+                    const cfg = TYPE_CONFIG[n.type] || { emoji: '📋' };
+                    return (
+                      <button
+                        key={n.id}
+                        onClick={() => handleClick(n)}
+                        className={`w-full text-left p-3 border-b border-border last:border-0 hover:bg-muted/50 transition-colors ${
+                          !n.is_read ? 'bg-primary/5' : ''
+                        }`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <span className="text-sm mt-0.5">{cfg.emoji}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-xs ${!n.is_read ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
+                              {n.title}
+                            </p>
+                            {n.body && (
+                              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{n.body}</p>
+                            )}
+                            <p className="text-[10px] text-muted-foreground mt-1">
+                              {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                            </p>
+                          </div>
+                          {!n.is_read && (
+                            <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
                           )}
-                          <p className="text-[10px] text-muted-foreground mt-1">
-                            {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                          </p>
                         </div>
-                        {!n.is_read && (
-                          <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
-                        )}
-                      </div>
-                    </button>
-                  );
-                })
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={() => { setIsOpen(false); navigate('/seeker/notifications'); }}
+                    className="w-full text-center p-2.5 text-xs text-primary hover:underline font-medium border-t border-border"
+                  >
+                    See all notifications
+                  </button>
+                </>
               )}
             </div>
           </div>
