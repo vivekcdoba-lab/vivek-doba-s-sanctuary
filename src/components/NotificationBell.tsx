@@ -112,12 +112,12 @@ const NotificationBell = () => {
     const unreadSession = notifications.filter(n => !n.is_read && n.source === 'session');
     const unreadGeneral = notifications.filter(n => !n.is_read && n.source === 'general');
 
-    const promises: Promise<any>[] = [];
+    const promises: PromiseLike<any>[] = [];
     if (unreadSession.length) {
-      promises.push(supabase.from('session_notifications').update({ is_read: true }).in('id', unreadSession.map(n => n.id)).then());
+      promises.push(supabase.from('session_notifications').update({ is_read: true }).in('id', unreadSession.map(n => n.id)));
     }
     if (unreadGeneral.length) {
-      promises.push(supabase.from('notifications').update({ is_read: true }).in('id', unreadGeneral.map(n => n.id)).then());
+      promises.push(supabase.from('notifications').update({ is_read: true }).in('id', unreadGeneral.map(n => n.id)));
     }
     await Promise.all(promises);
 
