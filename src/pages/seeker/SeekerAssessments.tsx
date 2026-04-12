@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, LineChart, Line, Legend } from 'recharts';
 import LGTAssessment from '@/components/LGTAssessment';
 import FIROBAssessment from '@/components/FIROBAssessment';
+import WheelOfLifeEnhanced from '@/components/WheelOfLifeEnhanced';
 import BackToHome from '@/components/BackToHome';
 import { ChevronDown, Save, History } from 'lucide-react';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';

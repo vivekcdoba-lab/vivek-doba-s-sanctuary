@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/store/authStore';
 import DigitalSignature from '@/components/DigitalSignature';
+import SessionNotesPanel from '@/components/SessionNotesPanel';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Shield, BookOpen, Target, Award, Zap, CheckCircle2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -360,6 +361,14 @@ const SeekerSessionDetail = () => {
           <p className="text-sm text-foreground/80 whitespace-pre-wrap">{session.pending_assignments_review}</p>
         </div>
       )}
+
+      {/* Session Notes Panel */}
+      <SessionNotesPanel
+        sessionId={session.id}
+        sessionTitle={session.session_name || `Session #${session.session_number}`}
+        sessionDate={session.date}
+        viewMode="seeker"
+      />
 
       {/* Seeker Reflection Section */}
       <div className="bg-card rounded-xl border-2 border-chakra-indigo/20 p-5 space-y-4">
