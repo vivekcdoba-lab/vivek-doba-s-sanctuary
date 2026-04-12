@@ -86,7 +86,7 @@ const SeekerTimeSheet = () => {
       if (!profileId) return [];
       const { data } = await supabase
         .from('time_sheets')
-        .select('date, energy_level, meditation_minutes, sleep_hours')
+        .select('date, energy_level, meditation_minutes')
         .eq('seeker_id', profileId)
         .gte('date', format(weekStart, 'yyyy-MM-dd'))
         .lte('date', format(addDays(weekStart, 6), 'yyyy-MM-dd'));
