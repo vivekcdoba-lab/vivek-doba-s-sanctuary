@@ -115,6 +115,10 @@ import CoachSchedule from "./pages/coaching/CoachSchedule";
 import CoachTodaySessions from "./pages/coaching/CoachTodaySessions";
 import CoachPastSessions from "./pages/coaching/CoachPastSessions";
 import CoachSessionAnalytics from "./pages/coaching/CoachSessionAnalytics";
+import CoachCreateAssignment from "./pages/coaching/CoachCreateAssignment";
+import CoachPendingSubmissions from "./pages/coaching/CoachPendingSubmissions";
+import CoachReviewedAssignments from "./pages/coaching/CoachReviewedAssignments";
+import CoachCompletionRate from "./pages/coaching/CoachCompletionRate";
 
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
