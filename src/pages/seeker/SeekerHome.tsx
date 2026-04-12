@@ -17,6 +17,9 @@ import AssignmentsWidget from '@/components/dashboard/AssignmentsWidget';
 import WisdomQuote from '@/components/dashboard/WisdomQuote';
 import QuickActionsBar from '@/components/dashboard/QuickActionsBar';
 import DailyAffirmationWidget from '@/components/dashboard/DailyAffirmationWidget';
+import DailySankalpWidget from '@/components/dashboard/DailySankalpWidget';
+import LGTQuickCheckIn from '@/components/dashboard/LGTQuickCheckIn';
+import SmartRecommendations from '@/components/dashboard/SmartRecommendations';
 
 const SeekerHome = () => {
   const { profile, logout } = useAuthStore();
@@ -93,6 +96,11 @@ const SeekerHome = () => {
 
       {/* Main Widgets Row */}
       <div className="grid md:grid-cols-2 gap-4">
+        <DailySankalpWidget />
+        <LGTQuickCheckIn />
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
         <LGTBalanceWheel {...lgtScores} />
         <UpcomingSessionsWidget sessions={sessions} />
       </div>
@@ -115,6 +123,9 @@ const SeekerHome = () => {
 
       {/* Wisdom Quote */}
       <WisdomQuote />
+
+      {/* Smart Recommendations */}
+      <SmartRecommendations lgtScores={lgtScores} />
 
       {/* Quick Actions */}
       <div data-tour="quick-actions">
