@@ -45,6 +45,13 @@ import AdminAdmins from "./pages/admin/AdminAdmins";
 import AdminAddUser from "./pages/admin/AdminAddUser";
 import AdminUserAnalytics from "./pages/admin/AdminUserAnalytics";
 import AdminSearchUsers from "./pages/admin/AdminSearchUsers";
+import AdminCreateProgram from "./pages/admin/AdminCreateProgram";
+import AdminEditPrograms from "./pages/admin/AdminEditPrograms";
+import AdminProgramAnalytics from "./pages/admin/AdminProgramAnalytics";
+import AdminEnrollments from "./pages/admin/AdminEnrollments";
+import AdminNewEnrollment from "./pages/admin/AdminNewEnrollment";
+import AdminBatches from "./pages/admin/AdminBatches";
+import AdminEnrollmentStats from "./pages/admin/AdminEnrollmentStats";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -187,13 +194,13 @@ const App = () => (
             <Route path="/admin/add-user" element={<AdminAddUser />} />
             <Route path="/admin/user-analytics" element={<AdminUserAnalytics />} />
             <Route path="/admin/search-users" element={<AdminSearchUsers />} />
-            <Route path="/admin/create-program" element={<P />} />
-            <Route path="/admin/edit-programs" element={<P />} />
-            <Route path="/admin/program-analytics" element={<P />} />
-            <Route path="/admin/enrollments" element={<P />} />
-            <Route path="/admin/new-enrollment" element={<P />} />
-            <Route path="/admin/batches" element={<P />} />
-            <Route path="/admin/enrollment-stats" element={<P />} />
+            <Route path="/admin/create-program" element={<AdminCreateProgram />} />
+            <Route path="/admin/edit-programs" element={<AdminEditPrograms />} />
+            <Route path="/admin/program-analytics" element={<AdminProgramAnalytics />} />
+            <Route path="/admin/enrollments" element={<AdminEnrollments />} />
+            <Route path="/admin/new-enrollment" element={<AdminNewEnrollment />} />
+            <Route path="/admin/batches" element={<AdminBatches />} />
+            <Route path="/admin/enrollment-stats" element={<AdminEnrollmentStats />} />
             <Route path="/admin/add-lead" element={<P />} />
             <Route path="/admin/all-leads" element={<P />} />
             <Route path="/admin/hot-leads" element={<P />} />
