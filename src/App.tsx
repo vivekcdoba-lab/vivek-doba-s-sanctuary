@@ -52,8 +52,12 @@ import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import AdminNewEnrollment from "./pages/admin/AdminNewEnrollment";
 import AdminBatches from "./pages/admin/AdminBatches";
 import AdminEnrollmentStats from "./pages/admin/AdminEnrollmentStats";
+import AdminAddLead from "./pages/admin/AdminAddLead";
+import AdminAllLeads from "./pages/admin/AdminAllLeads";
+import AdminHotLeads from "./pages/admin/AdminHotLeads";
+import AdminConversionFunnel from "./pages/admin/AdminConversionFunnel";
+import AdminLeadSources from "./pages/admin/AdminLeadSources";
 
-import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
 import SacredSpace from "./pages/seeker/SacredSpace";
 import SeekerGrowth from "./pages/seeker/SeekerGrowth";
