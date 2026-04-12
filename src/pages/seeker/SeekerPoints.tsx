@@ -5,9 +5,10 @@ import { useStreakCount } from '@/hooks/useStreakCount';
 
 const LEVELS = [
   { name: 'Seeker', min: 0, max: 500, emoji: '🌱', color: 'hsl(var(--dharma-green))' },
-  { name: 'Practitioner', min: 500, max: 1500, emoji: '🔥', color: 'hsl(var(--saffron))' },
-  { name: 'Master', min: 1500, max: 3000, emoji: '🏅', color: 'hsl(var(--gold))' },
-  { name: 'Guru', min: 3000, max: 10000, emoji: '👑', color: 'hsl(var(--wisdom-purple))' },
+  { name: 'Practitioner', min: 500, max: 1500, emoji: '🌿', color: 'hsl(var(--saffron))' },
+  { name: 'Achiever', min: 1500, max: 3000, emoji: '🌳', color: 'hsl(var(--gold))' },
+  { name: 'Master', min: 3000, max: 5000, emoji: '🏔️', color: 'hsl(var(--lotus-pink))' },
+  { name: 'Guru', min: 5000, max: 99999, emoji: '☀️', color: 'hsl(var(--wisdom-purple))' },
 ];
 
 export default function SeekerPoints() {
