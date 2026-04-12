@@ -167,7 +167,7 @@ const SeekerAssessments = () => {
             detail: 'Strengths: Leadership, Communication, Discipline, Spiritual Practice, Persistence. Weaknesses: Time Management, Delegation, Financial Planning. Opportunities: Market Expansion, Digital Presence, Network Growth. Threats: Competition, Economic Slowdown.' },
           { key: 'wheel', icon: '☸', label: 'Wheel of Life', borderColor: 'hsl(var(--primary))', summary: `${analysis.avg}/10 avg`, lastDate: '01/03/2026',
             detail: `Total Score: ${analysis.total}/90 (${((analysis.total / 90) * 100).toFixed(0)}%). Strongest: ${AREAS[analysis.strongIdx].icon} ${AREAS[analysis.strongIdx].name} (${analysis.max}). Weakest: ${AREAS[analysis.weakIdx].icon} ${AREAS[analysis.weakIdx].name} (${analysis.min}). Balance Index: ${analysis.balance}/10.`,
-            action: () => { setSelfAssessing(true); setShowResults(false); }, actionLabel: '🎯 Self-Assess' },
+            action: () => setEnhancedWol(true), actionLabel: '🌟 Enhanced Assessment' },
           { key: 'lgt', icon: '🔺', label: 'LGT (Life\'s Golden Triangle)', borderColor: '#FF9933', summary: '68% Balance', lastDate: '01/03/2026',
             detail: 'Life: 72% — Strong spiritual foundation. Growth: 65% — Good learning trajectory. Triangle: 68% — Career and financial pillars need strengthening.',
             action: () => setLgtAssessing(true), actionLabel: '🔺 Take LGT Test' },
