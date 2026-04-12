@@ -194,13 +194,13 @@ const App = () => (
             <Route path="/admin/add-user" element={<AdminAddUser />} />
             <Route path="/admin/user-analytics" element={<AdminUserAnalytics />} />
             <Route path="/admin/search-users" element={<AdminSearchUsers />} />
-            <Route path="/admin/create-program" element={<P />} />
-            <Route path="/admin/edit-programs" element={<P />} />
-            <Route path="/admin/program-analytics" element={<P />} />
-            <Route path="/admin/enrollments" element={<P />} />
-            <Route path="/admin/new-enrollment" element={<P />} />
-            <Route path="/admin/batches" element={<P />} />
-            <Route path="/admin/enrollment-stats" element={<P />} />
+            <Route path="/admin/create-program" element={<AdminCreateProgram />} />
+            <Route path="/admin/edit-programs" element={<AdminEditPrograms />} />
+            <Route path="/admin/program-analytics" element={<AdminProgramAnalytics />} />
+            <Route path="/admin/enrollments" element={<AdminEnrollments />} />
+            <Route path="/admin/new-enrollment" element={<AdminNewEnrollment />} />
+            <Route path="/admin/batches" element={<AdminBatches />} />
+            <Route path="/admin/enrollment-stats" element={<AdminEnrollmentStats />} />
             <Route path="/admin/add-lead" element={<P />} />
             <Route path="/admin/all-leads" element={<P />} />
             <Route path="/admin/hot-leads" element={<P />} />
