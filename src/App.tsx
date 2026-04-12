@@ -120,6 +120,9 @@ import SeekerSessionNotes from "./pages/seeker/SeekerSessionNotes";
 import SeekerFeedback from "./pages/seeker/SeekerFeedback";
 import SeekerSubmitAssignment from "./pages/seeker/SeekerSubmitAssignment";
 import SeekerCoachFeedback from "./pages/seeker/SeekerCoachFeedback";
+import SeekerKamaSocial from "./pages/seeker/SeekerKamaSocial";
+import SeekerKamaDesires from "./pages/seeker/SeekerKamaDesires";
+import SeekerMokshaConsciousness from "./pages/seeker/SeekerMokshaConsciousness";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
