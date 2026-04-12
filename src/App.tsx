@@ -58,6 +58,7 @@ import AdminHotLeads from "./pages/admin/AdminHotLeads";
 import AdminConversionFunnel from "./pages/admin/AdminConversionFunnel";
 import AdminLeadSources from "./pages/admin/AdminLeadSources";
 
+import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
 import SacredSpace from "./pages/seeker/SacredSpace";
 import SeekerGrowth from "./pages/seeker/SeekerGrowth";
