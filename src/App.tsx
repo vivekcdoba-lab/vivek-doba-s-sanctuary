@@ -40,6 +40,11 @@ import SessionReviewPage from "./pages/admin/SessionReviewPage";
 import SessionTemplatesPage from "./pages/admin/SessionTemplatesPage";
 import SwotPage from "./pages/admin/SwotPage";
 import ActiveSessionsPage from "./pages/admin/ActiveSessionsPage";
+import AdminCoaches from "./pages/admin/AdminCoaches";
+import AdminAdmins from "./pages/admin/AdminAdmins";
+import AdminAddUser from "./pages/admin/AdminAddUser";
+import AdminUserAnalytics from "./pages/admin/AdminUserAnalytics";
+import AdminSearchUsers from "./pages/admin/AdminSearchUsers";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
