@@ -1046,6 +1046,53 @@ export type Database = {
           },
         ]
       }
+      daily_lgt_checkins: {
+        Row: {
+          artha_score: number
+          checkin_date: string
+          created_at: string
+          dharma_score: number
+          focus_recommendation: string | null
+          id: string
+          kama_score: number
+          moksha_score: number
+          overall_balance: number | null
+          seeker_id: string
+        }
+        Insert: {
+          artha_score?: number
+          checkin_date?: string
+          created_at?: string
+          dharma_score?: number
+          focus_recommendation?: string | null
+          id?: string
+          kama_score?: number
+          moksha_score?: number
+          overall_balance?: number | null
+          seeker_id: string
+        }
+        Update: {
+          artha_score?: number
+          checkin_date?: string
+          created_at?: string
+          dharma_score?: number
+          focus_recommendation?: string | null
+          id?: string
+          kama_score?: number
+          moksha_score?: number
+          overall_balance?: number | null
+          seeker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_lgt_checkins_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_logs: {
         Row: {
           affirmation: string | null
