@@ -138,7 +138,9 @@ export default function SeekerTasksEnhanced() {
                     {isOverdue ? '⚠️' : catCfg.emoji}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm text-foreground">{a.title}</h3>
+            <h3 className="font-medium text-sm text-foreground">{a.title}
+                      {a.score != null && <span className="ml-1 text-[10px] text-yellow-600 font-bold">⭐ {a.score} pts</span>}
+                    </h3>
                     <div className="flex flex-wrap items-center gap-1.5 mt-1">
                       <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                         <Clock className="w-3 h-3" />
