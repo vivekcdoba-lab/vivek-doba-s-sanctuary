@@ -82,6 +82,7 @@ const coachNav: NavGroup[] = [
       { icon: MessageSquare, label: 'All Conversations', path: '/coaching/messages' },
       { icon: FileText, label: 'Message Templates', path: '/coaching/templates' },
       { icon: Megaphone, label: 'Send Announcement', path: '/coaching/announcements' },
+      { icon: Megaphone, label: 'Broadcast Message', path: '/coaching/broadcast' },
     ],
   },
   {
@@ -89,6 +90,7 @@ const coachNav: NavGroup[] = [
       { icon: TrendingUp, label: 'Engagement Report', path: '/coaching/engagement' },
       { icon: BarChart3, label: 'Progress Report', path: '/coaching/progress-report' },
       { icon: PieChart, label: 'Artha Progress', path: '/coaching/artha-progress' },
+      { icon: BarChart3, label: 'Weekly Report', path: '/coaching/weekly-report' },
       { icon: FileText, label: 'Export Data', path: '/coaching/export' },
     ],
   },
