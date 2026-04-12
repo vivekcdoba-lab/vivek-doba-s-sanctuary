@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { BarChart3, Users, FileText, Calendar, TrendingUp, CheckCircle, AlertTriangle, XCircle, Loader2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { startOfWeek, endOfWeek, format, subWeeks } from 'date-fns';
 
 interface WeeklyStats {
