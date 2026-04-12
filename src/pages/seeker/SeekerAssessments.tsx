@@ -235,6 +235,14 @@ const SeekerAssessments = () => {
         />
       )}
 
+      {/* ═══ ENHANCED WHEEL OF LIFE ═══ */}
+      {enhancedWol && (
+        <WheelOfLifeEnhanced
+          onClose={() => setEnhancedWol(false)}
+          onSave={() => setEnhancedWol(false)}
+        />
+      )}
+
       {/* ═══ WHEEL OF LIFE SELF-ASSESSMENT ═══ */}
       {selfAssessing && (
         <div className="space-y-5">
