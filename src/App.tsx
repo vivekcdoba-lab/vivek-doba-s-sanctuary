@@ -150,6 +150,12 @@ import SeekerKamaDesires from "./pages/seeker/SeekerKamaDesires";
 import SeekerMokshaConsciousness from "./pages/seeker/SeekerMokshaConsciousness";
 import SeekerTimeSheet from "./pages/seeker/SeekerTimeSheet";
 import SeekerChallenges from "./pages/seeker/SeekerChallenges";
+import SeekerGratitudeWall from "./pages/seeker/SeekerGratitudeWall";
+import SeekerWinJournal from "./pages/seeker/SeekerWinJournal";
+import SeekerTransformationTimeline from "./pages/seeker/SeekerTransformationTimeline";
+import SeekerIkigai from "./pages/seeker/SeekerIkigai";
+import SeekerMeditationTimer from "./pages/seeker/SeekerMeditationTimer";
+import SeekerRelationshipTracker from "./pages/seeker/SeekerRelationshipTracker";
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
 import AgreementsPage from "./pages/coaching/AgreementsPage";
@@ -332,6 +338,12 @@ const App = () => (
             <Route path="/seeker/worksheet-history" element={<SeekerWorksheetHistory />} />
             <Route path="/seeker/timesheet" element={<SeekerTimeSheet />} />
             <Route path="/seeker/challenges" element={<SeekerChallenges />} />
+            <Route path="/seeker/gratitude-wall" element={<SeekerGratitudeWall />} />
+            <Route path="/seeker/win-journal" element={<SeekerWinJournal />} />
+            <Route path="/seeker/transformation" element={<SeekerTransformationTimeline />} />
+            <Route path="/seeker/dharma/ikigai" element={<SeekerIkigai />} />
+            <Route path="/seeker/moksha/meditation-timer" element={<SeekerMeditationTimer />} />
+            <Route path="/seeker/kama/relationships" element={<SeekerRelationshipTracker />} />
             <Route path="/seeker/streaks" element={<SeekerStreaks />} />
             <Route path="/seeker/personality" element={<SeekerPersonality />} />
             <Route path="/seeker/progress-charts" element={<SeekerProgressCharts />} />

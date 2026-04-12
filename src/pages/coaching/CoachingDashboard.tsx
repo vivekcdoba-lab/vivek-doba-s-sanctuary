@@ -4,6 +4,8 @@ import { Home, Users, ClipboardList, CalendarDays, AlertTriangle, Plus, Megaphon
 import { useDbSessions } from "@/hooks/useDbSessions";
 import { useDbAssignments } from "@/hooks/useDbAssignments";
 import { useSeekerProfiles } from "@/hooks/useSeekerProfiles";
+import SeekerStatusGrid from "@/components/coaching/SeekerStatusGrid";
+import CoachActionCenter from "@/components/coaching/CoachActionCenter";
 
 export default function CoachingDashboard() {
   const { lang } = useCoachingLang();
@@ -56,6 +58,12 @@ export default function CoachingDashboard() {
           </div>
         ))}
       </div>
+
+      {/* Seeker Status Grid */}
+      <SeekerStatusGrid />
+
+      {/* Coach Action Center */}
+      <CoachActionCenter />
 
       {/* Today's Sessions & Needs Attention */}
       <div className="grid lg:grid-cols-2 gap-4">

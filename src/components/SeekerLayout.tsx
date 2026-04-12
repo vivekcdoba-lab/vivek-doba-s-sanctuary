@@ -23,6 +23,7 @@ const seekerNav: NavGroup[] = [
   {
     label: 'HOME', emoji: '🏠', items: [
       { icon: Home, label: 'Dashboard', path: '/seeker/home' },
+      { icon: Compass, label: 'My Journey', path: '/seeker/transformation' },
     ],
   },
   {
@@ -33,6 +34,8 @@ const seekerNav: NavGroup[] = [
       { icon: BarChart3, label: 'Worksheet History', path: '/seeker/worksheet-history' },
       { icon: Flame, label: 'My Streaks', path: '/seeker/streaks' },
       { icon: Star, label: 'Weekly Review', path: '/seeker/weekly-review' },
+      { icon: Heart, label: 'Gratitude Wall', path: '/seeker/gratitude-wall' },
+      { icon: Trophy, label: 'Win Journal', path: '/seeker/win-journal' },
     ],
   },
   {
@@ -67,6 +70,7 @@ const seekerNav: NavGroup[] = [
       { icon: Sparkles, label: 'My Values', path: '/seeker/dharma/values' },
       { icon: BookOpen, label: 'Dharma Journal', path: '/seeker/dharma/journal' },
       { icon: Sunrise, label: 'Daily Practices', path: '/seeker/dharma/practices' },
+      { icon: Compass, label: 'IKIGAI Discovery', path: '/seeker/dharma/ikigai' },
     ],
   },
   {
@@ -94,11 +98,13 @@ const seekerNav: NavGroup[] = [
       { icon: Users, label: 'Family Harmony', path: '/seeker/kama/family' },
       { icon: UsersRound, label: 'Social Connections', path: '/seeker/kama/social' },
       { icon: Smile, label: 'Desire Fulfillment', path: '/seeker/kama/desires' },
+      { icon: Heart, label: 'Relationship Tracker', path: '/seeker/kama/relationships' },
     ],
   },
   {
     label: 'MOKSHA (Liberation)', emoji: '☀️', items: [
       { icon: Sunrise, label: 'Meditation Practice', path: '/seeker/moksha/meditation' },
+      { icon: Clock, label: 'Meditation Timer', path: '/seeker/moksha/meditation-timer' },
       { icon: Compass, label: 'Spiritual Goals', path: '/seeker/moksha/goals' },
       { icon: BookOpen, label: 'Inner Peace Journal', path: '/seeker/moksha/journal' },
       { icon: Sparkles, label: 'Consciousness Growth', path: '/seeker/moksha/consciousness' },
