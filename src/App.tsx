@@ -176,6 +176,8 @@ import CoachCreateAssignment from "./pages/coaching/CoachCreateAssignment";
 import CoachPendingSubmissions from "./pages/coaching/CoachPendingSubmissions";
 import CoachReviewedAssignments from "./pages/coaching/CoachReviewedAssignments";
 import CoachCompletionRate from "./pages/coaching/CoachCompletionRate";
+import CoachBroadcast from "./pages/coaching/CoachBroadcast";
+import CoachWeeklyReport from "./pages/coaching/CoachWeeklyReport";
 
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -404,6 +406,8 @@ const App = () => (
             <Route path="/coaching/progress-report" element={<P />} />
             <Route path="/coaching/artha-progress" element={<P />} />
             <Route path="/coaching/export" element={<P />} />
+            <Route path="/coaching/broadcast" element={<CoachBroadcast />} />
+            <Route path="/coaching/weekly-report" element={<CoachWeeklyReport />} />
             <Route path="/coaching/settings" element={<P />} />
           </Route>
 
