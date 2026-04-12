@@ -115,6 +115,11 @@ import SeekerBookmarks from "./pages/seeker/SeekerBookmarks";
 import SeekerNotifications from "./pages/seeker/SeekerNotifications";
 import SeekerAnnouncements from "./pages/seeker/SeekerAnnouncements";
 import SeekerHelp from "./pages/seeker/SeekerHelp";
+import SeekerLiveSession from "./pages/seeker/SeekerLiveSession";
+import SeekerSessionNotes from "./pages/seeker/SeekerSessionNotes";
+import SeekerFeedback from "./pages/seeker/SeekerFeedback";
+import SeekerSubmitAssignment from "./pages/seeker/SeekerSubmitAssignment";
+import SeekerCoachFeedback from "./pages/seeker/SeekerCoachFeedback";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
@@ -300,11 +305,11 @@ const App = () => (
             <Route path="/seeker/personality" element={<SeekerPersonality />} />
             <Route path="/seeker/progress-charts" element={<SeekerProgressCharts />} />
             <Route path="/seeker/assessment-history" element={<SeekerAssessmentHistory />} />
-            <Route path="/seeker/live-session" element={<P />} />
-            <Route path="/seeker/session-notes" element={<P />} />
-            <Route path="/seeker/feedback" element={<P />} />
-            <Route path="/seeker/submit-assignment" element={<P />} />
-            <Route path="/seeker/coach-feedback" element={<P />} />
+            <Route path="/seeker/live-session" element={<SeekerLiveSession />} />
+            <Route path="/seeker/session-notes" element={<SeekerSessionNotes />} />
+            <Route path="/seeker/feedback" element={<SeekerFeedback />} />
+            <Route path="/seeker/submit-assignment" element={<SeekerSubmitAssignment />} />
+            <Route path="/seeker/coach-feedback" element={<SeekerCoachFeedback />} />
             <Route path="/seeker/learning/videos" element={<SeekerLearningVideos />} />
             <Route path="/seeker/learning/audio" element={<SeekerLearningAudio />} />
             <Route path="/seeker/learning/pdfs" element={<SeekerLearningPdfs />} />
