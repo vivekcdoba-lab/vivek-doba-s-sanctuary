@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Heart, Volume2, Share2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/store/authStore';
+import { toast } from 'sonner';
 
 const dimensionColors: Record<string, string> = {
   dharma: 'from-purple-500/20 to-indigo-500/20 border-purple-300',
@@ -18,6 +20,8 @@ const dimensionEmoji: Record<string, string> = {
 
 const DailyAffirmationWidget = () => {
   const [randomOffset, setRandomOffset] = useState(0);
+  const { profile } = useAuthStore();
+  const queryClient = useQueryClient();
 
   const { data: affirmations = [] } = useQuery({
     queryKey: ['daily-affirmations'],
@@ -31,6 +35,41 @@ const DailyAffirmationWidget = () => {
     },
   });
 
+  const { data: favorites = [] } = useQuery({
+    queryKey: ['favorite-affirmations', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+      const { data } = await supabase
+        .from('favorite_affirmations')
+        .select('affirmation_id')
+        .eq('user_id', profile.id);
+      return (data || []).map(f => f.affirmation_id);
+    },
+    enabled: !!profile?.id,
+  });
+
+  const saveFavorite = useMutation({
+    mutationFn: async (affirmationId: string) => {
+      if (!profile?.id) throw new Error('Not logged in');
+      const isFav = favorites.includes(affirmationId);
+      if (isFav) {
+        await supabase
+          .from('favorite_affirmations')
+          .delete()
+          .eq('user_id', profile.id)
+          .eq('affirmation_id', affirmationId);
+      } else {
+        await supabase
+          .from('favorite_affirmations')
+          .insert({ user_id: profile.id, affirmation_id: affirmationId });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['favorite-affirmations'] });
+      toast.success('Updated favorites');
+    },
+  });
+
   if (affirmations.length === 0) return null;
 
   // Pick based on day of year + random offset
@@ -39,6 +78,7 @@ const DailyAffirmationWidget = () => {
   const aff = affirmations[idx];
   const cat = aff.category || 'general';
   const gradient = dimensionColors[cat] || dimensionColors.general;
+  const isFav = favorites.includes(aff.id);
 
   const handleSpeak = () => {
     if ('speechSynthesis' in window) {
@@ -50,8 +90,12 @@ const DailyAffirmationWidget = () => {
   };
 
   const handleShare = () => {
+    const text = `${aff.affirmation_text}\n\n${aff.affirmation_hindi || ''}\n\n— VDTS`;
     if (navigator.share) {
-      navigator.share({ text: `${aff.affirmation_text}\n\n${aff.affirmation_hindi || ''}\n\n— VDTS` });
+      navigator.share({ text });
+    } else {
+      navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard!');
     }
   };
 
@@ -87,8 +131,13 @@ const DailyAffirmationWidget = () => {
         <Button variant="outline" size="sm" onClick={handleSpeak} className="h-8 text-xs gap-1">
           <Volume2 className="w-3 h-3" /> Listen
         </Button>
-        <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
-          <Heart className="w-3 h-3" /> Save
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => saveFavorite.mutate(aff.id)}
+          className={`h-8 text-xs gap-1 ${isFav ? 'bg-pink-100 border-pink-300 text-pink-600' : ''}`}
+        >
+          <Heart className={`w-3 h-3 ${isFav ? 'fill-pink-500 text-pink-500' : ''}`} /> {isFav ? 'Saved' : 'Save'}
         </Button>
         <Button variant="outline" size="sm" onClick={handleShare} className="h-8 text-xs gap-1">
           <Share2 className="w-3 h-3" /> Share
