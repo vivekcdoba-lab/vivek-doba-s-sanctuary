@@ -56,10 +56,13 @@ export default function SeekerPoints() {
         <h3 className="text-sm font-semibold text-foreground mb-3">How You Earn Points</h3>
         <div className="space-y-3">
           {[
-            { icon: Flame, label: 'Daily Streak', value: '+50/day', desc: 'Complete your worksheet daily' },
-            { icon: Award, label: 'Badges', value: '+100 each', desc: 'Earn achievement badges' },
-            { icon: Star, label: 'Session Attendance', value: '+75/session', desc: 'Attend coaching sessions' },
-            { icon: TrendingUp, label: 'Assessments', value: '+50 each', desc: 'Complete self-assessments' },
+            { icon: Flame, label: 'Worksheet Morning', value: '+10', desc: 'Complete morning intention' },
+            { icon: Flame, label: 'Worksheet Evening', value: '+10', desc: 'Complete evening reflection' },
+            { icon: Star, label: 'Both Same Day Bonus', value: '+5', desc: 'Complete morning & evening' },
+            { icon: Award, label: 'Assessment Completed', value: '+50', desc: 'Complete any assessment' },
+            { icon: TrendingUp, label: 'Session Attended', value: '+30', desc: 'Attend a coaching session' },
+            { icon: Award, label: 'Assignment', value: '+10-50', desc: 'Complete assignments' },
+            { icon: Star, label: 'Streak Milestone', value: '+100', desc: 'Hit 7, 21, 30, 60, 90, 180 days' },
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
