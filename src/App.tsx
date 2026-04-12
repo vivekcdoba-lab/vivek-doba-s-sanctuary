@@ -206,11 +206,11 @@ const App = () => (
             <Route path="/admin/new-enrollment" element={<AdminNewEnrollment />} />
             <Route path="/admin/batches" element={<AdminBatches />} />
             <Route path="/admin/enrollment-stats" element={<AdminEnrollmentStats />} />
-            <Route path="/admin/add-lead" element={<P />} />
-            <Route path="/admin/all-leads" element={<P />} />
-            <Route path="/admin/hot-leads" element={<P />} />
-            <Route path="/admin/conversion-funnel" element={<P />} />
-            <Route path="/admin/lead-sources" element={<P />} />
+            <Route path="/admin/add-lead" element={<AdminAddLead />} />
+            <Route path="/admin/all-leads" element={<AdminAllLeads />} />
+            <Route path="/admin/hot-leads" element={<AdminHotLeads />} />
+            <Route path="/admin/conversion-funnel" element={<AdminConversionFunnel />} />
+            <Route path="/admin/lead-sources" element={<AdminLeadSources />} />
             <Route path="/admin/record-payment" element={<P />} />
             <Route path="/admin/invoices" element={<P />} />
             <Route path="/admin/overdue-payments" element={<P />} />
