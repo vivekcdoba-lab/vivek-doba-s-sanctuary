@@ -12,7 +12,7 @@ import {
   Video, Headphones, FileText, Bookmark, Volume2, Trophy, Medal, Star,
   Heart, Users, Smile, Sunrise, Brain, Compass, Building2, Eye, BarChart,
   Megaphone, Palette, Briefcase, DollarSign, Banknote, UsersRound, Microscope,
-  Award, PanelLeftClose, PanelLeft
+  Award, PanelLeftClose, PanelLeft, Clock
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -28,6 +28,8 @@ const seekerNav: NavGroup[] = [
   {
     label: 'DAILY PRACTICE', emoji: '📝', dividerBefore: 'MY JOURNEY', items: [
       { icon: ScrollText, label: "Today's Worksheet", path: '/seeker/worksheet' },
+      { icon: Clock, label: 'Time Sheet', path: '/seeker/timesheet' },
+      { icon: Target, label: 'Challenges', path: '/seeker/challenges' },
       { icon: BarChart3, label: 'Worksheet History', path: '/seeker/worksheet-history' },
       { icon: Flame, label: 'My Streaks', path: '/seeker/streaks' },
       { icon: Star, label: 'Weekly Review', path: '/seeker/weekly-review' },
