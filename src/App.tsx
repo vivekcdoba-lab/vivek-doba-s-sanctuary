@@ -40,6 +40,11 @@ import SessionReviewPage from "./pages/admin/SessionReviewPage";
 import SessionTemplatesPage from "./pages/admin/SessionTemplatesPage";
 import SwotPage from "./pages/admin/SwotPage";
 import ActiveSessionsPage from "./pages/admin/ActiveSessionsPage";
+import AdminCoaches from "./pages/admin/AdminCoaches";
+import AdminAdmins from "./pages/admin/AdminAdmins";
+import AdminAddUser from "./pages/admin/AdminAddUser";
+import AdminUserAnalytics from "./pages/admin/AdminUserAnalytics";
+import AdminSearchUsers from "./pages/admin/AdminSearchUsers";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -177,11 +182,11 @@ const App = () => (
             <Route path="/swot" element={<SwotPage />} />
             <Route path="/active-sessions" element={<ActiveSessionsPage />} />
             {/* Admin placeholder routes */}
-            <Route path="/admin/coaches" element={<P />} />
-            <Route path="/admin/admins" element={<P />} />
-            <Route path="/admin/add-user" element={<P />} />
-            <Route path="/admin/user-analytics" element={<P />} />
-            <Route path="/admin/search-users" element={<P />} />
+            <Route path="/admin/coaches" element={<AdminCoaches />} />
+            <Route path="/admin/admins" element={<AdminAdmins />} />
+            <Route path="/admin/add-user" element={<AdminAddUser />} />
+            <Route path="/admin/user-analytics" element={<AdminUserAnalytics />} />
+            <Route path="/admin/search-users" element={<AdminSearchUsers />} />
             <Route path="/admin/create-program" element={<P />} />
             <Route path="/admin/edit-programs" element={<P />} />
             <Route path="/admin/program-analytics" element={<P />} />
