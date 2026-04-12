@@ -338,6 +338,12 @@ const App = () => (
             <Route path="/seeker/worksheet-history" element={<SeekerWorksheetHistory />} />
             <Route path="/seeker/timesheet" element={<SeekerTimeSheet />} />
             <Route path="/seeker/challenges" element={<SeekerChallenges />} />
+            <Route path="/seeker/gratitude-wall" element={<SeekerGratitudeWall />} />
+            <Route path="/seeker/win-journal" element={<SeekerWinJournal />} />
+            <Route path="/seeker/transformation" element={<SeekerTransformationTimeline />} />
+            <Route path="/seeker/dharma/ikigai" element={<SeekerIkigai />} />
+            <Route path="/seeker/moksha/meditation-timer" element={<SeekerMeditationTimer />} />
+            <Route path="/seeker/kama/relationships" element={<SeekerRelationshipTracker />} />
             <Route path="/seeker/streaks" element={<SeekerStreaks />} />
             <Route path="/seeker/personality" element={<SeekerPersonality />} />
             <Route path="/seeker/progress-charts" element={<SeekerProgressCharts />} />
