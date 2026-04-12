@@ -148,7 +148,8 @@ import SeekerCoachFeedback from "./pages/seeker/SeekerCoachFeedback";
 import SeekerKamaSocial from "./pages/seeker/SeekerKamaSocial";
 import SeekerKamaDesires from "./pages/seeker/SeekerKamaDesires";
 import SeekerMokshaConsciousness from "./pages/seeker/SeekerMokshaConsciousness";
-
+import SeekerTimeSheet from "./pages/seeker/SeekerTimeSheet";
+import SeekerChallenges from "./pages/seeker/SeekerChallenges";
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
 import AgreementsPage from "./pages/coaching/AgreementsPage";
@@ -329,6 +330,8 @@ const App = () => (
             <Route path="/seeker/leaderboard" element={<SeekerLeaderboard />} />
             {/* Placeholder routes */}
             <Route path="/seeker/worksheet-history" element={<SeekerWorksheetHistory />} />
+            <Route path="/seeker/timesheet" element={<SeekerTimeSheet />} />
+            <Route path="/seeker/challenges" element={<SeekerChallenges />} />
             <Route path="/seeker/streaks" element={<SeekerStreaks />} />
             <Route path="/seeker/personality" element={<SeekerPersonality />} />
             <Route path="/seeker/progress-charts" element={<SeekerProgressCharts />} />

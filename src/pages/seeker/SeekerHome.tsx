@@ -16,6 +16,7 @@ import UpcomingSessionsWidget from '@/components/dashboard/UpcomingSessionsWidge
 import AssignmentsWidget from '@/components/dashboard/AssignmentsWidget';
 import WisdomQuote from '@/components/dashboard/WisdomQuote';
 import QuickActionsBar from '@/components/dashboard/QuickActionsBar';
+import DailyAffirmationWidget from '@/components/dashboard/DailyAffirmationWidget';
 
 const SeekerHome = () => {
   const { profile, logout } = useAuthStore();
@@ -75,7 +76,10 @@ const SeekerHome = () => {
         <WorksheetStatusCard hasFilledToday={false} streak={streak} />
       </div>
 
-      {/* Today's Affirmation */}
+      {/* Daily Affirmation from DB */}
+      <DailyAffirmationWidget />
+
+      {/* Today's Affirmation (fallback) */}
       <div className="glass-card p-5 border-2 border-primary/20 relative">
         <div className="absolute top-2 right-3 text-xs text-primary">✦</div>
         <p className="text-sm font-semibold text-primary mb-1">Today's Affirmation</p>
