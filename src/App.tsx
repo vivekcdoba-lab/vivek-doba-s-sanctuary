@@ -323,10 +323,10 @@ const App = () => (
             <Route path="/coaching/today-sessions" element={<CoachTodaySessions />} />
             <Route path="/coaching/past-sessions" element={<CoachPastSessions />} />
             <Route path="/coaching/session-analytics" element={<CoachSessionAnalytics />} />
-            <Route path="/coaching/create-assignment" element={<P />} />
-            <Route path="/coaching/pending-submissions" element={<P />} />
-            <Route path="/coaching/reviewed" element={<P />} />
-            <Route path="/coaching/completion-rate" element={<P />} />
+            <Route path="/coaching/create-assignment" element={<CoachCreateAssignment />} />
+            <Route path="/coaching/pending-submissions" element={<CoachPendingSubmissions />} />
+            <Route path="/coaching/reviewed" element={<CoachReviewedAssignments />} />
+            <Route path="/coaching/completion-rate" element={<CoachCompletionRate />} />
             <Route path="/coaching/generate-reports" element={<P />} />
             <Route path="/coaching/businesses" element={<P />} />
             <Route path="/coaching/swot-reviews" element={<P />} />
