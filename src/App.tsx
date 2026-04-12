@@ -120,6 +120,9 @@ import SeekerSessionNotes from "./pages/seeker/SeekerSessionNotes";
 import SeekerFeedback from "./pages/seeker/SeekerFeedback";
 import SeekerSubmitAssignment from "./pages/seeker/SeekerSubmitAssignment";
 import SeekerCoachFeedback from "./pages/seeker/SeekerCoachFeedback";
+import SeekerKamaSocial from "./pages/seeker/SeekerKamaSocial";
+import SeekerKamaDesires from "./pages/seeker/SeekerKamaDesires";
+import SeekerMokshaConsciousness from "./pages/seeker/SeekerMokshaConsciousness";
 
 import CoachingDashboard from "./pages/coaching/CoachingDashboard";
 import ClientIntakePage from "./pages/coaching/ClientIntakePage";
@@ -288,13 +291,13 @@ const App = () => (
             {/* Kama */}
             <Route path="/seeker/kama/goals" element={<SeekerKamaGoals />} />
             <Route path="/seeker/kama/family" element={<SeekerKamaFamily />} />
-            <Route path="/seeker/kama/social" element={<P />} />
-            <Route path="/seeker/kama/desires" element={<P />} />
+            <Route path="/seeker/kama/social" element={<SeekerKamaSocial />} />
+            <Route path="/seeker/kama/desires" element={<SeekerKamaDesires />} />
             {/* Moksha */}
             <Route path="/seeker/moksha/meditation" element={<SeekerMokshaMeditation />} />
             <Route path="/seeker/moksha/goals" element={<SeekerMokshaGoals />} />
             <Route path="/seeker/moksha/journal" element={<SeekerMokshaJournal />} />
-            <Route path="/seeker/moksha/consciousness" element={<P />} />
+            <Route path="/seeker/moksha/consciousness" element={<SeekerMokshaConsciousness />} />
             {/* Achievements */}
             <Route path="/seeker/badges" element={<SeekerBadges />} />
             <Route path="/seeker/points" element={<SeekerPoints />} />
