@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, CalendarDays, Clock, IndianRupee, Video, MapPin, Plus, PhoneCall, Bell, Target, TrendingUp, TrendingDown, ExternalLink, ClipboardList, AlertTriangle, Clipboard } from 'lucide-react';
+import { Users, CalendarDays, Clock, IndianRupee, Video, MapPin, Plus, PhoneCall, Bell, Target, TrendingUp, TrendingDown, ClipboardList, Clipboard, GraduationCap } from 'lucide-react';
 import { MOTIVATIONAL_QUOTES, formatINR, getGreeting } from '@/data/mockData';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { useDbSessions } from '@/hooks/useDbSessions';
@@ -11,10 +11,11 @@ import { useDbCourses } from '@/hooks/useDbCourses';
 import BirthdayAnniversaryReminders from '@/components/BirthdayAnniversaryReminders';
 import { SkeletonDashboard } from '@/components/SkeletonCard';
 import DonutChart from '@/components/charts/DonutChart';
-import StackedBarChart from '@/components/charts/StackedBarChart';
 import FunnelChart from '@/components/charts/FunnelChart';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import ChartWrapper from '@/components/charts/ChartWrapper';
+import ActivityFeed from '@/components/dashboard/ActivityFeed';
+import CoachPerformanceChart from '@/components/dashboard/CoachPerformanceChart';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 const CountUp = ({ end, prefix = '' }: { end: number; prefix?: string }) => {
   const [count, setCount] = useState(0);
@@ -91,6 +92,21 @@ const AdminDashboard = () => {
     { name: 'Overdue', value: assignments.filter(a => a.status === 'overdue').length },
   ].filter(d => d.value > 0);
 
+  // Coach performance mock data
+  const coachData = [
+    { name: 'Vivek', seekers: 15, rating: 4.8 },
+    { name: 'Archana', seekers: 12, rating: 4.9 },
+    { name: 'Raj', seekers: 8, rating: 4.6 },
+  ];
+
+  // Activity feed
+  const activityItems = seekers.slice(0, 3).map((s, i) => ({
+    id: s.id,
+    emoji: ['🟢', '💰', '🔥'][i] || '🟢',
+    text: [`New enrollment: ${s.full_name}`, `Payment received from ${s.full_name}`, `Lead converted: ${s.full_name}`][i] || s.full_name,
+    time: `${i + 1}h ago`,
+  }));
+
   if (seekersLoading || sessionsLoading) {
     return <div className="p-4"><SkeletonDashboard /></div>;
   }
@@ -100,7 +116,7 @@ const AdminDashboard = () => {
       {/* Hero Banner */}
       <div className="gradient-hero rounded-2xl p-6 lg:p-8 text-primary-foreground relative overflow-hidden">
         <div className="absolute top-2 right-6 text-6xl opacity-10">ॐ</div>
-        <h1 className="text-2xl lg:text-3xl font-bold">{getGreeting()}, Vivek Sir</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold">👑 {getGreeting()}, Vivek Sir</h1>
         <p className="text-primary-foreground/70 mt-1">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
         <p className="text-sm text-primary-foreground/60 mt-3 italic">"{quote.text}" — {quote.author}</p>
         <Link to="/coach-day" className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-xl bg-primary-foreground/20 text-primary-foreground text-sm font-medium hover:bg-primary-foreground/30 transition-colors">
@@ -110,16 +126,15 @@ const AdminDashboard = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users} label="Active Seekers" value={activeSeekers} gradient="gradient-chakravartin" trend={`${activeSeekers} total`} trendUp />
-        <StatCard icon={CalendarDays} label="Total Sessions" value={sessionsThisMonth} gradient="gradient-sacred" />
-        <StatCard icon={Clock} label="Pending Tasks" value={pendingTasks} gradient="gradient-saffron" trend={pendingTasks > 5 ? 'Needs attention' : ''} trendUp={false} />
-        <StatCard icon={IndianRupee} label="Revenue (This Month)" value={monthRevenue} prefix="₹" gradient="gradient-growth" />
+        <StatCard icon={Users} label="Active Seekers" value={activeSeekers} gradient="gradient-chakravartin" trend={`+12`} trendUp />
+        <StatCard icon={GraduationCap} label="Coaches" value={8} gradient="gradient-sacred" />
+        <StatCard icon={IndianRupee} label="Revenue (This Month)" value={monthRevenue} prefix="₹" gradient="gradient-growth" trend="+18%" trendUp />
+        <StatCard icon={Target} label="Leads" value={leads.length} gradient="gradient-saffron" />
       </div>
 
-      {/* Charts Row 1 */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        {/* Revenue Trend */}
-        <ChartWrapper title="Revenue Trend" emoji="💰" className="lg:col-span-2">
+      {/* Charts Row 1: Revenue + Enrollment Funnel */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <ChartWrapper title="Revenue Trend" emoji="📈" className="lg:col-span-1">
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={revenueTrend}>
               <defs>
@@ -136,20 +151,32 @@ const AdminDashboard = () => {
             </AreaChart>
           </ResponsiveContainer>
         </ChartWrapper>
-
-        <DonutChart
-          title="Session Status"
-          emoji="📅"
-          data={sessionStatusData}
-          centerLabel="Total"
-          centerValue={sessions.length}
-        />
+        <FunnelChart title="Enrollment Funnel" emoji="📊" stages={funnelStages} />
       </div>
 
-      {/* Charts Row 2 */}
+      {/* Charts Row 2: Coach Performance + Activity Feed */}
       <div className="grid lg:grid-cols-2 gap-4">
-        <FunnelChart title="Lead Conversion Funnel" emoji="🔻" stages={funnelStages} />
+        <CoachPerformanceChart data={coachData} />
+        <ActivityFeed items={activityItems} />
+      </div>
+
+      {/* Charts Row 3: Session + Assignment donuts */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <DonutChart title="Session Status" emoji="📅" data={sessionStatusData} centerLabel="Total" centerValue={sessions.length} />
         <DonutChart title="Assignment Status" emoji="📋" data={assignmentData} centerLabel="Total" centerValue={assignments.length} />
+      </div>
+
+      {/* Programs Summary */}
+      <div>
+        <h2 className="text-lg font-semibold text-foreground mb-3">📚 Programs</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {courses.slice(0, 4).map(c => (
+            <div key={c.id} className="bg-card rounded-xl p-4 shadow-sm border border-border card-hover">
+              <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
+              <p className="text-xs text-muted-foreground mt-1">{c.tier} • ₹{Number(c.price).toLocaleString('en-IN')}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Today's Schedule */}
@@ -225,12 +252,12 @@ const AdminDashboard = () => {
         <h2 className="text-lg font-semibold text-foreground mb-3">Quick Actions</h2>
         <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { label: 'Add Seeker', icon: Plus, gradient: 'gradient-chakravartin', path: '/seekers' },
-            { label: 'Schedule Session', icon: CalendarDays, gradient: 'gradient-sacred', path: '/sessions' },
-            { label: 'Create Assignment', icon: ClipboardList, gradient: 'gradient-saffron', path: '/assignments' },
-            { label: 'Quick Follow-up', icon: PhoneCall, gradient: 'gradient-growth', path: '/follow-ups' },
-            { label: 'Send Reminder', icon: Bell, gradient: 'gradient-hero', path: '/messages' },
+            { label: 'Add User', icon: Plus, gradient: 'gradient-chakravartin', path: '/admin/add-user' },
             { label: 'Add Lead', icon: Target, gradient: 'bg-lotus-pink', path: '/leads' },
+            { label: 'Schedule Session', icon: CalendarDays, gradient: 'gradient-sacred', path: '/sessions' },
+            { label: 'Record Payment', icon: IndianRupee, gradient: 'gradient-growth', path: '/admin/record-payment' },
+            { label: 'Follow-up', icon: PhoneCall, gradient: 'gradient-saffron', path: '/follow-ups' },
+            { label: 'Reports', icon: ClipboardList, gradient: 'gradient-hero', path: '/reports' },
           ].map(action => (
             <Link key={action.label} to={action.path} className={`${action.gradient} rounded-xl p-4 text-center text-primary-foreground card-hover btn-press`}>
               <action.icon className="w-6 h-6 mx-auto mb-2" />
