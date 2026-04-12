@@ -1527,6 +1527,42 @@ export type Database = {
           },
         ]
       }
+      favorite_affirmations: {
+        Row: {
+          affirmation_id: string
+          id: string
+          saved_at: string
+          user_id: string
+        }
+        Insert: {
+          affirmation_id: string
+          id?: string
+          saved_at?: string
+          user_id: string
+        }
+        Update: {
+          affirmation_id?: string
+          id?: string
+          saved_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorite_affirmations_affirmation_id_fkey"
+            columns: ["affirmation_id"]
+            isOneToOne: false
+            referencedRelation: "daily_affirmations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorite_affirmations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follow_ups: {
         Row: {
           completion_notes: string | null
