@@ -45,6 +45,13 @@ import AdminAdmins from "./pages/admin/AdminAdmins";
 import AdminAddUser from "./pages/admin/AdminAddUser";
 import AdminUserAnalytics from "./pages/admin/AdminUserAnalytics";
 import AdminSearchUsers from "./pages/admin/AdminSearchUsers";
+import AdminCreateProgram from "./pages/admin/AdminCreateProgram";
+import AdminEditPrograms from "./pages/admin/AdminEditPrograms";
+import AdminProgramAnalytics from "./pages/admin/AdminProgramAnalytics";
+import AdminEnrollments from "./pages/admin/AdminEnrollments";
+import AdminNewEnrollment from "./pages/admin/AdminNewEnrollment";
+import AdminBatches from "./pages/admin/AdminBatches";
+import AdminEnrollmentStats from "./pages/admin/AdminEnrollmentStats";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
