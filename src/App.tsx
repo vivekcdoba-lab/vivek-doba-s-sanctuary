@@ -57,6 +57,31 @@ import AdminAllLeads from "./pages/admin/AdminAllLeads";
 import AdminHotLeads from "./pages/admin/AdminHotLeads";
 import AdminConversionFunnel from "./pages/admin/AdminConversionFunnel";
 import AdminLeadSources from "./pages/admin/AdminLeadSources";
+import AdminRecordPayment from "./pages/admin/AdminRecordPayment";
+import AdminInvoices from "./pages/admin/AdminInvoices";
+import AdminOverduePayments from "./pages/admin/AdminOverduePayments";
+import AdminRevenue from "./pages/admin/AdminRevenue";
+import AdminExportFinancials from "./pages/admin/AdminExportFinancials";
+import AdminVideos from "./pages/admin/AdminVideos";
+import AdminAudios from "./pages/admin/AdminAudios";
+import AdminUploadResource from "./pages/admin/AdminUploadResource";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminQuestionBank from "./pages/admin/AdminQuestionBank";
+import AdminCreateAssessment from "./pages/admin/AdminCreateAssessment";
+import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
+import AdminCompetitors from "./pages/admin/AdminCompetitors";
+import AdminBusinessMetrics from "./pages/admin/AdminBusinessMetrics";
+import AdminStrategicGoals from "./pages/admin/AdminStrategicGoals";
+import AdminUserGrowth from "./pages/admin/AdminUserGrowth";
+import AdminEngagement from "./pages/admin/AdminEngagement";
+import AdminCoachPerformance from "./pages/admin/AdminCoachPerformance";
+import AdminRetention from "./pages/admin/AdminRetention";
+import AdminExportReports from "./pages/admin/AdminExportReports";
+import AdminBranding from "./pages/admin/AdminBranding";
+import AdminNotificationsPage from "./pages/admin/AdminNotificationsPage";
+import AdminIntegrations from "./pages/admin/AdminIntegrations";
+import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
+import AdminBackup from "./pages/admin/AdminBackup";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -219,31 +244,31 @@ const App = () => (
             <Route path="/admin/hot-leads" element={<AdminHotLeads />} />
             <Route path="/admin/conversion-funnel" element={<AdminConversionFunnel />} />
             <Route path="/admin/lead-sources" element={<AdminLeadSources />} />
-            <Route path="/admin/record-payment" element={<P />} />
-            <Route path="/admin/invoices" element={<P />} />
-            <Route path="/admin/overdue-payments" element={<P />} />
-            <Route path="/admin/revenue" element={<P />} />
-            <Route path="/admin/export-financials" element={<P />} />
-            <Route path="/admin/videos" element={<P />} />
-            <Route path="/admin/audios" element={<P />} />
-            <Route path="/admin/upload-resource" element={<P />} />
-            <Route path="/admin/categories" element={<P />} />
-            <Route path="/admin/question-bank" element={<P />} />
-            <Route path="/admin/create-assessment" element={<P />} />
-            <Route path="/admin/announcements" element={<P />} />
-            <Route path="/admin/competitors" element={<P />} />
-            <Route path="/admin/business-metrics" element={<P />} />
-            <Route path="/admin/strategic-goals" element={<P />} />
-            <Route path="/admin/user-growth" element={<P />} />
-            <Route path="/admin/engagement" element={<P />} />
-            <Route path="/admin/coach-performance" element={<P />} />
-            <Route path="/admin/retention" element={<P />} />
-            <Route path="/admin/export-reports" element={<P />} />
-            <Route path="/admin/branding" element={<P />} />
-            <Route path="/admin/notifications" element={<P />} />
-            <Route path="/admin/integrations" element={<P />} />
-            <Route path="/admin/audit-logs" element={<P />} />
-            <Route path="/admin/backup" element={<P />} />
+            <Route path="/admin/record-payment" element={<AdminRecordPayment />} />
+            <Route path="/admin/invoices" element={<AdminInvoices />} />
+            <Route path="/admin/overdue-payments" element={<AdminOverduePayments />} />
+            <Route path="/admin/revenue" element={<AdminRevenue />} />
+            <Route path="/admin/export-financials" element={<AdminExportFinancials />} />
+            <Route path="/admin/videos" element={<AdminVideos />} />
+            <Route path="/admin/audios" element={<AdminAudios />} />
+            <Route path="/admin/upload-resource" element={<AdminUploadResource />} />
+            <Route path="/admin/categories" element={<AdminCategories />} />
+            <Route path="/admin/question-bank" element={<AdminQuestionBank />} />
+            <Route path="/admin/create-assessment" element={<AdminCreateAssessment />} />
+            <Route path="/admin/announcements" element={<AdminAnnouncements />} />
+            <Route path="/admin/competitors" element={<AdminCompetitors />} />
+            <Route path="/admin/business-metrics" element={<AdminBusinessMetrics />} />
+            <Route path="/admin/strategic-goals" element={<AdminStrategicGoals />} />
+            <Route path="/admin/user-growth" element={<AdminUserGrowth />} />
+            <Route path="/admin/engagement" element={<AdminEngagement />} />
+            <Route path="/admin/coach-performance" element={<AdminCoachPerformance />} />
+            <Route path="/admin/retention" element={<AdminRetention />} />
+            <Route path="/admin/export-reports" element={<AdminExportReports />} />
+            <Route path="/admin/branding" element={<AdminBranding />} />
+            <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
+            <Route path="/admin/integrations" element={<AdminIntegrations />} />
+            <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+            <Route path="/admin/backup" element={<AdminBackup />} />
           </Route>
 
           {/* Seeker Routes */}
