@@ -969,6 +969,45 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_affirmations: {
+        Row: {
+          affirmation_hindi: string | null
+          affirmation_text: string
+          author: string | null
+          category: string | null
+          created_at: string
+          display_date: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          source: string | null
+        }
+        Insert: {
+          affirmation_hindi?: string | null
+          affirmation_text: string
+          author?: string | null
+          category?: string | null
+          created_at?: string
+          display_date?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          source?: string | null
+        }
+        Update: {
+          affirmation_hindi?: string | null
+          affirmation_text?: string
+          author?: string | null
+          category?: string | null
+          created_at?: string
+          display_date?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          source?: string | null
+        }
+        Relationships: []
+      }
       daily_financial_log: {
         Row: {
           amount_inr: number | null
@@ -2036,6 +2075,48 @@ export type Database = {
         }
         Relationships: []
       }
+      program_trainers: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          program_id: string
+          role: string | null
+          trainer_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          program_id: string
+          role?: string | null
+          trainer_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          program_id?: string
+          role?: string | null
+          trainer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_trainers_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_trainers_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resources: {
         Row: {
           category: string | null
@@ -2486,6 +2567,60 @@ export type Database = {
           },
           {
             foreignKeyName: "session_comments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_notes: {
+        Row: {
+          attachments_json: Json | null
+          author_id: string
+          author_role: string | null
+          content: string
+          created_at: string
+          id: string
+          is_private: boolean | null
+          note_type: string | null
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          attachments_json?: Json | null
+          author_id: string
+          author_role?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_private?: boolean | null
+          note_type?: string | null
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          attachments_json?: Json | null
+          author_id?: string
+          author_role?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_private?: boolean | null
+          note_type?: string | null
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_notes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_notes_session_id_fkey"
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "sessions"
@@ -3006,6 +3141,80 @@ export type Database = {
           },
         ]
       }
+      time_sheets: {
+        Row: {
+          created_at: string
+          date: string
+          energy_level: number | null
+          exercise_minutes: number | null
+          family_hours: number | null
+          id: string
+          learning_hours: number | null
+          meals_count: number | null
+          meditation_minutes: number | null
+          notes: string | null
+          productivity_score: number | null
+          reading_minutes: number | null
+          screen_time_hours: number | null
+          seeker_id: string
+          sleep_time: string | null
+          spiritual_practice_minutes: number | null
+          wake_up_time: string | null
+          water_glasses: number | null
+          work_hours: number | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          energy_level?: number | null
+          exercise_minutes?: number | null
+          family_hours?: number | null
+          id?: string
+          learning_hours?: number | null
+          meals_count?: number | null
+          meditation_minutes?: number | null
+          notes?: string | null
+          productivity_score?: number | null
+          reading_minutes?: number | null
+          screen_time_hours?: number | null
+          seeker_id: string
+          sleep_time?: string | null
+          spiritual_practice_minutes?: number | null
+          wake_up_time?: string | null
+          water_glasses?: number | null
+          work_hours?: number | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          energy_level?: number | null
+          exercise_minutes?: number | null
+          family_hours?: number | null
+          id?: string
+          learning_hours?: number | null
+          meals_count?: number | null
+          meditation_minutes?: number | null
+          notes?: string | null
+          productivity_score?: number | null
+          reading_minutes?: number | null
+          screen_time_hours?: number | null
+          seeker_id?: string
+          sleep_time?: string | null
+          spiritual_practice_minutes?: number | null
+          wake_up_time?: string | null
+          water_glasses?: number | null
+          work_hours?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_sheets_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       topics: {
         Row: {
           category: string | null
@@ -3188,6 +3397,110 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_challenge_progress: {
+        Row: {
+          challenge_id: string
+          completed_at: string | null
+          created_at: string
+          day_number: number
+          id: string
+          notes: string | null
+          seeker_id: string
+          task_completed: boolean | null
+        }
+        Insert: {
+          challenge_id: string
+          completed_at?: string | null
+          created_at?: string
+          day_number: number
+          id?: string
+          notes?: string | null
+          seeker_id: string
+          task_completed?: boolean | null
+        }
+        Update: {
+          challenge_id?: string
+          completed_at?: string | null
+          created_at?: string
+          day_number?: number
+          id?: string
+          notes?: string | null
+          seeker_id?: string
+          task_completed?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_challenge_progress_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_challenges: {
+        Row: {
+          badge_id: string | null
+          challenge_type: string | null
+          created_at: string
+          description: string | null
+          dimension: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          points_reward: number | null
+          program_id: string | null
+          start_date: string | null
+          tasks_json: Json | null
+          title: string
+        }
+        Insert: {
+          badge_id?: string | null
+          challenge_type?: string | null
+          created_at?: string
+          description?: string | null
+          dimension?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          points_reward?: number | null
+          program_id?: string | null
+          start_date?: string | null
+          tasks_json?: Json | null
+          title: string
+        }
+        Update: {
+          badge_id?: string | null
+          challenge_type?: string | null
+          created_at?: string
+          description?: string | null
+          dimension?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          points_reward?: number | null
+          program_id?: string | null
+          start_date?: string | null
+          tasks_json?: Json | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_challenges_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
             referencedColumns: ["id"]
           },
         ]
