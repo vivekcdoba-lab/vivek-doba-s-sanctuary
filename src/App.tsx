@@ -111,6 +111,10 @@ import CoachWorksheetPending from "./pages/coaching/CoachWorksheetPending";
 import CoachWorksheetReviewed from "./pages/coaching/CoachWorksheetReviewed";
 import CoachWorksheetStats from "./pages/coaching/CoachWorksheetStats";
 import CoachWorksheetMissed from "./pages/coaching/CoachWorksheetMissed";
+import CoachSchedule from "./pages/coaching/CoachSchedule";
+import CoachTodaySessions from "./pages/coaching/CoachTodaySessions";
+import CoachPastSessions from "./pages/coaching/CoachPastSessions";
+import CoachSessionAnalytics from "./pages/coaching/CoachSessionAnalytics";
 
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -311,10 +315,10 @@ const App = () => (
             <Route path="/coaching/worksheet-reviewed" element={<CoachWorksheetReviewed />} />
             <Route path="/coaching/worksheet-stats" element={<CoachWorksheetStats />} />
             <Route path="/coaching/worksheet-missed" element={<CoachWorksheetMissed />} />
-            <Route path="/coaching/schedule" element={<P />} />
-            <Route path="/coaching/today-sessions" element={<P />} />
-            <Route path="/coaching/past-sessions" element={<P />} />
-            <Route path="/coaching/session-analytics" element={<P />} />
+            <Route path="/coaching/schedule" element={<CoachSchedule />} />
+            <Route path="/coaching/today-sessions" element={<CoachTodaySessions />} />
+            <Route path="/coaching/past-sessions" element={<CoachPastSessions />} />
+            <Route path="/coaching/session-analytics" element={<CoachSessionAnalytics />} />
             <Route path="/coaching/create-assignment" element={<P />} />
             <Route path="/coaching/pending-submissions" element={<P />} />
             <Route path="/coaching/reviewed" element={<P />} />
