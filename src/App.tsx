@@ -288,13 +288,13 @@ const App = () => (
             {/* Kama */}
             <Route path="/seeker/kama/goals" element={<SeekerKamaGoals />} />
             <Route path="/seeker/kama/family" element={<SeekerKamaFamily />} />
-            <Route path="/seeker/kama/social" element={<P />} />
-            <Route path="/seeker/kama/desires" element={<P />} />
+            <Route path="/seeker/kama/social" element={<SeekerKamaSocial />} />
+            <Route path="/seeker/kama/desires" element={<SeekerKamaDesires />} />
             {/* Moksha */}
             <Route path="/seeker/moksha/meditation" element={<SeekerMokshaMeditation />} />
             <Route path="/seeker/moksha/goals" element={<SeekerMokshaGoals />} />
             <Route path="/seeker/moksha/journal" element={<SeekerMokshaJournal />} />
-            <Route path="/seeker/moksha/consciousness" element={<P />} />
+            <Route path="/seeker/moksha/consciousness" element={<SeekerMokshaConsciousness />} />
             {/* Achievements */}
             <Route path="/seeker/badges" element={<SeekerBadges />} />
             <Route path="/seeker/points" element={<SeekerPoints />} />
