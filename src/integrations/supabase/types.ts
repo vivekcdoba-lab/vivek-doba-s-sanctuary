@@ -362,6 +362,47 @@ export type Database = {
         }
         Relationships: []
       }
+      batches: {
+        Row: {
+          capacity: number
+          course_id: string | null
+          created_at: string
+          id: string
+          name: string
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batches_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branding_strategy: {
         Row: {
           brand_colors: Json | null
@@ -1870,6 +1911,41 @@ export type Database = {
         }
         Relationships: []
       }
+      points_ledger: {
+        Row: {
+          activity_type: string
+          created_at: string
+          description: string | null
+          id: string
+          points: number
+          seeker_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points?: number
+          seeker_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points?: number
+          seeker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "points_ledger_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2285,6 +2361,51 @@ export type Database = {
           },
         ]
       }
+      session_attendees: {
+        Row: {
+          attendance_status: string
+          created_at: string
+          feedback_rating: number | null
+          feedback_text: string | null
+          id: string
+          seeker_id: string
+          session_id: string
+        }
+        Insert: {
+          attendance_status?: string
+          created_at?: string
+          feedback_rating?: number | null
+          feedback_text?: string | null
+          id?: string
+          seeker_id: string
+          session_id: string
+        }
+        Update: {
+          attendance_status?: string
+          created_at?: string
+          feedback_rating?: number | null
+          feedback_text?: string | null
+          id?: string
+          seeker_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_attendees_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_attendees_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_audit_log: {
         Row: {
           action: string
@@ -2690,6 +2811,41 @@ export type Database = {
             foreignKeyName: "sessions_seeker_id_fkey"
             columns: ["seeker_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      streaks: {
+        Row: {
+          current_streak: number
+          id: string
+          last_completed_date: string | null
+          longest_streak: number
+          seeker_id: string
+          updated_at: string
+        }
+        Insert: {
+          current_streak?: number
+          id?: string
+          last_completed_date?: string | null
+          longest_streak?: number
+          seeker_id: string
+          updated_at?: string
+        }
+        Update: {
+          current_streak?: number
+          id?: string
+          last_completed_date?: string | null
+          longest_streak?: number
+          seeker_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "streaks_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
