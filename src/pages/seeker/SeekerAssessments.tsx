@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, LineChart, Line, Legend } from 'recharts';
 import LGTAssessment from '@/components/LGTAssessment';
 import FIROBAssessment from '@/components/FIROBAssessment';
+import WheelOfLifeEnhanced from '@/components/WheelOfLifeEnhanced';
 import BackToHome from '@/components/BackToHome';
 import { ChevronDown, Save, History } from 'lucide-react';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
@@ -112,6 +113,7 @@ const PROGRESS_TABLE = [
 
 const SeekerAssessments = () => {
   const [selfAssessing, setSelfAssessing] = useState(false);
+  const [enhancedWol, setEnhancedWol] = useState(false);
   const [lgtAssessing, setLgtAssessing] = useState(false);
   const [firobAssessing, setFirobAssessing] = useState(false);
   const [scores, setScores] = useState<number[]>(INITIAL_SCORES);
@@ -165,7 +167,7 @@ const SeekerAssessments = () => {
             detail: 'Strengths: Leadership, Communication, Discipline, Spiritual Practice, Persistence. Weaknesses: Time Management, Delegation, Financial Planning. Opportunities: Market Expansion, Digital Presence, Network Growth. Threats: Competition, Economic Slowdown.' },
           { key: 'wheel', icon: '☸', label: 'Wheel of Life', borderColor: 'hsl(var(--primary))', summary: `${analysis.avg}/10 avg`, lastDate: '01/03/2026',
             detail: `Total Score: ${analysis.total}/90 (${((analysis.total / 90) * 100).toFixed(0)}%). Strongest: ${AREAS[analysis.strongIdx].icon} ${AREAS[analysis.strongIdx].name} (${analysis.max}). Weakest: ${AREAS[analysis.weakIdx].icon} ${AREAS[analysis.weakIdx].name} (${analysis.min}). Balance Index: ${analysis.balance}/10.`,
-            action: () => { setSelfAssessing(true); setShowResults(false); }, actionLabel: '🎯 Self-Assess' },
+            action: () => setEnhancedWol(true), actionLabel: '🌟 Enhanced Assessment' },
           { key: 'lgt', icon: '🔺', label: 'LGT (Life\'s Golden Triangle)', borderColor: '#FF9933', summary: '68% Balance', lastDate: '01/03/2026',
             detail: 'Life: 72% — Strong spiritual foundation. Growth: 65% — Good learning trajectory. Triangle: 68% — Career and financial pillars need strengthening.',
             action: () => setLgtAssessing(true), actionLabel: '🔺 Take LGT Test' },
@@ -230,6 +232,14 @@ const SeekerAssessments = () => {
             } catch { toast.error('Failed to save'); }
             setFirobAssessing(false);
           }}
+        />
+      )}
+
+      {/* ═══ ENHANCED WHEEL OF LIFE ═══ */}
+      {enhancedWol && (
+        <WheelOfLifeEnhanced
+          onClose={() => setEnhancedWol(false)}
+          onSave={() => setEnhancedWol(false)}
         />
       )}
 
