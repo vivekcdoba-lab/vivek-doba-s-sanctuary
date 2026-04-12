@@ -1,84 +1,64 @@
 
 
-# Build Coach Session Management Pages
+# Build All Remaining Admin Placeholder Pages (25 pages)
 
 ## Overview
-Create 4 new pages under `/coaching/` that replace the current placeholder routes. All pages query the existing `sessions` table and `profiles` table, using the coaching layout's English/Hindi localization pattern.
+Replace all 25 `<P />` placeholder routes in `App.tsx` with functional pages. These are grouped into 7 modules.
 
-## Pages
+## Pages to Build
 
-### 1. CoachSchedule.tsx (`/coaching/schedule`)
-**Week/Day/Month calendar view with session creation**
+### Module 1: Payments (5 pages)
+1. **AdminRecordPayment.tsx** — Dedicated payment recording form (reuses `usePayments().createPayment`, seeker selector, GST calc)
+2. **AdminInvoices.tsx** — Invoice listing with search, print/download, InvoiceModal integration
+3. **AdminOverduePayments.tsx** — Filtered view of overdue payments with reminder actions (SendReminderModal)
+4. **AdminRevenue.tsx** — Revenue dashboard with monthly/quarterly charts (recharts BarChart, AreaChart), breakdown by course
+5. **AdminExportFinancials.tsx** — Export payments/revenue data as CSV, date range filter
 
-- Toggle between Day, Week, Month views (default: Week)
-- Week view: 7-column grid with hourly time slots (6 AM - 10 PM)
-- Sessions rendered as colored blocks based on status
-- "Block Time" button to create `blocked` calendar events via `calendar_events` table
-- Available slots shown as light green backgrounds
-- Quick session creation dialog (reuse pattern from `SessionsPage` — seeker picker, date, time, course, template)
-- Drag-drop rescheduling: HTML5 drag on session cards, drop on time slots triggers `useUpdateSession` to update date/start_time/end_time
-- Navigation arrows for prev/next week/month
-- Queries: `sessions` table + `calendar_events` for blocked slots
+### Module 2: Resources (4 pages)
+6. **AdminVideos.tsx** — List/manage video learning content from `learning_content` table (type='video')
+7. **AdminAudios.tsx** — List/manage audio content (type='audio')
+8. **AdminUploadResource.tsx** — Upload form for resources to `resources` storage bucket + `learning_content` table
+9. **AdminCategories.tsx** — Manage content categories with CRUD
 
-### 2. CoachTodaySessions.tsx (`/coaching/today-sessions`)
-**Today's sessions with live controls**
+### Module 3: Assessments (2 pages)
+10. **AdminQuestionBank.tsx** — CRUD for assessment questions, category/type filters
+11. **AdminCreateAssessment.tsx** — Wizard to create new assessment, select questions, assign to seekers
 
-- Filter sessions where `date = today`, sorted by `start_time`
-- Current/next session highlighted with a pulsing border (compare current time to start_time)
-- Each session card shows:
-  - Seeker name + avatar (from profiles join)
-  - Time, duration, pillar badge, status badge
-  - Quick info: sessions completed count, streak, last worksheet date
-- Session prep checklist (hardcoded items: "Review last session notes", "Check pending assignments", "Review worksheet trends")
-- "Start Session" button → updates status to `in_progress`
-- "Mark Complete" button → updates status to `completed`
-- Quick notes textarea → updates `session_notes` via `useUpdateSession`
-- Empty state if no sessions today
+### Module 4: Messages (1 page)
+12. **AdminAnnouncements.tsx** — CRUD for announcements table, audience targeting, pin/unpin
 
-### 3. CoachPastSessions.tsx (`/coaching/past-sessions`)
-**Session history with search/filter/export**
+### Module 5: Our Company (3 pages)
+13. **AdminCompetitors.tsx** — VDTS competitor tracking (manual entries, threat levels)
+14. **AdminBusinessMetrics.tsx** — Key business KPIs dashboard (revenue, users, sessions, assignments aggregated)
+15. **AdminStrategicGoals.tsx** — OKR/goal tracking with progress bars, quarterly targets
 
-- Query sessions where `date < today`, ordered desc
-- Filters: seeker dropdown, date range picker, pillar, status
-- Search: text search across `session_notes`, `key_insights`, `breakthroughs`, seeker name
-- Timeline view: sessions grouped by month with vertical timeline line
-- Each card shows: seeker name, date, duration, pillar, status badge, topics covered
-- Expandable sections for notes, insights, breakthroughs, feedback
-- Export button: generates CSV of filtered sessions
-- Pagination or "load more" for performance
+### Module 6: Reports (5 pages)
+16. **AdminUserGrowth.tsx** — User registration trends (AreaChart by month), role breakdown
+17. **AdminEngagement.tsx** — Worksheet completion rates, session attendance, assignment completion
+18. **AdminCoachPerformance.tsx** — Per-coach session counts, seeker engagement scores, completion rates
+19. **AdminRetention.tsx** — Monthly active users, churn indicators, retention cohort analysis
+20. **AdminExportReports.tsx** — Export selection UI for various report types as CSV
 
-### 4. CoachSessionAnalytics.tsx (`/coaching/session-analytics`)
-**Dashboard with recharts visualizations**
+### Module 7: System (5 pages)
+21. **AdminBranding.tsx** — Brand color config, logo upload, platform name settings (localStorage-based)
+22. **AdminNotifications.tsx** — Notification templates, send broadcast, history log
+23. **AdminIntegrations.tsx** — Display connected integrations (WhatsApp, Email), status indicators
+24. **AdminAuditLogs.tsx** — Query `user_sessions` table for login activity, display as timeline
+25. **AdminBackup.tsx** — Database stats overview, export triggers, informational page
 
-- Stat cards row: Sessions this month, Avg duration, Total seekers coached, No-show rate
-- Charts (using recharts):
-  - **Sessions per month**: BarChart (last 6 months)
-  - **Topics frequency**: Horizontal BarChart from `topics_covered` JSON aggregation
-  - **Engagement trend**: LineChart of avg `engagement_score` per week
-  - **Status distribution**: PieChart (completed/missed/rescheduled/cancelled)
-  - **Best time slots**: BarChart grouping sessions by `start_time` hour
-  - **No-show/reschedule rates**: AreaChart over months
-- All data computed client-side from full sessions query
+## Technical Approach
 
-## Technical Details
+- **Data sources**: `usePayments`, `useSeekerProfiles`, `useDbSessions`, `useDbAssignments`, `useDbCourses`, plus direct Supabase queries for `learning_content`, `announcements`, `user_sessions`
+- **Charts**: recharts (BarChart, PieChart, AreaChart, LineChart) — already installed
+- **Patterns**: Follow existing admin page patterns (loading spinner, card grids, data tables, Dialog modals)
+- **No migrations needed**: All tables already exist
+- **Styling**: Consistent with existing admin pages — card-based layouts, status badges, gradient headers
 
-**Files to create:**
-- `src/pages/coaching/CoachSchedule.tsx`
-- `src/pages/coaching/CoachTodaySessions.tsx`
-- `src/pages/coaching/CoachPastSessions.tsx`
-- `src/pages/coaching/CoachSessionAnalytics.tsx`
+## File Changes
 
-**Files to edit:**
-- `src/App.tsx` — Import 4 new components, replace `<P />` on lines 314-317
+- **Create**: 25 new files in `src/pages/admin/`
+- **Edit**: `src/App.tsx` — replace all `<P />` references with new component imports
 
-**Data sources:** Existing `sessions` table + `calendar_events` table + `profiles` via `useSeekerProfiles()`. No new tables or migrations needed.
-
-**Patterns reused:**
-- `useCoachingLang()` for EN/HI labels
-- `useDbSessions()` / `useUpdateSession()` / `useCreateSession()` hooks
-- `SESSION_STATUS_CONFIG` color map from `SessionsPage`
-- `recharts` for analytics (already installed)
-- `date-fns` for date formatting (already installed)
-
-**Styling:** Tailwind with existing brand colors (`sky-blue`, `saffron`, `dharma-green`, `chakra-indigo`). Session cards use status-based color coding consistent with `SessionsPage`.
+## Implementation Order
+Will build all 25 pages in a single pass, grouped by module for coherence.
 
