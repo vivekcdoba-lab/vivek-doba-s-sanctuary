@@ -1,47 +1,84 @@
 
 
-## Problem
+# Build Coach Session Management Pages
 
-When approving an application in `ApplicationsPage.tsx`, the code only pushes the new seeker to an **in-memory mock array** (`SEEKERS.push(...)` on line 169). The `SeekersPage` reads from the **database** via `useSeekerProfiles()`. So the approved applicant never appears in the Seekers list because no database record is created.
+## Overview
+Create 4 new pages under `/coaching/` that replace the current placeholder routes. All pages query the existing `sessions` table and `profiles` table, using the coaching layout's English/Hindi localization pattern.
 
-## Plan
+## Pages
 
-### 1. Update the approval logic in `ApplicationsPage.tsx`
+### 1. CoachSchedule.tsx (`/coaching/schedule`)
+**Week/Day/Month calendar view with session creation**
 
-Replace the mock `SEEKERS.push()` block (lines 130-170) with actual database inserts:
+- Toggle between Day, Week, Month views (default: Week)
+- Week view: 7-column grid with hourly time slots (6 AM - 10 PM)
+- Sessions rendered as colored blocks based on status
+- "Block Time" button to create `blocked` calendar events via `calendar_events` table
+- Available slots shown as light green backgrounds
+- Quick session creation dialog (reuse pattern from `SessionsPage` — seeker picker, date, time, course, template)
+- Drag-drop rescheduling: HTML5 drag on session cards, drop on time slots triggers `useUpdateSession` to update date/start_time/end_time
+- Navigation arrows for prev/next week/month
+- Queries: `sessions` table + `calendar_events` for blocked slots
 
-1. **Insert into `profiles` table** — Create a new profile record with `role: 'seeker'`, extracting `full_name`, `email`, `phone`, `city`, `company`, `occupation` from the submission data. Since profiles are linked to `auth.users`, we need to handle this carefully — either:
-   - Create the profile directly (without an auth user) for admin-managed seekers, OR
-   - Use `supabase.auth.admin` to create the user account (requires service role, so use an edge function)
+### 2. CoachTodaySessions.tsx (`/coaching/today-sessions`)
+**Today's sessions with live controls**
 
-   **Recommended approach**: Create a small edge function `approve-application` that:
-   - Creates an auth user via `supabase.auth.admin.createUser()` with the applicant's email
-   - The existing `handle_new_user` trigger will automatically create the profile
-   - Then insert an enrollment record if a matching course exists
+- Filter sessions where `date = today`, sorted by `start_time`
+- Current/next session highlighted with a pulsing border (compare current time to start_time)
+- Each session card shows:
+  - Seeker name + avatar (from profiles join)
+  - Time, duration, pillar badge, status badge
+  - Quick info: sessions completed count, streak, last worksheet date
+- Session prep checklist (hardcoded items: "Review last session notes", "Check pending assignments", "Review worksheet trends")
+- "Start Session" button → updates status to `in_progress`
+- "Mark Complete" button → updates status to `completed`
+- Quick notes textarea → updates `session_notes` via `useUpdateSession`
+- Empty state if no sessions today
 
-2. **Insert into `enrollments` table** — If a matching course is found, create an enrollment linking the new profile to that course.
+### 3. CoachPastSessions.tsx (`/coaching/past-sessions`)
+**Session history with search/filter/export**
 
-3. **Remove the `SEEKERS` mock import** — No longer needed for the approval flow.
+- Query sessions where `date < today`, ordered desc
+- Filters: seeker dropdown, date range picker, pillar, status
+- Search: text search across `session_notes`, `key_insights`, `breakthroughs`, seeker name
+- Timeline view: sessions grouped by month with vertical timeline line
+- Each card shows: seeker name, date, duration, pillar, status badge, topics covered
+- Expandable sections for notes, insights, breakthroughs, feedback
+- Export button: generates CSV of filtered sessions
+- Pagination or "load more" for performance
 
-### 2. Create edge function `supabase/functions/approve-application/index.ts`
+### 4. CoachSessionAnalytics.tsx (`/coaching/session-analytics`)
+**Dashboard with recharts visualizations**
 
-This function will:
-- Accept `submission_id` and extract submission data
-- Call `supabase.auth.admin.createUser({ email, email_confirm: true, user_metadata: { full_name, phone, role: 'seeker' } })`
-- The `handle_new_user` trigger auto-creates the profile with city/company/occupation
-- Optionally create an enrollment record
-- Update the submission status to `approved`
-- Return success with the new profile ID
+- Stat cards row: Sessions this month, Avg duration, Total seekers coached, No-show rate
+- Charts (using recharts):
+  - **Sessions per month**: BarChart (last 6 months)
+  - **Topics frequency**: Horizontal BarChart from `topics_covered` JSON aggregation
+  - **Engagement trend**: LineChart of avg `engagement_score` per week
+  - **Status distribution**: PieChart (completed/missed/rescheduled/cancelled)
+  - **Best time slots**: BarChart grouping sessions by `start_time` hour
+  - **No-show/reschedule rates**: AreaChart over months
+- All data computed client-side from full sessions query
 
-### 3. Update `handle_new_user` trigger function
+## Technical Details
 
-Add support for additional metadata fields (`city`, `company`, `occupation`) so they populate on the profile when the auth user is created. Current trigger only handles `full_name`, `role`, `phone`.
+**Files to create:**
+- `src/pages/coaching/CoachSchedule.tsx`
+- `src/pages/coaching/CoachTodaySessions.tsx`
+- `src/pages/coaching/CoachPastSessions.tsx`
+- `src/pages/coaching/CoachSessionAnalytics.tsx`
 
-### Technical Details
+**Files to edit:**
+- `src/App.tsx` — Import 4 new components, replace `<P />` on lines 314-317
 
-- **Edge function** is needed because `auth.admin.createUser()` requires the service role key (not available client-side)
-- The existing `handle_new_user` trigger fires on `auth.users` INSERT, auto-creating the profile
-- Migration needed to add `city`, `company`, `occupation` columns to profiles if not present, and update the trigger function
-- The `ApplicationsPage` will call the edge function instead of doing client-side mock operations
-- On success, `useSeekerProfiles()` will pick up the new seeker automatically
+**Data sources:** Existing `sessions` table + `calendar_events` table + `profiles` via `useSeekerProfiles()`. No new tables or migrations needed.
+
+**Patterns reused:**
+- `useCoachingLang()` for EN/HI labels
+- `useDbSessions()` / `useUpdateSession()` / `useCreateSession()` hooks
+- `SESSION_STATUS_CONFIG` color map from `SessionsPage`
+- `recharts` for analytics (already installed)
+- `date-fns` for date formatting (already installed)
+
+**Styling:** Tailwind with existing brand colors (`sky-blue`, `saffron`, `dharma-green`, `chakra-indigo`). Session cards use status-based color coding consistent with `SessionsPage`.
 
