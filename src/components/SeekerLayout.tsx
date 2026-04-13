@@ -40,11 +40,17 @@ const seekerNav: NavGroup[] = [
   },
   {
     label: 'ASSESSMENTS', emoji: '📋', items: [
-      { icon: Target, label: 'Wheel of Life', path: '/seeker/assessments' },
-      { icon: TrendingUp, label: 'LGT Dimension Score', path: '/seeker/lgt-score' },
+      { icon: BarChart3, label: 'My Assessments', path: '/seeker/assessments' },
+      { icon: Target, label: 'Wheel of Life', path: '/seeker/assessments/wheel-of-life' },
+      { icon: ClipboardList, label: 'SWOT Analysis', path: '/seeker/assessments/swot' },
+      { icon: TrendingUp, label: 'LGT Dimension', path: '/seeker/assessments/lgt' },
+      { icon: Sparkles, label: 'Purusharthas', path: '/seeker/assessments/purusharthas' },
+      { icon: Smile, label: 'Happiness Index', path: '/seeker/assessments/happiness' },
+      { icon: Brain, label: 'MOOCH Patterns', path: '/seeker/assessments/mooch' },
+      { icon: Users, label: 'FIRO-B', path: '/seeker/assessments/firo-b' },
+      { icon: ScrollText, label: 'Assessment History', path: '/seeker/assessments/history' },
       { icon: Brain, label: 'Personality Type', path: '/seeker/personality' },
       { icon: BarChart3, label: 'My Progress Charts', path: '/seeker/progress-charts' },
-      { icon: ScrollText, label: 'Assessment History', path: '/seeker/assessment-history' },
     ],
   },
   {

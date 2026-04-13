@@ -88,6 +88,14 @@ import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
 import SacredSpace from "./pages/seeker/SacredSpace";
 import SeekerGrowth from "./pages/seeker/SeekerGrowth";
 import SeekerAssessments from "./pages/seeker/SeekerAssessments";
+import WheelOfLifePage from "./pages/seeker/assessments/WheelOfLifePage";
+import SwotAssessmentPage from "./pages/seeker/assessments/SwotAssessmentPage";
+import LgtAssessmentPage from "./pages/seeker/assessments/LgtAssessmentPage";
+import PurusharthasPage from "./pages/seeker/assessments/PurusharthasPage";
+import HappinessPage from "./pages/seeker/assessments/HappinessPage";
+import MoochPage from "./pages/seeker/assessments/MoochPage";
+import SeekerFiroBPage from "./pages/seeker/assessments/FiroBPage";
+import AssessmentHistoryPage from "./pages/seeker/assessments/AssessmentHistoryPage";
 import SeekerPayments from "./pages/seeker/SeekerPayments";
 import SeekerTasks from "./pages/seeker/SeekerTasks";
 import SeekerProfile from "./pages/seeker/SeekerProfile";
@@ -308,6 +316,14 @@ const App = () => (
             <Route path="/seeker/profile" element={<SeekerProfile />} />
             <Route path="/seeker/journey" element={<SeekerJourney />} />
             <Route path="/seeker/assessments" element={<SeekerAssessments />} />
+            <Route path="/seeker/assessments/wheel-of-life" element={<WheelOfLifePage />} />
+            <Route path="/seeker/assessments/swot" element={<SwotAssessmentPage />} />
+            <Route path="/seeker/assessments/lgt" element={<LgtAssessmentPage />} />
+            <Route path="/seeker/assessments/purusharthas" element={<PurusharthasPage />} />
+            <Route path="/seeker/assessments/happiness" element={<HappinessPage />} />
+            <Route path="/seeker/assessments/mooch" element={<MoochPage />} />
+            <Route path="/seeker/assessments/firo-b" element={<SeekerFiroBPage />} />
+            <Route path="/seeker/assessments/history" element={<AssessmentHistoryPage />} />
             <Route path="/seeker/messages" element={<SeekerMessages />} />
             <Route path="/seeker/weekly-review" element={<SeekerWeeklyReview />} />
             <Route path="/seeker/payments" element={<SeekerPayments />} />
