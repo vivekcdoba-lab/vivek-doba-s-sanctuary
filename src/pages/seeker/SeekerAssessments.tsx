@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, LineChart, Line, Legend } from 'recharts';
 import LGTAssessment from '@/components/LGTAssessment';
 import FIROBAssessment from '@/components/FIROBAssessment';
@@ -113,6 +114,7 @@ const PROGRESS_TABLE = [
 ];
 
 const SeekerAssessments = () => {
+  const navigate = useNavigate();
   const [selfAssessing, setSelfAssessing] = useState(false);
   const [enhancedWol, setEnhancedWol] = useState(false);
   const [fullWolExperience, setFullWolExperience] = useState(false);
@@ -162,24 +164,52 @@ const SeekerAssessments = () => {
         <p className="text-xs text-muted-foreground mt-1">Jeevan Chakra — Discover Your Life Balance</p>
       </div>
 
+      {/* Quick Navigation Tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        {[
+          { emoji: '🎡', label: 'Wheel of Life', path: '/seeker/assessments/wheel-of-life' },
+          { emoji: '📋', label: 'SWOT', path: '/seeker/assessments/swot' },
+          { emoji: '🔺', label: 'LGT', path: '/seeker/assessments/lgt' },
+          { emoji: '🕉️', label: 'Purusharthas', path: '/seeker/assessments/purusharthas' },
+          { emoji: '😊', label: 'Happiness', path: '/seeker/assessments/happiness' },
+          { emoji: '🧠', label: 'MOOCH', path: '/seeker/assessments/mooch' },
+          { emoji: '👥', label: 'FIRO-B', path: '/seeker/assessments/firo-b' },
+        ].map(tab => (
+          <button
+            key={tab.path}
+            onClick={() => navigate(tab.path)}
+            className="flex-shrink-0 px-4 py-2 rounded-full border border-border bg-card text-sm font-medium text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+          >
+            {tab.emoji} {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Assessment Cards - Expandable */}
       <div className="space-y-3">
         {[
           { key: 'swot', icon: '📋', label: 'SWOT Analysis', borderColor: '#2ECC71', summary: 'S:5 W:3 O:4 T:2', lastDate: '15/02/2026',
+            route: '/seeker/assessments/swot',
             detail: 'Strengths: Leadership, Communication, Discipline, Spiritual Practice, Persistence. Weaknesses: Time Management, Delegation, Financial Planning. Opportunities: Market Expansion, Digital Presence, Network Growth. Threats: Competition, Economic Slowdown.' },
           { key: 'wheel', icon: '☸', label: 'Wheel of Life', borderColor: 'hsl(var(--primary))', summary: `${analysis.avg}/10 avg`, lastDate: '01/03/2026',
+            route: '/seeker/assessments/wheel-of-life',
             detail: `Total Score: ${analysis.total}/90 (${((analysis.total / 90) * 100).toFixed(0)}%). Strongest: ${AREAS[analysis.strongIdx].icon} ${AREAS[analysis.strongIdx].name} (${analysis.max}). Weakest: ${AREAS[analysis.weakIdx].icon} ${AREAS[analysis.weakIdx].name} (${analysis.min}). Balance Index: ${analysis.balance}/10.`,
             action: () => setFullWolExperience(true), actionLabel: '🎡 Full Wheel of Life Assessment' },
           { key: 'lgt', icon: '🔺', label: 'LGT (Life\'s Golden Triangle)', borderColor: '#FF9933', summary: '68% Balance', lastDate: '01/03/2026',
+            route: '/seeker/assessments/lgt',
             detail: 'Life: 72% — Strong spiritual foundation. Growth: 65% — Good learning trajectory. Triangle: 68% — Career and financial pillars need strengthening.',
             action: () => setLgtAssessing(true), actionLabel: '🔺 Take LGT Test' },
           { key: 'purushartha', icon: '🕉️', label: 'Purusharthas', borderColor: '#7B1FA2', summary: 'D:8 A:5 K:4 M:7', lastDate: '01/03/2026',
+            route: '/seeker/assessments/purusharthas',
             detail: 'Dharma (Purpose): 8/10 — Strong sense of purpose. Artha (Wealth): 5/10 — Financial stability needs attention. Kama (Desires): 4/10 — Enjoyment areas under-served. Moksha (Liberation): 7/10 — Good spiritual progress.' },
           { key: 'happiness', icon: '😊', label: 'Happiness Index', borderColor: '#2ECC71', summary: '7.2/10 ↑0.5', lastDate: '01/03/2026',
+            route: '/seeker/assessments/happiness',
             detail: 'Overall: 7.2/10. Life Satisfaction: 7.5. Positive Emotions: 7.0. Engagement: 7.8. Relationships: 6.8. Meaning: 7.5. Accomplishment: 6.5.' },
           { key: 'mooch', icon: '🧠', label: 'MOOCH (Mind Patterns)', borderColor: '#3F51B5', summary: '5 patterns • 6.5', lastDate: '01/03/2026',
+            route: '/seeker/assessments/mooch',
             detail: 'Overthinking (7/10), Procrastination (5/10), People Pleasing (6/10), Perfectionism (8/10), Catastrophizing (4/10). Awareness Score: 6.5/10.' },
           { key: 'firob', icon: '🧠', label: 'FIRO-B (Interpersonal)', borderColor: '#E91E63', summary: '6 dimensions', lastDate: '01/03/2026',
+            route: '/seeker/assessments/firo-b',
             detail: 'Inclusion — Expressed: 5, Wanted: 7. Control — Expressed: 6, Wanted: 4. Affection — Expressed: 4, Wanted: 6. You seek belonging but may hesitate to express affection openly.',
             action: () => setFirobAssessing(true), actionLabel: '🧠 Take FIRO-B' },
         ].map(card => (
@@ -198,11 +228,16 @@ const SeekerAssessments = () => {
             {expandedCard === card.key && (
               <div className="px-4 pb-4 border-t border-border pt-3 animate-in slide-in-from-top-2">
                 <p className="text-sm text-foreground leading-relaxed">{card.detail}</p>
-                {card.action && (
-                  <button onClick={card.action} className="mt-3 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity">
-                    {card.actionLabel}
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  {card.action && (
+                    <button onClick={card.action} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity">
+                      {card.actionLabel}
+                    </button>
+                  )}
+                  <button onClick={() => navigate(card.route)} className="px-4 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
+                    Open Full Assessment →
                   </button>
-                )}
+                </div>
               </div>
             )}
           </div>
