@@ -1,10 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ALLOWED_ORIGINS = [
+  "https://id-preview--9f404a7e-486e-4ce4-9e52-48e654e53aad.lovable.app",
+  "https://vivekdoba.com",
+  "https://www.vivekdoba.com",
+];
+
+function getCorsHeaders(origin: string | null) {
+  const allowed = origin && ALLOWED_ORIGINS.some(o => origin.startsWith(o)) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ADMIN_EMAIL = "info@vivekdoba.com";
@@ -99,14 +108,57 @@ function buildApplicantEmailHtml(data: NotificationRequest): string {
     </div>`;
 }
 
+async function validateAdmin(req: Request): Promise<{ authorized: boolean; error?: string }> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return { authorized: false, error: "Missing authorization header" };
+  }
+
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+
+  const token = authHeader.replace("Bearer ", "");
+  const { data, error } = await supabaseAdmin.auth.getUser(token);
+  if (error || !data?.user) {
+    return { authorized: false, error: "Invalid token" };
+  }
+
+  // Check admin role
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("role")
+    .eq("user_id", data.user.id)
+    .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "coach")) {
+    return { authorized: false, error: "Insufficient permissions" };
+  }
+
+  return { authorized: true };
+}
+
 serve(async (req) => {
+  const origin = req.headers.get("Origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   if (!RESEND_API_KEY) {
-    return new Response(JSON.stringify({ error: "RESEND_API_KEY is not configured" }), {
+    return new Response(JSON.stringify({ error: "Email service not configured" }), {
       status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // Auth check — only admin/coach can send notifications
+  const auth = await validateAdmin(req);
+  if (!auth.authorized) {
+    return new Response(JSON.stringify({ error: auth.error }), {
+      status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
@@ -138,7 +190,7 @@ serve(async (req) => {
       });
       const result = await res.json();
       if (!res.ok) {
-        throw new Error(`Resend API error [${res.status}]: ${JSON.stringify(result)}`);
+        throw new Error(`Email API error [${res.status}]: ${JSON.stringify(result)}`);
       }
 
       return new Response(JSON.stringify({ success: true, id: result.id }), {
@@ -147,7 +199,6 @@ serve(async (req) => {
     }
 
     if (data.type === "status_update") {
-      // Send email to applicant
       const subjectMap: Record<string, string> = {
         approved: "✅ Your Application is Approved — Vivek Doba Training Solutions",
         rejected: "Application Update — Vivek Doba Training Solutions",
@@ -169,7 +220,7 @@ serve(async (req) => {
       });
       const result = await res.json();
       if (!res.ok) {
-        throw new Error(`Resend API error [${res.status}]: ${JSON.stringify(result)}`);
+        throw new Error(`Email API error [${res.status}]: ${JSON.stringify(result)}`);
       }
 
       // Also send WhatsApp notification if mobile number is available
@@ -189,15 +240,11 @@ serve(async (req) => {
           const message = whatsappMessages[data.status || "approved"];
           if (message) {
             await supabaseAdmin.functions.invoke("send-whatsapp", {
-              body: {
-                to: data.applicant_mobile,
-                message,
-              },
+              body: { to: data.applicant_mobile, message },
             });
           }
         } catch (whatsappErr) {
           console.error("WhatsApp notification error:", whatsappErr);
-          // Don't fail the whole request if WhatsApp fails
         }
       }
 

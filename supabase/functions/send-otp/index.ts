@@ -1,19 +1,34 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// OTP must be callable without auth (it's used during login flow)
+// Rate limiting is enforced via the otp_codes table upsert (one active OTP per identifier)
+const ALLOWED_ORIGINS = [
+  "https://id-preview--9f404a7e-486e-4ce4-9e52-48e654e53aad.lovable.app",
+  "https://vivekdoba.com",
+  "https://www.vivekdoba.com",
+];
+
+function getCorsHeaders(origin: string | null) {
+  const allowed = origin && ALLOWED_ORIGINS.some(o => origin.startsWith(o)) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 serve(async (req) => {
+  const origin = req.headers.get("Origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
     const { email, phone, full_name, type } = await req.json();
-    
+
+    // Input validation
     if (!type || !["email", "sms", "both"].includes(type)) {
       return new Response(JSON.stringify({ error: "Invalid type" }), {
         status: 400,
@@ -21,9 +36,26 @@ serve(async (req) => {
       });
     }
 
+    if (type === "email" || type === "both") {
+      if (!email || typeof email !== "string" || email.length > 320) {
+        return new Response(JSON.stringify({ error: "Invalid email" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    if (type === "sms" || type === "both") {
+      if (!phone || typeof phone !== "string" || phone.length > 20) {
+        return new Response(JSON.stringify({ error: "Invalid phone" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const otp = String(Math.floor(100000 + Math.random() * 900000));
-    
-    // Store OTP in database
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -90,11 +122,11 @@ serve(async (req) => {
       try {
         const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
         const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
-        
+
         if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN) {
           const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
           const smsPhone = phone?.startsWith("+") ? phone : `+91${phone}`;
-          
+
           const smsRes = await fetch(twilioUrl, {
             method: "POST",
             headers: {
