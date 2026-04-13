@@ -63,7 +63,7 @@ export function useWheelOfLife() {
 
       const { data, error } = await supabase
         .from('wheel_of_life_assessments')
-        .insert({
+        .insert([{
           seeker_id: seekerId!,
           career_score: scores.career,
           finance_score: scores.finance,
@@ -74,8 +74,8 @@ export function useWheelOfLife() {
           fun_score: scores.fun,
           environment_score: scores.environment,
           average_score: avg,
-          notes: scores.notes || {},
-        })
+          notes: (scores.notes || {}) as any,
+        }])
         .select()
         .single();
       if (error) throw error;

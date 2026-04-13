@@ -27,11 +27,15 @@ const WoLActionPlan = ({ scores, actions, onSaveAction, onToggleAction, isSaving
   }, [scores]);
 
   const lowestSpoke = useMemo(() => {
-    let min = { spoke: WOL_SPOKES[0], score: scores[WOL_SPOKES[0].id] };
+    let minSpoke = WOL_SPOKES[0] as typeof WOL_SPOKES[number];
+    let minScore = scores[WOL_SPOKES[0].id];
     WOL_SPOKES.forEach(s => {
-      if (scores[s.id] < min.score) min = { spoke: s, score: scores[s.id] };
+      if (scores[s.id] < minScore) {
+        minSpoke = s;
+        minScore = scores[s.id];
+      }
     });
-    return min;
+    return { spoke: minSpoke, score: minScore };
   }, [scores]);
 
   const handleAcceptChallenge = () => {
