@@ -34,72 +34,60 @@ const RegisterPage = () => {
 
     setLoading(true);
     try {
-      // Pre-check for duplicate email or phone using RPC
-      const { data: dupResult } = await supabase.rpc('check_profile_duplicate', {
-        _email: form.email,
-        _phone: form.phone,
-      });
-      if (dupResult === 'email') {
-        toast.error('This email is already registered. Please sign in or use a different email.');
-        setLoading(false);
-        return;
-      }
-      if (dupResult === 'phone') {
-        toast.error('This mobile number is already in use. Please use a different number.');
-        setLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase.auth.signUp({
+      // Submit to submissions table for admin approval instead of creating auth user directly
+      const { error } = await supabase.from('submissions').insert([{
+        form_type: 'registration',
+        full_name: form.name,
         email: form.email,
-        password: form.password,
-        options: {
-          data: {
-            full_name: form.name,
-            role: 'seeker',
-            phone: form.phone,
-            whatsapp: form.whatsapp,
-          },
-          emailRedirectTo: window.location.origin,
+        mobile: form.phone,
+        country_code: '+91',
+        status: 'pending',
+        form_data: {
+          fullName: form.name,
+          email: form.email,
+          phone: form.phone,
+          whatsapp: form.whatsapp || form.phone,
+          password: form.password,
+          course: form.course,
+          source: form.source,
         },
-      });
+      }]);
 
       if (error) {
-        // Generic message to avoid leaking whether email exists
-        if (error.message.includes('already registered')) {
-          toast.error('Unable to create account. Please try a different email or sign in.');
+        if (error.message.includes('duplicate') || error.message.includes('unique')) {
+          toast.error('An application with this email already exists. Please wait for approval or contact support.');
         } else {
-          toast.error(error.message);
+          toast.error('Failed to submit application. Please try again.');
         }
+        console.error('Submission error:', error);
         return;
       }
 
-      if (data.user) {
-        // Update profile with extra fields after auto-creation
-        setTimeout(async () => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('user_id', data.user!.id)
-            .maybeSingle();
-          if (profile) {
-            await supabase.from('profiles').update({
+      // Send notification to admin about new submission
+      try {
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            type: 'new_submission',
+            form_type: 'registration',
+            applicant_name: form.name,
+            applicant_email: form.email,
+            applicant_mobile: `+91${form.phone}`,
+            form_data: {
+              fullName: form.name,
+              email: form.email,
               phone: form.phone,
               whatsapp: form.whatsapp || form.phone,
-            }).eq('id', profile.id);
-          }
-        }, 1000);
-
-        if (data.session) {
-          // Auto-confirmed — go directly to home
-          toast.success('Welcome to your transformation journey! 🙏');
-          navigate('/seeker/home');
-        } else {
-          // Email confirmation required
-          toast.success('Account created! Please check your email to verify your account. 📧');
-          navigate('/login');
-        }
+              course: form.course,
+              source: form.source,
+            },
+          },
+        });
+      } catch (e) {
+        console.error('Notification error:', e);
       }
+
+      toast.success('Your application has been submitted for review! You will receive an email and WhatsApp message once approved. 🙏');
+      navigate('/login');
     } catch {
       toast.error('An error occurred during registration');
     } finally {
@@ -129,6 +117,7 @@ const RegisterPage = () => {
             </Link>
             <Flower2 className="w-7 h-7 text-primary mx-auto mb-2" />
             <h2 className="text-xl font-bold text-foreground">Create Your Account</h2>
+            <p className="text-xs text-muted-foreground mt-1">Your application will be reviewed by our team</p>
           </div>
 
           <div className="space-y-3">
@@ -157,7 +146,7 @@ const RegisterPage = () => {
 
           <button onClick={handleRegister} disabled={loading}
             className="w-full py-3 rounded-xl font-semibold text-primary-foreground gradient-saffron hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50">
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Flower2 className="w-4 h-4" />} Begin My Sacred Journey
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Flower2 className="w-4 h-4" />} Submit Application
           </button>
 
           <p className="text-center text-sm text-muted-foreground">
