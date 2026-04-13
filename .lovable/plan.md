@@ -1,34 +1,45 @@
 
 
-# End-to-End Testing Report & Bug Fix Plan
+# Plan: Route Registration Through Admin Approval
 
-## What Was Tested (All Passing ✅)
+## Summary
+Change the `/register` page so that instead of immediately creating an auth user, it inserts a submission into the `submissions` table (like the other forms). The admin reviews it in "Applications Review", and upon approval the existing `approve-application` edge function creates the user account. Email and WhatsApp notifications are sent on status changes.
 
-1. **Landing Page** — Loads correctly with stats, branding, WhatsApp number
-2. **Discovery Call Form** (`/book-appointment`) — Full form fill + submit → "Appointment Request Submitted!" with date/time confirmation
-3. **Workshop Registration** (`/register-workshop`) — Loads with 3 workshops, pricing, participant limits
-4. **LGT Application** (`/apply-lgt`) — Loads with 3 program tiers (₹2.5L to ₹10L)
-5. **Login Page** — Role tabs (Seeker/Coach/Admin), links to forms, WhatsApp button
-6. **Admin Login** (lgt@gmail.com) — Dashboard loads with real data: 10 Seekers, 8 Coaches, Revenue Trend chart, Enrollment Funnel
-7. **Applications Review** (`/applications`) — Discovery Call submission appeared as "Pending Review", existing approved/rejected entries visible
-8. **Seeker Login** (test01@gmail.com) — Dashboard loads with onboarding tour, daily affirmation (Hindi/English), streak counter, worksheet status
+## What Changes
 
-## Bugs Found
+### 1. Update RegisterPage.tsx — Submit to `submissions` table instead of `supabase.auth.signUp`
+- Remove the `supabase.auth.signUp` call and the duplicate-check RPC
+- Instead, insert into `submissions` with `form_type: 'registration'`
+- Store password securely in `form_data` (it will be used by the edge function during approval to create the auth user with the user's chosen password)
+- Show success message: "Your application has been submitted for review. You will receive an email and WhatsApp message once approved."
+- Navigate to `/login` after submission
 
-### BUG 1: Console Warning — Function components cannot be given refs
-- Multiple warnings in console: `BrowserRouter`, `Routes`, `Index`, `WhatsAppSupportButton` getting refs incorrectly
-- **Impact**: Non-breaking but pollutes console
-- **Fix**: Wrap affected components with `React.forwardRef` or remove ref passing in `App.tsx`
+### 2. Update `approve-application` edge function — Handle `registration` form_type
+- When the submission's `form_type` is `'registration'`, use the password from `form_data` instead of generating a random one
+- The rest of the flow (create auth user, create profile, enrollment) already works
 
-### BUG 2: No sidebar link to Applications page
-- The Applications page works at `/applications` but there's no visible sidebar link in the admin navigation to reach it
-- Users must know the URL directly
-- **Fix**: Add "📥 Applications" link in the admin sidebar under CRM & Sales or a dedicated section
+### 3. Update ApplicationsPage.tsx — Show registration submissions
+- Add `'registration'` to the type badge map so it displays as "📝 Registration"
+- Add it to the filter buttons with a pending count
 
-## No Database Changes Required
-All fixes are frontend-only — no schema, RLS, or migration changes needed.
+### 4. Update `send-notification` edge function — Send WhatsApp on status update
+- After sending the email, also invoke the existing `send-whatsapp` edge function to notify the applicant via WhatsApp about their approval/rejection status
 
-## Files to Edit
-1. **`src/App.tsx`** — Fix ref warnings on components
-2. **Admin sidebar component** (likely `AdminLayout.tsx`) — Add Applications link
+### 5. Add `registration` to submissions RLS (if needed)
+- The existing `submissions` table already allows anonymous inserts (used by BookAppointment, etc.) — verify this works for registration too; if not, add an anon insert policy
+
+## Files Modified
+1. `src/pages/RegisterPage.tsx` — Replace signUp with submissions insert
+2. `supabase/functions/approve-application/index.ts` — Handle registration form_type with user's chosen password
+3. `src/pages/admin/ApplicationsPage.tsx` — Add registration type badge and filter
+4. `supabase/functions/send-notification/index.ts` — Add WhatsApp notification on status update
+
+## What Does NOT Change
+- No database schema changes (submissions table already exists)
+- No deletion of existing pages, logic, or features
+- All other registration forms (BookAppointment, Workshop, LGT) remain unchanged
+- Login page remains unchanged
+
+## Technical Note
+The user's chosen password is stored temporarily in the `form_data` JSON field of the submission. Upon approval, the edge function uses it to create the auth account. This avoids generating random passwords and gives the user their expected credentials from day one.
 
