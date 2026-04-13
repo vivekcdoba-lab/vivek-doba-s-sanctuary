@@ -59,7 +59,7 @@ serve(async (req) => {
               Authorization: `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-              from: "VDTS <onboarding@resend.dev>",
+              from: "VDTS <noreply@vivekdoba.com>",
               to: [email],
               subject: "OTP for Login request",
               html: `
