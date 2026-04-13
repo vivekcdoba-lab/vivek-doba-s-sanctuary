@@ -178,6 +178,24 @@ import CoachReviewedAssignments from "./pages/coaching/CoachReviewedAssignments"
 import CoachCompletionRate from "./pages/coaching/CoachCompletionRate";
 import CoachBroadcast from "./pages/coaching/CoachBroadcast";
 import CoachWeeklyReport from "./pages/coaching/CoachWeeklyReport";
+import CoachAllSeekers from "./pages/coaching/CoachAllSeekers";
+import CoachSeekersActive from "./pages/coaching/CoachSeekersActive";
+import CoachSeekersAttention from "./pages/coaching/CoachSeekersAttention";
+import CoachSeekersOntrack from "./pages/coaching/CoachSeekersOntrack";
+import CoachSeekersSearch from "./pages/coaching/CoachSeekersSearch";
+import CoachGenerateReports from "./pages/coaching/CoachGenerateReports";
+import CoachBusinesses from "./pages/coaching/CoachBusinesses";
+import CoachSwotReviews from "./pages/coaching/CoachSwotReviews";
+import CoachDeptHealth from "./pages/coaching/CoachDeptHealth";
+import CoachBusinessNotes from "./pages/coaching/CoachBusinessNotes";
+import CoachMessages from "./pages/coaching/CoachMessages";
+import CoachTemplates from "./pages/coaching/CoachTemplates";
+import CoachAnnouncements from "./pages/coaching/CoachAnnouncements";
+import CoachEngagement from "./pages/coaching/CoachEngagement";
+import CoachProgressReport from "./pages/coaching/CoachProgressReport";
+import CoachArthaProgress from "./pages/coaching/CoachArthaProgress";
+import CoachExport from "./pages/coaching/CoachExport";
+import CoachSettings from "./pages/coaching/CoachSettings";
 
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";

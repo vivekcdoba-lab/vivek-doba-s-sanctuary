@@ -37,7 +37,7 @@ export default function CoachSettings() {
           </div>
           <div className="flex items-center justify-between py-2 border-b border-border/50">
             <span className="text-sm text-muted-foreground flex items-center gap-1"><Phone className="w-3 h-3" /> Phone</span>
-            <span className="text-sm font-medium text-foreground">{profile?.phone || '—'}</span>
+            <span className="text-sm font-medium text-foreground">—</span>
           </div>
           <div className="flex items-center justify-between py-2">
             <span className="text-sm text-muted-foreground flex items-center gap-1"><Shield className="w-3 h-3" /> Role</span>
