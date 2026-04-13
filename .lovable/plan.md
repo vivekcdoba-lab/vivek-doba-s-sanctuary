@@ -1,64 +1,106 @@
 
+# Plan: Build All Empty Coach Placeholder Pages
 
-# Build All Remaining Admin Placeholder Pages (25 pages)
+## Problem
+16 coaching routes currently render a generic `PlaceholderModule` ("This module will be built in the next phase"). These need real, functional content using existing DB tables and hooks.
 
-## Overview
-Replace all 25 `<P />` placeholder routes in `App.tsx` with functional pages. These are grouped into 7 modules.
+## Pages to Build (16 new files)
 
-## Pages to Build
+### Group 1: Seekers (5 pages)
+All use `useSeekerProfiles()` + `useDbAssignments()` + worksheet data to show seeker cards with status.
 
-### Module 1: Payments (5 pages)
-1. **AdminRecordPayment.tsx** — Dedicated payment recording form (reuses `usePayments().createPayment`, seeker selector, GST calc)
-2. **AdminInvoices.tsx** — Invoice listing with search, print/download, InvoiceModal integration
-3. **AdminOverduePayments.tsx** — Filtered view of overdue payments with reminder actions (SendReminderModal)
-4. **AdminRevenue.tsx** — Revenue dashboard with monthly/quarterly charts (recharts BarChart, AreaChart), breakdown by course
-5. **AdminExportFinancials.tsx** — Export payments/revenue data as CSV, date range filter
+1. **`CoachAllSeekers.tsx`** → `/coaching/seekers`
+   - Grid of all seeker cards (avatar initials, name, email, city, streak, program)
+   - Search bar, link to each seeker detail
+   - Quick actions: WhatsApp, Message, Schedule Session
 
-### Module 2: Resources (4 pages)
-6. **AdminVideos.tsx** — List/manage video learning content from `learning_content` table (type='video')
-7. **AdminAudios.tsx** — List/manage audio content (type='audio')
-8. **AdminUploadResource.tsx** — Upload form for resources to `resources` storage bucket + `learning_content` table
-9. **AdminCategories.tsx** — Manage content categories with CRUD
+2. **`CoachSeekersActive.tsx`** → `/coaching/seekers-active`
+   - Filtered view: seekers with worksheet activity in last 2 days
+   - Shows last activity, current streak, LGT balance scores
 
-### Module 3: Assessments (2 pages)
-10. **AdminQuestionBank.tsx** — CRUD for assessment questions, category/type filters
-11. **AdminCreateAssessment.tsx** — Wizard to create new assessment, select questions, assign to seekers
+3. **`CoachSeekersAttention.tsx`** → `/coaching/seekers-attention`
+   - Filtered: seekers with no worksheet for 3+ days or broken streak
+   - Red/yellow status indicators, quick "Send Reminder" actions
 
-### Module 4: Messages (1 page)
-12. **AdminAnnouncements.tsx** — CRUD for announcements table, audience targeting, pin/unpin
+4. **`CoachSeekersOntrack.tsx`** → `/coaching/seekers-ontrack`
+   - Filtered: seekers with active streak ≥3 days
+   - Green status, celebration badges, top performers
 
-### Module 5: Our Company (3 pages)
-13. **AdminCompetitors.tsx** — VDTS competitor tracking (manual entries, threat levels)
-14. **AdminBusinessMetrics.tsx** — Key business KPIs dashboard (revenue, users, sessions, assignments aggregated)
-15. **AdminStrategicGoals.tsx** — OKR/goal tracking with progress bars, quarterly targets
+5. **`CoachSeekersSearch.tsx`** → `/coaching/seekers-search`
+   - Full search across name, email, phone, city
+   - Advanced filters (program, status, join date)
 
-### Module 6: Reports (5 pages)
-16. **AdminUserGrowth.tsx** — User registration trends (AreaChart by month), role breakdown
-17. **AdminEngagement.tsx** — Worksheet completion rates, session attendance, assignment completion
-18. **AdminCoachPerformance.tsx** — Per-coach session counts, seeker engagement scores, completion rates
-19. **AdminRetention.tsx** — Monthly active users, churn indicators, retention cohort analysis
-20. **AdminExportReports.tsx** — Export selection UI for various report types as CSV
+### Group 2: Assessments (1 page)
+6. **`CoachGenerateReports.tsx`** → `/coaching/generate-reports`
+   - Select seeker → view their assessment history (Wheel of Life, LGT, FIRO-B)
+   - Summary cards with scores, date taken
+   - "Download PDF" button per assessment
 
-### Module 7: System (5 pages)
-21. **AdminBranding.tsx** — Brand color config, logo upload, platform name settings (localStorage-based)
-22. **AdminNotifications.tsx** — Notification templates, send broadcast, history log
-23. **AdminIntegrations.tsx** — Display connected integrations (WhatsApp, Email), status indicators
-24. **AdminAuditLogs.tsx** — Query `user_sessions` table for login activity, display as timeline
-25. **AdminBackup.tsx** — Database stats overview, export triggers, informational page
+### Group 3: Business Reviews (4 pages)
+All query `business_profiles`, `business_swot_items`, `department_health` tables joined via seeker profiles.
+
+7. **`CoachBusinesses.tsx`** → `/coaching/businesses`
+   - List of all seekers' businesses with industry, team size, revenue range
+   - Click to expand: VMV, departments overview
+
+8. **`CoachSwotReviews.tsx`** → `/coaching/swot-reviews`
+   - Select seeker → view their SWOT in 4-quadrant layout
+   - Coach can add notes/action plans per item
+
+9. **`CoachDeptHealth.tsx`** → `/coaching/dept-health`
+   - Radar chart of 8 departments per seeker business
+   - Color-coded health scores, month-over-month trends
+
+10. **`CoachBusinessNotes.tsx`** → `/coaching/business-notes`
+    - Timestamped notes per seeker's business
+    - Add/edit notes with dimension tags
+
+### Group 4: Messages (3 pages)
+11. **`CoachMessages.tsx`** → `/coaching/messages`
+    - Conversation list (sidebar) + message thread (main area)
+    - Uses `useDbMessages` + `useSendMessage` hooks
+    - Real-time via existing Supabase channel
+
+12. **`CoachTemplates.tsx`** → `/coaching/templates`
+    - Pre-written message templates (session reminder, worksheet nudge, motivation, etc.)
+    - Click to copy, edit, or send to selected seekers
+
+13. **`CoachAnnouncements.tsx`** → `/coaching/announcements`
+    - Create announcement with audience targeting (all/program-specific)
+    - View past announcements with read counts
+
+### Group 5: Reports (4 pages)
+14. **`CoachEngagement.tsx`** → `/coaching/engagement`
+    - Worksheet completion rates, session attendance, assignment stats
+    - Bar/line charts using Recharts
+
+15. **`CoachProgressReport.tsx`** → `/coaching/progress-report`
+    - Per-seeker LGT dimension trends over time
+    - Comparison table across all seekers
+
+16. **`CoachArthaProgress.tsx`** → `/coaching/artha-progress`
+    - Business health dashboard across all seekers
+    - Department scores aggregated, SWOT completion status
+
+17. **`CoachExport.tsx`** → `/coaching/export`
+    - Export options: Seekers CSV, Worksheets CSV, Sessions CSV
+    - Date range picker, download buttons
+
+### Group 6: Settings (1 page)
+18. **`CoachSettings.tsx`** → `/coaching/settings`
+    - Profile info (read-only from auth store)
+    - Notification preferences toggles
+    - Language preference, theme toggle
+    - WhatsApp number, bio text
 
 ## Technical Approach
+- Each page: standalone `.tsx` in `src/pages/coaching/`
+- Import in `App.tsx`, replace `<P />` with actual component
+- Use existing hooks (`useSeekerProfiles`, `useDbSessions`, `useDbAssignments`, `useDbMessages`)
+- Direct Supabase queries for business tables (`business_profiles`, `business_swot_items`, `department_health`)
+- Follow existing styling: `bg-card rounded-xl border border-border`, saffron accent, Lucide icons
+- No database changes, no deleted code, no style changes
 
-- **Data sources**: `usePayments`, `useSeekerProfiles`, `useDbSessions`, `useDbAssignments`, `useDbCourses`, plus direct Supabase queries for `learning_content`, `announcements`, `user_sessions`
-- **Charts**: recharts (BarChart, PieChart, AreaChart, LineChart) — already installed
-- **Patterns**: Follow existing admin page patterns (loading spinner, card grids, data tables, Dialog modals)
-- **No migrations needed**: All tables already exist
-- **Styling**: Consistent with existing admin pages — card-based layouts, status badges, gradient headers
-
-## File Changes
-
-- **Create**: 25 new files in `src/pages/admin/`
-- **Edit**: `src/App.tsx` — replace all `<P />` references with new component imports
-
-## Implementation Order
-Will build all 25 pages in a single pass, grouped by module for coherence.
-
+## Files Changed
+- **18 new files** in `src/pages/coaching/`
+- **1 edited**: `src/App.tsx` (replace `<P />` imports with real components)
