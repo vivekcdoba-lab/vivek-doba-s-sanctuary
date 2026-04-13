@@ -237,7 +237,14 @@ const SeekerAssessments = () => {
         />
       )}
 
-      {/* ═══ ENHANCED WHEEL OF LIFE ═══ */}
+      {/* ═══ FULL WHEEL OF LIFE EXPERIENCE ═══ */}
+      {fullWolExperience && (
+        <WheelOfLifeFullExperience
+          onClose={() => setFullWolExperience(false)}
+        />
+      )}
+
+      {/* ═══ ENHANCED WHEEL OF LIFE (Legacy) ═══ */}
       {enhancedWol && (
         <WheelOfLifeEnhanced
           onClose={() => setEnhancedWol(false)}
