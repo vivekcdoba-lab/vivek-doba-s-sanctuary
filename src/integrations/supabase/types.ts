@@ -207,6 +207,56 @@ export type Database = {
           },
         ]
       }
+      assessment_actions: {
+        Row: {
+          action_text: string
+          assessment_id: string | null
+          assessment_type: string
+          category: string | null
+          completed_at: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          priority: number | null
+          seeker_id: string
+          status: string
+        }
+        Insert: {
+          action_text: string
+          assessment_id?: string | null
+          assessment_type?: string
+          category?: string | null
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          priority?: number | null
+          seeker_id: string
+          status?: string
+        }
+        Update: {
+          action_text?: string
+          assessment_id?: string | null
+          assessment_type?: string
+          category?: string | null
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          priority?: number | null
+          seeker_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_actions_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessments: {
         Row: {
           analysis_text: string | null
@@ -3584,6 +3634,62 @@ export type Database = {
             columns: ["program_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wheel_of_life_assessments: {
+        Row: {
+          average_score: number | null
+          career_score: number
+          created_at: string
+          environment_score: number
+          family_score: number
+          finance_score: number
+          fun_score: number
+          growth_score: number
+          health_score: number
+          id: string
+          notes: Json | null
+          romance_score: number
+          seeker_id: string
+        }
+        Insert: {
+          average_score?: number | null
+          career_score?: number
+          created_at?: string
+          environment_score?: number
+          family_score?: number
+          finance_score?: number
+          fun_score?: number
+          growth_score?: number
+          health_score?: number
+          id?: string
+          notes?: Json | null
+          romance_score?: number
+          seeker_id: string
+        }
+        Update: {
+          average_score?: number | null
+          career_score?: number
+          created_at?: string
+          environment_score?: number
+          family_score?: number
+          finance_score?: number
+          fun_score?: number
+          growth_score?: number
+          health_score?: number
+          id?: string
+          notes?: Json | null
+          romance_score?: number
+          seeker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wheel_of_life_assessments_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
