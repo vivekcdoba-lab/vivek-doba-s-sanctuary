@@ -1,74 +1,73 @@
 
 
-## Plan: SWOT Analysis Full Assessment Experience
+## Plan: LGT Dimension Score Full Assessment Experience
 
-Build a complete SWOT personal assessment following the same 4-tab pattern as Wheel of Life (Take → Results → Action Plan → History), with dedicated data/hook files and a new database table.
+Build a complete LGT (Life's Golden Triangle / Purushaarth) assessment with the same 4-tab pattern as Wheel of Life: Take → Results → Action Plan → History. The 4 dimensions are Dharma (Purpose), Artha (Wealth), Kama (Desires), Moksha (Liberation).
 
 ### Database Migration
 
-Create `personal_swot_assessments` table:
+Create `lgt_assessments` table:
 - `id` UUID PK
-- `seeker_id` UUID NOT NULL (references profiles)
-- `strengths` JSONB DEFAULT '[]' — array of {text, importance (1-5), category}
-- `weaknesses` JSONB DEFAULT '[]'
-- `opportunities` JSONB DEFAULT '[]'  
-- `threats` JSONB DEFAULT '[]'
-- `overall_notes` TEXT
-- `strength_count` INT, `weakness_count` INT, `opportunity_count` INT, `threat_count` INT
-- `balance_score` NUMERIC — calculated ratio metric
+- `seeker_id` UUID NOT NULL (references profiles, ON DELETE CASCADE)
+- `dharma_score` INT NOT NULL (1-10)
+- `artha_score` INT NOT NULL (1-10)
+- `kama_score` INT NOT NULL (1-10)
+- `moksha_score` INT NOT NULL (1-10)
+- `average_score` NUMERIC
+- `notes` JSONB DEFAULT '{}'
 - `created_at` TIMESTAMPTZ DEFAULT now()
-
-RLS: seekers manage own rows, admins manage all via `is_admin()`.
+- Validation trigger ensuring scores are 1-10
+- RLS: seekers manage own rows, admins manage all via `is_admin()`
 
 ### Files Created
 
-**1. `src/components/swot-assessment/swotData.ts`**
-- SWOT quadrant definitions (name, emoji, color, description, guiding questions)
-- Category suggestions per quadrant (e.g., for Strengths: Skills, Knowledge, Resources, Character)
-- Action recommendations based on SWOT analysis patterns
-- Helper functions: `getSwotBalance()`, `getQuadrantHealth()`
+**1. `src/components/lgt-assessment/lgtData.ts`**
+- 4 dimension definitions (id, name, emoji, color, hindi, description, guiding questions)
+- Score zone helpers (`getScoreZone`, `getBalanceMessage`) adapted for LGT context
+- Per-dimension action recommendations for low/medium/high scores
+- Danger messages per dimension
 
-**2. `src/hooks/useSwotAssessment.ts`**
+**2. `src/hooks/useLgtAssessment.ts`**
 - React Query hook mirroring `useWheelOfLife` pattern
-- `history` query from `personal_swot_assessments`
-- `saveAssessment` mutation
-- `actions` query from `assessment_actions` where type='swot'
+- `history` query from `lgt_assessments`
+- `saveAssessment` mutation (calculates average, inserts row)
+- `actions` query from `assessment_actions` where `assessment_type = 'lgt'`
 - `saveAction` / `toggleAction` mutations
 
-**3. `src/components/swot-assessment/SwotTakeAssessment.tsx`**
-- 4 quadrant input cards (Strengths/Weaknesses/Opportunities/Threats)
-- Each quadrant: add items with text + importance (1-5) + optional category tag
-- Live item count display per quadrant
-- Guiding questions to help seekers think
-- Submit button to analyze
+**3. `src/components/lgt-assessment/LgtTakeAssessment.tsx`**
+- 4 dimension input cards with sliders (1-10), notes toggle
+- Live average score display
+- Progress indicator for all 4 dimensions
+- "Calculate My LGT Balance" submit button
 
-**4. `src/components/swot-assessment/SwotResults.tsx`**
-- Recharts BarChart showing item counts per quadrant
-- Recharts PieChart showing importance-weighted distribution
-- Balance analysis: internal (S vs W) and external (O vs T) ratios
-- Key insights auto-generated from the data
-- Comparison with previous assessment if available
+**4. `src/components/lgt-assessment/LgtResults.tsx`**
+- Overall balance score card
+- Danger zones section for scores ≤ 4
+- Radar chart (4-axis) and bar chart via Recharts
+- Pie chart for score distribution (danger/warning/thriving)
+- Balance analysis (highest, lowest, gap, variance)
+- Top strengths & growth areas
 
-**5. `src/components/swot-assessment/SwotActionPlan.tsx`**
-- Priority matrix: "Leverage" (S+O), "Defend" (S+T), "Improve" (W+O), "Mitigate" (W+T)
-- Auto-generated strategic recommendations
-- Saveable action items to `assessment_actions` table
-- Toggleable completion checkboxes
+**5. `src/components/lgt-assessment/LgtActionPlan.tsx`**
+- Priority matrix: Fix First (1-4), Improve (5-6), Maintain (7-10)
+- Per-dimension action recommendations
+- 30-Day Challenge focused on lowest dimension
+- Saved action items with checkboxes from `assessment_actions`
 
-**6. `src/components/swot-assessment/SwotHistory.tsx`**
-- List of past SWOT assessments with date and counts
-- Trend chart showing quadrant counts over time
-- View details loads a past assessment into Results tab
+**6. `src/components/lgt-assessment/LgtHistory.tsx`**
+- Summary cards (total, latest score, overall change)
+- Line chart showing score trends over time
+- History table with date, average, highest, lowest, view button
 
-**7. `src/components/swot-assessment/SwotFullExperience.tsx`**
+**7. `src/components/lgt-assessment/LgtFullExperience.tsx`**
 - Main orchestrator with 4 tabs (Take/Results/Action Plan/History)
-- Same structure as `WheelOfLifeFullExperience.tsx`
+- Same state management pattern as `WheelOfLifeFullExperience.tsx`
 
 ### Files Modified
 
-**`src/pages/seeker/assessments/SwotAssessmentPage.tsx`**
-- Replace placeholder with the full experience component (same pattern as WheelOfLifePage)
+**`src/pages/seeker/assessments/LgtAssessmentPage.tsx`**
+- Replace placeholder with full experience component (same pattern as SwotAssessmentPage)
 
 ### No Deletions
-All existing code, routes, and components remain untouched. Only the SwotAssessmentPage content changes from placeholder to full experience.
+All existing code remains untouched. Only the LgtAssessmentPage content changes from placeholder to full experience.
 
