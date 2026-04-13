@@ -1,27 +1,34 @@
 
 
-# Plan: Update Sender Email to noreply@vivekdoba.com
+# End-to-End Testing Report & Bug Fix Plan
 
-## Changes
+## What Was Tested (All Passing ✅)
 
-Update 3 edge functions to replace all `onboarding@resend.dev` sender addresses with `noreply@vivekdoba.com` and change admin recipient from `vivekcdoba@gmail.com` to `info@vivekdoba.com`.
+1. **Landing Page** — Loads correctly with stats, branding, WhatsApp number
+2. **Discovery Call Form** (`/book-appointment`) — Full form fill + submit → "Appointment Request Submitted!" with date/time confirmation
+3. **Workshop Registration** (`/register-workshop`) — Loads with 3 workshops, pricing, participant limits
+4. **LGT Application** (`/apply-lgt`) — Loads with 3 program tiers (₹2.5L to ₹10L)
+5. **Login Page** — Role tabs (Seeker/Coach/Admin), links to forms, WhatsApp button
+6. **Admin Login** (lgt@gmail.com) — Dashboard loads with real data: 10 Seekers, 8 Coaches, Revenue Trend chart, Enrollment Funnel
+7. **Applications Review** (`/applications`) — Discovery Call submission appeared as "Pending Review", existing approved/rejected entries visible
+8. **Seeker Login** (test01@gmail.com) — Dashboard loads with onboarding tour, daily affirmation (Hindi/English), streak counter, worksheet status
 
-### Files to Edit
+## Bugs Found
 
-1. **`supabase/functions/send-otp/index.ts`**
-   - `from: "VDTS <onboarding@resend.dev>"` → `from: "VDTS <noreply@vivekdoba.com>"`
+### BUG 1: Console Warning — Function components cannot be given refs
+- Multiple warnings in console: `BrowserRouter`, `Routes`, `Index`, `WhatsAppSupportButton` getting refs incorrectly
+- **Impact**: Non-breaking but pollutes console
+- **Fix**: Wrap affected components with `React.forwardRef` or remove ref passing in `App.tsx`
 
-2. **`supabase/functions/send-notification/index.ts`**
-   - `ADMIN_EMAIL` → `"info@vivekdoba.com"`
-   - `from: "VDTS Notifications <onboarding@resend.dev>"` → `from: "VDTS Notifications <noreply@vivekdoba.com>"`
-   - `from: "Vivek Doba Training Solutions <onboarding@resend.dev>"` → `from: "Vivek Doba Training Solutions <noreply@vivekdoba.com>"`
+### BUG 2: No sidebar link to Applications page
+- The Applications page works at `/applications` but there's no visible sidebar link in the admin navigation to reach it
+- Users must know the URL directly
+- **Fix**: Add "📥 Applications" link in the admin sidebar under CRM & Sales or a dedicated section
 
-3. **`supabase/functions/daily-session-report/index.ts`**
-   - `ADMIN_EMAIL` → `"info@vivekdoba.com"`
-   - `from: "VDTS Reports <onboarding@resend.dev>"` → `from: "VDTS Reports <noreply@vivekdoba.com>"`
+## No Database Changes Required
+All fixes are frontend-only — no schema, RLS, or migration changes needed.
 
-### Prerequisite
-Domain `vivekdoba.com` must be verified in Resend for sending to work. WhatsApp number `+919607050111` is already correct — no changes needed.
-
-### No deletions, no style changes, no DB changes.
+## Files to Edit
+1. **`src/App.tsx`** — Fix ref warnings on components
+2. **Admin sidebar component** (likely `AdminLayout.tsx`) — Add Applications link
 
