@@ -1,8 +1,7 @@
-import { forwardRef } from 'react';
 import { MessageCircle } from 'lucide-react';
 
-const WhatsAppSupportButton = forwardRef<HTMLAnchorElement>(function WhatsAppSupportButton(_props, ref) {
-  const phone = '919876543210'; // Replace with actual VDTS WhatsApp number
+export default function WhatsAppSupportButton() {
+  const phone = '919607050111';
   const message = encodeURIComponent('Namaste! I need help with the VDTS platform.');
   
   return (
@@ -17,6 +16,4 @@ const WhatsAppSupportButton = forwardRef<HTMLAnchorElement>(function WhatsAppSup
       <span className="hidden sm:inline text-sm font-medium">Support</span>
     </a>
   );
-});
-
-export default WhatsAppSupportButton;
+}
