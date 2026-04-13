@@ -1744,6 +1744,59 @@ export type Database = {
           },
         ]
       }
+      firo_b_assessments: {
+        Row: {
+          created_at: string
+          expressed_affection: number
+          expressed_control: number
+          expressed_inclusion: number
+          id: string
+          notes: Json | null
+          seeker_id: string
+          total_expressed: number | null
+          total_wanted: number | null
+          wanted_affection: number
+          wanted_control: number
+          wanted_inclusion: number
+        }
+        Insert: {
+          created_at?: string
+          expressed_affection?: number
+          expressed_control?: number
+          expressed_inclusion?: number
+          id?: string
+          notes?: Json | null
+          seeker_id: string
+          total_expressed?: number | null
+          total_wanted?: number | null
+          wanted_affection?: number
+          wanted_control?: number
+          wanted_inclusion?: number
+        }
+        Update: {
+          created_at?: string
+          expressed_affection?: number
+          expressed_control?: number
+          expressed_inclusion?: number
+          id?: string
+          notes?: Json | null
+          seeker_id?: string
+          total_expressed?: number | null
+          total_wanted?: number | null
+          wanted_affection?: number
+          wanted_control?: number
+          wanted_inclusion?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "firo_b_assessments_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follow_ups: {
         Row: {
           completion_notes: string | null
@@ -1784,6 +1837,62 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "follow_ups_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      happiness_assessments: {
+        Row: {
+          accomplishment_score: number
+          average_score: number | null
+          created_at: string
+          engagement_score: number
+          gratitude_score: number
+          health_score: number
+          id: string
+          life_satisfaction_score: number
+          meaning_score: number
+          notes: Json | null
+          positive_emotions_score: number
+          relationships_score: number
+          seeker_id: string
+        }
+        Insert: {
+          accomplishment_score?: number
+          average_score?: number | null
+          created_at?: string
+          engagement_score?: number
+          gratitude_score?: number
+          health_score?: number
+          id?: string
+          life_satisfaction_score?: number
+          meaning_score?: number
+          notes?: Json | null
+          positive_emotions_score?: number
+          relationships_score?: number
+          seeker_id: string
+        }
+        Update: {
+          accomplishment_score?: number
+          average_score?: number | null
+          created_at?: string
+          engagement_score?: number
+          gratitude_score?: number
+          health_score?: number
+          id?: string
+          life_satisfaction_score?: number
+          meaning_score?: number
+          notes?: Json | null
+          positive_emotions_score?: number
+          relationships_score?: number
+          seeker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "happiness_assessments_seeker_id_fkey"
             columns: ["seeker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -2086,6 +2195,56 @@ export type Database = {
           {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mooch_assessments: {
+        Row: {
+          attachment_score: number
+          average_score: number | null
+          comparison_score: number
+          created_at: string
+          fear_score: number
+          id: string
+          negativity_score: number
+          notes: Json | null
+          overthinking_score: number
+          resistance_score: number
+          seeker_id: string
+        }
+        Insert: {
+          attachment_score?: number
+          average_score?: number | null
+          comparison_score?: number
+          created_at?: string
+          fear_score?: number
+          id?: string
+          negativity_score?: number
+          notes?: Json | null
+          overthinking_score?: number
+          resistance_score?: number
+          seeker_id: string
+        }
+        Update: {
+          attachment_score?: number
+          average_score?: number | null
+          comparison_score?: number
+          created_at?: string
+          fear_score?: number
+          id?: string
+          negativity_score?: number
+          notes?: Json | null
+          overthinking_score?: number
+          resistance_score?: number
+          seeker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mooch_assessments_seeker_id_fkey"
+            columns: ["seeker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -2428,6 +2587,53 @@ export type Database = {
           {
             foreignKeyName: "program_trainers_trainer_id_fkey"
             columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purusharthas_assessments: {
+        Row: {
+          artha_score: number
+          average_score: number | null
+          created_at: string
+          dharma_score: number
+          id: string
+          kama_score: number
+          moksha_score: number
+          notes: Json | null
+          seeker_id: string
+          sub_dimensions: Json | null
+        }
+        Insert: {
+          artha_score?: number
+          average_score?: number | null
+          created_at?: string
+          dharma_score?: number
+          id?: string
+          kama_score?: number
+          moksha_score?: number
+          notes?: Json | null
+          seeker_id: string
+          sub_dimensions?: Json | null
+        }
+        Update: {
+          artha_score?: number
+          average_score?: number | null
+          created_at?: string
+          dharma_score?: number
+          id?: string
+          kama_score?: number
+          moksha_score?: number
+          notes?: Json | null
+          seeker_id?: string
+          sub_dimensions?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purusharthas_assessments_seeker_id_fkey"
+            columns: ["seeker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
