@@ -1,60 +1,51 @@
 
 
-## Plan: Coach Assessment Dashboard for Seeker Management
+## Plan: Admin Assessment Management Dashboard
 
 ### Overview
-Add two new pages and enhance the coach sidebar to let coaches view/manage seeker assessments, provide feedback, and track progress. All new — nothing deleted.
-
-### Key Design Decision
-The user's request uses `/coach/` paths, but all existing coaching routes use `/coaching/` prefix. I will use `/coaching/` for consistency (e.g., `/coaching/seeker-assessments` instead of `/coach/seeker-assessments`).
+Add a comprehensive admin assessment management page with organization-wide analytics, assessment configuration, and report generation. Enhance the existing admin sidebar with new navigation items. Create two new database tables for assessment configuration and system settings.
 
 ### Changes
 
-**1. Database Migration — `coach_assessment_feedback` table**
-- Create table with columns: id, coach_id, seeker_id, assessment_id, assessment_type, spoke_feedback (JSONB), general_notes, action_items (JSONB), shared_with_seeker, created_at, updated_at
-- Use validation triggers instead of CHECK constraints
-- RLS: coaches manage their own feedback; seekers view shared feedback
-- Admin access via `is_admin()` function
+**1. Database Migration — `assessment_config` and `system_settings` tables**
+- `assessment_config`: stores per-assessment-type toggle and JSONB config, with RLS for admin write / authenticated read
+- `system_settings`: stores category-based settings (frequency, thresholds), admin-only access via `is_admin()` function
+- Seed default rows for 7 assessment types and default assessment settings
+- Use `is_admin(auth.uid())` in RLS policies to avoid recursion
 
-**2. Update Coach Sidebar Navigation** (`src/components/CoachingLayout.tsx`)
-- Enhance the existing ASSESSMENTS group (lines 66-71) by adding two new items:
-  - `{ icon: Brain, label: 'Assessment Dashboard', path: '/coaching/seeker-assessments' }`
-  - `{ icon: PieChart, label: 'Assessment Analytics', path: '/coaching/assessment-analytics' }`
+**2. Update Admin Sidebar** (`src/components/AdminLayout.tsx`)
+- Add two new items to the existing ASSESSMENTS group (lines 85-89):
+  - `{ icon: Settings, label: 'Configure Assessments', path: '/admin/assessments/configure' }`
+  - `{ icon: PieChart, label: 'Assessment Analytics', path: '/admin/assessments/analytics' }`
 
-**3. Create `src/pages/coaching/CoachSeekerAssessments.tsx`**
-- Dashboard page showing stats cards (total seekers, assessments this month, avg wheel score, danger zone count)
-- Searchable seeker list with Wheel of Life scores, LGT scores, danger zone badges, and status indicators
-- Fetches real data from `profiles` + `wheel_of_life_assessments` via Supabase joins
-- Each seeker card has View/Message/Schedule actions
-- "View" navigates to `/coaching/seeker-assessments/:seekerId`
+**3. Create `src/pages/admin/AdminAssessmentConfig.tsx`**
+- Global settings panel: assessment frequency, auto-reminders toggle, coach danger zone alerts toggle, danger threshold selector
+- Per-assessment-type cards with active/inactive Switch toggles
+- Wheel of Life spoke configuration list
+- Reads from / writes to `assessment_config` and `system_settings` tables via Supabase
 
-**4. Create `src/pages/coaching/CoachSeekerDetail.tsx`**
-- Seeker header with contact info, program, day count, streak
-- Tabs: Wheel of Life (Radar + Bar charts via recharts), SWOT, LGT, Overview (placeholders for last three)
-- Danger zones section with seeker notes displayed
-- Coach feedback textarea with save to `coach_assessment_feedback` table
-- "Share Summary with Seeker" button toggles `shared_with_seeker`
-- Back button to seeker list
+**4. Create `src/pages/admin/AdminAssessmentAnalytics.tsx`**
+- Organization-wide stats cards (total assessments, active seekers, completion rate, monthly count)
+- Bar chart of average Wheel of Life scores by spoke (from `wheel_of_life_assessments`)
+- Pie chart of score distribution (danger/warning/good)
+- Coach performance comparison table
+- Key insights section
+- Report generation buttons (placeholder actions)
 
-**5. Create `src/pages/coaching/CoachAssessmentAnalytics.tsx`**
-- Placeholder page with coming soon message and summary of planned analytics features
-
-**6. Update Routes** (`src/App.tsx`)
-- Add imports for the 3 new pages
-- Add 3 routes inside the coaching `<Route>` block:
-  - `/coaching/seeker-assessments` → `CoachSeekerAssessments`
-  - `/coaching/seeker-assessments/:seekerId` → `CoachSeekerDetail`
-  - `/coaching/assessment-analytics` → `CoachAssessmentAnalytics`
+**5. Update Routes** (`src/App.tsx`)
+- Add 2 new imports and 2 new routes inside the admin `<Route>` block:
+  - `/admin/assessments/configure` → `AdminAssessmentConfig`
+  - `/admin/assessments/analytics` → `AdminAssessmentAnalytics`
+- The existing `/assessments` route (AssessmentsPage) remains untouched
 
 ### Files Modified
-- `src/components/CoachingLayout.tsx` — add 2 nav items to ASSESSMENTS group
-- `src/App.tsx` — add 3 imports + 3 routes
+- `src/components/AdminLayout.tsx` — add 2 nav items
+- `src/App.tsx` — add 2 imports + 2 routes
 
 ### Files Created
-- `src/pages/coaching/CoachSeekerAssessments.tsx`
-- `src/pages/coaching/CoachSeekerDetail.tsx`
-- `src/pages/coaching/CoachAssessmentAnalytics.tsx`
+- `src/pages/admin/AdminAssessmentConfig.tsx`
+- `src/pages/admin/AdminAssessmentAnalytics.tsx`
 
 ### Database Migration
-- 1 new table: `coach_assessment_feedback` with RLS policies
+- 2 new tables: `assessment_config`, `system_settings` with RLS and seed data
 
