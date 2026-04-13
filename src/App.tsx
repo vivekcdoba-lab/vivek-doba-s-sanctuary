@@ -82,6 +82,8 @@ import AdminNotificationsPage from "./pages/admin/AdminNotificationsPage";
 import AdminIntegrations from "./pages/admin/AdminIntegrations";
 import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import AdminBackup from "./pages/admin/AdminBackup";
+import AdminAssessmentConfig from "./pages/admin/AdminAssessmentConfig";
+import AdminAssessmentAnalytics from "./pages/admin/AdminAssessmentAnalytics";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -307,6 +309,8 @@ const App = () => (
             <Route path="/admin/integrations" element={<AdminIntegrations />} />
             <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
             <Route path="/admin/backup" element={<AdminBackup />} />
+            <Route path="/admin/assessments/configure" element={<AdminAssessmentConfig />} />
+            <Route path="/admin/assessments/analytics" element={<AdminAssessmentAnalytics />} />
           </Route>
 
           {/* Seeker Routes */}

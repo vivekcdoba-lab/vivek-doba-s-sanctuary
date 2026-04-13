@@ -257,6 +257,33 @@ export type Database = {
           },
         ]
       }
+      assessment_config: {
+        Row: {
+          assessment_type: string
+          config: Json | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          assessment_type: string
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          assessment_type?: string
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       assessments: {
         Row: {
           analysis_text: string | null
@@ -3283,6 +3310,38 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      system_settings: {
+        Row: {
+          category: string
+          id: string
+          settings: Json
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          id?: string
+          settings?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          id?: string
+          settings?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       team_members: {
         Row: {
