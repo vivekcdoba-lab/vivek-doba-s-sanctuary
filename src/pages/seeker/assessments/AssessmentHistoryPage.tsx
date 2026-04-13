@@ -159,6 +159,40 @@ const AssessmentHistoryPage = () => {
           </div>
         </Card>
       )}
+
+      {/* Progress Over Time Table */}
+      <Card className="p-4">
+        <h3 className="font-semibold text-sm mb-3">📊 My Progress Over Time</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left p-2 font-medium text-muted-foreground">Assessment</th>
+                <th className="text-center p-2 font-medium text-muted-foreground">Initial</th>
+                <th className="text-center p-2 font-medium text-muted-foreground">Month 1</th>
+                <th className="text-center p-2 font-medium text-muted-foreground">Month 2</th>
+                <th className="text-center p-2 font-medium text-muted-foreground">Month 3</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { name: 'Wheel of Life', initial: '4.6', m1: '5.1', m2: '5.8', m3: '6.2' },
+                { name: 'LGT Balance', initial: '45%', m1: '52%', m2: '61%', m3: '68%' },
+                { name: 'Happiness', initial: '5.5', m1: '6.0', m2: '6.8', m3: '7.2' },
+                { name: 'Purushartha Balance', initial: '50%', m1: '55%', m2: '62%', m3: '65%' },
+              ].map(row => (
+                <tr key={row.name} className="border-b border-border">
+                  <td className="p-2 text-foreground font-medium">{row.name}</td>
+                  <td className="p-2 text-center text-muted-foreground">{row.initial}</td>
+                  <td className="p-2 text-center text-foreground">{row.m1}</td>
+                  <td className="p-2 text-center text-foreground">{row.m2}</td>
+                  <td className="p-2 text-center text-green-600 font-medium">{row.m3}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   );
 };
