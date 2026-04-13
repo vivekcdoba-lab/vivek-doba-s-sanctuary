@@ -103,7 +103,7 @@ const LgtHistory = ({ history, onViewDetails }: Props) => {
                   <div className="flex gap-1">
                     {LGT_DIMENSIONS.map(d => (
                       <Badge key={d.id} variant="outline" className="text-xs px-1" style={{ borderColor: d.color }}>
-                        {d.emoji}{h[`${d.id}_score` as keyof LgtAssessment]}
+                        {d.emoji}{String(h[`${d.id}_score` as keyof LgtAssessment])}
                       </Badge>
                     ))}
                   </div>
