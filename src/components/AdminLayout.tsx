@@ -86,6 +86,8 @@ const adminNav: NavGroup[] = [
       { icon: ClipboardList, label: 'Question Bank', path: '/admin/question-bank' },
       { icon: UserPlus, label: 'Create Assessment', path: '/admin/create-assessment' },
       { icon: BarChart3, label: 'Assessment Results', path: '/assessments' },
+      { icon: Settings, label: 'Configure Assessments', path: '/admin/assessments/configure' },
+      { icon: PieChart, label: 'Assessment Analytics', path: '/admin/assessments/analytics' },
     ],
   },
   {
