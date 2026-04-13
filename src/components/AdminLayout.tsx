@@ -46,7 +46,7 @@ const adminNav: NavGroup[] = [
   {
     label: 'ENROLLMENTS', emoji: '📝', items: [
       { icon: Inbox, label: 'Applications Review', path: '/applications' },
-      { icon: ClipboardList, label: 'All Enrollments', path: '/admin/enrollments' },
+      { icon: CheckCircle, label: 'All Enrollments', path: '/admin/enrollments' },
       { icon: UserPlus, label: 'New Enrollment', path: '/admin/new-enrollment' },
       { icon: Users, label: 'Batch Management', path: '/admin/batches' },
       { icon: BarChart3, label: 'Enrollment Stats', path: '/admin/enrollment-stats' },
