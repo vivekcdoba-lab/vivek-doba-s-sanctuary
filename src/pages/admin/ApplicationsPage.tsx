@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 
-type FormType = 'discovery_call' | 'workshop' | 'lgt_application';
+type FormType = 'discovery_call' | 'workshop' | 'lgt_application' | 'registration';
 type SubmissionStatus = 'pending' | 'approved' | 'rejected' | 'info_requested';
 
 interface Submission {
@@ -25,6 +25,7 @@ const typeBadge = (t: string) => {
     discovery_call: { label: '📞 Discovery Call', bg: '#DBEAFE', color: '#1D4ED8' },
     workshop: { label: '🎯 Workshop', bg: '#FFF3CD', color: '#B8860B' },
     lgt_application: { label: '👑 LGT Application', bg: '#FEF3C7', color: '#92400E' },
+    registration: { label: '📝 Registration', bg: '#E0E7FF', color: '#3730A3' },
   };
   const s = map[t] || { label: t, bg: '#eee', color: '#333' };
   return <span className="px-2.5 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: s.bg, color: s.color }}>{s.label}</span>;
@@ -46,7 +47,7 @@ const timeAgo = (d: string) => {
   return diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : `${diff} days ago`;
 };
 
-const SKIP_KEYS = new Set(['consent', 'consent1', 'consent2', 'consent3', 'consent4', 'sameWhatsapp', 'coursesOpen', 'interestedCourses', 'commitments', 'countryCode', 'whatsappCountryCode', 'loading']);
+const SKIP_KEYS = new Set(['consent', 'consent1', 'consent2', 'consent3', 'consent4', 'sameWhatsapp', 'coursesOpen', 'interestedCourses', 'commitments', 'countryCode', 'whatsappCountryCode', 'loading', 'password']);
 
 const formatKey = (k: string) => k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).replace(/_/g, ' ');
 
@@ -187,6 +188,7 @@ const ApplicationsPage = () => {
           { key: 'discovery_call' as const, label: '📞 Discovery Calls', count: pendingCount('discovery_call') },
           { key: 'workshop' as const, label: '🎯 Workshops', count: pendingCount('workshop') },
           { key: 'lgt_application' as const, label: '👑 LGT Applications', count: pendingCount('lgt_application') },
+          { key: 'registration' as const, label: '📝 Registrations', count: pendingCount('registration') },
         ]).map(t => (
           <button key={t.key} onClick={() => setFilter(t.key)} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${filter === t.key ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary/50'}`}>
             {t.label} {t.count > 0 && <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-destructive/20 text-destructive">{t.count}</span>}

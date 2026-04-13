@@ -71,6 +71,7 @@ Deno.serve(async (req) => {
     }
 
     const fd = (sub.form_data as Record<string, any>) || {};
+    const isRegistration = sub.form_type === "registration";
 
     // Check if user already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
@@ -98,6 +99,8 @@ Deno.serve(async (req) => {
             state: fd.state || "",
             company: fd.company || fd.companyName || "",
             occupation: fd.profession || fd.designation || fd.occupation || "",
+            phone: fd.phone || "",
+            whatsapp: fd.whatsapp || fd.phone || "",
             role: "seeker",
           })
           .eq("id", profileId);
@@ -111,17 +114,20 @@ Deno.serve(async (req) => {
         );
       }
     } else {
+      // Determine password: use user's chosen password for registrations, generate for others
+      const password = isRegistration && fd.password
+        ? fd.password
+        : "Welcome@" + Math.random().toString(36).slice(-8) + "!1";
+
       // Create new auth user - trigger will auto-create profile
-      const tempPassword =
-        "Welcome@" + Math.random().toString(36).slice(-8) + "!1";
       const { data: newUser, error: createErr } =
         await supabaseAdmin.auth.admin.createUser({
           email: sub.email,
-          password: tempPassword,
+          password,
           email_confirm: true,
           user_metadata: {
             full_name: sub.full_name,
-            phone: sub.mobile || "",
+            phone: sub.mobile || fd.phone || "",
             role: "seeker",
             city: fd.city || "",
             state: fd.state || "",
@@ -163,6 +169,17 @@ Deno.serve(async (req) => {
       }
 
       profileId = newProfile.id;
+
+      // Update profile with additional fields from registration
+      if (isRegistration) {
+        await supabaseAdmin
+          .from("profiles")
+          .update({
+            phone: fd.phone || sub.mobile || "",
+            whatsapp: fd.whatsapp || fd.phone || "",
+          })
+          .eq("id", profileId);
+      }
     }
 
     // Try to create enrollment if course matches
@@ -171,6 +188,7 @@ Deno.serve(async (req) => {
       fd.workshopName ||
       fd.workshopId ||
       fd.programId ||
+      fd.course ||
       ""
     ).toString().toLowerCase();
 
@@ -195,10 +213,13 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Update submission status
+    // Update submission status & clear password from form_data for security
+    const sanitizedFormData = { ...fd };
+    delete sanitizedFormData.password;
+
     await supabaseAdmin
       .from("submissions")
-      .update({ status: "approved" })
+      .update({ status: "approved", form_data: sanitizedFormData })
       .eq("id", submission_id);
 
     return new Response(

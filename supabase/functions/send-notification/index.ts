@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,11 +26,12 @@ function buildAdminEmailHtml(data: NotificationRequest): string {
     discovery_call: "📞 Discovery Call",
     workshop: "🎯 Workshop Registration",
     lgt_application: "👑 LGT Application",
+    registration: "📝 New Account Registration",
   };
   const formType = typeLabels[data.form_type] || data.form_type;
   const details = data.form_data
     ? Object.entries(data.form_data)
-        .filter(([_, v]) => v !== "" && v !== null && v !== undefined)
+        .filter(([k, v]) => v !== "" && v !== null && v !== undefined && k !== "password")
         .map(([k, v]) => {
           const label = k.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
           const val = typeof v === "object" ? JSON.stringify(v) : String(v);
@@ -62,7 +64,9 @@ function buildApplicantEmailHtml(data: NotificationRequest): string {
       icon: "✅",
       title: "Congratulations! Your Application is Approved",
       color: "#065F46",
-      message: "We are thrilled to welcome you! Vivek Sir has reviewed your application and approved it. Our team will reach out to you shortly with next steps.",
+      message: data.form_type === "registration"
+        ? "We are thrilled to welcome you! Your account has been approved. You can now log in with the email and password you used during registration."
+        : "We are thrilled to welcome you! Vivek Sir has reviewed your application and approved it. Our team will reach out to you shortly with next steps.",
     },
     rejected: {
       icon: "🙏",
@@ -111,7 +115,14 @@ serve(async (req) => {
     const data: NotificationRequest = await req.json();
 
     if (data.type === "new_submission") {
-      // Send email to admin
+      const typeSubjects: Record<string, string> = {
+        discovery_call: "Discovery Call",
+        workshop: "Workshop Registration",
+        lgt_application: "LGT Application",
+        registration: "Account Registration",
+      };
+      const subjectLabel = typeSubjects[data.form_type] || data.form_type;
+
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -121,7 +132,7 @@ serve(async (req) => {
         body: JSON.stringify({
           from: "VDTS Notifications <noreply@vivekdoba.com>",
           to: [ADMIN_EMAIL],
-          subject: `🪷 New ${data.form_type === "discovery_call" ? "Discovery Call" : data.form_type === "workshop" ? "Workshop Registration" : "LGT Application"} — ${data.applicant_name}`,
+          subject: `🪷 New ${subjectLabel} — ${data.applicant_name}`,
           html: buildAdminEmailHtml(data),
         }),
       });
@@ -159,6 +170,35 @@ serve(async (req) => {
       const result = await res.json();
       if (!res.ok) {
         throw new Error(`Resend API error [${res.status}]: ${JSON.stringify(result)}`);
+      }
+
+      // Also send WhatsApp notification if mobile number is available
+      if (data.applicant_mobile) {
+        try {
+          const supabaseAdmin = createClient(
+            Deno.env.get("SUPABASE_URL")!,
+            Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+          );
+
+          const whatsappMessages: Record<string, string> = {
+            approved: `🪷 Namaste ${data.applicant_name}!\n\n✅ Great news! Your application with Vivek Doba Training Solutions has been *approved*.\n\n${data.form_type === "registration" ? "You can now log in to your account using the email and password you registered with." : "Our team will reach out to you shortly with next steps."}\n\nFor questions: 📞 9607050111\n\n🙏 Welcome to your transformation journey!`,
+            rejected: `🪷 Namaste ${data.applicant_name},\n\n🙏 Thank you for your interest in Vivek Doba Training Solutions.\n\nAfter careful review, we are unable to proceed with your application at this time.${data.admin_notes ? `\n\nNote: ${data.admin_notes}` : ""}\n\nFor questions: 📞 9607050111`,
+            info_requested: `🪷 Namaste ${data.applicant_name},\n\n📋 We need some additional information regarding your application.\n\n${data.admin_notes || "Please check your email for details."}\n\nFor questions: 📞 9607050111`,
+          };
+
+          const message = whatsappMessages[data.status || "approved"];
+          if (message) {
+            await supabaseAdmin.functions.invoke("send-whatsapp", {
+              body: {
+                to: data.applicant_mobile,
+                message,
+              },
+            });
+          }
+        } catch (whatsappErr) {
+          console.error("WhatsApp notification error:", whatsappErr);
+          // Don't fail the whole request if WhatsApp fails
+        }
       }
 
       return new Response(JSON.stringify({ success: true, id: result.id }), {
