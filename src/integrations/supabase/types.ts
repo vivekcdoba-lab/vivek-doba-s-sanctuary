@@ -1956,6 +1956,50 @@ export type Database = {
           },
         ]
       }
+      lgt_assessments: {
+        Row: {
+          artha_score: number
+          average_score: number | null
+          created_at: string
+          dharma_score: number
+          id: string
+          kama_score: number
+          moksha_score: number
+          notes: Json | null
+          seeker_id: string
+        }
+        Insert: {
+          artha_score?: number
+          average_score?: number | null
+          created_at?: string
+          dharma_score?: number
+          id?: string
+          kama_score?: number
+          moksha_score?: number
+          notes?: Json | null
+          seeker_id: string
+        }
+        Update: {
+          artha_score?: number
+          average_score?: number | null
+          created_at?: string
+          dharma_score?: number
+          id?: string
+          kama_score?: number
+          moksha_score?: number
+          notes?: Json | null
+          seeker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lgt_assessments_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_strategy: {
         Row: {
           budget_monthly: number | null
