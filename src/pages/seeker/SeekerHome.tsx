@@ -110,24 +110,14 @@ const SeekerHome = () => {
       <div data-tour="progress" className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StreakCard streak={streak} />
         <ProgressCard current={completedSessions} total={totalSessions} label="Journey Progress" emoji="📅" />
-        <PointsCard points={1250} level={2} />
-        <WorksheetStatusCard hasFilledToday={false} streak={streak} />
+        {/* TODO: Points from DB when points system is built */}
+        <PointsCard points={0} level={1} />
+        <WorksheetStatusCard hasFilledToday={hasFilledToday} streak={streak} />
       </div>
 
       {/* Daily Affirmation from DB */}
       <DailyAffirmationWidget />
 
-      {/* Today's Affirmation (fallback) */}
-      <div className="glass-card p-5 border-2 border-primary/20 relative">
-        <div className="absolute top-2 right-3 text-xs text-primary">✦</div>
-        <p className="text-sm font-semibold text-primary mb-1">Today's Affirmation</p>
-        <p className="text-foreground italic">"{affirmation.en}"</p>
-        <p className="text-sm text-muted-foreground font-devanagari mt-1">"{affirmation.mr}"</p>
-        <div className="flex items-center justify-between mt-3">
-          <span className="text-xs text-muted-foreground">🔊 Speak 3 times</span>
-          <button className="text-lotus-pink hover:scale-110 transition-transform"><Heart className="w-5 h-5" /></button>
-        </div>
-      </div>
 
       {/* Main Widgets Row */}
       <div className="grid md:grid-cols-2 gap-4">
