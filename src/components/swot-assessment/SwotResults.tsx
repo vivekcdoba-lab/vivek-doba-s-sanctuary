@@ -127,8 +127,9 @@ const SwotResults = ({ scores, previousAssessment }: Props) => {
           <CardContent>
             <div className="grid grid-cols-4 gap-2 text-center text-sm">
               {(['strengths', 'weaknesses', 'opportunities', 'threats'] as const).map((q) => {
-                const prevCount = previousAssessment[`${q.slice(0, -1 === 0 ? undefined : undefined)}_count` as keyof typeof previousAssessment] as number || 
-                  (Array.isArray(previousAssessment[q]) ? previousAssessment[q].length : 0);
+const countKey = `${q.slice(0, -1)}_count` as 'strength_count' | 'weakness_count' | 'opportunity_count' | 'threat_count';
+                const prevCount = (previousAssessment as any)[countKey] as number ||
+                  (Array.isArray((previousAssessment as any)[q]) ? (previousAssessment as any)[q].length : 0);
                 const curCount = scores[q].length;
                 const diff = curCount - prevCount;
                 return (
