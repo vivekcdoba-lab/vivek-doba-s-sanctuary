@@ -80,7 +80,7 @@ const ActiveSessionsPage = () => {
 
   // Session history
   const { data: historyData = [], refetch: refetchHistory } = useQuery({
-    queryKey: ['session-history', statusFilter, reasonFilter, searchQuery],
+    queryKey: ['session-history', statusFilter, reasonFilter, searchQuery, dateFilter?.toISOString()],
     queryFn: async () => {
       let query = supabase
         .from('user_sessions')
@@ -90,6 +90,13 @@ const ActiveSessionsPage = () => {
 
       if (statusFilter !== 'all') query = query.eq('status', statusFilter);
       if (reasonFilter !== 'all') query = query.eq('logout_reason', reasonFilter);
+      if (dateFilter) {
+        const start = new Date(dateFilter);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(dateFilter);
+        end.setHours(23, 59, 59, 999);
+        query = query.gte('login_at', start.toISOString()).lte('login_at', end.toISOString());
+      }
 
       const { data } = await query;
       let results = (data || []) as SessionRow[];
