@@ -395,11 +395,11 @@ const App = () => (
             <Route path="/coaching/homework" element={<CoachingHomework />} />
             <Route path="/coaching/progress" element={<CoachingProgress />} />
             {/* Coach placeholder routes */}
-            <Route path="/coaching/seekers" element={<P />} />
-            <Route path="/coaching/seekers-active" element={<P />} />
-            <Route path="/coaching/seekers-attention" element={<P />} />
-            <Route path="/coaching/seekers-ontrack" element={<P />} />
-            <Route path="/coaching/seekers-search" element={<P />} />
+            <Route path="/coaching/seekers" element={<CoachAllSeekers />} />
+            <Route path="/coaching/seekers-active" element={<CoachSeekersActive />} />
+            <Route path="/coaching/seekers-attention" element={<CoachSeekersAttention />} />
+            <Route path="/coaching/seekers-ontrack" element={<CoachSeekersOntrack />} />
+            <Route path="/coaching/seekers-search" element={<CoachSeekersSearch />} />
             <Route path="/coaching/worksheet-pending" element={<CoachWorksheetPending />} />
             <Route path="/coaching/worksheet-reviewed" element={<CoachWorksheetReviewed />} />
             <Route path="/coaching/worksheet-stats" element={<CoachWorksheetStats />} />
@@ -412,21 +412,21 @@ const App = () => (
             <Route path="/coaching/pending-submissions" element={<CoachPendingSubmissions />} />
             <Route path="/coaching/reviewed" element={<CoachReviewedAssignments />} />
             <Route path="/coaching/completion-rate" element={<CoachCompletionRate />} />
-            <Route path="/coaching/generate-reports" element={<P />} />
-            <Route path="/coaching/businesses" element={<P />} />
-            <Route path="/coaching/swot-reviews" element={<P />} />
-            <Route path="/coaching/dept-health" element={<P />} />
-            <Route path="/coaching/business-notes" element={<P />} />
-            <Route path="/coaching/messages" element={<P />} />
-            <Route path="/coaching/templates" element={<P />} />
-            <Route path="/coaching/announcements" element={<P />} />
-            <Route path="/coaching/engagement" element={<P />} />
-            <Route path="/coaching/progress-report" element={<P />} />
-            <Route path="/coaching/artha-progress" element={<P />} />
-            <Route path="/coaching/export" element={<P />} />
+            <Route path="/coaching/generate-reports" element={<CoachGenerateReports />} />
+            <Route path="/coaching/businesses" element={<CoachBusinesses />} />
+            <Route path="/coaching/swot-reviews" element={<CoachSwotReviews />} />
+            <Route path="/coaching/dept-health" element={<CoachDeptHealth />} />
+            <Route path="/coaching/business-notes" element={<CoachBusinessNotes />} />
+            <Route path="/coaching/messages" element={<CoachMessages />} />
+            <Route path="/coaching/templates" element={<CoachTemplates />} />
+            <Route path="/coaching/announcements" element={<CoachAnnouncements />} />
+            <Route path="/coaching/engagement" element={<CoachEngagement />} />
+            <Route path="/coaching/progress-report" element={<CoachProgressReport />} />
+            <Route path="/coaching/artha-progress" element={<CoachArthaProgress />} />
+            <Route path="/coaching/export" element={<CoachExport />} />
             <Route path="/coaching/broadcast" element={<CoachBroadcast />} />
             <Route path="/coaching/weekly-report" element={<CoachWeeklyReport />} />
-            <Route path="/coaching/settings" element={<P />} />
+            <Route path="/coaching/settings" element={<CoachSettings />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
