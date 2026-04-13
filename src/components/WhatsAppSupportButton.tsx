@@ -17,4 +17,6 @@ const WhatsAppSupportButton = forwardRef<HTMLAnchorElement>(function WhatsAppSup
       <span className="hidden sm:inline text-sm font-medium">Support</span>
     </a>
   );
-}
+});
+
+export default WhatsAppSupportButton;
