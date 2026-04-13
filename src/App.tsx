@@ -204,6 +204,9 @@ import CoachProgressReport from "./pages/coaching/CoachProgressReport";
 import CoachArthaProgress from "./pages/coaching/CoachArthaProgress";
 import CoachExport from "./pages/coaching/CoachExport";
 import CoachSettings from "./pages/coaching/CoachSettings";
+import CoachSeekerAssessments from "./pages/coaching/CoachSeekerAssessments";
+import CoachSeekerDetail from "./pages/coaching/CoachSeekerDetail";
+import CoachAssessmentAnalytics from "./pages/coaching/CoachAssessmentAnalytics";
 
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -443,6 +446,9 @@ const App = () => (
             <Route path="/coaching/broadcast" element={<CoachBroadcast />} />
             <Route path="/coaching/weekly-report" element={<CoachWeeklyReport />} />
             <Route path="/coaching/settings" element={<CoachSettings />} />
+            <Route path="/coaching/seeker-assessments" element={<CoachSeekerAssessments />} />
+            <Route path="/coaching/seeker-assessments/:seekerId" element={<CoachSeekerDetail />} />
+            <Route path="/coaching/assessment-analytics" element={<CoachAssessmentAnalytics />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
