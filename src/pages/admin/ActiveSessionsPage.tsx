@@ -55,6 +55,7 @@ const ActiveSessionsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [reasonFilter, setReasonFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   const [, setTick] = useState(0);
 
   // Tick every 30s to update live durations
