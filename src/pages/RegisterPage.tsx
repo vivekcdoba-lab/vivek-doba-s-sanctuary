@@ -23,8 +23,9 @@ const RegisterPage = () => {
       toast.error('Passwords do not match');
       return;
     }
-    if (form.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%&*!?_\-+=]).{12,}$/;
+    if (!passwordRegex.test(form.password)) {
+      toast.error('Password must be at least 12 characters with one uppercase letter, one number, and one special character (@#$%&*!?_-+=)');
       return;
     }
     if (form.phone.length !== 10) {
@@ -125,7 +126,8 @@ const RegisterPage = () => {
             <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input type="email" placeholder="Email *" value={form.email} onChange={(e) => update('email', e.target.value)} className="pl-10" /></div>
             <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Phone (10 digits) *" value={form.phone} onChange={(e) => update('phone', e.target.value.replace(/\D/g, '').slice(0, 10))} className="pl-10" /></div>
             <Input placeholder="WhatsApp Number" value={form.whatsapp} onChange={(e) => update('whatsapp', e.target.value)} />
-            <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input type="password" placeholder="Password (min 6 chars) *" value={form.password} onChange={(e) => update('password', e.target.value)} className="pl-10" /></div>
+            <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input type="password" placeholder="Password (min 12 chars) *" value={form.password} onChange={(e) => update('password', e.target.value)} className="pl-10" /></div>
+            <p className="text-xs text-muted-foreground -mt-1 ml-1">Min 12 chars, 1 uppercase, 1 number, 1 special character (@#$%&*!?_-+=)</p>
             <Input type="password" placeholder="Confirm Password *" value={form.confirm} onChange={(e) => update('confirm', e.target.value)} />
 
             <select value={form.course} onChange={(e) => update('course', e.target.value)} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm">
