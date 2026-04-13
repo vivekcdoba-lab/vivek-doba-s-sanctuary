@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, LineChart, Line, Legend } from 'recharts';
 import LGTAssessment from '@/components/LGTAssessment';
 import FIROBAssessment from '@/components/FIROBAssessment';
@@ -113,6 +114,7 @@ const PROGRESS_TABLE = [
 ];
 
 const SeekerAssessments = () => {
+  const navigate = useNavigate();
   const [selfAssessing, setSelfAssessing] = useState(false);
   const [enhancedWol, setEnhancedWol] = useState(false);
   const [fullWolExperience, setFullWolExperience] = useState(false);
@@ -160,6 +162,27 @@ const SeekerAssessments = () => {
       <div className="text-center">
         <h1 className="text-2xl font-bold text-foreground">My Transformation Assessments</h1>
         <p className="text-xs text-muted-foreground mt-1">Jeevan Chakra — Discover Your Life Balance</p>
+      </div>
+
+      {/* Quick Navigation Tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        {[
+          { emoji: '🎡', label: 'Wheel of Life', path: '/seeker/assessments/wheel-of-life' },
+          { emoji: '📋', label: 'SWOT', path: '/seeker/assessments/swot' },
+          { emoji: '🔺', label: 'LGT', path: '/seeker/assessments/lgt' },
+          { emoji: '🕉️', label: 'Purusharthas', path: '/seeker/assessments/purusharthas' },
+          { emoji: '😊', label: 'Happiness', path: '/seeker/assessments/happiness' },
+          { emoji: '🧠', label: 'MOOCH', path: '/seeker/assessments/mooch' },
+          { emoji: '👥', label: 'FIRO-B', path: '/seeker/assessments/firo-b' },
+        ].map(tab => (
+          <button
+            key={tab.path}
+            onClick={() => navigate(tab.path)}
+            className="flex-shrink-0 px-4 py-2 rounded-full border border-border bg-card text-sm font-medium text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+          >
+            {tab.emoji} {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Assessment Cards - Expandable */}
