@@ -65,6 +65,8 @@ const coachNav: NavGroup[] = [
   {
     label: 'ASSESSMENTS', emoji: '📊', items: [
       { icon: BarChart3, label: 'Seeker Assessments', path: '/coaching/firo-b' },
+      { icon: Brain, label: 'Assessment Dashboard', path: '/coaching/seeker-assessments' },
+      { icon: PieChart, label: 'Assessment Analytics', path: '/coaching/assessment-analytics' },
       { icon: TrendingUp, label: 'Progress Comparison', path: '/coaching/progress' },
       { icon: FileText, label: 'Generate Reports', path: '/coaching/generate-reports' },
     ],
