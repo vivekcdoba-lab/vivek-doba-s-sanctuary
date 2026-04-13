@@ -1,18 +1,18 @@
 
 
-## Plan: Move "My Progress Over Time" to Assessment History Page
+## Plan: Hide "My Assessments" from Navigation
 
-### What Changes
-
-1. **Remove** the "My Progress Over Time" table (lines 559-586) from `src/pages/seeker/SeekerAssessments.tsx` and the `PROGRESS_TABLE` data (lines 109-114).
-
-2. **Add** the same progress table to `src/pages/seeker/assessments/AssessmentHistoryPage.tsx`, placed after the timeline section (before the closing `</div>`).
+Comment out (preserve for future) the "My Assessments" nav item and route, keeping all other assessment sub-pages intact.
 
 ### Files Modified
 
-- `src/pages/seeker/SeekerAssessments.tsx` — Remove `PROGRESS_TABLE` constant and the progress table JSX block
-- `src/pages/seeker/assessments/AssessmentHistoryPage.tsx` — Add `PROGRESS_TABLE` constant and render the progress table card after the timeline
+**`src/components/SeekerLayout.tsx`** (line 43)
+- Comment out the `{ icon: BarChart3, label: 'My Assessments', path: '/seeker/assessments' }` nav item
 
-### No Deletions of Pages/Routes/Components
-Only moving a UI section from one page to another.
+**`src/App.tsx`** (line 325)
+- Comment out the `<Route path="/seeker/assessments" element={<SeekerAssessments />} />` route
+- Keep the import (commented) so it can be restored easily
+
+### No Deletions
+The `SeekerAssessments` page file and all its code remain untouched. Only the nav link and route are commented out.
 
