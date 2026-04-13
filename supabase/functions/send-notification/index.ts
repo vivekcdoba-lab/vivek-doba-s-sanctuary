@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const ADMIN_EMAIL = "vivekcdoba@gmail.com";
+const ADMIN_EMAIL = "info@vivekdoba.com";
 
 interface NotificationRequest {
   type: "new_submission" | "status_update";
@@ -119,7 +119,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "VDTS Notifications <onboarding@resend.dev>",
+          from: "VDTS Notifications <noreply@vivekdoba.com>",
           to: [ADMIN_EMAIL],
           subject: `🪷 New ${data.form_type === "discovery_call" ? "Discovery Call" : data.form_type === "workshop" ? "Workshop Registration" : "LGT Application"} — ${data.applicant_name}`,
           html: buildAdminEmailHtml(data),
@@ -150,7 +150,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Vivek Doba Training Solutions <onboarding@resend.dev>",
+          from: "Vivek Doba Training Solutions <noreply@vivekdoba.com>",
           to: [data.applicant_email],
           subject: subjectMap[data.status || "approved"],
           html: buildApplicantEmailHtml(data),

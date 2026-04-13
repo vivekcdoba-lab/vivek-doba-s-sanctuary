@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const ADMIN_EMAIL = "vivekcdoba@gmail.com";
+const ADMIN_EMAIL = "info@vivekdoba.com";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "VDTS Reports <onboarding@resend.dev>",
+        from: "VDTS Reports <noreply@vivekdoba.com>",
         to: [ADMIN_EMAIL],
         subject: `📊 Daily Session Report — ${r.report_date} | ${r.total_sessions} sessions, ${r.unique_users} users`,
         html,
