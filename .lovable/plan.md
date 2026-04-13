@@ -1,46 +1,103 @@
 
 
-## Plan: Fix Seeker Home Gaps and Bugs
+## Security Hardening Plan
 
-After end-to-end testing of `/seeker/home`, here are the bugs and gaps found, with fixes:
-
-### Bug 1: Duplicate Affirmation Sections
-**Problem**: Two affirmation blocks render — `DailyAffirmationWidget` (DB-powered, lines 82-83) AND a hardcoded "Today's Affirmation" fallback (lines 85-95). Both always show, causing visual redundancy.
-**Fix**: Remove the hardcoded fallback block (lines 85-95) from `SeekerHome.tsx`. The `DailyAffirmationWidget` already handles empty state internally.
-
-### Bug 2: Quick Action "Assessment" Links to Hidden Route
-**Problem**: `QuickActionsBar.tsx` links to `/seeker/assessments` (line 6), but that route was commented out. Clicking leads to 404.
-**Fix**: Change the Assessment quick action path from `/seeker/assessments` to `/seeker/assessments/history` (the assessment history page that is still active).
-
-### Bug 3: Hardcoded Points & Level
-**Problem**: `PointsCard` receives `points={1250} level={2}` — hardcoded values, not from DB.
-**Fix**: For now, this is acceptable as a placeholder (no points table exists yet). Add a comment marking it as TODO. No code change needed unless user wants a points system built.
-
-### Bug 4: Hardcoded LGT Scores
-**Problem**: `lgtScores` on line 39 are mock values `{ dharma: 72, artha: 45, kama: 68, moksha: 55 }`, not from DB.
-**Fix**: Query the latest `lgt_assessments` record for the seeker and use those scores. Fall back to the mock values if no assessment exists.
-
-### Bug 5: WorksheetStatusCard Always Shows "Pending"
-**Problem**: `hasFilledToday={false}` is hardcoded. Even if the seeker filled their worksheet today, it shows "Pending".
-**Fix**: Query the `daily_worksheets` table to check if a record exists for today's date for this seeker, and pass the real value.
-
-### Bug 6: Journey Progress Shows "Day 0/1"
-**Problem**: `totalSessions` uses `sessions.length || 1`, so when there's 1 session and 0 completed, it shows "0/1" which looks odd. With no sessions it shows "0/1".
-**Fix**: Use a minimum of 24 for the total (matching the journey page logic) so progress shows "Day 0/24" which is more meaningful: `const totalSessions = Math.max(sessions.length, 24)`.
+After a comprehensive audit of your 83-table database, 197 RLS policies, 8 realtime tables, edge functions, and client-side code, here is the full security picture and fixes needed.
 
 ---
 
-### Files Modified
+### Current Security Strengths (Already Good)
 
-**`src/pages/seeker/SeekerHome.tsx`**
-- Remove duplicate hardcoded affirmation block (lines 85-95)
-- Query `lgt_assessments` for real LGT scores (replace line 39)
-- Query `daily_worksheets` for today's worksheet status (replace `hasFilledToday={false}`)
-- Fix `totalSessions` to use `Math.max(sessions.length, 24)`
+- RLS enabled on all 83 tables
+- `is_admin()` SECURITY DEFINER function prevents recursion
+- `prevent_role_escalation` trigger blocks seekers from changing their role
+- `validate_seeker_session_update` trigger protects coach-only session fields
+- Edge functions (`approve-application`, `session-heartbeat`) properly validate JWT + admin role
+- HIBP password protection available
+- Single-device enforcement for seekers
+- 60-minute inactivity timeout with auto-close
+- Generic login error messages prevent email enumeration
 
-**`src/components/dashboard/QuickActionsBar.tsx`**
-- Change Assessment path from `/seeker/assessments` to `/seeker/assessments/history`
+---
 
-### No Deletions
-No files or routes are removed. Only fixing data sources and removing a duplicate UI block.
+### Issues Found and Fixes
+
+#### 1. CRITICAL: Realtime Channel Authorization Missing
+**Risk**: Any authenticated seeker can subscribe to ANY realtime channel and see live changes on `sessions`, `messages`, `user_sessions` (IP addresses), `notifications` of OTHER users.
+
+**Fix**: Add RLS policies on `realtime.messages` table to restrict channel subscriptions by topic. Since we cannot modify the `realtime` schema directly, the safer approach is to **remove sensitive tables from realtime publication** and only keep tables where broadcast is safe, or implement channel-topic authorization via a migration.
+
+#### 2. WARN: Submissions INSERT Policy is `WITH CHECK (true)` for `anon`
+**Risk**: This allows anonymous spam submissions. While intentional for public forms, it's open to abuse.
+
+**Fix**: Add rate limiting via a database function or edge function proxy. Also add input length constraints on the submissions table columns.
+
+#### 3. MEDIUM: `send-notification` Edge Function Has No Auth Check
+**Risk**: Anyone who knows the function URL can call it to send emails via your Resend account (email abuse, quota drain).
+
+**Fix**: Add JWT validation and admin role check, OR restrict to only be called from other edge functions using a shared secret.
+
+#### 4. MEDIUM: `send-whatsapp` and `send-otp` Edge Functions Need Auth Audit
+**Risk**: If these lack auth checks, attackers could send SMS/WhatsApp messages at your cost.
+
+**Fix**: Verify and add JWT + role validation to these functions.
+
+#### 5. LOW: CORS `Access-Control-Allow-Origin: *` on All Edge Functions
+**Risk**: Any website can call your edge functions (though JWT still protects most).
+
+**Fix**: Restrict CORS origin to your app domain(s) only.
+
+#### 6. IMPROVEMENT: Add Database-Level Rate Limiting for Assessments
+**Risk**: A seeker could spam-create hundreds of assessment records.
+
+**Fix**: Add a trigger that limits assessment creation to max 1 per type per day per seeker.
+
+---
+
+### Migration (1 SQL file)
+
+1. Remove sensitive tables from realtime publication (keep only `notifications`, `session_notifications`)
+2. Add a rate-limit trigger for assessment tables
+3. Add column length constraints on `submissions` table
+
+### Edge Function Updates
+
+1. **`send-notification/index.ts`** — Add JWT + admin role validation before sending emails
+2. **`send-whatsapp/index.ts`** — Verify auth check exists, add if missing  
+3. **`send-otp/index.ts`** — Verify auth check exists (OTP may need to be callable without auth for login flow)
+4. All edge functions — Restrict CORS origin to `https://*.lovable.app` and production domain
+
+### No Client-Side Changes Needed
+The client code already uses generic error messages, proper auth guards, and does not expose sensitive data. No frontend changes required.
+
+---
+
+### Technical Details
+
+**Realtime fix SQL:**
+```sql
+ALTER PUBLICATION supabase_realtime DROP TABLE sessions;
+ALTER PUBLICATION supabase_realtime DROP TABLE messages;
+ALTER PUBLICATION supabase_realtime DROP TABLE session_comments;
+ALTER PUBLICATION supabase_realtime DROP TABLE user_sessions;
+ALTER PUBLICATION supabase_realtime DROP TABLE submissions;
+ALTER PUBLICATION supabase_realtime DROP TABLE follow_ups;
+```
+
+**send-notification auth fix pattern:**
+```typescript
+const authHeader = req.headers.get("Authorization");
+if (!authHeader?.startsWith("Bearer ")) {
+  return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+}
+const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+const { data: { user } } = await supabaseAdmin.auth.getUser(authHeader.replace("Bearer ", ""));
+if (!user) return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401 });
+```
+
+**Assessment rate-limit trigger:**
+```sql
+CREATE FUNCTION check_assessment_rate_limit() RETURNS trigger ...
+-- Prevents more than 3 assessments per type per day per seeker
+```
 
