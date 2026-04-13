@@ -322,7 +322,7 @@ const App = () => (
             <Route path="/seeker/sacred-space" element={<SacredSpace />} />
             <Route path="/seeker/profile" element={<SeekerProfile />} />
             <Route path="/seeker/journey" element={<SeekerJourney />} />
-            <Route path="/seeker/assessments" element={<SeekerAssessments />} />
+            {/* <Route path="/seeker/assessments" element={<SeekerAssessments />} /> hidden for now */}
             <Route path="/seeker/assessments/wheel-of-life" element={<WheelOfLifePage />} />
             <Route path="/seeker/assessments/swot" element={<SwotAssessmentPage />} />
             <Route path="/seeker/assessments/lgt" element={<LgtAssessmentPage />} />

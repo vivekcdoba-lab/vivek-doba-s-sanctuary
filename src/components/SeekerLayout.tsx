@@ -40,7 +40,7 @@ const seekerNav: NavGroup[] = [
   },
   {
     label: 'ASSESSMENTS', emoji: '📋', items: [
-      { icon: BarChart3, label: 'My Assessments', path: '/seeker/assessments' },
+      // { icon: BarChart3, label: 'My Assessments', path: '/seeker/assessments' }, // hidden for now
       { icon: Target, label: 'Wheel of Life', path: '/seeker/assessments/wheel-of-life' },
       { icon: ClipboardList, label: 'SWOT Analysis', path: '/seeker/assessments/swot' },
       { icon: TrendingUp, label: 'LGT Dimension', path: '/seeker/assessments/lgt' },
