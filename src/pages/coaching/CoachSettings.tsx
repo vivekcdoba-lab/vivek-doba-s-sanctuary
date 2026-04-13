@@ -1,0 +1,87 @@
+import { useAuthStore } from '@/store/authStore';
+import { Card } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Settings, User, Bell, Globe, Moon, Sun, Phone, Mail, Shield } from 'lucide-react';
+import { useState } from 'react';
+
+export default function CoachSettings() {
+  const { profile, darkMode, toggleDarkMode } = useAuthStore();
+  const [notifications, setNotifications] = useState({
+    worksheetReminder: true,
+    sessionAlert: true,
+    assignmentDue: true,
+    seekerActivity: false,
+    weeklyReport: true,
+  });
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Settings className="w-6 h-6 text-[#FF6B00]" /> Settings
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">Manage your profile and preferences</p>
+      </div>
+
+      <Card className="p-5">
+        <h3 className="font-medium text-foreground flex items-center gap-2 mb-4"><User className="w-4 h-4" /> Profile</h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between py-2 border-b border-border/50">
+            <span className="text-sm text-muted-foreground">Full Name</span>
+            <span className="text-sm font-medium text-foreground">{profile?.full_name || '—'}</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-border/50">
+            <span className="text-sm text-muted-foreground flex items-center gap-1"><Mail className="w-3 h-3" /> Email</span>
+            <span className="text-sm font-medium text-foreground">{profile?.email || '—'}</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-border/50">
+            <span className="text-sm text-muted-foreground flex items-center gap-1"><Phone className="w-3 h-3" /> Phone</span>
+            <span className="text-sm font-medium text-foreground">—</span>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <span className="text-sm text-muted-foreground flex items-center gap-1"><Shield className="w-3 h-3" /> Role</span>
+            <Badge className="bg-[#FF6B00] text-white">{profile?.role || 'coach'}</Badge>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-5">
+        <h3 className="font-medium text-foreground flex items-center gap-2 mb-4"><Bell className="w-4 h-4" /> Notifications</h3>
+        <div className="space-y-3">
+          {[
+            { key: 'worksheetReminder', label: '📝 Worksheet Submission Reminders', desc: 'Get notified when seekers miss worksheets' },
+            { key: 'sessionAlert', label: '📅 Session Alerts', desc: 'Reminders before scheduled sessions' },
+            { key: 'assignmentDue', label: '✅ Assignment Due Dates', desc: 'Alerts when assignments are due' },
+            { key: 'seekerActivity', label: '👥 Seeker Activity Updates', desc: 'Real-time seeker activity notifications' },
+            { key: 'weeklyReport', label: '📊 Weekly Report', desc: 'Auto-generated weekly performance summary' },
+          ].map(item => (
+            <div key={item.key} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+              <div>
+                <p className="text-sm font-medium text-foreground">{item.label}</p>
+                <p className="text-xs text-muted-foreground">{item.desc}</p>
+              </div>
+              <Switch
+                checked={notifications[item.key as keyof typeof notifications]}
+                onCheckedChange={v => setNotifications(prev => ({ ...prev, [item.key]: v }))}
+              />
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="p-5">
+        <h3 className="font-medium text-foreground flex items-center gap-2 mb-4"><Globe className="w-4 h-4" /> Preferences</h3>
+        <div className="flex items-center justify-between py-2">
+          <div>
+            <p className="text-sm font-medium text-foreground flex items-center gap-1">
+              {darkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />} Dark Mode
+            </p>
+            <p className="text-xs text-muted-foreground">Toggle dark/light theme</p>
+          </div>
+          <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
+        </div>
+      </Card>
+    </div>
+  );
+}
