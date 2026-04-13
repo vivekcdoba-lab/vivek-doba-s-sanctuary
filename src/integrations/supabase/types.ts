@@ -2167,6 +2167,62 @@ export type Database = {
         }
         Relationships: []
       }
+      personal_swot_assessments: {
+        Row: {
+          balance_score: number | null
+          created_at: string
+          id: string
+          opportunities: Json | null
+          opportunity_count: number | null
+          overall_notes: string | null
+          seeker_id: string
+          strength_count: number | null
+          strengths: Json | null
+          threat_count: number | null
+          threats: Json | null
+          weakness_count: number | null
+          weaknesses: Json | null
+        }
+        Insert: {
+          balance_score?: number | null
+          created_at?: string
+          id?: string
+          opportunities?: Json | null
+          opportunity_count?: number | null
+          overall_notes?: string | null
+          seeker_id: string
+          strength_count?: number | null
+          strengths?: Json | null
+          threat_count?: number | null
+          threats?: Json | null
+          weakness_count?: number | null
+          weaknesses?: Json | null
+        }
+        Update: {
+          balance_score?: number | null
+          created_at?: string
+          id?: string
+          opportunities?: Json | null
+          opportunity_count?: number | null
+          overall_notes?: string | null
+          seeker_id?: string
+          strength_count?: number | null
+          strengths?: Json | null
+          threat_count?: number | null
+          threats?: Json | null
+          weakness_count?: number | null
+          weaknesses?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_swot_assessments_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       points_ledger: {
         Row: {
           activity_type: string
