@@ -17,6 +17,7 @@ interface Props {
 
 const WheelOfLifeFullExperience = ({ onClose }: Props) => {
   const [scores, setScores] = useState<WoLScores>({ ...DEFAULT_SCORES });
+  const [spokeNotes, setSpokeNotes] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState('take');
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
@@ -24,6 +25,10 @@ const WheelOfLifeFullExperience = ({ onClose }: Props) => {
 
   const handleUpdateScore = useCallback((spokeId: keyof WoLScores, value: number) => {
     setScores(prev => ({ ...prev, [spokeId]: value }));
+  }, []);
+
+  const handleUpdateNote = useCallback((spokeId: string, value: string) => {
+    setSpokeNotes(prev => ({ ...prev, [spokeId]: value }));
   }, []);
 
   const handleAnalyze = () => {
@@ -102,7 +107,9 @@ const WheelOfLifeFullExperience = ({ onClose }: Props) => {
         <TabsContent value="take">
           <WoLTakeAssessment
             scores={scores}
+            notes={spokeNotes}
             onUpdateScore={handleUpdateScore}
+            onUpdateNote={handleUpdateNote}
             onAnalyze={handleAnalyze}
           />
         </TabsContent>
