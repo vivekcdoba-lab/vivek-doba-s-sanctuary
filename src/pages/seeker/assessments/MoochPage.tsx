@@ -1,3 +1,13 @@
-import AssessmentPlaceholder from './AssessmentPlaceholder';
-const MoochPage = () => <AssessmentPlaceholder emoji="🧠" title="MOOCH (Mind Patterns)" subtitle="Discover and transform your mental patterns" />;
+import MoochFullExperience from '@/components/mooch-assessment/MoochFullExperience';
+import { useNavigate } from 'react-router-dom';
+
+const MoochPage = () => {
+  const navigate = useNavigate();
+  return (
+    <div className="p-4 max-w-4xl mx-auto">
+      <MoochFullExperience onClose={() => navigate('/seeker/assessments')} />
+    </div>
+  );
+};
+
 export default MoochPage;
