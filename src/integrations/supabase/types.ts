@@ -915,6 +915,63 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_assessment_feedback: {
+        Row: {
+          action_items: Json | null
+          assessment_id: string | null
+          assessment_type: string
+          coach_id: string
+          created_at: string
+          general_notes: string | null
+          id: string
+          seeker_id: string
+          shared_with_seeker: boolean | null
+          spoke_feedback: Json | null
+          updated_at: string
+        }
+        Insert: {
+          action_items?: Json | null
+          assessment_id?: string | null
+          assessment_type?: string
+          coach_id: string
+          created_at?: string
+          general_notes?: string | null
+          id?: string
+          seeker_id: string
+          shared_with_seeker?: boolean | null
+          spoke_feedback?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          action_items?: Json | null
+          assessment_id?: string | null
+          assessment_type?: string
+          coach_id?: string
+          created_at?: string
+          general_notes?: string | null
+          id?: string
+          seeker_id?: string
+          shared_with_seeker?: boolean | null
+          spoke_feedback?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_assessment_feedback_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_assessment_feedback_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_weekly_challenges: {
         Row: {
           challenge_description: string | null
