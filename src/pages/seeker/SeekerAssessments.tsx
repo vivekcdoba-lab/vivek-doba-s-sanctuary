@@ -3,6 +3,7 @@ import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarC
 import LGTAssessment from '@/components/LGTAssessment';
 import FIROBAssessment from '@/components/FIROBAssessment';
 import WheelOfLifeEnhanced from '@/components/WheelOfLifeEnhanced';
+import WheelOfLifeFullExperience from '@/components/wheel-of-life/WheelOfLifeFullExperience';
 import BackToHome from '@/components/BackToHome';
 import { ChevronDown, Save, History } from 'lucide-react';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
@@ -114,6 +115,7 @@ const PROGRESS_TABLE = [
 const SeekerAssessments = () => {
   const [selfAssessing, setSelfAssessing] = useState(false);
   const [enhancedWol, setEnhancedWol] = useState(false);
+  const [fullWolExperience, setFullWolExperience] = useState(false);
   const [lgtAssessing, setLgtAssessing] = useState(false);
   const [firobAssessing, setFirobAssessing] = useState(false);
   const [scores, setScores] = useState<number[]>(INITIAL_SCORES);
