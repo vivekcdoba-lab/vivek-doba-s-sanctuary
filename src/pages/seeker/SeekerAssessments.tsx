@@ -228,11 +228,16 @@ const SeekerAssessments = () => {
             {expandedCard === card.key && (
               <div className="px-4 pb-4 border-t border-border pt-3 animate-in slide-in-from-top-2">
                 <p className="text-sm text-foreground leading-relaxed">{card.detail}</p>
-                {card.action && (
-                  <button onClick={card.action} className="mt-3 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity">
-                    {card.actionLabel}
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  {card.action && (
+                    <button onClick={card.action} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity">
+                      {card.actionLabel}
+                    </button>
+                  )}
+                  <button onClick={() => navigate(card.route)} className="px-4 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
+                    Open Full Assessment →
                   </button>
-                )}
+                </div>
               </div>
             )}
           </div>
