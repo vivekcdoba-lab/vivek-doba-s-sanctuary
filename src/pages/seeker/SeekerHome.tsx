@@ -155,10 +155,6 @@ const SeekerHome = () => {
 
       <div className="grid md:grid-cols-2 gap-4">
         <UpcomingSessionsWidget sessions={sessions} />
-
-      {/* Secondary Widgets Row */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <AssignmentsWidget assignments={assignments} />
         {/* Artha Health placeholder */}
         <div className="bg-card rounded-2xl shadow-md border border-border p-5">
           <h3 className="text-sm font-semibold text-foreground mb-3">📊 Artha Health</h3>
@@ -170,6 +166,11 @@ const SeekerHome = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Secondary Widgets Row */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <AssignmentsWidget assignments={assignments} />
       </div>
 
       {/* Wisdom Quote */}
