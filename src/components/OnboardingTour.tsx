@@ -17,12 +17,6 @@ const TOUR_STEPS: TourStep[] = [
     emoji: '🏠',
   },
   {
-    target: 'worksheet',
-    title: 'Daily Dharmic Worksheet',
-    description: 'Your most important daily practice. Fill it every morning and evening to build consistency and self-awareness.',
-    emoji: '📝',
-  },
-  {
     target: 'progress',
     title: 'Track Your Progress',
     description: 'See your worksheet streaks, completed sessions, and finished tasks at a glance. Consistency is the key!',
@@ -33,18 +27,6 @@ const TOUR_STEPS: TourStep[] = [
     title: 'Quick Actions',
     description: 'Access daily check-in, tasks, messaging, meditation, and assessments — everything one tap away.',
     emoji: '⚡',
-  },
-  {
-    target: 'session-progress',
-    title: 'Session Progress Ring',
-    description: 'Track how many coaching sessions you\'ve completed out of your total program. Aim for 100%!',
-    emoji: '🎯',
-  },
-  {
-    target: 'bottom-nav',
-    title: 'Navigation Bar',
-    description: 'Use the bottom bar to jump between Home, Daily Log, Tasks, Growth tracking, Sacred Space, and your Profile.',
-    emoji: '🧭',
   },
 ];
 
@@ -68,7 +50,7 @@ const OnboardingTour = ({ forceShow = false, onComplete }: OnboardingTourProps) 
       return;
     }
     const count = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
-    if (count < 2) {
+    if (count < 1) {
       const t = setTimeout(() => setIsVisible(true), 800);
       return () => clearTimeout(t);
     }

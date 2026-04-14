@@ -39,6 +39,8 @@ export default function SeekerTasksEnhanced() {
   const { data: assignments = [], isLoading } = useQuery({
     queryKey: ['seeker-assignments', profile?.id],
     enabled: !!profile?.id,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       const { data } = await supabase
         .from('assignments')

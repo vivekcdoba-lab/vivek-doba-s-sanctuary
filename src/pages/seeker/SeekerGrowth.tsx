@@ -213,7 +213,7 @@ const SeekerGrowth = () => {
           )}
 
           <div className="flex gap-2">
-            <Link to="/seeker/assessments" className="flex-1 text-center px-3 py-2.5 rounded-xl text-xs font-bold transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, #0D1B3E, #162758)', border: '1px solid #D4A843', color: '#D4A843' }}>
+            <Link to="/seeker/assessments/history" className="flex-1 text-center px-3 py-2.5 rounded-xl text-xs font-bold transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, #0D1B3E, #162758)', border: '1px solid #D4A843', color: '#D4A843' }}>
               🎯 Take Self-Assessment
             </Link>
           </div>
