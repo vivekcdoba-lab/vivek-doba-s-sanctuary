@@ -22,6 +22,7 @@ import DailyAffirmationWidget from '@/components/dashboard/DailyAffirmationWidge
 import DailySankalpWidget from '@/components/dashboard/DailySankalpWidget';
 import LGTQuickCheckIn from '@/components/dashboard/LGTQuickCheckIn';
 import SmartRecommendations from '@/components/dashboard/SmartRecommendations';
+import WheelOfLifeWidget from '@/components/dashboard/WheelOfLifeWidget';
 
 const SeekerHome = () => {
   const { profile, logout } = useAuthStore();
@@ -149,12 +150,11 @@ const SeekerHome = () => {
 
       <div className="grid md:grid-cols-2 gap-4">
         <LGTBalanceWheel {...lgtScores} />
-        <UpcomingSessionsWidget sessions={sessions} />
+        <WheelOfLifeWidget />
       </div>
 
-      {/* Secondary Widgets Row */}
       <div className="grid md:grid-cols-2 gap-4">
-        <AssignmentsWidget assignments={assignments} />
+        <UpcomingSessionsWidget sessions={sessions} />
         {/* Artha Health placeholder */}
         <div className="bg-card rounded-2xl shadow-md border border-border p-5">
           <h3 className="text-sm font-semibold text-foreground mb-3">📊 Artha Health</h3>
@@ -166,6 +166,11 @@ const SeekerHome = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Secondary Widgets Row */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <AssignmentsWidget assignments={assignments} />
       </div>
 
       {/* Wisdom Quote */}
