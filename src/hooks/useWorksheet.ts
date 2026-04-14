@@ -421,9 +421,6 @@ export function useWorksheet(selectedDate: Date) {
 
       if (submit) {
         toast.success('✅ Worksheet submitted for the day!');
-        // Invalidate home page worksheet status query
-        const { QueryClient } = await import('@tanstack/react-query');
-        // Use window to broadcast - SeekerHome will refetch on focus
       }
     } catch (err) {
       console.error('Error saving worksheet:', err);
