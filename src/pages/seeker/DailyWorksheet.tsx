@@ -17,6 +17,7 @@ import { Progress } from '@/components/ui/progress';
 import {
   ACTIVITY_GROUPS, DEFAULT_NON_NEGOTIABLES, MOOD_OPTIONS, PILLAR_CONFIG,
   DAY_NAMES, MONEY_AFFIRMATIONS, generateTimeSlots, getPhaseForTime, getPillarForActivity,
+  TEMPLATE_SLOTS,
   type PillarKey,
 } from '@/data/worksheetData';
 import { useWorksheet } from '@/hooks/useWorksheet';
@@ -141,7 +142,6 @@ const DailyWorksheet = () => {
   };
 
   const applyTemplate = (templateName: string) => {
-    const { TEMPLATE_SLOTS } = require('@/data/worksheetData');
     const templateData = TEMPLATE_SLOTS[templateName];
     if (!templateData || templateData.length === 0) {
       toast.info(`"${templateName}" template coming soon!`);
