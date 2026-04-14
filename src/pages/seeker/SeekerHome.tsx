@@ -22,6 +22,7 @@ import DailyAffirmationWidget from '@/components/dashboard/DailyAffirmationWidge
 import DailySankalpWidget from '@/components/dashboard/DailySankalpWidget';
 import LGTQuickCheckIn from '@/components/dashboard/LGTQuickCheckIn';
 import SmartRecommendations from '@/components/dashboard/SmartRecommendations';
+import WheelOfLifeWidget from '@/components/dashboard/WheelOfLifeWidget';
 
 const SeekerHome = () => {
   const { profile, logout } = useAuthStore();
@@ -149,8 +150,11 @@ const SeekerHome = () => {
 
       <div className="grid md:grid-cols-2 gap-4">
         <LGTBalanceWheel {...lgtScores} />
-        <UpcomingSessionsWidget sessions={sessions} />
+        <WheelOfLifeWidget />
       </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <UpcomingSessionsWidget sessions={sessions} />
 
       {/* Secondary Widgets Row */}
       <div className="grid md:grid-cols-2 gap-4">
