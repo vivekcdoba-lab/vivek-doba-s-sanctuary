@@ -482,7 +482,9 @@ export function useWorksheet(selectedDate: Date) {
       });
       setState(prev => ({ ...prev, timeSlots: copied }));
       dirtyRef.current = true;
-      toast.success('Yesterday\'s schedule copied!');
+      // Immediately save as draft so data persists
+      setTimeout(() => saveWorksheet(false), 100);
+      toast.success(`Yesterday's schedule copied — ${ySlots.length} slots!`);
     } else {
       toast.info('Yesterday had no time slots to copy');
     }

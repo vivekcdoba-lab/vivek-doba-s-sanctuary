@@ -51,15 +51,37 @@ const SeekerHome = () => {
       return data;
     },
   });
+
+  // Fallback: latest submitted worksheet LGT scores
+  const { data: latestWsLgt } = useQuery({
+    queryKey: ['latest-ws-lgt', profileId],
+    enabled: !!profileId && !latestLgt,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('daily_worksheets')
+        .select('dharma_score, artha_score, kama_score, moksha_score')
+        .eq('seeker_id', profileId!)
+        .eq('is_submitted', true)
+        .order('worksheet_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   const lgtScores = latestLgt
     ? { dharma: latestLgt.dharma_score * 10, artha: latestLgt.artha_score * 10, kama: latestLgt.kama_score * 10, moksha: latestLgt.moksha_score * 10 }
-    : { dharma: 0, artha: 0, kama: 0, moksha: 0 };
+    : latestWsLgt
+      ? { dharma: (latestWsLgt.dharma_score || 0) * 10, artha: (latestWsLgt.artha_score || 0) * 10, kama: (latestWsLgt.kama_score || 0) * 10, moksha: (latestWsLgt.moksha_score || 0) * 10 }
+      : { dharma: 0, artha: 0, kama: 0, moksha: 0 };
 
   // Query today's worksheet status
   const today = new Date().toISOString().split('T')[0];
   const { data: todayWorksheet } = useQuery({
     queryKey: ['worksheet-today', profileId, today],
     enabled: !!profileId,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       const { data } = await supabase
         .from('daily_worksheets')

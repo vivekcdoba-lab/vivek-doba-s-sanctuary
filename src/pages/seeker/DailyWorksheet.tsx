@@ -17,6 +17,7 @@ import { Progress } from '@/components/ui/progress';
 import {
   ACTIVITY_GROUPS, DEFAULT_NON_NEGOTIABLES, MOOD_OPTIONS, PILLAR_CONFIG,
   DAY_NAMES, MONEY_AFFIRMATIONS, generateTimeSlots, getPhaseForTime, getPillarForActivity,
+  TEMPLATE_SLOTS,
   type PillarKey,
 } from '@/data/worksheetData';
 import { useWorksheet } from '@/hooks/useWorksheet';
@@ -141,7 +142,23 @@ const DailyWorksheet = () => {
   };
 
   const applyTemplate = (templateName: string) => {
-    toast.success(`"${templateName}" template applied!`);
+    const templateData = TEMPLATE_SLOTS[templateName];
+    if (!templateData || templateData.length === 0) {
+      toast.info(`"${templateName}" template coming soon!`);
+      setTemplatesOpen(false);
+      return;
+    }
+    let filled = 0;
+    templateData.forEach((block: { from: string; to: string; activity: string; pillar: PillarKey | '' }) => {
+      bulkFillSlots(block.from, block.to, block.activity, '', block.pillar);
+      const fromH = parseInt(block.from.split(':')[0]);
+      const fromM = parseInt(block.from.split(':')[1]);
+      const toH = parseInt(block.to.split(':')[0]);
+      const toM = parseInt(block.to.split(':')[1]);
+      const toMin = (h: number, m: number) => (h < 3 ? h + 24 : h) * 60 + m;
+      filled += Math.round((toMin(toH, toM) - toMin(fromH, fromM)) / 30);
+    });
+    toast.success(`"${templateName}" applied — ${filled} slots filled!`);
     setTemplatesOpen(false);
   };
 
@@ -416,7 +433,8 @@ const DailyWorksheet = () => {
 
         <div className="overflow-x-auto">
           <div className="min-w-[700px]">
-            <div className="grid grid-cols-[80px_100px_1fr_60px_60px_80px] gap-1 px-4 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground border-b border-border">
+            <div className="grid grid-cols-[24px_80px_100px_1fr_60px_60px_80px] gap-1 px-2 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground border-b border-border">
+              <span></span>
               <span>Time</span>
               <span>Pillar</span>
               <span>Activity</span>
@@ -474,7 +492,25 @@ const DailyWorksheet = () => {
 
                 return (
                   <div key={key} className={cn('border-b border-border/50', phaseBg, isContinuation && 'opacity-70')}>
-                    <div className="grid grid-cols-[80px_100px_1fr_60px_60px_80px] gap-1 px-4 py-1.5 items-center text-sm">
+                    <div className="grid grid-cols-[24px_80px_100px_1fr_60px_60px_80px] gap-1 px-2 py-1.5 items-center text-sm">
+                      {/* Clear slot button */}
+                      {data.activity ? (
+                        <button
+                          onClick={() => {
+                            updateSlot(key, 'activity', '');
+                            updateSlot(key, 'customActivity', '');
+                            updateSlot(key, 'pillar', '');
+                            updateSlot(key, 'energy', '');
+                            updateSlot(key, 'notes', '');
+                            updateSlot(key, 'actualStatus', '');
+                            updateSlot(key, 'skipReason', '');
+                          }}
+                          className="w-5 h-5 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Clear this slot"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      ) : <span className="w-5" />}
                       <span className="text-xs font-mono text-muted-foreground">
                         {slot.display}
                         {isContinuation && <span className="text-[10px] block text-muted-foreground/60">↳ cont.</span>}
