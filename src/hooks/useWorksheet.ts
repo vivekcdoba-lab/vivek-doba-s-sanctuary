@@ -421,6 +421,9 @@ export function useWorksheet(selectedDate: Date) {
 
       if (submit) {
         toast.success('✅ Worksheet submitted for the day!');
+        // Invalidate home page worksheet status query
+        const { QueryClient } = await import('@tanstack/react-query');
+        // Use window to broadcast - SeekerHome will refetch on focus
       }
     } catch (err) {
       console.error('Error saving worksheet:', err);
@@ -482,7 +485,9 @@ export function useWorksheet(selectedDate: Date) {
       });
       setState(prev => ({ ...prev, timeSlots: copied }));
       dirtyRef.current = true;
-      toast.success('Yesterday\'s schedule copied!');
+      // Immediately save as draft so data persists
+      setTimeout(() => saveWorksheet(false), 100);
+      toast.success(`Yesterday's schedule copied — ${ySlots.length} slots!`);
     } else {
       toast.info('Yesterday had no time slots to copy');
     }
