@@ -1,103 +1,75 @@
 
 
-## Security Hardening Plan
+## Plan: Fix 8 Seeker Bugs
 
-After a comprehensive audit of your 83-table database, 197 RLS policies, 8 realtime tables, edge functions, and client-side code, here is the full security picture and fixes needed.
+### Issue 1: Tour Popup Shows Repeatedly
+**Problem**: Tour shows on first 2 visits (localStorage counter < 2), but some tour steps target elements that don't exist (`worksheet`, `session-progress`, `bottom-nav`), causing broken positioning.
+**Fix**:
+- Change tour to show only once (`count < 1` instead of `count < 2`)
+- Remove tour steps referencing non-existent `data-tour` targets (`worksheet`, `session-progress`, `bottom-nav`)
+- Add a "Replay Tour" button in SeekerHome settings or profile (stores `forceShow` state)
+- File: `src/components/OnboardingTour.tsx`
 
----
+### Issue 2: Delete Slots in 24-Hour Sacred Timesheet
+**Problem**: No way to clear/delete individual time slots once filled.
+**Fix**:
+- Add a small `X` (clear) button on each filled time slot row
+- Clicking clears that slot's activity, pillar, energy, notes back to empty
+- No confirmation needed (it's just clearing a field, not deleting DB data — auto-save handles persistence)
+- File: `src/pages/seeker/DailyWorksheet.tsx`
 
-### Current Security Strengths (Already Good)
+### Issue 3: Templates Not Reflecting
+**Problem**: `applyTemplate()` at line 143 only shows a toast — it doesn't actually populate time slots. It's a stub.
+**Fix**:
+- Define template data for each of the 8 templates (mapping time ranges to activities and pillars)
+- Call `bulkFillSlots` from `useWorksheet` for each template's time blocks when a template is selected
+- Show "Template Applied" toast with the count of slots filled
+- Files: `src/pages/seeker/DailyWorksheet.tsx`, `src/data/worksheetData.ts` (add template definitions)
 
-- RLS enabled on all 83 tables
-- `is_admin()` SECURITY DEFINER function prevents recursion
-- `prevent_role_escalation` trigger blocks seekers from changing their role
-- `validate_seeker_session_update` trigger protects coach-only session fields
-- Edge functions (`approve-application`, `session-heartbeat`) properly validate JWT + admin role
-- HIBP password protection available
-- Single-device enforcement for seekers
-- 60-minute inactivity timeout with auto-close
-- Generic login error messages prevent email enumeration
+### Issue 4: Copy Yesterday Not Working
+**Problem**: The `copyYesterday` function in `useWorksheet.ts` looks correct — it queries yesterday's slots and copies them. Likely issue: it only copies time slots but doesn't save them, so if the user navigates away before auto-save (2 min), data is lost. Also, if no worksheet exists for today yet, the copied slots are in-memory only.
+**Fix**:
+- After copying yesterday's slots into state, trigger an immediate save (draft) so data persists
+- Handle the case where yesterday has no worksheet with a clearer message
+- Show success toast with slot count: "Copied 28 slots from yesterday!"
+- File: `src/hooks/useWorksheet.ts`
 
----
+### Issue 5: My Tasks — Assignment Visibility
+**Problem**: `SeekerTasksEnhanced` queries assignments correctly from DB. If admin-created assignments aren't showing, it's likely because `useDbAssignments` on the home page and `SeekerTasksEnhanced` use different query keys, causing stale cache. Also, no real-time notification when new assignments arrive.
+**Fix**:
+- Add `refetchOnWindowFocus: true` to the assignments query in `SeekerTasksEnhanced`
+- Invalidate `seeker-assignments` query key when navigating to the tasks page (or use `staleTime: 0`)
+- File: `src/pages/seeker/SeekerTasksEnhanced.tsx`
 
-### Issues Found and Fixes
+### Issue 6: Growth — Self-Assessment Not Working
+**Problem**: The "Take Self-Assessment" button at line 216 of `SeekerGrowth.tsx` links to `/seeker/assessments` — the route we commented out.
+**Fix**:
+- Change the link from `/seeker/assessments` to `/seeker/assessments/history` (the active assessment hub)
+- File: `src/pages/seeker/SeekerGrowth.tsx`
 
-#### 1. CRITICAL: Realtime Channel Authorization Missing
-**Risk**: Any authenticated seeker can subscribe to ANY realtime channel and see live changes on `sessions`, `messages`, `user_sessions` (IP addresses), `notifications` of OTHER users.
+### Issue 7: Home — LGT Balance Wheel Shows Zero
+**Problem**: The query for `lgt_assessments` returns assessment scores (1-10), multiplied by 10 for percentage. If no assessment exists, scores default to `{ dharma: 0, artha: 0, kama: 0, moksha: 0 }`. The LGT Balance Wheel shows all zeros. Additionally, the daily worksheet also stores `dharma_score`, `artha_score`, etc. — these should be used as fallback.
+**Fix**:
+- If no LGT assessment exists, fall back to the latest submitted daily worksheet's LGT scores (multiplied by 10)
+- If neither exists, show a prompt "Take your first assessment" instead of zeros
+- File: `src/pages/seeker/SeekerHome.tsx`, `src/components/dashboard/LGTBalanceWheel.tsx`
 
-**Fix**: Add RLS policies on `realtime.messages` table to restrict channel subscriptions by topic. Since we cannot modify the `realtime` schema directly, the safer approach is to **remove sensitive tables from realtime publication** and only keep tables where broadcast is safe, or implement channel-topic authorization via a migration.
-
-#### 2. WARN: Submissions INSERT Policy is `WITH CHECK (true)` for `anon`
-**Risk**: This allows anonymous spam submissions. While intentional for public forms, it's open to abuse.
-
-**Fix**: Add rate limiting via a database function or edge function proxy. Also add input length constraints on the submissions table columns.
-
-#### 3. MEDIUM: `send-notification` Edge Function Has No Auth Check
-**Risk**: Anyone who knows the function URL can call it to send emails via your Resend account (email abuse, quota drain).
-
-**Fix**: Add JWT validation and admin role check, OR restrict to only be called from other edge functions using a shared secret.
-
-#### 4. MEDIUM: `send-whatsapp` and `send-otp` Edge Functions Need Auth Audit
-**Risk**: If these lack auth checks, attackers could send SMS/WhatsApp messages at your cost.
-
-**Fix**: Verify and add JWT + role validation to these functions.
-
-#### 5. LOW: CORS `Access-Control-Allow-Origin: *` on All Edge Functions
-**Risk**: Any website can call your edge functions (though JWT still protects most).
-
-**Fix**: Restrict CORS origin to your app domain(s) only.
-
-#### 6. IMPROVEMENT: Add Database-Level Rate Limiting for Assessments
-**Risk**: A seeker could spam-create hundreds of assessment records.
-
-**Fix**: Add a trigger that limits assessment creation to max 1 per type per day per seeker.
-
----
-
-### Migration (1 SQL file)
-
-1. Remove sensitive tables from realtime publication (keep only `notifications`, `session_notifications`)
-2. Add a rate-limit trigger for assessment tables
-3. Add column length constraints on `submissions` table
-
-### Edge Function Updates
-
-1. **`send-notification/index.ts`** — Add JWT + admin role validation before sending emails
-2. **`send-whatsapp/index.ts`** — Verify auth check exists, add if missing  
-3. **`send-otp/index.ts`** — Verify auth check exists (OTP may need to be callable without auth for login flow)
-4. All edge functions — Restrict CORS origin to `https://*.lovable.app` and production domain
-
-### No Client-Side Changes Needed
-The client code already uses generic error messages, proper auth guards, and does not expose sensitive data. No frontend changes required.
+### Issue 8: Home — "Today Pending" After Submit
+**Problem**: After submitting the worksheet on `/seeker/worksheet`, the user navigates back to `/seeker/home`. The `worksheet-today` query is cached and still shows `null` (pending). React Query's default `staleTime` means the old result persists.
+**Fix**:
+- Add `staleTime: 0` and `refetchOnWindowFocus: true` to the `worksheet-today` query in `SeekerHome.tsx`
+- In `useWorksheet.ts`, after successful submit, invalidate the `worksheet-today` query globally using `queryClient`
+- File: `src/pages/seeker/SeekerHome.tsx`, `src/hooks/useWorksheet.ts`
 
 ---
 
-### Technical Details
-
-**Realtime fix SQL:**
-```sql
-ALTER PUBLICATION supabase_realtime DROP TABLE sessions;
-ALTER PUBLICATION supabase_realtime DROP TABLE messages;
-ALTER PUBLICATION supabase_realtime DROP TABLE session_comments;
-ALTER PUBLICATION supabase_realtime DROP TABLE user_sessions;
-ALTER PUBLICATION supabase_realtime DROP TABLE submissions;
-ALTER PUBLICATION supabase_realtime DROP TABLE follow_ups;
-```
-
-**send-notification auth fix pattern:**
-```typescript
-const authHeader = req.headers.get("Authorization");
-if (!authHeader?.startsWith("Bearer ")) {
-  return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-}
-const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-const { data: { user } } = await supabaseAdmin.auth.getUser(authHeader.replace("Bearer ", ""));
-if (!user) return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401 });
-```
-
-**Assessment rate-limit trigger:**
-```sql
-CREATE FUNCTION check_assessment_rate_limit() RETURNS trigger ...
--- Prevents more than 3 assessments per type per day per seeker
-```
+### Files Modified
+1. `src/components/OnboardingTour.tsx` — Fix tour steps, show once
+2. `src/pages/seeker/DailyWorksheet.tsx` — Add slot delete button, implement real template application
+3. `src/data/worksheetData.ts` — Add template slot definitions
+4. `src/hooks/useWorksheet.ts` — Fix copyYesterday to auto-save, invalidate worksheet-today on submit
+5. `src/pages/seeker/SeekerTasksEnhanced.tsx` — Add refetchOnWindowFocus
+6. `src/pages/seeker/SeekerGrowth.tsx` — Fix assessment link
+7. `src/pages/seeker/SeekerHome.tsx` — Add staleTime/refetch for worksheet status, fallback LGT from worksheets
+8. `src/components/dashboard/LGTBalanceWheel.tsx` — Show empty state when all scores are 0
 
