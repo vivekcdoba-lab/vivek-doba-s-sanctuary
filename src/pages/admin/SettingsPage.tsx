@@ -184,6 +184,43 @@ const SettingsPage = () => {
         </div>
       )}
 
+      {activeTab === 'Email Sender' && (
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border max-w-2xl">
+          <div className="flex items-center gap-3 mb-2">
+            <Mail className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">Email Sender Configuration</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-5">
+            This address is used as the <strong>From</strong> for every email the platform sends — OTPs,
+            credentials, application updates, daily reports, and notifications. The domain must be verified in Resend.
+          </p>
+
+          <div className="space-y-2">
+            <Label htmlFor="email_from">From Address</Label>
+            <Input
+              id="email_from"
+              placeholder="VDTS <info@vivekdoba.com>"
+              value={emailFrom}
+              disabled={emailFromLoading || emailFromSaving}
+              onChange={(e) => setEmailFrom(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Format: <code className="bg-muted px-1 rounded">Display Name &lt;email@domain.com&gt;</code> (e.g.
+              <code className="bg-muted px-1 rounded ml-1">VDTS &lt;info@vivekdoba.com&gt;</code>)
+            </p>
+          </div>
+
+          <div className="mt-5 flex items-center gap-3">
+            <Button onClick={saveEmailFrom} disabled={emailFromLoading || emailFromSaving} className="gap-2">
+              <Save className="w-4 h-4" /> {emailFromSaving ? 'Saving…' : 'Save Sender'}
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              Changes take effect immediately for all emails.
+            </span>
+          </div>
+        </div>
+      )}
+
       {activeTab === 'General' && (
         <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center gap-3 mb-4">
