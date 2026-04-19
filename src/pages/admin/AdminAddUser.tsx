@@ -37,6 +37,7 @@ const AdminAddUser = () => {
     gender: '',
     course_id: '',
     send_welcome: true,
+    auto_generate_password: false,
     admin_level: 'admin' as 'admin' | 'super_admin',
     admin_permissions: {} as Record<string, boolean>,
   });
