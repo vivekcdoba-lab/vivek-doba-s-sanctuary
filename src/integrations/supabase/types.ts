@@ -4159,54 +4159,7 @@ export type Database = {
       }
     }
     Views: {
-      session_signatures_safe: {
-        Row: {
-          content_hash: string | null
-          id: string | null
-          session_id: string | null
-          signed_at: string | null
-          signer_id: string | null
-          signer_role: string | null
-          storage_path: string | null
-          typed_name: string | null
-        }
-        Insert: {
-          content_hash?: string | null
-          id?: string | null
-          session_id?: string | null
-          signed_at?: string | null
-          signer_id?: string | null
-          signer_role?: string | null
-          storage_path?: string | null
-          typed_name?: string | null
-        }
-        Update: {
-          content_hash?: string | null
-          id?: string | null
-          session_id?: string | null
-          signed_at?: string | null
-          signer_id?: string | null
-          signer_role?: string | null
-          storage_path?: string | null
-          typed_name?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "session_signatures_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "sessions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "session_signatures_signer_id_fkey"
-            columns: ["signer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       check_profile_duplicate: {
@@ -4233,6 +4186,19 @@ export type Database = {
           streak_days: number
           total_points: number
           worksheet_count: number
+        }[]
+      }
+      get_session_signatures: {
+        Args: { _session_id: string }
+        Returns: {
+          content_hash: string
+          id: string
+          session_id: string
+          signed_at: string
+          signer_id: string
+          signer_role: string
+          storage_path: string
+          typed_name: string
         }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
