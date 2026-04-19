@@ -1,27 +1,60 @@
 
-Add delete capability to the Applications page. Each submission card needs a Delete button (with confirmation) that removes the row from the `submissions` table.
+User wants Level (Super Admin / Admin) and Permissions (granular flags) to be:
+1. Settable when creating an admin via `/admin/add-user`
+2. Editable on the existing `/admin/admins` page (currently read-only, with hardcoded "Super Admin" for first row and "Full Access" badge)
 
-Looking at `ApplicationsPage.tsx`: cards already have Approve / Reject / Request Info actions. I'll add a Delete button alongside them, available for ALL statuses (not just pending) since admins should be able to clean up old approved/rejected entries too.
+Currently `profiles.role` is just `'admin' | 'coach' | 'seeker'` — no level/permissions storage exists. Need DB columns + UI + edge function update.
 
 ## Plan
 
-### 1. Update `src/pages/admin/ApplicationsPage.tsx`
-- Add `Trash2` icon import from lucide-react
-- Add a `handleDelete(id, name)` function that:
-  - Shows a `window.confirm("Delete application from {name}? This cannot be undone.")` dialog
-  - On confirm, calls `supabase.from('submissions').delete().eq('id', id)`
-  - Shows success/error toast
-  - Realtime subscription already auto-refreshes the list
-- Render a Delete button:
-  - Always visible in the expanded card (regardless of status), placed at the right side of the action row
-  - Style: ghost/outline with destructive color (`text-destructive border-destructive/30 hover:bg-destructive/10`)
-  - Icon + "Delete" label
-- Also add a small Delete icon-button on the collapsed card header (top-right next to chevron) for quick removal without expanding — uses `e.stopPropagation()` so it doesn't toggle expand
+### 1. DB migration — add admin level + permissions
+Add two nullable columns on `profiles` (only used when role='admin'):
+- `admin_level text` — values: `'super_admin' | 'admin'` (default `'admin'`)
+- `admin_permissions jsonb` — default `{}`, stores boolean flags
 
-### 2. RLS check
-The `submissions` table already allows admin DELETE (admins have full access via `is_admin()` policies used elsewhere). No DB migration needed — if the policy is missing, the delete will fail with a clear toast and we'll add a migration in the implementation step.
+Permission keys (8 modules, on/off):
+`manage_users, manage_coaches, manage_seekers, manage_courses, manage_payments, manage_content, view_analytics, manage_settings`
 
-### Files changed
-- `src/pages/admin/ApplicationsPage.tsx` — add delete handler + 2 delete buttons
+Super Admin implicitly has all permissions (UI shows all-on, disabled).
 
-Nothing else touched. Existing approve/reject/info-request flows untouched.
+RLS: Only admins can update these columns. Add a trigger `prevent_admin_level_escalation` — non-super-admin admins cannot set `admin_level='super_admin'` or modify another admin's level/permissions. Only super_admins can promote/demote other admins. Self-demotion of last super_admin blocked.
+
+### 2. Edge function — `admin-create-user/index.ts`
+Accept new optional body fields: `admin_level`, `admin_permissions`.
+- Only allow these when `role === 'admin'`.
+- Verify caller is `super_admin` if `admin_level === 'super_admin'` requested; otherwise force `'admin'`.
+- Persist to profiles in the existing UPDATE call.
+
+### 3. `AdminAddUser.tsx` — wizard step 2 additions (when role=admin)
+Show a conditional block:
+- **Admin Level** select: Admin / Super Admin (Super Admin option disabled if caller isn't super_admin — read caller's level via `useAuthStore` profile + a quick fetch)
+- **Permissions** — 8 checkboxes in a 2-col grid, with "Select all" / "Clear all" helpers. Hidden/all-checked-disabled when level=super_admin.
+Send to edge function. Review step (3) shows chosen level + permission count.
+
+### 4. `AdminAdmins.tsx` — make rows editable
+- Remove the hardcoded `idx === 0 ? 'Super Admin'` heuristic; read real `admin_level` from profile.
+- Replace static "Full Access" badge with a count: e.g. "5 of 8" or "All" for super admins.
+- Add an **Edit** action (pencil icon) per row → opens a Dialog:
+  - Level select (Admin / Super Admin) — disabled unless current user is super_admin
+  - 8 permission checkboxes — disabled if level=super_admin (auto all)
+  - Save → directly `supabase.from('profiles').update({ admin_level, admin_permissions }).eq('id', admin.id)` (RLS + trigger guard the rest)
+  - Toast on success/error; refresh via existing `useAllProfiles` invalidation
+- Update the 3 stat cards: Super Admins count = real super_admin count; "Active" stays as-is.
+
+### 5. Type extension
+`useSeekerProfiles` / Profile type — add `admin_level?: string | null; admin_permissions?: Record<string, boolean> | null` (or rely on auto-generated supabase types after migration).
+
+### 6. Optional: permission gating helpers (future-proof, non-breaking)
+Add `src/lib/adminPermissions.ts` exporting:
+- `PERMISSION_KEYS` constant + labels
+- `hasPermission(profile, key): boolean` — returns true if super_admin OR flag true
+Not wired into route guards yet (keeps preservation policy — additive only). Available for future use.
+
+### Files
+- `supabase/migrations/<new>.sql` — add 2 columns + RLS trigger
+- `supabase/functions/admin-create-user/index.ts` — accept level/permissions
+- `src/pages/admin/AdminAddUser.tsx` — conditional admin block in step 2
+- `src/pages/admin/AdminAdmins.tsx` — edit dialog + real data display
+- `src/lib/adminPermissions.ts` (new) — keys/labels/helper
+
+Nothing existing removed. Coach/seeker creation flow untouched.
