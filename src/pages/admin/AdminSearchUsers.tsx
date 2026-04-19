@@ -300,16 +300,27 @@ const AdminSearchUsers = () => {
                 <Input value={form.occupation} onChange={e => setForm({ ...form, occupation: e.target.value })} />
               </div>
             </div>
-            {(form.role === 'admin' || form.role === 'coach') && (
-              <div>
-                <Label>Access End Date <span className="text-muted-foreground text-xs">(optional — when access expires)</span></Label>
+            <div>
+              <Label>Access End Date <span className="text-muted-foreground text-xs">(optional — when access expires)</span></Label>
+              <div className="flex gap-2">
                 <Input
                   type="date"
                   value={form.access_end_date}
                   onChange={e => setForm({ ...form, access_end_date: e.target.value })}
+                  className="flex-1"
                 />
+                {form.access_end_date && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setForm({ ...form, access_end_date: '' })}
+                  >
+                    Clear
+                  </Button>
+                )}
               </div>
-            )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingUser(null)} disabled={saving}>Cancel</Button>
