@@ -92,7 +92,7 @@ const LoginPage = () => {
             alreadyPrompted = !!profileData.password_change_prompted;
           }
         } catch {
-          console.warn('Profile fetch timed out, using metadata role:', metadataRole);
+          console.warn('Profile fetch timed out — defaulting to seeker role');
         }
 
         // Update auth store
