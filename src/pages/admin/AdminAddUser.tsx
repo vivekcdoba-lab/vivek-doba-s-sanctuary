@@ -383,7 +383,7 @@ const AdminAddUser = () => {
                 <div>
                   <span className="text-muted-foreground">Password:</span>
                   <span className="ml-2 font-mono">
-                    {isSeeker
+                    {autoGen
                       ? <span className="text-xs text-muted-foreground italic">auto-generated & emailed</span>
                       : <>●●●●●●●● <span className="text-xs text-muted-foreground">(set by admin)</span></>}
                   </span>
