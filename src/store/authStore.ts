@@ -183,8 +183,14 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 });
 
 // Initial session check
-if (window.location.pathname === '/login') {
-  // Login page — render immediately, no async wait
+const _skipInitValidation =
+  window.location.pathname === '/login' ||
+  window.location.pathname === '/reset-password';
+
+if (_skipInitValidation) {
+  // Login & reset-password — do NOT touch the session.
+  // On /reset-password, Supabase has just established a recovery session
+  // from the URL hash; validating/sign-out here would destroy it.
   _initialized = true;
   useAuthStore.setState({ loading: false });
 } else {
