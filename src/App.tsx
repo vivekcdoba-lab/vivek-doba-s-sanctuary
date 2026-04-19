@@ -220,6 +220,10 @@ import SeoBusinessCoaching from "./pages/seo/BusinessCoaching";
 import SeoManifestation from "./pages/seo/Manifestation";
 import SeoMeditation from "./pages/seo/Meditation";
 import SeoDharmaPhilosophy from "./pages/seo/DharmaPhilosophy";
+import SeoNlpCoach from "./pages/seo/NlpCoach";
+import SeoSalesCoach from "./pages/seo/SalesCoach";
+import SeoLifeCoachLocation from "./pages/seo/LifeCoachLocation";
+import SeoBusinessCoachLocation from "./pages/seo/BusinessCoachLocation";
 import WhatsAppSupportButton from "./components/WhatsAppSupportButton";
 
 const queryClient = new QueryClient();
@@ -248,6 +252,10 @@ const App = () => (
           <Route path="/manifestation" element={<SeoManifestation />} />
           <Route path="/meditation" element={<SeoMeditation />} />
           <Route path="/dharma-philosophy" element={<SeoDharmaPhilosophy />} />
+          <Route path="/nlp-coach" element={<SeoNlpCoach />} />
+          <Route path="/sales-coach" element={<SeoSalesCoach />} />
+          <Route path="/life-coach-in-:location" element={<SeoLifeCoachLocation />} />
+          <Route path="/business-coach-in-:location" element={<SeoBusinessCoachLocation />} />
 
           {/* Admin Routes */}
           <Route element={<AuthGuard requiredRole="admin"><AdminLayout /></AuthGuard>}>
