@@ -170,6 +170,7 @@ Deno.serve(async (req) => {
       course_id = null,
       admin_level = null,
       admin_permissions = null,
+      auto_generate_password = false,
     } = body || {};
 
     if (!email || !full_name || !phone || !role) {
@@ -216,7 +217,7 @@ Deno.serve(async (req) => {
     let isTempPassword: boolean;
     let mustChange: boolean;
 
-    if (role === 'seeker') {
+    if (role === 'seeker' || auto_generate_password === true) {
       finalPassword = randomPassword();
       isTempPassword = true;
       mustChange = true;
@@ -293,6 +294,9 @@ Deno.serve(async (req) => {
       is_temp_password: isTempPassword,
       must_change_password: mustChange,
       admin_level: resolvedLevel,
+      // Return the generated password ONLY when server auto-generated it,
+      // so the admin UI can display it for copy/share.
+      generated_password: isTempPassword ? finalPassword : null,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
