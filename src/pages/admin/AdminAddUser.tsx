@@ -206,24 +206,43 @@ const AdminAddUser = () => {
                 </div>
               ) : (
                 <>
-                  <div className="space-y-2">
-                    <Label>Password *</Label>
-                    <Input type="password" value={form.password} onChange={e => update('password', e.target.value)} placeholder="Set login password" />
-                    <p className="text-xs text-muted-foreground">{PASSWORD_HELP}</p>
-                    {form.password && passwordError && (
-                      <p className="text-xs text-destructive">{passwordError}</p>
-                    )}
+                  <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-3">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="autogen-pw" className="text-sm font-medium cursor-pointer">Auto-generate secure password</Label>
+                      <p className="text-xs text-muted-foreground">Server creates a 14-char temp password. User must change it on first login.</p>
+                    </div>
+                    <Switch
+                      id="autogen-pw"
+                      checked={form.auto_generate_password}
+                      onCheckedChange={(v) => update('auto_generate_password', !!v)}
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Confirm Password *</Label>
-                    <Input type="password" value={form.confirm_password} onChange={e => update('confirm_password', e.target.value)} placeholder="Re-enter password" />
-                    {form.confirm_password && !passwordsMatch && (
-                      <p className="text-xs text-destructive">Passwords do not match</p>
-                    )}
-                  </div>
-                  <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-                    📧 Login credentials (email + this password) will be emailed to the {form.role}. They can optionally change it on first login.
-                  </div>
+                  {form.auto_generate_password ? (
+                    <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-foreground">
+                      🔐 A <strong>temporary password</strong> will be generated and emailed to the {form.role}. You'll also see it in the success message so you can share it directly. They'll be required to set their own on first login.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <Label>Password *</Label>
+                        <Input type="password" value={form.password} onChange={e => update('password', e.target.value)} placeholder="Set login password" />
+                        <p className="text-xs text-muted-foreground">{PASSWORD_HELP}</p>
+                        {form.password && passwordError && (
+                          <p className="text-xs text-destructive">{passwordError}</p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Confirm Password *</Label>
+                        <Input type="password" value={form.confirm_password} onChange={e => update('confirm_password', e.target.value)} placeholder="Re-enter password" />
+                        {form.confirm_password && !passwordsMatch && (
+                          <p className="text-xs text-destructive">Passwords do not match</p>
+                        )}
+                      </div>
+                      <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                        📧 Login credentials (email + this password) will be emailed to the {form.role}. They can optionally change it on first login.
+                      </div>
+                    </>
+                  )}
                 </>
               )}
             </>
