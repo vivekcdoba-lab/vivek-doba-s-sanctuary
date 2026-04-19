@@ -74,7 +74,7 @@ const AdminAddUser = () => {
       toast.error('Please fill required fields');
       return;
     }
-    if (!isSeeker) {
+    if (!autoGen) {
       const pErr = validatePassword(form.password);
       if (pErr) { toast.error(pErr); return; }
       if (form.password !== form.confirm_password) { toast.error('Passwords do not match'); return; }
@@ -87,8 +87,9 @@ const AdminAddUser = () => {
           email: form.email,
           full_name: form.full_name,
           phone: form.phone,
-          // Seeker: server ignores any password and auto-generates a temp one
-          password: isSeeker ? null : form.password,
+          // When auto-gen is on (or seeker), server ignores password and generates a temp one
+          password: autoGen ? null : form.password,
+          auto_generate_password: autoGen,
           role: form.role,
           city: form.city,
           state: form.state,
@@ -110,15 +111,34 @@ const AdminAddUser = () => {
       const emailSent = (data as any)?.email_sent;
       const emailError = (data as any)?.email_error;
       const isTemp = (data as any)?.is_temp_password;
+      const generatedPassword = (data as any)?.generated_password as string | null;
       const baseMsg = `${form.role.toUpperCase()} "${form.full_name}" created.`;
       const detail = emailSent
         ? (isTemp
             ? `Temporary password emailed to ${form.email}. They'll set their own on first login.`
             : `Login credentials emailed to ${form.email}.`)
         : `⚠️ Email failed (${emailError || 'unknown'}). Please share credentials manually.`;
-      if (emailSent) toast.success(`${baseMsg} ${detail}`, { duration: 12000 });
-      else toast.warning(`${baseMsg} ${detail}`, { duration: 18000 });
-      setForm({ role: 'seeker', full_name: '', email: '', phone: '', password: '', confirm_password: '', city: '', state: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true, admin_level: 'admin', admin_permissions: {} });
+
+      if (generatedPassword) {
+        // Show the generated password persistently with a Copy action
+        toast.success(`${baseMsg} Temporary password: ${generatedPassword}`, {
+          description: detail,
+          duration: 30000,
+          action: {
+            label: 'Copy password',
+            onClick: () => {
+              navigator.clipboard.writeText(generatedPassword);
+              toast.success('Password copied');
+            },
+          },
+        });
+      } else if (emailSent) {
+        toast.success(`${baseMsg} ${detail}`, { duration: 12000 });
+      } else {
+        toast.warning(`${baseMsg} ${detail}`, { duration: 18000 });
+      }
+
+      setForm({ role: 'seeker', full_name: '', email: '', phone: '', password: '', confirm_password: '', city: '', state: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true, auto_generate_password: false, admin_level: 'admin', admin_permissions: {} });
       setStep(0);
     } catch (e: any) {
       toast.error(e?.message || 'Error creating user');
