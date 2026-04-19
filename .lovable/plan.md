@@ -1,24 +1,17 @@
 
+User wants:
+1. Edit button functional on `/admin/search-users` (from previous plan)
+2. Delete capability — but ONLY for seekers (not admin/coach)
+3. Admin and coach can have an "end date" field added (presumably to mark when their access ends)
 
-## Plan: Add "Your Wheel of Life" Widget to Seeker Dashboard
+Need to check: profiles table has end_date? Likely no. Need migration to add `access_end_date` column.
 
-### New Component
-**`src/components/dashboard/WheelOfLifeWidget.tsx`**
-- A compact dashboard card that uses `useWheelOfLife()` to fetch the latest assessment
-- Shows a mini radar chart (Recharts `RadarChart`) with the 8 life dimensions if data exists
-- Shows average score and date of last assessment
-- Empty state: prompt to take first assessment with link to `/seeker/assessments/wheel-of-life`
-- "View Details →" link to the full Wheel of Life assessment page
+Delete a seeker = delete their profile + auth user (cascade). Use edge function with service role since client can't delete auth.users.
 
-### Modified File
-**`src/pages/seeker/SeekerHome.tsx`**
-- Import `WheelOfLifeWidget`
-- Add it in the grid row alongside `LGTBalanceWheel` and `UpcomingSessionsWidget`, creating a new row:
-  ```
-  LGTBalanceWheel | WheelOfLifeWidget
-  UpcomingSessionsWidget | Artha Health
-  ```
+Let me design:
 
-### No Database Changes
-The widget reads from the existing `wheel_of_life_assessments` table via `useWheelOfLife()`.
+**Edit dialog**: Name, Phone, City, State, Company, Occupation, Role + Access End Date (only shown for admin/coach)
+**Delete button**: Shown only for `role === 'seeker'`. Confirmation dialog. Calls edge function `delete-seeker` that uses service role to delete auth user (profile cascades).
+**End date**: New column `access_end_date date` on profiles. AuthGuard could check this later — for now just store it. Editable in edit dialog when role is admin/coach.
 
+Keep concise.
