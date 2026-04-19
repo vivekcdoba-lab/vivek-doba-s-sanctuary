@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Bell, Save, Settings, MessageSquare, Mail, Smartphone, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import type { AutomationRule } from '@/types';
 
 const channelIcons: Record<string, typeof MessageSquare> = { whatsapp: MessageSquare, email: Mail, sms: Smartphone, in_app: Bell, dashboard: Settings };
@@ -25,7 +28,7 @@ const AUTOMATION_RULES: AutomationRule[] = [
   { id: 'ar15', label: 'New Application Received', description: 'Notify on new form submission', enabled: true, trigger: 'Any form submitted', channel: 'dashboard' },
 ];
 
-const tabs = ['General', 'Notifications', 'Automation Rules', 'Business Info', 'Appearance'];
+const tabs = ['General', 'Email Sender', 'Notifications', 'Automation Rules', 'Business Info', 'Appearance'];
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('Automation Rules');
