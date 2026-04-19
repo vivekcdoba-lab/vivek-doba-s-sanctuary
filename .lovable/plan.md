@@ -1,17 +1,33 @@
 
-User wants:
-1. Edit button functional on `/admin/search-users` (from previous plan)
-2. Delete capability — but ONLY for seekers (not admin/coach)
-3. Admin and coach can have an "end date" field added (presumably to mark when their access ends)
+## Root Cause
 
-Need to check: profiles table has end_date? Likely no. Need migration to add `access_end_date` column.
+The `delete-seeker` edge function calls `userClient.auth.getClaims(token)` — **this method doesn't exist in `@supabase/supabase-js@2.45.0`**. Direct test returned:
+```
+500: "userClient.auth.getClaims is not a function"
+```
 
-Delete a seeker = delete their profile + auth user (cascade). Use edge function with service role since client can't delete auth.users.
+So when admin clicks **Delete Permanently**, the function errors out → toast shows generic "Delete failed" → user is never deleted.
 
-Let me design:
+## Fix
 
-**Edit dialog**: Name, Phone, City, State, Company, Occupation, Role + Access End Date (only shown for admin/coach)
-**Delete button**: Shown only for `role === 'seeker'`. Confirmation dialog. Calls edge function `delete-seeker` that uses service role to delete auth user (profile cascades).
-**End date**: New column `access_end_date date` on profiles. AuthGuard could check this later — for now just store it. Editable in edit dialog when role is admin/coach.
+Replace `getClaims` with the standard `auth.getUser(token)` API in `supabase/functions/delete-seeker/index.ts`:
 
-Keep concise.
+```ts
+const { data: userData, error: userErr } = await userClient.auth.getUser(token);
+if (userErr || !userData?.user) { /* 401 */ }
+const callerId = userData.user.id;
+```
+
+That's the only required change — everything else (admin role check, target seeker check, `auth.admin.deleteUser`) is correct.
+
+## Verification After Fix
+
+1. Re-test via curl on the seeker `Test Discovery User` (id `1121c626-...`) → expect `{ success: true }`
+2. Confirm the row is gone from `profiles` (cascade)
+3. Click Delete in the UI → confirm seeker disappears from list
+
+## Files to Change
+
+- `supabase/functions/delete-seeker/index.ts` — swap `getClaims` → `getUser`
+
+No DB migration, no client changes needed.
