@@ -33,6 +33,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [selectedRole, setSelectedRole] = useState<LoginRole>('seeker');
   const loggingInRef = useRef(false);
@@ -261,16 +262,34 @@ const LoginPage = () => {
           </button>
 
           <div className="text-center space-y-2">
-            <button onClick={async () => {
-              if (!email) { toast.error('Please enter your email first'); return; }
-              try {
-                const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                  redirectTo: `${window.location.origin}/reset-password`,
-                });
-                if (error) { toast.error(error.message); return; }
-                toast.success('Password reset link sent to your email! 📧');
-              } catch { toast.error('Failed to send reset email'); }
-            }} className="text-xs text-muted-foreground hover:text-foreground">Forgot Password?</button>
+            <button
+              type="button"
+              disabled={resetting}
+              onClick={async () => {
+                const trimmed = email.trim();
+                if (!trimmed) { toast.error('Please enter your email first'); return; }
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(trimmed)) { toast.error('Please enter a valid email address'); return; }
+                setResetting(true);
+                const loadingId = toast.loading('Sending reset link...');
+                try {
+                  const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                  });
+                  toast.dismiss(loadingId);
+                  if (error) { toast.error(error.message || 'Failed to send reset email'); return; }
+                  toast.success('If this email exists, a reset link has been sent. 📧 Check your inbox.');
+                } catch {
+                  toast.dismiss(loadingId);
+                  toast.error('Failed to send reset email');
+                } finally {
+                  setResetting(false);
+                }
+              }}
+              className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+            >
+              {resetting ? 'Sending...' : 'Forgot Password?'}
+            </button>
             <p className="text-sm text-muted-foreground">
               New seeker? <Link to="/register" className="text-primary hover:underline font-medium">Create Account →</Link>
             </p>
