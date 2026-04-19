@@ -170,6 +170,7 @@ Deno.serve(async (req) => {
       course_id = null,
       admin_level = null,
       admin_permissions = null,
+      auto_generate_password = false,
     } = body || {};
 
     if (!email || !full_name || !phone || !role) {
