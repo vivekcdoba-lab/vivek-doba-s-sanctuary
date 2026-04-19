@@ -13,28 +13,63 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
   const [hasSession, setHasSession] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const forced = searchParams.get('forced') === '1';
 
   useEffect(() => {
+    let cancelled = false;
+
     // Forced flow uses the user's existing logged-in session (no recovery token).
     if (forced) {
       supabase.auth.getSession().then(({ data }) => {
+        if (cancelled) return;
         setHasSession(!!data.session);
+        setChecking(false);
       });
-      return;
+      return () => { cancelled = true; };
     }
 
-    // Standard recovery via emailed reset link
+    // Standard recovery via emailed reset link.
+    // The recovery token arrives in the URL hash (#access_token=...&type=recovery).
+    // Supabase's JS client auto-detects it, exchanges it for a session, and
+    // strips it from the URL — so we can't rely on hash inspection alone.
     const hash = window.location.hash;
     if (hash.includes('type=recovery')) setIsRecovery(true);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setIsRecovery(true);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (cancelled) return;
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecovery(true);
+        setHasSession(!!session);
+        setChecking(false);
+      } else if (event === 'SIGNED_IN' && session) {
+        // Recovery link auto-signed the user in — treat as recovery.
+        setIsRecovery(true);
+        setHasSession(true);
+        setChecking(false);
+      }
     });
-    return () => subscription.unsubscribe();
+
+    // Fallback: after a short delay, check if a session exists. If yes,
+    // assume recovery (user just arrived via /verify redirect).
+    const timer = setTimeout(async () => {
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (data.session) {
+        setIsRecovery(true);
+        setHasSession(true);
+      }
+      setChecking(false);
+    }, 800);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      subscription.unsubscribe();
+    };
   }, [forced]);
 
   const handleReset = async () => {
