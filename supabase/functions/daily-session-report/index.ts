@@ -14,6 +14,40 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Auth check — only admins (or cron with shared secret) may invoke
+    const cronSecret = Deno.env.get("CRON_SECRET");
+    const providedCronSecret = req.headers.get("x-cron-secret");
+    const authHeader = req.headers.get("Authorization");
+
+    let authorized = false;
+
+    if (cronSecret && providedCronSecret && providedCronSecret === cronSecret) {
+      authorized = true;
+    } else if (authHeader?.startsWith("Bearer ")) {
+      const userClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      const token = authHeader.replace("Bearer ", "");
+      const { data: userData } = await userClient.auth.getUser(token);
+      if (userData?.user) {
+        const { data: profile } = await userClient
+          .from("profiles")
+          .select("role")
+          .eq("user_id", userData.user.id)
+          .single();
+        if (profile?.role === "admin") authorized = true;
+      }
+    }
+
+    if (!authorized) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!

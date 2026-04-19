@@ -121,8 +121,10 @@ const DigitalSignature = ({
       // Fetch IP
       const ipAddress = await fetchIP();
 
-      // Upload to storage
-      const storagePath = `${sessionId}/${signerRole}.png`;
+      // Upload to storage — path MUST start with signer's auth UID for RLS
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      const storagePath = `${user.id}/${sessionId}-${signerRole}.png`;
       const { error: uploadError } = await supabase.storage
         .from('signatures')
         .upload(storagePath, signatureBlob, {
