@@ -89,16 +89,25 @@ function buildEmail(opts: { name: string; email: string; password: string; role:
 </body></html>`;
 }
 
+async function getFromAddress(adminClient: any): Promise<string> {
+  try {
+    const { data } = await adminClient.from('app_settings').select('value').eq('key', 'email_from').maybeSingle();
+    if (data?.value && typeof data.value === 'string') return data.value;
+  } catch (e) {
+    console.warn('[email] app_settings lookup failed', (e as Error).message);
+  }
+  return Deno.env.get('RESEND_FROM') || 'VDTS <info@vivekdoba.com>';
+}
+
 async function sendCredentialsEmail(opts: {
-  to: string; name: string; role: string; password: string; isTemp: boolean; loginUrl: string;
+  to: string; name: string; role: string; password: string; isTemp: boolean; loginUrl: string; from: string;
 }): Promise<{ ok: boolean; error?: string }> {
   const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
   if (!RESEND_API_KEY) {
     console.error('[email] RESEND_API_KEY not configured');
     return { ok: false, error: 'RESEND_API_KEY not configured' };
   }
-  // Sender uses the verified vivekdoba.com domain. Override via RESEND_FROM env if needed.
-  const from = Deno.env.get('RESEND_FROM') || 'VDTS <noreply@vivekdoba.com>';
+  const from = opts.from;
   try {
     const html = buildEmail(opts);
     const subject = opts.isTemp
@@ -281,8 +290,9 @@ Deno.serve(async (req) => {
     const loginUrl = `${origin.replace(/\/$/, '')}/login`;
 
     // Send credentials email (non-blocking failure → still return success)
+    const fromAddress = await getFromAddress(admin);
     const emailResult = await sendCredentialsEmail({
-      to: email, name: full_name, role, password: finalPassword, isTemp: isTempPassword, loginUrl,
+      to: email, name: full_name, role, password: finalPassword, isTemp: isTempPassword, loginUrl, from: fromAddress,
     });
 
     return new Response(JSON.stringify({

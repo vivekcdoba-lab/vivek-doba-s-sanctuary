@@ -140,6 +140,16 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Resolve from-address from app_settings (fallback to env / default)
+    let fromAddress = Deno.env.get("RESEND_FROM") || "VDTS Reports <info@vivekdoba.com>";
+    try {
+      const { data: setting } = await supabaseAdmin
+        .from("app_settings").select("value").eq("key", "email_from").maybeSingle();
+      if (setting?.value && typeof setting.value === "string") fromAddress = setting.value as string;
+    } catch (e) {
+      console.warn("app_settings lookup failed:", (e as Error).message);
+    }
+
     const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -147,7 +157,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "VDTS Reports <noreply@vivekdoba.com>",
+        from: fromAddress,
         to: [ADMIN_EMAIL],
         subject: `📊 Daily Session Report — ${r.report_date} | ${r.total_sessions} sessions, ${r.unique_users} users`,
         html,

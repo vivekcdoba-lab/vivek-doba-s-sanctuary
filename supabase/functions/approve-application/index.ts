@@ -73,15 +73,25 @@ function buildCredentialsEmail(opts: {
 </body></html>`;
 }
 
+async function getFromAddress(adminClient: any): Promise<string> {
+  try {
+    const { data } = await adminClient.from('app_settings').select('value').eq('key', 'email_from').maybeSingle();
+    if (data?.value && typeof data.value === 'string') return data.value;
+  } catch (e) {
+    console.warn('[email] app_settings lookup failed', (e as Error).message);
+  }
+  return Deno.env.get('RESEND_FROM') || 'VDTS <info@vivekdoba.com>';
+}
+
 async function sendCredentialsEmail(opts: {
-  to: string; name: string; password: string; isTemp: boolean; loginUrl: string;
+  to: string; name: string; password: string; isTemp: boolean; loginUrl: string; from: string;
 }): Promise<{ ok: boolean; error?: string }> {
   const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
   if (!RESEND_API_KEY) {
     console.error('[email] RESEND_API_KEY not configured');
     return { ok: false, error: 'RESEND_API_KEY not configured' };
   }
-  const from = Deno.env.get('RESEND_FROM') || 'VDTS <noreply@vivekdoba.com>';
+  const from = opts.from;
   try {
     const html = buildCredentialsEmail(opts);
     const subject = opts.isTemp
@@ -316,12 +326,14 @@ Deno.serve(async (req) => {
     if (credentialsForEmail) {
       const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || 'https://vivekdoba.com';
       const loginUrl = `${origin.replace(/\/$/, '')}/login`;
+      const fromAddress = await getFromAddress(supabaseAdmin);
       const result = await sendCredentialsEmail({
         to: sub.email,
         name: sub.full_name,
         password: credentialsForEmail.password,
         isTemp: credentialsForEmail.isTemp,
         loginUrl,
+        from: fromAddress,
       });
       emailSent = result.ok;
       emailError = result.ok ? null : (result.error || 'unknown');
