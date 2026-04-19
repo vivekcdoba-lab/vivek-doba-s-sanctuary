@@ -294,6 +294,9 @@ Deno.serve(async (req) => {
       is_temp_password: isTempPassword,
       must_change_password: mustChange,
       admin_level: resolvedLevel,
+      // Return the generated password ONLY when server auto-generated it,
+      // so the admin UI can display it for copy/share.
+      generated_password: isTempPassword ? finalPassword : null,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
