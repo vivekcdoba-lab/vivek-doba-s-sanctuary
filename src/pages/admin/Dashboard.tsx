@@ -128,7 +128,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard icon={Users} label="Active Seekers" value={activeSeekers} gradient="gradient-chakravartin" />
         <StatCard icon={GraduationCap} label="Coaches" value={coachCount} gradient="gradient-sacred" />
         <StatCard icon={Users} label="Admins" value={adminCount} gradient="gradient-hero" />
