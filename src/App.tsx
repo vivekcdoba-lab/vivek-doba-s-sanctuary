@@ -332,6 +332,7 @@ const App = () => (
           </Route>
 
           {/* Seeker Routes */}
+          <Route path="/seeker" element={<Navigate to="/seeker/home" replace />} />
           <Route element={<AuthGuard requiredRole="seeker"><SeekerLayout /></AuthGuard>}>
             <Route path="/seeker/home" element={<SeekerHome />} />
             <Route path="/seeker/daily-log" element={<SeekerDailyLog />} />
