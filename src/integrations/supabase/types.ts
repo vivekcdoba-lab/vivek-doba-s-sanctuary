@@ -2483,7 +2483,9 @@ export type Database = {
           leaderboard_visible: boolean
           linkedin_url: string | null
           marriage_anniversary: string | null
+          must_change_password: boolean
           occupation: string | null
+          password_change_prompted: boolean
           phone: string
           pincode: string | null
           revenue_range: string | null
@@ -2515,7 +2517,9 @@ export type Database = {
           leaderboard_visible?: boolean
           linkedin_url?: string | null
           marriage_anniversary?: string | null
+          must_change_password?: boolean
           occupation?: string | null
+          password_change_prompted?: boolean
           phone?: string
           pincode?: string | null
           revenue_range?: string | null
@@ -2547,7 +2551,9 @@ export type Database = {
           leaderboard_visible?: boolean
           linkedin_url?: string | null
           marriage_anniversary?: string | null
+          must_change_password?: boolean
           occupation?: string | null
+          password_change_prompted?: boolean
           phone?: string
           pincode?: string | null
           revenue_range?: string | null
