@@ -45,18 +45,31 @@ const AdminAddUser = () => {
     }
     setLoading(true);
     try {
-      const { data: dupResult } = await supabase.rpc('check_profile_duplicate', {
-        _email: form.email,
-        _phone: form.phone,
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email: form.email,
+          full_name: form.full_name,
+          phone: form.phone,
+          role: form.role,
+          city: form.city,
+          state: form.state,
+          company: form.company,
+          occupation: form.occupation,
+          gender: form.gender,
+          course_id: form.role === 'seeker' && form.course_id ? form.course_id : null,
+        },
       });
-      if (dupResult === 'email') { toast.error('Email already registered'); setLoading(false); return; }
-      if (dupResult === 'phone') { toast.error('Phone already in use'); setLoading(false); return; }
-
-      toast.success(`User "${form.full_name}" (${form.role}) — please register them via the signup page with role: ${form.role}`);
+      if (error || (data as any)?.error) {
+        toast.error((data as any)?.error || error?.message || 'Failed to create user');
+        setLoading(false);
+        return;
+      }
+      const tempPwd = (data as any)?.temp_password;
+      toast.success(`${form.role.toUpperCase()} "${form.full_name}" created. Temp password: ${tempPwd}`, { duration: 15000 });
       setForm({ role: 'seeker', full_name: '', email: '', phone: '', city: '', state: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true });
       setStep(0);
-    } catch {
-      toast.error('Error creating user');
+    } catch (e: any) {
+      toast.error(e?.message || 'Error creating user');
     } finally {
       setLoading(false);
     }
