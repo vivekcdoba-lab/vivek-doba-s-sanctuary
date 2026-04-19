@@ -53,6 +53,7 @@ const AdminAddUser = () => {
     setForm(prev => ({ ...prev, admin_permissions: { ...prev.admin_permissions, [key]: !prev.admin_permissions[key] } }));
 
   const isSeeker = form.role === 'seeker';
+  const autoGen = isSeeker || form.auto_generate_password;
   const passwordError = form.password ? validatePassword(form.password) : null;
   const passwordsMatch = form.password === form.confirm_password;
 
@@ -60,9 +61,9 @@ const AdminAddUser = () => {
     if (step === 0) {
       const baseOk = !!(form.role && form.full_name && form.email && form.phone);
       if (!baseOk) return false;
-      // Seekers don't set a password — it's auto-generated and emailed
-      if (isSeeker) return true;
-      // Admins/coaches must type a valid 12-char password + matching confirm
+      // Auto-generated password path: no manual fields required
+      if (autoGen) return true;
+      // Admins/coaches with manual password must type a valid 12-char password + matching confirm
       return !!(form.password && !passwordError && passwordsMatch);
     }
     return true;
