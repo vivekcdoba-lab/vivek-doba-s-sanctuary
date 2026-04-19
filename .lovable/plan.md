@@ -1,45 +1,60 @@
 
-User wants all transactional emails (admin-create-user credentials, and any future emails) sent from `noreply@vivekdoba.com`. The codebase already supports this via the `RESEND_FROM` env var override I added previously — just needs the domain verified in Resend + the secret set.
+## Two issues, both confirmed
 
-Per memory `mem://config/primary-domain`, primary domain is `vivekdoba.com`. I should use Lovable's email setup flow rather than manual Resend dashboard work — the email_domain tools handle DNS + verification cleanly and Lovable Emails is the recommended path.
+### Issue 1 — "Where do I approve?"
+Approve/Reject/Request Info buttons exist but are **hidden inside the collapsed card** — only visible after clicking the row to expand it. You created the LGT application for Chandrakant Wanare (id `a6e3c2a0…`, status=`pending`) and it's there, just not obvious how to act on it.
+
+**Fix:** Surface quick action buttons directly on the **collapsed card row** for any submission where status is `pending` or `info_requested`, so admin can approve/reject/request-info/delete in one click without expanding. Keep the existing expanded view & inline reason textarea for Reject / Request Info (those still need a note).
+
+### Issue 2 — Delete doesn't work (especially after approval)
+Root cause confirmed via DB inspection: the `submissions` table has RLS policies for SELECT and UPDATE (admin) and INSERT (anyone), but **no DELETE policy exists**. The client `supabase.from('submissions').delete()` call silently returns 0 rows affected — no error is thrown, but nothing is deleted. The current code optimistically removes the row from local state, so it appears to work until refresh.
+
+**Fix:** Add a DELETE RLS policy: `USING (is_admin(auth.uid()))`. Then the existing client delete will work for any submission regardless of status (pending, approved, rejected, info_requested).
+
+### Bonus — auto-cleanup option (asking which behavior you want)
+
+You also said "once applicant is approved and moved to seeker, application must remove entry from incoming applicant". Two ways to handle this:
+
+- **Option A — Auto-delete on approve**: When `approve-application` edge function succeeds, also delete the submission row. Pro: queue stays clean automatically. Con: loses audit trail of where the seeker came from.
+- **Option B — Hide approved by default + manual delete** (current "All / Pending / Approved / Rejected" filters already support this; just default the page to Pending). Pro: preserves history. Con: requires manual delete to fully remove.
+
+I'd recommend **Option B + default filter to Pending** so approved entries don't clutter the queue but remain auditable, and admin can still bulk-delete via the Approved tab. But will go with Option A if you prefer.
 
 ## Plan
 
-### Step 1 — Check current email configuration
-Use `email_domain--get_project_custom_domain` and `email_domain--list_email_domains` to see if `vivekdoba.com` (or a subdomain like `noreply.vivekdoba.com`) is already configured in this workspace.
+### 1. DB migration — add DELETE policy on `submissions`
+```sql
+CREATE POLICY "Admins can delete submissions"
+ON public.submissions FOR DELETE TO authenticated
+USING (public.is_admin(auth.uid()));
+```
 
-### Step 2 — Two outcomes
+### 2. `src/pages/admin/ApplicationsPage.tsx` — surface actions on collapsed row
+- Add a compact action bar to the right of each card header (always visible, not behind expand):
+  - **Pending / Info Requested** rows: ✅ Approve · ❌ Reject · 📋 Request Info · 🗑 Delete
+  - **Approved / Rejected** rows: 🗑 Delete only
+- Keep the existing expanded-view inline textarea flow for Reject and Request Info (they need a note before submit).
+- Approve from the collapsed row triggers the existing `updateStatus(id, 'approved')` immediately (no note needed).
+- Replace optimistic local-only delete with a refetch so failures (if any future ones) surface correctly; also `toast.error(error.message)` instead of generic "Failed to delete".
+- Default `statusFilter` to `'pending'` on first load so the queue shows actionable items first (user can switch to All).
+- Show a small count chip "X approved hidden" when filter is `pending` and there are approved items, with a one-click "Show all" link.
 
-**A) If a domain IS already configured for this project:**
-- Confirm DNS verification status via `email_domain--check_email_domain_status`
-- Set the `RESEND_FROM` runtime secret to `VDTS <noreply@vivekdoba.com>` so the existing `admin-create-user` edge function picks it up
-- Re-deploy `admin-create-user` so the new env var is active
-- Test by creating a user → confirm Resend logs show 200 from `noreply@vivekdoba.com`
+### 3. (Pending your choice on Option A vs B)
+- **If Option A**: edit `supabase/functions/approve-application/index.ts` to `await supabaseAdmin.from('submissions').delete().eq('id', submission_id)` after the existing update — instead of marking it approved.
+- **If Option B**: no further code change — already covered by step 2 (default-to-Pending filter).
 
-**B) If no domain is configured yet:**
-- Open the email setup dialog (`<lov-open-email-setup>`) so user can add `vivekdoba.com` and get DNS records to paste into their DNS provider
-- Once dialog completes, the backend auto-configures the domain
-- Then set `RESEND_FROM` secret + redeploy `admin-create-user` as in case A
-- Tell user DNS verification can take minutes to hours; until verified, sends from this domain will fail and the existing fallback (`onboarding@resend.dev` — sandbox) keeps working only for the Resend account owner address
-
-### Step 3 — Update other places that send email
-Search for any other edge functions that hardcode `from:` addresses (likely candidates: `send-notification`, `send-otp`, `daily-session-report`, `approve-application`). For each, switch to read `Deno.env.get('RESEND_FROM') || 'VDTS <noreply@vivekdoba.com>'` so they all use the same sender.
-
-### Step 4 — Memory update
-Update `mem://notifications/email-service` to record `noreply@vivekdoba.com` as the canonical sender.
-
-### Files likely touched
-- `supabase/functions/send-notification/index.ts`
-- `supabase/functions/send-otp/index.ts`
-- `supabase/functions/daily-session-report/index.ts`
-- `supabase/functions/approve-application/index.ts`
-- `supabase/functions/admin-create-user/index.ts` (already supports override — minor: change default fallback to `noreply@vivekdoba.com`)
-- New runtime secret: `RESEND_FROM`
-- `mem://notifications/email-service` (memory)
+### Files touched
+- New: `supabase/migrations/<timestamp>_add_submissions_delete_policy.sql`
+- Edit: `src/pages/admin/ApplicationsPage.tsx`
+- Maybe edit: `supabase/functions/approve-application/index.ts` (only if you pick Option A)
 
 ### Will NOT do
-- Will not switch the project to Lovable Emails (different system) unless user asks — staying on existing direct-Resend setup since it's already wired and working for one address.
-- Will not bypass DNS verification — if domain isn't verified yet, emails to non-owner addresses will fail and I'll surface the exact Resend error (already logged after the previous fix).
+- Will not remove existing audit fields (`admin_notes`, `status` history) — preservation policy.
+- Will not touch the 6 other already-approved rows in your DB; you can delete them yourself once the new policy + button work.
 
 ### Verification
-After changes: create a test admin → check `admin-create-user` logs for `[email] sending { from: 'VDTS <noreply@vivekdoba.com>' }` and `[email] resend ok` → confirm recipient inbox received the message.
+1. Reload `/applications` → see action buttons directly on each pending row including the new Chandrakant LGT application.
+2. Click ✅ Approve on his row → seeker created, toast confirms, row updates to Approved.
+3. Click 🗑 Delete on any approved row → row disappears and **stays gone after refresh** (DB delete actually works).
+
+**Question for you before I proceed: Option A (auto-delete on approve, no audit trail) or Option B (default to Pending filter, keep history, manual delete)?**
