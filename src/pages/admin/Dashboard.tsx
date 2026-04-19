@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, CalendarDays, Clock, IndianRupee, Video, MapPin, Plus, PhoneCall, Bell, Target, TrendingUp, TrendingDown, ClipboardList, Clipboard, GraduationCap } from 'lucide-react';
 import { MOTIVATIONAL_QUOTES, formatINR, getGreeting } from '@/data/mockData';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useSeekerProfiles, useAllProfiles } from '@/hooks/useSeekerProfiles';
 import { useDbSessions } from '@/hooks/useDbSessions';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { usePayments } from '@/hooks/usePayments';
@@ -43,6 +43,9 @@ const StatCard = ({ icon: Icon, label, value, prefix, gradient, trend, trendUp }
 
 const AdminDashboard = () => {
   const { data: seekers = [], isLoading: seekersLoading } = useSeekerProfiles();
+  const { data: allProfiles = [] } = useAllProfiles();
+  const coachCount = allProfiles.filter(p => p.role === 'coach').length;
+  const adminCount = allProfiles.filter(p => p.role === 'admin').length;
   const { data: sessions = [], isLoading: sessionsLoading } = useDbSessions();
   const { data: assignments = [] } = useDbAssignments();
   const { payments } = usePayments();
@@ -125,9 +128,10 @@ const AdminDashboard = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users} label="Active Seekers" value={activeSeekers} gradient="gradient-chakravartin" trend={`+12`} trendUp />
-        <StatCard icon={GraduationCap} label="Coaches" value={8} gradient="gradient-sacred" />
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <StatCard icon={Users} label="Active Seekers" value={activeSeekers} gradient="gradient-chakravartin" />
+        <StatCard icon={GraduationCap} label="Coaches" value={coachCount} gradient="gradient-sacred" />
+        <StatCard icon={Users} label="Admins" value={adminCount} gradient="gradient-hero" />
         <StatCard icon={IndianRupee} label="Revenue (This Month)" value={monthRevenue} prefix="₹" gradient="gradient-growth" trend="+18%" trendUp />
         <StatCard icon={Target} label="Leads" value={leads.length} gradient="gradient-saffron" />
       </div>
