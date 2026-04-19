@@ -38,6 +38,48 @@ const SettingsPage = () => {
   });
   const { toast } = useToast();
 
+  // Email sender configuration
+  const [emailFrom, setEmailFrom] = useState<string>('');
+  const [emailFromLoading, setEmailFromLoading] = useState(true);
+  const [emailFromSaving, setEmailFromSaving] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'email_from')
+          .maybeSingle();
+        const v = data?.value;
+        setEmailFrom(typeof v === 'string' ? v : 'VDTS <info@vivekdoba.com>');
+      } catch {
+        setEmailFrom('VDTS <info@vivekdoba.com>');
+      } finally {
+        setEmailFromLoading(false);
+      }
+    })();
+  }, []);
+
+  const saveEmailFrom = async () => {
+    const trimmed = emailFrom.trim();
+    if (!trimmed) {
+      toast({ title: 'Sender required', description: 'Please enter an email sender address.', variant: 'destructive' });
+      return;
+    }
+    setEmailFromSaving(true);
+    const { data: userData } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from('app_settings')
+      .upsert({ key: 'email_from', value: trimmed, updated_by: userData.user?.id ?? null }, { onConflict: 'key' });
+    setEmailFromSaving(false);
+    if (error) {
+      toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: '✅ Email sender updated', description: 'All outgoing emails will use this sender.' });
+    }
+  };
+
   const toggleRule = (id: string) => setRules(prev => prev.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r));
   const updateChannel = (id: string, channel: AutomationRule['channel']) => setRules(prev => prev.map(r => r.id === id ? { ...r, channel } : r));
 
