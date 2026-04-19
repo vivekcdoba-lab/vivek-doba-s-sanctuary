@@ -108,8 +108,8 @@ const ResetPassword = () => {
             <p className="text-muted-foreground text-sm mt-1">Welcome 🙏 — please choose a personal password to continue.</p>
           </div>
 
-          <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 mb-5 flex items-start gap-2 text-sm">
-            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+          <div className="rounded-lg border border-primary/40 bg-primary/10 p-3 mb-5 flex items-start gap-2 text-sm">
+            <AlertTriangle className="w-4 h-4 text-primary mt-0.5 shrink-0" />
             <span className="text-foreground">You must set a new password to access your account. The temporary password we emailed you will no longer work.</span>
           </div>
 
