@@ -1,45 +1,48 @@
 
-User wants the admin to set a custom password (instead of auto-generated temp password) when creating users via `/admin/add-user`, AND apply the same 12-character password rule that's already used on the public `/register` page.
+User wants three distinct flows:
 
-Current state:
-- `RegisterPage.tsx` already enforces: min 12 chars, 1 uppercase, 1 number, 1 special char `(@#$%&*!?_-+=)` ✓
-- `AdminAddUser.tsx` does NOT collect a password — edge function generates a random temp one
-- Edge function `admin-create-user/index.ts` always generates `temp_password`
+1. **Seeker creation** (by admin): Auto-generate temp password → email it to seeker → force password change on first login
+2. **Admin creation** (by admin): Admin types 12-char password → email both email+password to new admin → optional password change on first login
+3. **Coach creation** (by admin): Same as admin — admin types 12-char password → email credentials → optional password change
+
+Login flow needs `must_change_password` enforcement only for seekers; admins/coaches see a one-time prompt they can dismiss.
 
 ## Plan
 
-### 1. Shared password validator — `src/lib/passwordValidation.ts` (new)
-Single source of truth so admin form and register page stay in sync.
-```ts
-export const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%&*!?_\-+=]).{12,}$/;
-export const PASSWORD_HELP = 'Min 12 chars, 1 uppercase, 1 number, 1 special character (@#$%&*!?_-+=)';
-export function validatePassword(pwd: string): string | null { /* returns error message or null */ }
-```
+### 1. DB migration
+Add to `profiles`:
+- `must_change_password boolean default false` — true=forced (seekers), used to redirect to /reset-password until cleared
+- `password_change_prompted boolean default false` — track if optional prompt was shown to admin/coach (so we don't nag)
 
-### 2. `RegisterPage.tsx` — refactor to use shared validator
-Replace inline regex with import from new lib. Same UX, same rules. (Keeps "only add and enhance" — no behavior change, just dedup.)
+### 2. Edge function `admin-create-user/index.ts` — branch by role
+- **role=seeker**: ignore any `password` from client; always auto-generate 12-char password (matching the regex). Set `must_change_password=true`. Send welcome email with temp password + login link via Resend.
+- **role=admin / coach**: require admin-typed password (already validated 12-char). Set `must_change_password=false`, but `password_change_prompted=false` so login can offer optional change. Send credentials email (email + password + login link).
+- All emails via existing `RESEND_API_KEY`. Single helper `sendCredentialsEmail({to, name, role, password, isTemp})` with simple HTML template (VDTS branding, ॐ, "Begin your sacred session" copy).
+- Response no longer returns `temp_password` to admin UI (now delivered by email). Toast becomes "User created — credentials emailed to {email}".
 
-### 3. `AdminAddUser.tsx` — add password fields in Step 1
-Add two new inputs after Phone:
-- **Password \*** (type=password) with helper text showing the rule
-- **Confirm Password \*** (type=password)
+### 3. `AdminAddUser.tsx`
+- When role=seeker: hide the Password / Confirm Password fields entirely; show info banner "A temporary password will be emailed to the seeker. They'll set their own on first login."
+- When role=admin/coach: keep password fields (already 12-char enforced). Show note "Login credentials will be emailed to the user."
+- Step 3 review reflects which path was taken.
 
-Update form state with `password` + `confirm_password`. Update `canNext()` for step 0 to also require password to pass `validatePassword` and match confirm. Show inline error helper.
+### 4. `LoginPage.tsx` + new logic
+After successful login, fetch `must_change_password` + `password_change_prompted`:
+- If `must_change_password === true` → redirect to `/reset-password?forced=1`. /reset-password hides "back" link, requires new password, then on success calls `update profiles set must_change_password=false`.
+- Else if role in (admin, coach) AND `password_change_prompted === false` → show one-time dialog: "Change your password now? (Recommended)" with "Change Now" / "Keep Current" buttons. Either choice sets `password_change_prompted=true`. "Change Now" routes to /reset-password.
 
-Pass `password` to edge function. Update Step 3 review to show "Password: ●●●●●●●● (set by admin)".
+### 5. `ResetPassword.tsx` enhancement
+- Read `?forced=1` query param. When forced: hide "Back to login", disable closing/skipping, show banner "You must set a new password to continue."
+- After successful `auth.updateUser({password})`, also update `profiles.must_change_password=false` for current user.
 
-### 4. Edge function `supabase/functions/admin-create-user/index.ts`
-- Accept optional `password` field in body
-- If provided: server-side validate against same regex (defense-in-depth) — reject 400 if invalid
-- Use provided password instead of generating one
-- Response: if admin set password, return `{ password_set_by_admin: true }` instead of `temp_password`; otherwise keep current behavior (fallback for any other caller)
-
-Frontend toast adapts: "User created with the password you set" vs the existing temp-password message.
+### 6. New helper file
+`src/lib/firstLoginFlow.ts` — exports `checkFirstLoginAction(profile)` returning `'forced' | 'prompt' | 'none'` so login + AuthGuard share logic.
 
 ### Files
-- **New**: `src/lib/passwordValidation.ts`
-- **Edit**: `src/pages/RegisterPage.tsx` (use shared validator)
-- **Edit**: `src/pages/admin/AdminAddUser.tsx` (add password + confirm fields, validation, send to edge fn)
-- **Edit**: `supabase/functions/admin-create-user/index.ts` (accept + validate password, skip auto-gen when provided)
+- New: `supabase/migrations/<ts>.sql` (2 columns + default)
+- New: `src/lib/firstLoginFlow.ts`
+- Edit: `supabase/functions/admin-create-user/index.ts` (role branch + email send + flag set)
+- Edit: `src/pages/admin/AdminAddUser.tsx` (conditional password block, updated toast)
+- Edit: `src/pages/LoginPage.tsx` (post-login flag check, forced redirect, optional prompt dialog)
+- Edit: `src/pages/ResetPassword.tsx` (forced mode + clear flag)
 
-Nothing removed. Coach/Seeker creation via the same admin form gets the password field too — applies to all 3 roles as requested. Public `/register` keeps its existing flow (submission → admin approval) unchanged in behavior, just shares the validator.
+Nothing existing removed. Public `/register` flow untouched (still goes through approval queue — no password set there).
