@@ -209,6 +209,16 @@ const ResetPassword = () => {
 
   // Standard email-recovery flow (existing behavior)
   if (!isRecovery) {
+    if (checking) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <div className="bg-card rounded-2xl shadow-xl p-8 max-w-md w-full text-center border border-border">
+            <Loader2 className="w-10 h-10 text-primary mx-auto mb-4 animate-spin" />
+            <p className="text-muted-foreground text-sm">Verifying your reset link…</p>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="bg-card rounded-2xl shadow-xl p-8 max-w-md w-full text-center border border-border">
