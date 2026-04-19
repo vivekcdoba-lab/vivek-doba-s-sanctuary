@@ -140,7 +140,7 @@ const ResetPassword = () => {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="New password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => onPasswordChange(e.target.value)}
                 className="pl-10 pr-10"
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -148,17 +148,20 @@ const ResetPassword = () => {
               </button>
             </div>
             <p className="text-xs text-muted-foreground">{PASSWORD_HELP}</p>
+            <p className="text-xs text-muted-foreground">Must be different from your current/temporary password.</p>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 type="password"
                 placeholder="Confirm new password"
                 value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
+                onChange={(e) => onConfirmChange(e.target.value)}
                 className="pl-10"
               />
             </div>
           </div>
+
+          <ErrorBanner />
 
           <button onClick={handleReset} disabled={loading}
             className="w-full mt-6 py-3 rounded-xl font-semibold text-primary-foreground gradient-saffron hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50">
