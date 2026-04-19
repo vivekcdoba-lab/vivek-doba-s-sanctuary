@@ -18,6 +18,7 @@ export interface SeekerProfile {
   avatar_url: string | null;
   created_at: string;
   marriage_anniversary: string | null;
+  access_end_date: string | null;
 }
 
 export function useSeekerProfiles() {
