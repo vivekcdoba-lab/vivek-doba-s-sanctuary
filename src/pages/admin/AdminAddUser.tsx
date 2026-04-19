@@ -166,6 +166,21 @@ const AdminAddUser = () => {
                 <Label>Phone *</Label>
                 <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="+91 9876543210" />
               </div>
+              <div className="space-y-2">
+                <Label>Password *</Label>
+                <Input type="password" value={form.password} onChange={e => update('password', e.target.value)} placeholder="Set login password" />
+                <p className="text-xs text-muted-foreground">{PASSWORD_HELP}</p>
+                {form.password && passwordError && (
+                  <p className="text-xs text-destructive">{passwordError}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label>Confirm Password *</Label>
+                <Input type="password" value={form.confirm_password} onChange={e => update('confirm_password', e.target.value)} placeholder="Re-enter password" />
+                {form.confirm_password && !passwordsMatch && (
+                  <p className="text-xs text-destructive">Passwords do not match</p>
+                )}
+              </div>
             </>
           )}
 
