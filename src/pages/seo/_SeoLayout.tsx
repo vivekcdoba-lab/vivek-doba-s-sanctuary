@@ -42,9 +42,21 @@ export const SeoFooter = () => (
       <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-4 text-sm">
         <Link to="/life-coaching" className="text-muted-foreground hover:text-foreground">Life Coaching</Link>
         <Link to="/business-coaching" className="text-muted-foreground hover:text-foreground">Business Coaching</Link>
+        <Link to="/nlp-coach" className="text-muted-foreground hover:text-foreground">NLP Coach</Link>
+        <Link to="/sales-coach" className="text-muted-foreground hover:text-foreground">Sales Coach</Link>
         <Link to="/manifestation" className="text-muted-foreground hover:text-foreground">Manifestation</Link>
         <Link to="/meditation" className="text-muted-foreground hover:text-foreground">Meditation</Link>
         <Link to="/dharma-philosophy" className="text-muted-foreground hover:text-foreground">Dharma Philosophy</Link>
+      </div>
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mb-4 text-xs text-muted-foreground">
+        <Link to="/life-coach-in-pune" className="hover:text-foreground">Life Coach Pune</Link>
+        <Link to="/life-coach-in-mumbai" className="hover:text-foreground">Life Coach Mumbai</Link>
+        <Link to="/life-coach-in-maharashtra" className="hover:text-foreground">Life Coach Maharashtra</Link>
+        <Link to="/life-coach-in-india" className="hover:text-foreground">Life Coach India</Link>
+        <Link to="/business-coach-in-pune" className="hover:text-foreground">Business Coach Pune</Link>
+        <Link to="/business-coach-in-mumbai" className="hover:text-foreground">Business Coach Mumbai</Link>
+        <Link to="/business-coach-in-maharashtra" className="hover:text-foreground">Business Coach Maharashtra</Link>
+        <Link to="/business-coach-in-india" className="hover:text-foreground">Business Coach India</Link>
       </div>
       <p className="font-semibold text-foreground mb-1">Vivek Doba Training Solutions | Pune, Maharashtra</p>
       <p className="text-sm text-muted-foreground mb-4">📞 9607050111 | 📧 info@vivekdoba.com | 🌐 vivekdoba.com</p>
