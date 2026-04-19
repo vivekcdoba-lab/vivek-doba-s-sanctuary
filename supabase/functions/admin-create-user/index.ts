@@ -217,7 +217,7 @@ Deno.serve(async (req) => {
     let isTempPassword: boolean;
     let mustChange: boolean;
 
-    if (role === 'seeker') {
+    if (role === 'seeker' || auto_generate_password === true) {
       finalPassword = randomPassword();
       isTempPassword = true;
       mustChange = true;
