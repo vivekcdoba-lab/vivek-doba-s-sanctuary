@@ -95,12 +95,14 @@ const AdminDashboard = () => {
     { name: 'Overdue', value: assignments.filter(a => a.status === 'overdue').length },
   ].filter(d => d.value > 0);
 
-  // Coach performance mock data
-  const coachData = [
-    { name: 'Vivek', seekers: 15, rating: 4.8 },
-    { name: 'Archana', seekers: 12, rating: 4.9 },
-    { name: 'Raj', seekers: 8, rating: 4.6 },
-  ];
+  // Coach performance — live data from profiles with role 'coach'
+  const coachData = allProfiles
+    .filter(p => p.role === 'coach')
+    .map(c => ({
+      name: c.full_name?.split(' ')[0] || 'Coach',
+      seekers: sessions.filter(s => s.seeker_id === c.id).length,
+      rating: 0,
+    }));
 
   // Activity feed
   const activityItems = seekers.slice(0, 3).map((s, i) => ({
