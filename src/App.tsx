@@ -366,6 +366,7 @@ const App = () => (
             <Route path="/seeker/dharma/journal" element={<SeekerDharmaJournal />} />
             <Route path="/seeker/dharma/practices" element={<SeekerDharmaPractices />} />
             {/* Artha */}
+            <Route path="/seeker/artha" element={<SeekerArthaDashboard />} />
             <Route path="/seeker/artha/dashboard" element={<SeekerArthaDashboard />} />
             <Route path="/seeker/artha/profile" element={<ArthaBusinessProfile />} />
             <Route path="/seeker/artha/vision" element={<ArthaVisionMission />} />
