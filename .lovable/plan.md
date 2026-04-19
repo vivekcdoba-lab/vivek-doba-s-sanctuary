@@ -1,50 +1,35 @@
 
-Goal: make “Forgot Password?” visibly work and reliably guide the user.
+The user clicked the password reset link from their email, landed on `/reset-password`, and got "Invalid Reset Link / This password reset link is invalid or has expired."
 
-What I found:
-- `src/pages/LoginPage.tsx` already calls `supabase.auth.resetPasswordForEmail(...)`.
-- The request is reaching the backend and returning `200`.
-- But the app mounts `@/components/ui/toaster` in `src/App.tsx`, while the login page uses `toast` from `sonner`.
-- Result: the click can succeed, but no popup appears because the wrong toast provider is mounted.
+From the auth logs:
+- `user_recovery_requested` succeeded (200)
+- User clicked email link → hit `/verify` → got 303 redirect → landed at `https://...lovableproject.com/reset-password`
+- The redirect from Supabase's `/verify` endpoint returns the recovery token in the **URL hash** (`#access_token=...&type=recovery`)
 
-Plan:
-1. Fix the global toast mismatch
-- Update `src/App.tsx` to mount the Sonner toaster (`@/components/ui/sonner`) instead of the shadcn `toaster`.
-- Keep one consistent toast system across the app, since many pages already use `toast` from `sonner`.
+In `src/pages/ResetPassword.tsx`:
+```ts
+const hash = window.location.hash;
+if (hash.includes('type=recovery')) setIsRecovery(true);
+```
 
-2. Improve the Forgot Password UX on `src/pages/LoginPage.tsx`
-- Add a small sending state for the “Forgot Password?” action.
-- Validate the email format before sending, so obviously invalid entries don’t silently “succeed”.
-- Show clear success/error feedback with visible toast messages.
-- Prevent repeated clicks while the request is in flight.
+This check runs **once on mount**. But Supabase's JS client auto-detects the hash, exchanges it for a session, and **strips it from the URL** — so depending on timing, `window.location.hash` may already be empty when the effect runs. Also, it relies on the `PASSWORD_RECOVERY` event from `onAuthStateChange`, but if the listener attaches after the event already fired, it's missed.
 
-3. Make the success message less confusing
-- Use a generic success message like: “If this email exists, a reset link has been sent.”
-- This matches secure auth behavior and avoids confusion when the backend returns `200` for privacy reasons.
+Result: `isRecovery` stays `false` → "Invalid Reset Link" screen even though the session is valid.
 
-4. Verify redirect behavior
-- Keep the reset link pointing to `/reset-password`, which is already routed in `src/App.tsx`.
-- Double-check that `src/pages/ResetPassword.tsx` supports the emailed recovery flow, which it already appears to do.
+## Fix
 
-5. Test after implementation
-- Confirm clicking “Forgot Password?” with:
-  - empty email → visible error toast
-  - invalid email → visible validation toast
-  - valid email → visible success toast
-- Then test the full reset flow from the published site as well, since auth email flows are more reliable there than in preview.
+Make `/reset-password` accept the recovery flow more robustly:
 
-Technical notes:
-- Root cause is not the reset API itself; it is the UI feedback layer.
-- Current mismatch:
-  - App mounts: `src/components/ui/toaster.tsx`
-  - Pages call: `import { toast } from 'sonner'`
-- Best fix is to standardize on Sonner, not to rewrite every page.
+1. **Treat an active session as valid** — if the user landed on `/reset-password` and `supabase.auth.getSession()` returns a session (regardless of hash detection), allow them to set a new password. This is exactly what the `forced` branch already does.
 
-Files to update:
-- `src/App.tsx`
-- `src/pages/LoginPage.tsx`
+2. **Keep listening for `PASSWORD_RECOVERY`** — but also fall back to checking `getSession()` so we don't miss the event due to listener timing.
 
-Out of scope:
-- No backend/schema changes
-- No auth provider changes
-- No changes to `src/integrations/supabase/client.ts`
+3. **Show a brief loading state** while we determine session status, instead of immediately rendering "Invalid Reset Link".
+
+## Files to update
+- `src/pages/ResetPassword.tsx` — replace the brittle hash-only check with: check session on mount + listen for `PASSWORD_RECOVERY` + show loading state → only show "Invalid" if both fail after the check completes.
+
+## Out of scope
+- No changes to Supabase redirect URLs (already correct: `${window.location.origin}/reset-password`)
+- No changes to `LoginPage.tsx`
+- No email template changes
