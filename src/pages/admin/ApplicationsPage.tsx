@@ -56,7 +56,7 @@ const ApplicationsPage = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | FormType>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | SubmissionStatus>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | SubmissionStatus>('pending');
   const [expanded, setExpanded] = useState<string | null>(null);
   const [actionId, setActionId] = useState<string | null>(null);
   const [actionType, setActionType] = useState<'reject' | 'info' | null>(null);
@@ -158,13 +158,22 @@ const ApplicationsPage = () => {
 
   const handleDelete = async (id: string, name: string) => {
     if (!window.confirm(`Delete application from ${name}? This cannot be undone.`)) return;
-    const { error } = await supabase.from('submissions').delete().eq('id', id);
+    const { error, count } = await supabase.from('submissions').delete({ count: 'exact' }).eq('id', id);
     if (error) {
       toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: `🗑️ Application from ${name} deleted` });
-      setSubmissions(prev => prev.filter(s => s.id !== id));
+      return;
     }
+    if (count === 0) {
+      toast({ title: 'Delete blocked', description: 'No rows were deleted (permission denied).', variant: 'destructive' });
+      return;
+    }
+    toast({ title: `🗑️ Application from ${name} deleted` });
+    fetchSubmissions();
+  };
+
+  const handleQuickApprove = async (id: string, name: string) => {
+    if (!window.confirm(`Approve ${name} and create their seeker account?`)) return;
+    await updateStatus(id, 'approved');
   };
 
   if (loading) {
@@ -245,10 +254,36 @@ const ApplicationsPage = () => {
                   {expanded === sub.id ? <ChevronUp className="w-5 h-5 text-muted-foreground flex-shrink-0" /> : <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
                 </div>
               </button>
-              <div className="px-4 pb-2 flex justify-end -mt-2">
+              <div className="px-4 pb-3 flex flex-wrap justify-end gap-2 -mt-1">
+                {(sub.status === 'pending' || sub.status === 'info_requested') && (
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleQuickApprove(sub.id, sub.full_name); }}
+                      disabled={actionLoading}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                      title="Approve & create seeker"
+                    >
+                      <Check className="w-3.5 h-3.5" /> Approve
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setExpanded(sub.id); setActionId(sub.id); setActionType('reject'); }}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium text-white bg-destructive hover:bg-destructive/90 transition-colors"
+                      title="Reject with reason"
+                    >
+                      <X className="w-3.5 h-3.5" /> Reject
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setExpanded(sub.id); setActionId(sub.id); setActionType('info'); }}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium text-primary border border-primary/30 hover:bg-primary/5 transition-colors"
+                      title="Ask applicant for more info"
+                    >
+                      <Send className="w-3.5 h-3.5" /> Ask Info
+                    </button>
+                  </>
+                )}
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDelete(sub.id, sub.full_name); }}
-                  className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-destructive hover:bg-destructive/10 transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs text-destructive hover:bg-destructive/10 border border-destructive/20 transition-colors"
                   title="Delete application"
                 >
                   <Trash2 className="w-3.5 h-3.5" /> Delete
