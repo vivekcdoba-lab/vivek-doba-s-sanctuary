@@ -1,20 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useDbCourses } from '@/hooks/useDbCourses';
-import { UserPlus, ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { UserPlus, ArrowLeft, ArrowRight, Check, Shield, ShieldAlert } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { PERMISSION_KEYS, PERMISSION_LABELS, allPermissionsTrue, type PermissionKey } from '@/lib/adminPermissions';
 
 const STEPS = ['Role & Basic Info', 'Profile Details', 'Review & Create'];
 
 const AdminAddUser = () => {
   const { data: courses = [] } = useDbCourses();
+  const { user } = useAuthStore();
+  const [callerIsSuper, setCallerIsSuper] = useState(false);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -29,9 +33,19 @@ const AdminAddUser = () => {
     gender: '',
     course_id: '',
     send_welcome: true,
+    admin_level: 'admin' as 'admin' | 'super_admin',
+    admin_permissions: {} as Record<string, boolean>,
   });
 
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase.from('profiles').select('admin_level').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => setCallerIsSuper(data?.admin_level === 'super_admin'));
+  }, [user?.id]);
+
   const update = (key: string, val: any) => setForm(prev => ({ ...prev, [key]: val }));
+  const togglePerm = (key: PermissionKey) =>
+    setForm(prev => ({ ...prev, admin_permissions: { ...prev.admin_permissions, [key]: !prev.admin_permissions[key] } }));
 
   const canNext = () => {
     if (step === 0) return form.role && form.full_name && form.email && form.phone;
@@ -45,6 +59,7 @@ const AdminAddUser = () => {
     }
     setLoading(true);
     try {
+      const isAdmin = form.role === 'admin';
       const { data, error } = await supabase.functions.invoke('admin-create-user', {
         body: {
           email: form.email,
@@ -57,6 +72,10 @@ const AdminAddUser = () => {
           occupation: form.occupation,
           gender: form.gender,
           course_id: form.role === 'seeker' && form.course_id ? form.course_id : null,
+          admin_level: isAdmin ? form.admin_level : null,
+          admin_permissions: isAdmin
+            ? (form.admin_level === 'super_admin' ? allPermissionsTrue() : form.admin_permissions)
+            : null,
         },
       });
       if (error || (data as any)?.error) {
@@ -66,7 +85,7 @@ const AdminAddUser = () => {
       }
       const tempPwd = (data as any)?.temp_password;
       toast.success(`${form.role.toUpperCase()} "${form.full_name}" created. Temp password: ${tempPwd}`, { duration: 15000 });
-      setForm({ role: 'seeker', full_name: '', email: '', phone: '', city: '', state: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true });
+      setForm({ role: 'seeker', full_name: '', email: '', phone: '', city: '', state: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true, admin_level: 'admin', admin_permissions: {} });
       setStep(0);
     } catch (e: any) {
       toast.error(e?.message || 'Error creating user');
@@ -74,6 +93,10 @@ const AdminAddUser = () => {
       setLoading(false);
     }
   };
+
+  const isAdminRole = form.role === 'admin';
+  const isSuperLevel = form.admin_level === 'super_admin';
+  const permCount = isSuperLevel ? PERMISSION_KEYS.length : PERMISSION_KEYS.filter(k => form.admin_permissions[k]).length;
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -173,6 +196,60 @@ const AdminAddUser = () => {
                   </Select>
                 </div>
               )}
+
+              {isAdminRole && (
+                <div className="space-y-4 p-4 rounded-lg border border-destructive/30 bg-destructive/5">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert className="w-4 h-4 text-destructive" />
+                    <span className="font-semibold text-sm">Admin Access Configuration</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Admin Level *</Label>
+                    <Select value={form.admin_level} onValueChange={v => update('admin_level', v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="super_admin" disabled={!callerIsSuper}>
+                          Super Admin {!callerIsSuper && '(super admin only)'}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {isSuperLevel && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Shield className="w-3 h-3" /> Super Admins automatically have all permissions.
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Permissions ({permCount} / {PERMISSION_KEYS.length})</Label>
+                      {!isSuperLevel && (
+                        <div className="flex gap-2">
+                          <Button type="button" size="sm" variant="ghost" className="h-7 text-xs"
+                            onClick={() => update('admin_permissions', allPermissionsTrue())}>Select all</Button>
+                          <Button type="button" size="sm" variant="ghost" className="h-7 text-xs"
+                            onClick={() => update('admin_permissions', {})}>Clear</Button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {PERMISSION_KEYS.map(k => (
+                        <label key={k} className={`flex items-center gap-2 text-sm p-2 rounded border ${isSuperLevel ? 'opacity-60' : 'cursor-pointer hover:bg-muted/50'}`}>
+                          <Checkbox
+                            checked={isSuperLevel || !!form.admin_permissions[k]}
+                            disabled={isSuperLevel}
+                            onCheckedChange={() => togglePerm(k)}
+                          />
+                          <span>{PERMISSION_LABELS[k]}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center gap-2">
                 <Checkbox checked={form.send_welcome} onCheckedChange={v => update('send_welcome', !!v)} id="welcome" />
                 <Label htmlFor="welcome" className="text-sm">Send welcome email</Label>
@@ -193,6 +270,18 @@ const AdminAddUser = () => {
                 {form.company && <div><span className="text-muted-foreground">Company:</span> <span className="ml-2">{form.company}</span></div>}
                 {form.occupation && <div><span className="text-muted-foreground">Occupation:</span> <span className="ml-2">{form.occupation}</span></div>}
                 {form.gender && <div><span className="text-muted-foreground">Gender:</span> <span className="ml-2">{form.gender}</span></div>}
+                {isAdminRole && (
+                  <>
+                    <div><span className="text-muted-foreground">Admin Level:</span>
+                      <Badge variant={isSuperLevel ? 'destructive' : 'default'} className="ml-2">
+                        {isSuperLevel ? 'Super Admin' : 'Admin'}
+                      </Badge>
+                    </div>
+                    <div><span className="text-muted-foreground">Permissions:</span>
+                      <span className="ml-2 font-medium">{isSuperLevel ? 'All' : `${permCount} of ${PERMISSION_KEYS.length}`}</span>
+                    </div>
+                  </>
+                )}
                 <div><span className="text-muted-foreground">Welcome Email:</span> <span className="ml-2">{form.send_welcome ? 'Yes' : 'No'}</span></div>
               </div>
             </div>

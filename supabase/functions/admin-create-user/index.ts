@@ -12,6 +12,18 @@ function randomPassword() {
   return p;
 }
 
+const PERMISSION_KEYS = [
+  'manage_users','manage_coaches','manage_seekers','manage_courses',
+  'manage_payments','manage_content','view_analytics','manage_settings',
+];
+
+function sanitizePermissions(input: any): Record<string, boolean> {
+  const out: Record<string, boolean> = {};
+  if (!input || typeof input !== 'object') return out;
+  for (const k of PERMISSION_KEYS) out[k] = !!input[k];
+  return out;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
@@ -40,18 +52,21 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
     const { data: callerProfile } = await admin
-      .from('profiles').select('role').eq('user_id', userData.user.id).maybeSingle();
+      .from('profiles').select('role, admin_level').eq('user_id', userData.user.id).maybeSingle();
     if (callerProfile?.role !== 'admin') {
       return new Response(JSON.stringify({ error: 'Forbidden: admin only' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    const callerIsSuper = callerProfile?.admin_level === 'super_admin';
 
     const body = await req.json().catch(() => ({}));
     const {
       email, full_name, phone, role,
       city = '', state = '', company = '', occupation = '', gender = '',
       course_id = null,
+      admin_level = null,
+      admin_permissions = null,
     } = body || {};
 
     if (!email || !full_name || !phone || !role) {
@@ -63,6 +78,22 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Invalid role' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // Resolve admin level + permissions (only if creating an admin)
+    let resolvedLevel: string | null = null;
+    let resolvedPerms: Record<string, boolean> | null = null;
+    if (role === 'admin') {
+      resolvedLevel = admin_level === 'super_admin' ? 'super_admin' : 'admin';
+      // Only super admins can create another super admin
+      if (resolvedLevel === 'super_admin' && !callerIsSuper) {
+        resolvedLevel = 'admin';
+      }
+      if (resolvedLevel === 'super_admin') {
+        resolvedPerms = PERMISSION_KEYS.reduce((acc, k) => { acc[k] = true; return acc; }, {} as Record<string, boolean>);
+      } else {
+        resolvedPerms = sanitizePermissions(admin_permissions);
+      }
     }
 
     // Duplicate check
@@ -94,19 +125,22 @@ Deno.serve(async (req) => {
 
     const newUserId = created.user.id;
 
-    // handle_new_user trigger created profile with defaults from metadata.
-    // Force-update role + extra fields to be safe.
-    const { error: updErr } = await admin.from('profiles').update({
+    const updatePayload: Record<string, any> = {
       role, full_name, phone, city, state, company, occupation,
       gender: gender || null,
-    }).eq('user_id', newUserId);
+    };
+    if (role === 'admin') {
+      updatePayload.admin_level = resolvedLevel;
+      updatePayload.admin_permissions = resolvedPerms;
+    }
+
+    const { error: updErr } = await admin.from('profiles').update(updatePayload).eq('user_id', newUserId);
     if (updErr) {
       return new Response(JSON.stringify({ error: 'User created but profile update failed: ' + updErr.message, user_id: newUserId }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Optional enrollment
     if (role === 'seeker' && course_id) {
       const { data: prof } = await admin.from('profiles').select('id').eq('user_id', newUserId).maybeSingle();
       if (prof?.id) {
@@ -119,6 +153,7 @@ Deno.serve(async (req) => {
       user_id: newUserId,
       email,
       temp_password: tempPassword,
+      admin_level: resolvedLevel,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
