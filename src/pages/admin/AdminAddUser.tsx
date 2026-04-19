@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { PERMISSION_KEYS, PERMISSION_LABELS, allPermissionsTrue, type PermissionKey } from '@/lib/adminPermissions';
+import { validatePassword, PASSWORD_HELP } from '@/lib/passwordValidation';
 
 const STEPS = ['Role & Basic Info', 'Profile Details', 'Review & Create'];
 
@@ -26,6 +27,8 @@ const AdminAddUser = () => {
     full_name: '',
     email: '',
     phone: '',
+    password: '',
+    confirm_password: '',
     city: '',
     state: '',
     company: '',
@@ -47,8 +50,14 @@ const AdminAddUser = () => {
   const togglePerm = (key: PermissionKey) =>
     setForm(prev => ({ ...prev, admin_permissions: { ...prev.admin_permissions, [key]: !prev.admin_permissions[key] } }));
 
+  const passwordError = form.password ? validatePassword(form.password) : null;
+  const passwordsMatch = form.password === form.confirm_password;
+
   const canNext = () => {
-    if (step === 0) return form.role && form.full_name && form.email && form.phone;
+    if (step === 0) {
+      return !!(form.role && form.full_name && form.email && form.phone &&
+        form.password && !passwordError && passwordsMatch);
+    }
     return true;
   };
 
@@ -57,6 +66,9 @@ const AdminAddUser = () => {
       toast.error('Please fill required fields');
       return;
     }
+    const pErr = validatePassword(form.password);
+    if (pErr) { toast.error(pErr); return; }
+    if (form.password !== form.confirm_password) { toast.error('Passwords do not match'); return; }
     setLoading(true);
     try {
       const isAdmin = form.role === 'admin';
@@ -65,6 +77,7 @@ const AdminAddUser = () => {
           email: form.email,
           full_name: form.full_name,
           phone: form.phone,
+          password: form.password,
           role: form.role,
           city: form.city,
           state: form.state,
@@ -83,9 +96,15 @@ const AdminAddUser = () => {
         setLoading(false);
         return;
       }
+      const adminSet = (data as any)?.password_set_by_admin;
       const tempPwd = (data as any)?.temp_password;
-      toast.success(`${form.role.toUpperCase()} "${form.full_name}" created. Temp password: ${tempPwd}`, { duration: 15000 });
-      setForm({ role: 'seeker', full_name: '', email: '', phone: '', city: '', state: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true, admin_level: 'admin', admin_permissions: {} });
+      toast.success(
+        adminSet
+          ? `${form.role.toUpperCase()} "${form.full_name}" created with the password you set.`
+          : `${form.role.toUpperCase()} "${form.full_name}" created. Temp password: ${tempPwd}`,
+        { duration: 15000 }
+      );
+      setForm({ role: 'seeker', full_name: '', email: '', phone: '', password: '', confirm_password: '', city: '', state: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true, admin_level: 'admin', admin_permissions: {} });
       setStep(0);
     } catch (e: any) {
       toast.error(e?.message || 'Error creating user');
