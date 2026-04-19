@@ -4188,6 +4188,19 @@ export type Database = {
           worksheet_count: number
         }[]
       }
+      get_session_signatures: {
+        Args: { _session_id: string }
+        Returns: {
+          content_hash: string
+          id: string
+          session_id: string
+          signed_at: string
+          signer_id: string
+          signer_role: string
+          storage_path: string
+          typed_name: string
+        }[]
+      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
