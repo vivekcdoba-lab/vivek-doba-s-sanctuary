@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Bell, Save, Settings, MessageSquare, Mail, Smartphone, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import type { AutomationRule } from '@/types';
 
 const channelIcons: Record<string, typeof MessageSquare> = { whatsapp: MessageSquare, email: Mail, sms: Smartphone, in_app: Bell, dashboard: Settings };
@@ -25,7 +28,7 @@ const AUTOMATION_RULES: AutomationRule[] = [
   { id: 'ar15', label: 'New Application Received', description: 'Notify on new form submission', enabled: true, trigger: 'Any form submitted', channel: 'dashboard' },
 ];
 
-const tabs = ['General', 'Notifications', 'Automation Rules', 'Business Info', 'Appearance'];
+const tabs = ['General', 'Email Sender', 'Notifications', 'Automation Rules', 'Business Info', 'Appearance'];
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('Automation Rules');
@@ -34,6 +37,48 @@ const SettingsPage = () => {
     return saved ? JSON.parse(saved) : AUTOMATION_RULES;
   });
   const { toast } = useToast();
+
+  // Email sender configuration
+  const [emailFrom, setEmailFrom] = useState<string>('');
+  const [emailFromLoading, setEmailFromLoading] = useState(true);
+  const [emailFromSaving, setEmailFromSaving] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'email_from')
+          .maybeSingle();
+        const v = data?.value;
+        setEmailFrom(typeof v === 'string' ? v : 'VDTS <info@vivekdoba.com>');
+      } catch {
+        setEmailFrom('VDTS <info@vivekdoba.com>');
+      } finally {
+        setEmailFromLoading(false);
+      }
+    })();
+  }, []);
+
+  const saveEmailFrom = async () => {
+    const trimmed = emailFrom.trim();
+    if (!trimmed) {
+      toast({ title: 'Sender required', description: 'Please enter an email sender address.', variant: 'destructive' });
+      return;
+    }
+    setEmailFromSaving(true);
+    const { data: userData } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from('app_settings')
+      .upsert({ key: 'email_from', value: trimmed, updated_by: userData.user?.id ?? null }, { onConflict: 'key' });
+    setEmailFromSaving(false);
+    if (error) {
+      toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: '✅ Email sender updated', description: 'All outgoing emails will use this sender.' });
+    }
+  };
 
   const toggleRule = (id: string) => setRules(prev => prev.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r));
   const updateChannel = (id: string, channel: AutomationRule['channel']) => setRules(prev => prev.map(r => r.id === id ? { ...r, channel } : r));
@@ -136,6 +181,43 @@ const SettingsPage = () => {
         <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Notification Preferences</h2>
           <p className="text-sm text-muted-foreground">Notification preferences are now managed through the Automation Rules tab. Each rule controls its own channel (WhatsApp, Email, SMS, In-App).</p>
+        </div>
+      )}
+
+      {activeTab === 'Email Sender' && (
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border max-w-2xl">
+          <div className="flex items-center gap-3 mb-2">
+            <Mail className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">Email Sender Configuration</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-5">
+            This address is used as the <strong>From</strong> for every email the platform sends — OTPs,
+            credentials, application updates, daily reports, and notifications. The domain must be verified in Resend.
+          </p>
+
+          <div className="space-y-2">
+            <Label htmlFor="email_from">From Address</Label>
+            <Input
+              id="email_from"
+              placeholder="VDTS <info@vivekdoba.com>"
+              value={emailFrom}
+              disabled={emailFromLoading || emailFromSaving}
+              onChange={(e) => setEmailFrom(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Format: <code className="bg-muted px-1 rounded">Display Name &lt;email@domain.com&gt;</code> (e.g.
+              <code className="bg-muted px-1 rounded ml-1">VDTS &lt;info@vivekdoba.com&gt;</code>)
+            </p>
+          </div>
+
+          <div className="mt-5 flex items-center gap-3">
+            <Button onClick={saveEmailFrom} disabled={emailFromLoading || emailFromSaving} className="gap-2">
+              <Save className="w-4 h-4" /> {emailFromSaving ? 'Saving…' : 'Save Sender'}
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              Changes take effect immediately for all emails.
+            </span>
+          </div>
         </div>
       )}
 

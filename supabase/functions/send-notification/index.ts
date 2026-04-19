@@ -12,6 +12,16 @@ function getCorsHeaders(_origin: string | null) {
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ADMIN_EMAIL = "info@vivekdoba.com";
 
+async function getFromAddress(adminClient: any): Promise<string> {
+  try {
+    const { data } = await adminClient.from('app_settings').select('value').eq('key', 'email_from').maybeSingle();
+    if (data?.value && typeof data.value === 'string') return data.value;
+  } catch (e) {
+    console.warn('[email] app_settings lookup failed', (e as Error).message);
+  }
+  return Deno.env.get('RESEND_FROM') || 'VDTS <info@vivekdoba.com>';
+}
+
 interface NotificationRequest {
   type: "new_submission" | "status_update";
   form_type: string;
@@ -169,6 +179,12 @@ serve(async (req) => {
       };
       const subjectLabel = typeSubjects[data.form_type] || data.form_type;
 
+      const supabaseForFrom = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+      const fromAddress = await getFromAddress(supabaseForFrom);
+
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -176,7 +192,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: Deno.env.get("RESEND_FROM") || "VDTS Notifications <noreply@vivekdoba.com>",
+          from: fromAddress,
           to: [ADMIN_EMAIL],
           subject: `🪷 New ${subjectLabel} — ${data.applicant_name}`,
           html: buildAdminEmailHtml(data),
@@ -199,6 +215,12 @@ serve(async (req) => {
         info_requested: "📋 Additional Information Needed — Vivek Doba Training Solutions",
       };
 
+      const supabaseForFrom2 = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+      const fromAddress2 = await getFromAddress(supabaseForFrom2);
+
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -206,7 +228,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: Deno.env.get("RESEND_FROM") || "Vivek Doba Training Solutions <noreply@vivekdoba.com>",
+          from: fromAddress2,
           to: [data.applicant_email],
           subject: subjectMap[data.status || "approved"],
           html: buildApplicantEmailHtml(data),
