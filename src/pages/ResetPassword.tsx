@@ -13,6 +13,7 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
   const [hasSession, setHasSession] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const forced = searchParams.get('forced') === '1';
