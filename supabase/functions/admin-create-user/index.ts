@@ -63,6 +63,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const {
       email, full_name, phone, role,
+      password = null,
       city = '', state = '', company = '', occupation = '', gender = '',
       course_id = null,
       admin_level = null,
@@ -109,11 +110,24 @@ Deno.serve(async (req) => {
       });
     }
 
-    const tempPassword = randomPassword();
+    const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%&*!?_\-+=]).{12,}$/;
+    let adminProvidedPassword = false;
+    let finalPassword: string;
+    if (password && typeof password === 'string') {
+      if (!PASSWORD_REGEX.test(password)) {
+        return new Response(JSON.stringify({ error: 'Password must be min 12 chars with 1 uppercase, 1 number, and 1 special character (@#$%&*!?_-+=)' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      finalPassword = password;
+      adminProvidedPassword = true;
+    } else {
+      finalPassword = randomPassword();
+    }
 
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email,
-      password: tempPassword,
+      password: finalPassword,
       email_confirm: true,
       user_metadata: { full_name, phone, city, state, company, occupation, role },
     });
@@ -152,7 +166,8 @@ Deno.serve(async (req) => {
       success: true,
       user_id: newUserId,
       email,
-      temp_password: tempPassword,
+      temp_password: adminProvidedPassword ? null : finalPassword,
+      password_set_by_admin: adminProvidedPassword,
       admin_level: resolvedLevel,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

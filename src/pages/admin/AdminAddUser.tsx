@@ -316,6 +316,7 @@ const AdminAddUser = () => {
                     </div>
                   </>
                 )}
+                <div><span className="text-muted-foreground">Password:</span> <span className="ml-2 font-mono">●●●●●●●● <span className="text-xs text-muted-foreground">(set by admin)</span></span></div>
                 <div><span className="text-muted-foreground">Welcome Email:</span> <span className="ml-2">{form.send_welcome ? 'Yes' : 'No'}</span></div>
               </div>
             </div>
