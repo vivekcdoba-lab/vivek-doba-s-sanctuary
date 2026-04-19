@@ -245,6 +245,15 @@ const ApplicationsPage = () => {
                   {expanded === sub.id ? <ChevronUp className="w-5 h-5 text-muted-foreground flex-shrink-0" /> : <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
                 </div>
               </button>
+              <div className="px-4 pb-2 flex justify-end -mt-2">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDelete(sub.id, sub.full_name); }}
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-destructive hover:bg-destructive/10 transition-colors"
+                  title="Delete application"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> Delete
+                </button>
+              </div>
 
               {expanded === sub.id && (
                 <div className="border-t border-border p-4 space-y-4">
