@@ -97,10 +97,8 @@ async function sendCredentialsEmail(opts: {
     console.error('[email] RESEND_API_KEY not configured');
     return { ok: false, error: 'RESEND_API_KEY not configured' };
   }
-  // Allow overriding sender via env so the user can switch to a verified domain
-  // (e.g. RESEND_FROM="VDTS <noreply@vivekdoba.com>") without a code change.
-  // Default sandbox sender only delivers to the Resend account owner address.
-  const from = Deno.env.get('RESEND_FROM') || 'VDTS <onboarding@resend.dev>';
+  // Sender uses the verified vivekdoba.com domain. Override via RESEND_FROM env if needed.
+  const from = Deno.env.get('RESEND_FROM') || 'VDTS <noreply@vivekdoba.com>';
   try {
     const html = buildEmail(opts);
     const subject = opts.isTemp
