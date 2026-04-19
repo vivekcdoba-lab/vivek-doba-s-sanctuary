@@ -2464,6 +2464,8 @@ export type Database = {
       profiles: {
         Row: {
           access_end_date: string | null
+          admin_level: string | null
+          admin_permissions: Json
           avatar_url: string | null
           blood_group: string | null
           city: string | null
@@ -2494,6 +2496,8 @@ export type Database = {
         }
         Insert: {
           access_end_date?: string | null
+          admin_level?: string | null
+          admin_permissions?: Json
           avatar_url?: string | null
           blood_group?: string | null
           city?: string | null
@@ -2524,6 +2528,8 @@ export type Database = {
         }
         Update: {
           access_end_date?: string | null
+          admin_level?: string | null
+          admin_permissions?: Json
           avatar_url?: string | null
           blood_group?: string | null
           city?: string | null
@@ -4202,6 +4208,7 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       submission_status: "pending" | "approved" | "rejected" | "info_requested"
