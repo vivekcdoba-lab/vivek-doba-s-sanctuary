@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
-import { useAllProfiles } from '@/hooks/useSeekerProfiles';
-import { Search, Download, Mail, Eye, Edit, Filter } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { useAllProfiles, type SeekerProfile } from '@/hooks/useSeekerProfiles';
+import { Search, Download, Eye, Edit, Trash2, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,16 +8,61 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+
+type EditForm = {
+  full_name: string;
+  phone: string;
+  city: string;
+  state: string;
+  company: string;
+  occupation: string;
+  role: 'seeker' | 'coach' | 'admin';
+  access_end_date: string;
+};
+
+const emptyForm: EditForm = {
+  full_name: '', phone: '', city: '', state: '', company: '', occupation: '', role: 'seeker', access_end_date: '',
+};
 
 const AdminSearchUsers = () => {
   const { data: profiles = [], isLoading } = useAllProfiles();
+  const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [cityFilter, setCityFilter] = useState('all');
+
+  const [editingUser, setEditingUser] = useState<SeekerProfile | null>(null);
+  const [form, setForm] = useState<EditForm>(emptyForm);
+  const [saving, setSaving] = useState(false);
+
+  const [deleteUser, setDeleteUser] = useState<SeekerProfile | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (editingUser) {
+      setForm({
+        full_name: editingUser.full_name || '',
+        phone: editingUser.phone || '',
+        city: editingUser.city || '',
+        state: editingUser.state || '',
+        company: editingUser.company || '',
+        occupation: editingUser.occupation || '',
+        role: (editingUser.role as 'seeker' | 'coach' | 'admin') || 'seeker',
+        access_end_date: editingUser.access_end_date || '',
+      });
+    }
+  }, [editingUser]);
 
   const cities = useMemo(() => {
     const set = new Set(profiles.map(p => p.city).filter(Boolean) as string[]);
@@ -52,6 +97,56 @@ const AdminSearchUsers = () => {
     if (role === 'admin') return 'destructive' as const;
     if (role === 'coach') return 'default' as const;
     return 'secondary' as const;
+  };
+
+  const handleSave = async () => {
+    if (!editingUser) return;
+    if (!form.full_name.trim()) {
+      toast.error('Name is required');
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        full_name: form.full_name.trim(),
+        phone: form.phone || null,
+        city: form.city || null,
+        state: form.state || null,
+        company: form.company || null,
+        occupation: form.occupation || null,
+        role: form.role,
+        access_end_date: (form.role === 'admin' || form.role === 'coach') && form.access_end_date
+          ? form.access_end_date
+          : null,
+      })
+      .eq('id', editingUser.id);
+    setSaving(false);
+    if (error) {
+      toast.error(`Update failed: ${error.message}`);
+      return;
+    }
+    toast.success('User updated');
+    qc.invalidateQueries({ queryKey: ['all-profiles'] });
+    qc.invalidateQueries({ queryKey: ['seeker-profiles'] });
+    setEditingUser(null);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteUser) return;
+    setDeleting(true);
+    const { data, error } = await supabase.functions.invoke('delete-seeker', {
+      body: { target_user_id: deleteUser.user_id },
+    });
+    setDeleting(false);
+    if (error || (data as any)?.error) {
+      toast.error(`Delete failed: ${error?.message || (data as any)?.error}`);
+      return;
+    }
+    toast.success(`Deleted ${deleteUser.full_name}`);
+    qc.invalidateQueries({ queryKey: ['all-profiles'] });
+    qc.invalidateQueries({ queryKey: ['seeker-profiles'] });
+    setDeleteUser(null);
   };
 
   if (isLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -131,9 +226,19 @@ const AdminSearchUsers = () => {
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0"><Eye className="w-3.5 h-3.5" /></Button>
                         </Link>
                       )}
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => toast.info('Edit feature coming soon')}>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingUser(user)}>
                         <Edit className="w-3.5 h-3.5" />
                       </Button>
+                      {user.role === 'seeker' && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteUser(user)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -145,6 +250,101 @@ const AdminSearchUsers = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingUser} onOpenChange={(o) => !o && setEditingUser(null)}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>{editingUser?.email}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Full Name</Label>
+              <Input value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Phone</Label>
+                <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+              </div>
+              <div>
+                <Label>Role</Label>
+                <Select value={form.role} onValueChange={(v: 'seeker' | 'coach' | 'admin') => setForm({ ...form, role: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="seeker">Seeker</SelectItem>
+                    <SelectItem value="coach">Coach</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>City</Label>
+                <Input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+              </div>
+              <div>
+                <Label>State</Label>
+                <Input value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Company</Label>
+                <Input value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} />
+              </div>
+              <div>
+                <Label>Occupation</Label>
+                <Input value={form.occupation} onChange={e => setForm({ ...form, occupation: e.target.value })} />
+              </div>
+            </div>
+            {(form.role === 'admin' || form.role === 'coach') && (
+              <div>
+                <Label>Access End Date <span className="text-muted-foreground text-xs">(optional — when access expires)</span></Label>
+                <Input
+                  type="date"
+                  value={form.access_end_date}
+                  onChange={e => setForm({ ...form, access_end_date: e.target.value })}
+                />
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingUser(null)} disabled={saving}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteUser} onOpenChange={(o) => !o && setDeleteUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {deleteUser?.full_name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this seeker's account and all associated data
+              (assessments, worksheets, sessions, messages). This action cannot be undone.
+              Only seeker accounts can be deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleDelete(); }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
