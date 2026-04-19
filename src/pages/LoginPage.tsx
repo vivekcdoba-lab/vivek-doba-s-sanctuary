@@ -64,12 +64,12 @@ const LoginPage = () => {
         return;
       }
       if (data.user) {
-        // Use metadata role as primary (always available), profile as secondary
-        const metadataRole = (data.user.user_metadata?.role as string) || 'seeker';
-
-        // Try fetching profile (incl. password flags) with a timeout
+        // SECURITY: Never use user_metadata.role for authorization — users can
+        // self-set it via supabase.auth.updateUser. Default to lowest privilege
+        // ('seeker') on fallback. The DB profile row (set by handle_new_user
+        // trigger and admin-create-user edge fn) is the only trusted source.
         let profile: any = null;
-        let role = metadataRole;
+        let role: string = 'seeker';
         let mustChange = false;
         let alreadyPrompted = false;
 

@@ -105,13 +105,17 @@ async function fetchProfile(userId: string, userEmail?: string, metadata?: any):
     const { data } = await Promise.race([profilePromise, timeoutPromise]) as any;
     return data as Profile | null;
   } catch {
-    console.warn('Profile fetch timed out, using metadata fallback');
+    // SECURITY: Never trust user_metadata.role — users can self-set it via
+    // supabase.auth.updateUser({ data: { role: 'admin' } }). Always default
+    // to the lowest-privilege role on fallback. RLS still protects data,
+    // but UI routes must not be elevated based on client-controllable data.
+    console.warn('Profile fetch timed out — defaulting to seeker role');
     return {
       id: userId,
       user_id: userId,
       email: userEmail || '',
       full_name: metadata?.full_name || userEmail || '',
-      role: metadata?.role || 'seeker',
+      role: 'seeker',
     } as Profile;
   }
 }
