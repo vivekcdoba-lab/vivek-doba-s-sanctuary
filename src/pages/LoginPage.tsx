@@ -33,6 +33,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [selectedRole, setSelectedRole] = useState<LoginRole>('seeker');
   const loggingInRef = useRef(false);
