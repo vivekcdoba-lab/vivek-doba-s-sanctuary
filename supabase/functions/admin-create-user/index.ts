@@ -93,31 +93,37 @@ async function sendCredentialsEmail(opts: {
   to: string; name: string; role: string; password: string; isTemp: boolean; loginUrl: string;
 }): Promise<{ ok: boolean; error?: string }> {
   const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-  if (!RESEND_API_KEY) return { ok: false, error: 'RESEND_API_KEY not configured' };
+  if (!RESEND_API_KEY) {
+    console.error('[email] RESEND_API_KEY not configured');
+    return { ok: false, error: 'RESEND_API_KEY not configured' };
+  }
+  // Allow overriding sender via env so the user can switch to a verified domain
+  // (e.g. RESEND_FROM="VDTS <noreply@vivekdoba.com>") without a code change.
+  // Default sandbox sender only delivers to the Resend account owner address.
+  const from = Deno.env.get('RESEND_FROM') || 'VDTS <onboarding@resend.dev>';
   try {
     const html = buildEmail(opts);
     const subject = opts.isTemp
       ? 'Your VDTS account — temporary password inside'
       : 'Your VDTS account credentials';
+    console.log('[email] sending', { to: opts.to, from, subject, isTemp: opts.isTemp });
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: 'VDTS <onboarding@resend.dev>',
-        to: [opts.to],
-        subject,
-        html,
-      }),
+      body: JSON.stringify({ from, to: [opts.to], subject, html }),
     });
+    const bodyText = await res.text();
     if (!res.ok) {
-      const txt = await res.text();
-      return { ok: false, error: `Resend ${res.status}: ${txt.slice(0, 200)}` };
+      console.error('[email] resend failed', res.status, bodyText.slice(0, 500));
+      return { ok: false, error: `Resend ${res.status}: ${bodyText.slice(0, 200)}` };
     }
+    console.log('[email] resend ok', bodyText.slice(0, 200));
     return { ok: true };
   } catch (e) {
+    console.error('[email] exception', (e as Error).message);
     return { ok: false, error: (e as Error).message };
   }
 }
