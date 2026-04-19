@@ -84,6 +84,16 @@ const ResetPassword = () => {
 
     setLoading(true);
     try {
+      // Pre-flight: ensure recovery session is still alive
+      const { data: sessionCheck } = await supabase.auth.getSession();
+      if (!sessionCheck?.session) {
+        const msg = 'Your reset link has expired. Please request a new password reset email.';
+        setErrorMsg(msg);
+        toast.error(msg);
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
         console.error('[reset-password] updateUser failed', error);
