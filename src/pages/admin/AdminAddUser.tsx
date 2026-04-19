@@ -50,13 +50,18 @@ const AdminAddUser = () => {
   const togglePerm = (key: PermissionKey) =>
     setForm(prev => ({ ...prev, admin_permissions: { ...prev.admin_permissions, [key]: !prev.admin_permissions[key] } }));
 
+  const isSeeker = form.role === 'seeker';
   const passwordError = form.password ? validatePassword(form.password) : null;
   const passwordsMatch = form.password === form.confirm_password;
 
   const canNext = () => {
     if (step === 0) {
-      return !!(form.role && form.full_name && form.email && form.phone &&
-        form.password && !passwordError && passwordsMatch);
+      const baseOk = !!(form.role && form.full_name && form.email && form.phone);
+      if (!baseOk) return false;
+      // Seekers don't set a password — it's auto-generated and emailed
+      if (isSeeker) return true;
+      // Admins/coaches must type a valid 12-char password + matching confirm
+      return !!(form.password && !passwordError && passwordsMatch);
     }
     return true;
   };
@@ -66,9 +71,11 @@ const AdminAddUser = () => {
       toast.error('Please fill required fields');
       return;
     }
-    const pErr = validatePassword(form.password);
-    if (pErr) { toast.error(pErr); return; }
-    if (form.password !== form.confirm_password) { toast.error('Passwords do not match'); return; }
+    if (!isSeeker) {
+      const pErr = validatePassword(form.password);
+      if (pErr) { toast.error(pErr); return; }
+      if (form.password !== form.confirm_password) { toast.error('Passwords do not match'); return; }
+    }
     setLoading(true);
     try {
       const isAdmin = form.role === 'admin';
@@ -77,14 +84,15 @@ const AdminAddUser = () => {
           email: form.email,
           full_name: form.full_name,
           phone: form.phone,
-          password: form.password,
+          // Seeker: server ignores any password and auto-generates a temp one
+          password: isSeeker ? null : form.password,
           role: form.role,
           city: form.city,
           state: form.state,
           company: form.company,
           occupation: form.occupation,
           gender: form.gender,
-          course_id: form.role === 'seeker' && form.course_id ? form.course_id : null,
+          course_id: isSeeker && form.course_id ? form.course_id : null,
           admin_level: isAdmin ? form.admin_level : null,
           admin_permissions: isAdmin
             ? (form.admin_level === 'super_admin' ? allPermissionsTrue() : form.admin_permissions)
@@ -96,14 +104,17 @@ const AdminAddUser = () => {
         setLoading(false);
         return;
       }
-      const adminSet = (data as any)?.password_set_by_admin;
-      const tempPwd = (data as any)?.temp_password;
-      toast.success(
-        adminSet
-          ? `${form.role.toUpperCase()} "${form.full_name}" created with the password you set.`
-          : `${form.role.toUpperCase()} "${form.full_name}" created. Temp password: ${tempPwd}`,
-        { duration: 15000 }
-      );
+      const emailSent = (data as any)?.email_sent;
+      const emailError = (data as any)?.email_error;
+      const isTemp = (data as any)?.is_temp_password;
+      const baseMsg = `${form.role.toUpperCase()} "${form.full_name}" created.`;
+      const detail = emailSent
+        ? (isTemp
+            ? `Temporary password emailed to ${form.email}. They'll set their own on first login.`
+            : `Login credentials emailed to ${form.email}.`)
+        : `⚠️ Email failed (${emailError || 'unknown'}). Please share credentials manually.`;
+      if (emailSent) toast.success(`${baseMsg} ${detail}`, { duration: 12000 });
+      else toast.warning(`${baseMsg} ${detail}`, { duration: 18000 });
       setForm({ role: 'seeker', full_name: '', email: '', phone: '', password: '', confirm_password: '', city: '', state: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true, admin_level: 'admin', admin_permissions: {} });
       setStep(0);
     } catch (e: any) {
@@ -166,21 +177,32 @@ const AdminAddUser = () => {
                 <Label>Phone *</Label>
                 <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="+91 9876543210" />
               </div>
-              <div className="space-y-2">
-                <Label>Password *</Label>
-                <Input type="password" value={form.password} onChange={e => update('password', e.target.value)} placeholder="Set login password" />
-                <p className="text-xs text-muted-foreground">{PASSWORD_HELP}</p>
-                {form.password && passwordError && (
-                  <p className="text-xs text-destructive">{passwordError}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label>Confirm Password *</Label>
-                <Input type="password" value={form.confirm_password} onChange={e => update('confirm_password', e.target.value)} placeholder="Re-enter password" />
-                {form.confirm_password && !passwordsMatch && (
-                  <p className="text-xs text-destructive">Passwords do not match</p>
-                )}
-              </div>
+              {isSeeker ? (
+                <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-foreground">
+                  🔐 A <strong>temporary password</strong> will be generated and emailed to the seeker. They will be required to set their own password on first login.
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label>Password *</Label>
+                    <Input type="password" value={form.password} onChange={e => update('password', e.target.value)} placeholder="Set login password" />
+                    <p className="text-xs text-muted-foreground">{PASSWORD_HELP}</p>
+                    {form.password && passwordError && (
+                      <p className="text-xs text-destructive">{passwordError}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Confirm Password *</Label>
+                    <Input type="password" value={form.confirm_password} onChange={e => update('confirm_password', e.target.value)} placeholder="Re-enter password" />
+                    {form.confirm_password && !passwordsMatch && (
+                      <p className="text-xs text-destructive">Passwords do not match</p>
+                    )}
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                    📧 Login credentials (email + this password) will be emailed to the {form.role}. They can optionally change it on first login.
+                  </div>
+                </>
+              )}
             </>
           )}
 
@@ -316,8 +338,15 @@ const AdminAddUser = () => {
                     </div>
                   </>
                 )}
-                <div><span className="text-muted-foreground">Password:</span> <span className="ml-2 font-mono">●●●●●●●● <span className="text-xs text-muted-foreground">(set by admin)</span></span></div>
-                <div><span className="text-muted-foreground">Welcome Email:</span> <span className="ml-2">{form.send_welcome ? 'Yes' : 'No'}</span></div>
+                <div>
+                  <span className="text-muted-foreground">Password:</span>
+                  <span className="ml-2 font-mono">
+                    {isSeeker
+                      ? <span className="text-xs text-muted-foreground italic">auto-generated & emailed</span>
+                      : <>●●●●●●●● <span className="text-xs text-muted-foreground">(set by admin)</span></>}
+                  </span>
+                </div>
+                <div><span className="text-muted-foreground">Credentials Email:</span> <span className="ml-2">Yes — sent to {form.email}</span></div>
               </div>
             </div>
           )}

@@ -67,17 +67,19 @@ const LoginPage = () => {
         // Use metadata role as primary (always available), profile as secondary
         const metadataRole = (data.user.user_metadata?.role as string) || 'seeker';
 
-        // Try fetching profile with a timeout
-        let profile = null;
+        // Try fetching profile (incl. password flags) with a timeout
+        let profile: any = null;
         let role = metadataRole;
-        
+        let mustChange = false;
+        let alreadyPrompted = false;
+
         const profilePromise = supabase
           .from('profiles')
-          .select('id, user_id, email, full_name, role')
+          .select('id, user_id, email, full_name, role, must_change_password, password_change_prompted')
           .eq('user_id', data.user.id)
           .maybeSingle();
-        
-        const timeoutPromise = new Promise((_, reject) => 
+
+        const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('timeout')), 3000)
         );
 
@@ -86,6 +88,8 @@ const LoginPage = () => {
           if (profileData) {
             profile = profileData;
             role = profileData.role || role;
+            mustChange = !!profileData.must_change_password;
+            alreadyPrompted = !!profileData.password_change_prompted;
           }
         } catch {
           console.warn('Profile fetch timed out, using metadata role:', metadataRole);
@@ -116,16 +120,33 @@ const LoginPage = () => {
         toast.success(`Welcome! 🙏`);
         setRedirecting(true);
 
-        // Route based on role — admin can access all, so use selected tab
-        if (role === 'admin') {
-          // Admin gets routed based on which tab they selected
-          if (selectedRole === 'seeker') {
-            navigate('/seeker/home');
-          } else if (selectedRole === 'coach') {
-            navigate('/coaching');
-          } else {
-            navigate('/dashboard');
+        // 1) Forced password change (seekers with auto-generated temp password)
+        if (mustChange) {
+          navigate('/reset-password?forced=1', { replace: true });
+          return;
+        }
+
+        // 2) Optional one-time prompt for admins/coaches on first login
+        if ((role === 'admin' || role === 'coach') && !alreadyPrompted) {
+          // Mark as prompted so we don't ask again — fire-and-forget
+          supabase.from('profiles').update({ password_change_prompted: true })
+            .eq('user_id', data.user.id).then(() => {});
+          const wantsChange = window.confirm(
+            'Your account was set up with an initial password.\n\n' +
+            'Would you like to change it now? (Recommended)\n\n' +
+            'OK = Change now    Cancel = Keep current password'
+          );
+          if (wantsChange) {
+            navigate('/reset-password?forced=1', { replace: true });
+            return;
           }
+        }
+
+        // 3) Normal route — admin can access all, so use selected tab
+        if (role === 'admin') {
+          if (selectedRole === 'seeker') navigate('/seeker/home');
+          else if (selectedRole === 'coach') navigate('/coaching');
+          else navigate('/dashboard');
         } else if (role === 'coach') {
           navigate('/coaching');
         } else {
