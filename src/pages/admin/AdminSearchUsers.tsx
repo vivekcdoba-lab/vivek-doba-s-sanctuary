@@ -116,9 +116,7 @@ const AdminSearchUsers = () => {
         company: form.company || null,
         occupation: form.occupation || null,
         role: form.role,
-        access_end_date: (form.role === 'admin' || form.role === 'coach') && form.access_end_date
-          ? form.access_end_date
-          : null,
+        access_end_date: form.access_end_date || null,
       })
       .eq('id', editingUser.id);
     setSaving(false);
