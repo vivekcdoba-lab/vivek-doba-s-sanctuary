@@ -1,48 +1,49 @@
 
-User wants three distinct flows:
+The user wants me to test the admin creation flow end-to-end. This requires browser automation to:
+1. Log in as an existing admin
+2. Navigate to /admin/add-user
+3. Create a new admin with a custom 12-char password
+4. Log out and log in as the new admin
+5. Verify the optional password change prompt appears
 
-1. **Seeker creation** (by admin): Auto-generate temp password → email it to seeker → force password change on first login
-2. **Admin creation** (by admin): Admin types 12-char password → email both email+password to new admin → optional password change on first login
-3. **Coach creation** (by admin): Same as admin — admin types 12-char password → email credentials → optional password change
-
-Login flow needs `must_change_password` enforcement only for seekers; admins/coaches see a one-time prompt they can dismiss.
+This is a testing task that needs browser tools (which are available in default mode). I'm in plan mode (read-only), so I'll present this plan for approval.
 
 ## Plan
 
-### 1. DB migration
-Add to `profiles`:
-- `must_change_password boolean default false` — true=forced (seekers), used to redirect to /reset-password until cleared
-- `password_change_prompted boolean default false` — track if optional prompt was shown to admin/coach (so we don't nag)
+### Test scenario
+End-to-end verification of the new admin-creation + password flow built in the previous turns.
 
-### 2. Edge function `admin-create-user/index.ts` — branch by role
-- **role=seeker**: ignore any `password` from client; always auto-generate 12-char password (matching the regex). Set `must_change_password=true`. Send welcome email with temp password + login link via Resend.
-- **role=admin / coach**: require admin-typed password (already validated 12-char). Set `must_change_password=false`, but `password_change_prompted=false` so login can offer optional change. Send credentials email (email + password + login link).
-- All emails via existing `RESEND_API_KEY`. Single helper `sendCredentialsEmail({to, name, role, password, isTemp})` with simple HTML template (VDTS branding, ॐ, "Begin your sacred session" copy).
-- Response no longer returns `temp_password` to admin UI (now delivered by email). Toast becomes "User created — credentials emailed to {email}".
+### Steps
+1. **Login as existing admin** — use `vivek@gmail.com` test account (from memory/test-credentials)
+2. **Navigate to `/admin/add-user`** — verify page loads
+3. **Fill Step 1** with role=Admin:
+   - Full name: `Test Admin E2E`
+   - Email: `testadmin-e2e-{timestamp}@example.com` (unique to avoid duplicate-check 409)
+   - Phone: unique 10-digit number
+   - Password: `TestAdmin@2026!` (12+ chars, uppercase, number, special)
+   - Confirm password: same
+   - Verify "Next" enables only when password validates + matches
+4. **Step 2** — pick admin level (Admin) + a couple of permissions
+5. **Step 3** — review screen shows masked password
+6. **Submit** — verify success toast "credentials emailed"
+7. **Verify in DB** via `supabase--read_query`:
+   - profile row exists with role=admin, admin_level set, must_change_password=false, password_change_prompted=false
+8. **Check edge function logs** — confirm Resend email send succeeded (or surface error)
+9. **Logout** current admin
+10. **Login as new admin** with the password just set
+11. **Verify the one-time "Change password?" dialog appears** with "Change Now" / "Keep Current" buttons
+12. **Click "Keep Current"** — verify dialog closes, lands on admin dashboard, and DB now shows `password_change_prompted=true`
+13. **Cleanup** — delete the test admin profile + auth user via SQL/edge function so we don't pollute the DB
 
-### 3. `AdminAddUser.tsx`
-- When role=seeker: hide the Password / Confirm Password fields entirely; show info banner "A temporary password will be emailed to the seeker. They'll set their own on first login."
-- When role=admin/coach: keep password fields (already 12-char enforced). Show note "Login credentials will be emailed to the user."
-- Step 3 review reflects which path was taken.
+### What I'll report
+- Pass/fail for each step with screenshots at key moments (Step 1 form, success toast, login prompt dialog, dashboard)
+- Any console errors or failed network calls
+- Email-send status from edge function logs
+- Final DB state confirmation
 
-### 4. `LoginPage.tsx` + new logic
-After successful login, fetch `must_change_password` + `password_change_prompted`:
-- If `must_change_password === true` → redirect to `/reset-password?forced=1`. /reset-password hides "back" link, requires new password, then on success calls `update profiles set must_change_password=false`.
-- Else if role in (admin, coach) AND `password_change_prompted === false` → show one-time dialog: "Change your password now? (Recommended)" with "Change Now" / "Keep Current" buttons. Either choice sets `password_change_prompted=true`. "Change Now" routes to /reset-password.
+### What I will NOT do without asking
+- Will not test the seeker auto-temp-password flow in the same run (separate scenario, can do after)
+- Will not delete any pre-existing user
 
-### 5. `ResetPassword.tsx` enhancement
-- Read `?forced=1` query param. When forced: hide "Back to login", disable closing/skipping, show banner "You must set a new password to continue."
-- After successful `auth.updateUser({password})`, also update `profiles.must_change_password=false` for current user.
-
-### 6. New helper file
-`src/lib/firstLoginFlow.ts` — exports `checkFirstLoginAction(profile)` returning `'forced' | 'prompt' | 'none'` so login + AuthGuard share logic.
-
-### Files
-- New: `supabase/migrations/<ts>.sql` (2 columns + default)
-- New: `src/lib/firstLoginFlow.ts`
-- Edit: `supabase/functions/admin-create-user/index.ts` (role branch + email send + flag set)
-- Edit: `src/pages/admin/AdminAddUser.tsx` (conditional password block, updated toast)
-- Edit: `src/pages/LoginPage.tsx` (post-login flag check, forced redirect, optional prompt dialog)
-- Edit: `src/pages/ResetPassword.tsx` (forced mode + clear flag)
-
-Nothing existing removed. Public `/register` flow untouched (still goes through approval queue — no password set there).
+### If something fails
+I'll stop, report the exact failure (screenshot + log excerpt), and propose a fix in a follow-up plan rather than silently retrying.
