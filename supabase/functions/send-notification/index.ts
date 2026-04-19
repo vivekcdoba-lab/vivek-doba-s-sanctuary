@@ -1,16 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const ALLOWED_ORIGINS = [
-  "https://id-preview--9f404a7e-486e-4ce4-9e52-48e654e53aad.lovable.app",
-  "https://vivekdoba.com",
-  "https://www.vivekdoba.com",
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowed = origin && ALLOWED_ORIGINS.some(o => origin.startsWith(o)) ? origin : ALLOWED_ORIGINS[0];
+function getCorsHeaders(_origin: string | null) {
+  // Allow all origins — preview, custom domains, and lovable.app subdomains all need access.
   return {
-    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   };
 }
@@ -182,7 +176,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "VDTS Notifications <noreply@vivekdoba.com>",
+          from: Deno.env.get("RESEND_FROM") || "VDTS Notifications <noreply@vivekdoba.com>",
           to: [ADMIN_EMAIL],
           subject: `🪷 New ${subjectLabel} — ${data.applicant_name}`,
           html: buildAdminEmailHtml(data),
@@ -212,7 +206,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Vivek Doba Training Solutions <noreply@vivekdoba.com>",
+          from: Deno.env.get("RESEND_FROM") || "Vivek Doba Training Solutions <noreply@vivekdoba.com>",
           to: [data.applicant_email],
           subject: subjectMap[data.status || "approved"],
           html: buildApplicantEmailHtml(data),
