@@ -149,6 +149,99 @@ const Index = () => (
       </div>
     </section>
 
+    {/* SEO: Dharma-Based Coaching */}
+    <section className="bg-muted/30 py-16 sm:py-20 border-t border-border">
+      <div className="max-w-4xl mx-auto px-4">
+        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 text-center">
+          Dharma-Based Coaching for Conscious Leaders
+        </h2>
+        <p className="text-muted-foreground leading-relaxed mb-4">
+          Vivek Doba is a spiritual business coach for entrepreneurs, professionals and purpose-seekers who want
+          measurable results without losing themselves in the process. His dharma-based coaching practice blends ancient
+          Indian wisdom — Dharma, Artha, Kama and Moksha — with modern frameworks for mindset and business growth.
+        </p>
+        <p className="text-muted-foreground leading-relaxed mb-4">
+          Whether you're searching for a life coach for purpose, a business coach for entrepreneurs, or guidance in
+          manifestation coaching and meditation for success, the work begins in the same place: inner alignment. When
+          identity, intention and action move together, growth stops being a struggle and becomes a natural by-product of
+          who you are.
+        </p>
+        <p className="text-muted-foreground leading-relaxed">
+          Clients build a purpose-driven business, recover their energy through meditation for entrepreneurs, and apply
+          the law of attraction with disciplined sankalp practice. The outcome is conscious leadership — calmer
+          decisions, healthier teams and a life that feels meaningfully aligned with what matters most.
+        </p>
+      </div>
+    </section>
+
+    {/* SEO: What We Offer */}
+    <section className="max-w-7xl mx-auto px-4 py-16 sm:py-20">
+      <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-3">What We Offer</h2>
+      <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+        Specialized coaching pathways — pick the entry point that matches where you are today.
+      </p>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {[
+          { to: "/life-coaching", emoji: "🌅", title: "Life Coaching", desc: "Find purpose, clarity and inner alignment for a meaningful life." },
+          { to: "/business-coaching", emoji: "📈", title: "Business Coaching", desc: "Mindset and strategy for entrepreneurs building purpose-driven businesses." },
+          { to: "/manifestation", emoji: "✨", title: "Manifestation", desc: "Law of attraction coaching grounded in sankalp and disciplined action." },
+          { to: "/meditation", emoji: "🧘", title: "Meditation", desc: "A practical meditation practice for success, focus and emotional balance." },
+        ].map((c) => (
+          <Link
+            key={c.to}
+            to={c.to}
+            className="block bg-card rounded-2xl border border-border p-6 hover:shadow-lg hover:scale-[1.02] transition-all"
+          >
+            <div className="text-3xl mb-3">{c.emoji}</div>
+            <h3 className="text-lg font-bold text-foreground mb-2">{c.title}</h3>
+            <p className="text-sm text-muted-foreground">{c.desc}</p>
+          </Link>
+        ))}
+      </div>
+    </section>
+
+    {/* SEO: Why Choose */}
+    <section className="bg-muted/30 py-16 sm:py-20 border-t border-border">
+      <div className="max-w-5xl mx-auto px-4">
+        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-10 text-center">
+          Why Choose Dharma-Based Coaching
+        </h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { h: "Ancient Wisdom, Modern Tools", p: "Vedic frameworks (Purushaarthas, sankalp, dharma) translated into worksheets, assessments and weekly reviews." },
+            { h: "Built for Entrepreneurs", p: "Designed for high-functioning founders and leaders who need both inner depth and hard business outcomes." },
+            { h: "Measurable Transformation", p: "A six-stage journey with check-ins, progress charts and milestone certifications, not vague promises." },
+          ].map((b) => (
+            <div key={b.h} className="bg-card rounded-2xl border border-border p-6">
+              <h3 className="text-lg font-bold text-foreground mb-2">{b.h}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{b.p}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* SEO: FAQ */}
+    <section className="max-w-3xl mx-auto px-4 py-16 sm:py-20">
+      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-8 text-center">
+        Frequently Asked Questions
+      </h2>
+      <div className="space-y-6">
+        {[
+          { q: "What is dharma-based coaching?", a: "Dharma-based coaching helps you align work and life with your authentic purpose using the four Purushaarthas — Dharma, Artha, Kama and Moksha — as a practical framework." },
+          { q: "Who is this spiritual business coaching for?", a: "Entrepreneurs, professionals and leaders who want both inner clarity and measurable business growth." },
+          { q: "Does manifestation coaching really work?", a: "Yes — when paired with disciplined daily action, sankalp setting and aligned identity work, not as a substitute for them." },
+          { q: "How does meditation help entrepreneurs?", a: "Meditation improves decision quality, emotional regulation and leadership presence, which compound into better business outcomes." },
+          { q: "How do I get started?", a: "Book a free 45-minute discovery call, register for a one-day workshop, or apply for the flagship Life's Golden Triangle program." },
+        ].map((f) => (
+          <div key={f.q} className="bg-card rounded-xl border border-border p-5">
+            <h3 className="font-semibold text-foreground mb-2">{f.q}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
     {/* Footer */}
     <footer className="bg-muted/50 border-t border-border py-10">
       <div className="max-w-4xl mx-auto px-4 text-center">
