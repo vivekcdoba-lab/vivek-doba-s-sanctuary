@@ -1,60 +1,45 @@
 
-User wants Level (Super Admin / Admin) and Permissions (granular flags) to be:
-1. Settable when creating an admin via `/admin/add-user`
-2. Editable on the existing `/admin/admins` page (currently read-only, with hardcoded "Super Admin" for first row and "Full Access" badge)
+User wants the admin to set a custom password (instead of auto-generated temp password) when creating users via `/admin/add-user`, AND apply the same 12-character password rule that's already used on the public `/register` page.
 
-Currently `profiles.role` is just `'admin' | 'coach' | 'seeker'` — no level/permissions storage exists. Need DB columns + UI + edge function update.
+Current state:
+- `RegisterPage.tsx` already enforces: min 12 chars, 1 uppercase, 1 number, 1 special char `(@#$%&*!?_-+=)` ✓
+- `AdminAddUser.tsx` does NOT collect a password — edge function generates a random temp one
+- Edge function `admin-create-user/index.ts` always generates `temp_password`
 
 ## Plan
 
-### 1. DB migration — add admin level + permissions
-Add two nullable columns on `profiles` (only used when role='admin'):
-- `admin_level text` — values: `'super_admin' | 'admin'` (default `'admin'`)
-- `admin_permissions jsonb` — default `{}`, stores boolean flags
+### 1. Shared password validator — `src/lib/passwordValidation.ts` (new)
+Single source of truth so admin form and register page stay in sync.
+```ts
+export const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%&*!?_\-+=]).{12,}$/;
+export const PASSWORD_HELP = 'Min 12 chars, 1 uppercase, 1 number, 1 special character (@#$%&*!?_-+=)';
+export function validatePassword(pwd: string): string | null { /* returns error message or null */ }
+```
 
-Permission keys (8 modules, on/off):
-`manage_users, manage_coaches, manage_seekers, manage_courses, manage_payments, manage_content, view_analytics, manage_settings`
+### 2. `RegisterPage.tsx` — refactor to use shared validator
+Replace inline regex with import from new lib. Same UX, same rules. (Keeps "only add and enhance" — no behavior change, just dedup.)
 
-Super Admin implicitly has all permissions (UI shows all-on, disabled).
+### 3. `AdminAddUser.tsx` — add password fields in Step 1
+Add two new inputs after Phone:
+- **Password \*** (type=password) with helper text showing the rule
+- **Confirm Password \*** (type=password)
 
-RLS: Only admins can update these columns. Add a trigger `prevent_admin_level_escalation` — non-super-admin admins cannot set `admin_level='super_admin'` or modify another admin's level/permissions. Only super_admins can promote/demote other admins. Self-demotion of last super_admin blocked.
+Update form state with `password` + `confirm_password`. Update `canNext()` for step 0 to also require password to pass `validatePassword` and match confirm. Show inline error helper.
 
-### 2. Edge function — `admin-create-user/index.ts`
-Accept new optional body fields: `admin_level`, `admin_permissions`.
-- Only allow these when `role === 'admin'`.
-- Verify caller is `super_admin` if `admin_level === 'super_admin'` requested; otherwise force `'admin'`.
-- Persist to profiles in the existing UPDATE call.
+Pass `password` to edge function. Update Step 3 review to show "Password: ●●●●●●●● (set by admin)".
 
-### 3. `AdminAddUser.tsx` — wizard step 2 additions (when role=admin)
-Show a conditional block:
-- **Admin Level** select: Admin / Super Admin (Super Admin option disabled if caller isn't super_admin — read caller's level via `useAuthStore` profile + a quick fetch)
-- **Permissions** — 8 checkboxes in a 2-col grid, with "Select all" / "Clear all" helpers. Hidden/all-checked-disabled when level=super_admin.
-Send to edge function. Review step (3) shows chosen level + permission count.
+### 4. Edge function `supabase/functions/admin-create-user/index.ts`
+- Accept optional `password` field in body
+- If provided: server-side validate against same regex (defense-in-depth) — reject 400 if invalid
+- Use provided password instead of generating one
+- Response: if admin set password, return `{ password_set_by_admin: true }` instead of `temp_password`; otherwise keep current behavior (fallback for any other caller)
 
-### 4. `AdminAdmins.tsx` — make rows editable
-- Remove the hardcoded `idx === 0 ? 'Super Admin'` heuristic; read real `admin_level` from profile.
-- Replace static "Full Access" badge with a count: e.g. "5 of 8" or "All" for super admins.
-- Add an **Edit** action (pencil icon) per row → opens a Dialog:
-  - Level select (Admin / Super Admin) — disabled unless current user is super_admin
-  - 8 permission checkboxes — disabled if level=super_admin (auto all)
-  - Save → directly `supabase.from('profiles').update({ admin_level, admin_permissions }).eq('id', admin.id)` (RLS + trigger guard the rest)
-  - Toast on success/error; refresh via existing `useAllProfiles` invalidation
-- Update the 3 stat cards: Super Admins count = real super_admin count; "Active" stays as-is.
-
-### 5. Type extension
-`useSeekerProfiles` / Profile type — add `admin_level?: string | null; admin_permissions?: Record<string, boolean> | null` (or rely on auto-generated supabase types after migration).
-
-### 6. Optional: permission gating helpers (future-proof, non-breaking)
-Add `src/lib/adminPermissions.ts` exporting:
-- `PERMISSION_KEYS` constant + labels
-- `hasPermission(profile, key): boolean` — returns true if super_admin OR flag true
-Not wired into route guards yet (keeps preservation policy — additive only). Available for future use.
+Frontend toast adapts: "User created with the password you set" vs the existing temp-password message.
 
 ### Files
-- `supabase/migrations/<new>.sql` — add 2 columns + RLS trigger
-- `supabase/functions/admin-create-user/index.ts` — accept level/permissions
-- `src/pages/admin/AdminAddUser.tsx` — conditional admin block in step 2
-- `src/pages/admin/AdminAdmins.tsx` — edit dialog + real data display
-- `src/lib/adminPermissions.ts` (new) — keys/labels/helper
+- **New**: `src/lib/passwordValidation.ts`
+- **Edit**: `src/pages/RegisterPage.tsx` (use shared validator)
+- **Edit**: `src/pages/admin/AdminAddUser.tsx` (add password + confirm fields, validation, send to edge fn)
+- **Edit**: `supabase/functions/admin-create-user/index.ts` (accept + validate password, skip auto-gen when provided)
 
-Nothing existing removed. Coach/seeker creation flow untouched.
+Nothing removed. Coach/Seeker creation via the same admin form gets the password field too — applies to all 3 roles as requested. Public `/register` keeps its existing flow (submission → admin approval) unchanged in behavior, just shares the validator.
