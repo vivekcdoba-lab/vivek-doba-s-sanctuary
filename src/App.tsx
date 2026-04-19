@@ -215,6 +215,11 @@ import NotFound from "./pages/NotFound";
 import HelpPage from "./pages/HelpPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import SeoLifeCoaching from "./pages/seo/LifeCoaching";
+import SeoBusinessCoaching from "./pages/seo/BusinessCoaching";
+import SeoManifestation from "./pages/seo/Manifestation";
+import SeoMeditation from "./pages/seo/Meditation";
+import SeoDharmaPhilosophy from "./pages/seo/DharmaPhilosophy";
 import WhatsAppSupportButton from "./components/WhatsAppSupportButton";
 
 const queryClient = new QueryClient();
@@ -238,6 +243,11 @@ const App = () => (
           <Route path="/help" element={<HelpPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/life-coaching" element={<SeoLifeCoaching />} />
+          <Route path="/business-coaching" element={<SeoBusinessCoaching />} />
+          <Route path="/manifestation" element={<SeoManifestation />} />
+          <Route path="/meditation" element={<SeoMeditation />} />
+          <Route path="/dharma-philosophy" element={<SeoDharmaPhilosophy />} />
 
           {/* Admin Routes */}
           <Route element={<AuthGuard requiredRole="admin"><AdminLayout /></AuthGuard>}>
