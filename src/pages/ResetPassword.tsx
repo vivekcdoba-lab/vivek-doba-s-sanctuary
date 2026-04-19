@@ -38,9 +38,11 @@ const ResetPassword = () => {
   }, [forced]);
 
   const handleReset = async () => {
+    setErrorMsg(null);
     const err = validatePassword(password);
-    if (err) { toast.error(err); return; }
+    if (err) { setErrorMsg(err); toast.error(err); return; }
     if (password !== confirm) {
+      setErrorMsg('Passwords do not match');
       toast.error('Passwords do not match');
       return;
     }
@@ -49,7 +51,12 @@ const ResetPassword = () => {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
-        toast.error(error.message);
+        console.error('[reset-password] updateUser failed', error);
+        // GoTrue often returns "New password should be different from the old password."
+        // or HIBP "Password is known to be compromised." — surface verbatim.
+        const msg = error.message || 'Failed to update password';
+        setErrorMsg(msg);
+        toast.error(msg);
         return;
       }
 
@@ -76,12 +83,24 @@ const ResetPassword = () => {
       } else {
         navigate('/login');
       }
-    } catch {
+    } catch (e) {
+      console.error('[reset-password] exception', e);
+      setErrorMsg('Failed to reset password');
       toast.error('Failed to reset password');
     } finally {
       setLoading(false);
     }
   };
+
+  const onPasswordChange = (v: string) => { setPassword(v); if (errorMsg) setErrorMsg(null); };
+  const onConfirmChange = (v: string) => { setConfirm(v); if (errorMsg) setErrorMsg(null); };
+
+  const ErrorBanner = () => errorMsg ? (
+    <div className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive flex items-start gap-2">
+      <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+      <span>{errorMsg}</span>
+    </div>
+  ) : null;
 
   // Forced first-login flow: use the live auth session, not the recovery token
   if (forced) {
