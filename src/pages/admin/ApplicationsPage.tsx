@@ -156,6 +156,17 @@ const ApplicationsPage = () => {
     fetchSubmissions();
   };
 
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`Delete application from ${name}? This cannot be undone.`)) return;
+    const { error } = await supabase.from('submissions').delete().eq('id', id);
+    if (error) {
+      toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: `🗑️ Application from ${name} deleted` });
+      setSubmissions(prev => prev.filter(s => s.id !== id));
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
