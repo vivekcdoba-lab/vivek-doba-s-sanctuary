@@ -2463,6 +2463,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          access_end_date: string | null
           avatar_url: string | null
           blood_group: string | null
           city: string | null
@@ -2492,6 +2493,7 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          access_end_date?: string | null
           avatar_url?: string | null
           blood_group?: string | null
           city?: string | null
@@ -2521,6 +2523,7 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          access_end_date?: string | null
           avatar_url?: string | null
           blood_group?: string | null
           city?: string | null
