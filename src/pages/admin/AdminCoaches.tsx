@@ -21,7 +21,11 @@ const AdminCoaches = () => {
   const coaches = allProfiles.filter(p => p.role === 'coach' || p.is_also_coach === true);
 
   const getAssignedSeekersCount = (coachId: string) => {
-    const seekerIds = new Set(sessions.filter(s => s.seeker_id).map(s => s.seeker_id));
+    const seekerIds = new Set(
+      sessions
+        .filter((s: any) => s.coach_id === coachId && s.seeker_id)
+        .map((s: any) => s.seeker_id)
+    );
     return seekerIds.size;
   };
 

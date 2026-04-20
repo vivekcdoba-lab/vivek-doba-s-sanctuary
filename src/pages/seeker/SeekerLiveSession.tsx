@@ -42,7 +42,7 @@ const SeekerLiveSession = () => {
         .select('*')
         .eq('seeker_id', profile.id)
         .gte('date', today)
-        .in('status', ['scheduled', 'confirmed', 'in_progress'])
+        .in('status', ['scheduled', 'in_progress'])
         .order('date', { ascending: true })
         .order('start_time', { ascending: true })
         .limit(10);
