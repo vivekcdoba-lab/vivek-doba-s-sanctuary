@@ -206,17 +206,20 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Duplicate check
-    const { data: dup } = await admin.rpc('check_profile_duplicate', { _email: email, _phone: phone });
-    if (dup === 'email') {
-      return new Response(JSON.stringify({ error: 'Email already registered' }), {
-        status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    if (dup === 'phone') {
-      return new Response(JSON.stringify({ error: 'Phone already in use' }), {
-        status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // Duplicate check — only enforced for seekers.
+    // Admin/coach can reuse email/phone already present in profiles (e.g. existing seeker promoted).
+    if (role === 'seeker') {
+      const { data: dup } = await admin.rpc('check_profile_duplicate', { _email: email, _phone: phone });
+      if (dup === 'email') {
+        return new Response(JSON.stringify({ error: 'Email already registered' }), {
+          status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (dup === 'phone') {
+        return new Response(JSON.stringify({ error: 'Phone already in use' }), {
+          status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // Decide password by role:
