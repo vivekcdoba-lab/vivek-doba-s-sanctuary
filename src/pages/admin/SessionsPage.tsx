@@ -75,6 +75,13 @@ const SessionsPage = () => {
     fetchTemplates();
   }, []);
 
+  // Auto-select coach if exactly one exists
+  useEffect(() => {
+    if (coaches.length === 1 && !newSession.coach_id) {
+      setNewSession(p => ({ ...p, coach_id: coaches[0].id }));
+    }
+  }, [coaches, newSession.coach_id]);
+
   useEffect(() => {
     if (timerRunning) {
       const interval = setInterval(() => setLiveTimer(t => t + 1), 1000);
