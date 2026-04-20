@@ -119,6 +119,7 @@ async function sendCredentialsEmail(opts: {
       ? 'Your VDTS account — temporary password inside'
       : 'Your VDTS account credentials';
     console.log('[email] sending', { to: opts.to, from, subject, isTemp: opts.isTemp });
+    console.log('[email] field presence', { name: !!opts.name, role: !!opts.role, password: !!opts.password });
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
