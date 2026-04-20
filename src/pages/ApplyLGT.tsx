@@ -97,6 +97,7 @@ const ApplyLGT = () => {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ program: true, A: true });
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [missingFields, setMissingFields] = useState<Set<string>>(new Set());
+  const programRef = useRef<HTMLDivElement>(null);
 
   const [f, setF] = useState<Record<string, any>>({
     programId: '', fullName: '', preferredName: '', dob: '', gender: '', maritalStatus: '', children: 0,
