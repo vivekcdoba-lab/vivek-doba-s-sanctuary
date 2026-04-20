@@ -25,6 +25,31 @@ export interface DbSession {
   created_at: string;
 }
 
+export interface CoachOption {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+}
+
+export function useCoaches() {
+  return useQuery({
+    queryKey: ['coaches-picker'],
+    queryFn: async (): Promise<CoachOption[]> => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url, role, is_also_coach')
+        .or('role.eq.coach,is_also_coach.eq.true')
+        .order('full_name', { ascending: true });
+      if (error) throw error;
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        full_name: p.full_name,
+        avatar_url: p.avatar_url ?? null,
+      }));
+    },
+  });
+}
+
 export function useDbSessions(seekerId?: string) {
   return useQuery({
     queryKey: ['db-sessions', seekerId ?? 'all'],
@@ -52,6 +77,7 @@ export function useCreateSession() {
       course_id?: string;
       status?: string;
       session_notes?: string;
+      coach_id?: string;
     }) => {
       const { data, error } = await supabase.from('sessions').insert({
         seeker_id: session.seeker_id,
@@ -64,6 +90,7 @@ export function useCreateSession() {
         course_id: session.course_id || null,
         status: session.status || 'scheduled',
         session_notes: session.session_notes || null,
+        coach_id: session.coach_id || null,
       } as any).select().single();
       if (error) throw error;
       return data;

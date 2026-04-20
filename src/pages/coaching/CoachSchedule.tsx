@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useCoachingLang } from '@/components/CoachingLayout';
-import { useDbSessions, useCreateSession, useUpdateSession } from '@/hooks/useDbSessions';
+import { useDbSessions, useCreateSession, useUpdateSession, useCoaches } from '@/hooks/useDbSessions';
+import { useAuthStore } from '@/store/authStore';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -46,12 +47,17 @@ const HOURS = Array.from({ length: 17 }, (_, i) => i + 6); // 6AM-10PM
 export default function CoachSchedule() {
   const { lang } = useCoachingLang();
   const t = (key: keyof typeof L) => L[key][lang];
+  const { profile } = useAuthStore();
   const { data: sessions = [], isLoading } = useDbSessions();
   const { data: seekers = [] } = useSeekerProfiles();
   const { data: courses = [] } = useDbCourses();
+  const { data: coaches = [] } = useCoaches();
   const createSession = useCreateSession();
   const updateSession = useUpdateSession();
   const queryClient = useQueryClient();
+
+  const isAdmin = profile?.role === 'admin';
+  const myCoachId = profile?.id || '';
 
   const [view, setView] = useState<ViewMode>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -59,7 +65,7 @@ export default function CoachSchedule() {
   const [showBlockTime, setShowBlockTime] = useState(false);
   const [dragSession, setDragSession] = useState<string | null>(null);
 
-  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', date: '', start_time: '10:00', end_time: '11:00' });
+  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00' });
   const [blockForm, setBlockForm] = useState({ title: '', date: '', start_time: '12:00', end_time: '13:00' });
 
   // Calendar events for blocked time
@@ -140,17 +146,22 @@ export default function CoachSchedule() {
 
   const handleCreateSession = () => {
     if (!newForm.seeker_id || !newForm.date) return;
+    if (!newForm.coach_id) {
+      toast.error(lang === 'hi' ? 'कृपया कोच चुनें' : 'Please select a coach');
+      return;
+    }
     createSession.mutate({
       seeker_id: newForm.seeker_id,
       date: newForm.date,
       start_time: newForm.start_time,
       end_time: newForm.end_time,
       course_id: newForm.course_id || undefined,
+      coach_id: newForm.coach_id,
       status: 'scheduled',
     }, {
       onSuccess: () => {
         setShowNewSession(false);
-        setNewForm({ seeker_id: '', course_id: '', date: '', start_time: '10:00', end_time: '11:00' });
+        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00' });
         toast.success('Session scheduled');
       },
     });
@@ -307,6 +318,20 @@ export default function CoachSchedule() {
                 <option value="">Select seeker</option>
                 {seekers.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
               </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'कोच *' : 'Coach *'}</label>
+              {isAdmin ? (
+                <select value={newForm.coach_id} onChange={e => setNewForm(p => ({ ...p, coach_id: e.target.value }))}
+                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background">
+                  <option value="">Select Coach</option>
+                  {coaches.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
+                </select>
+              ) : (
+                <div className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-muted/40 text-foreground">
+                  {profile?.full_name || '—'}
+                </div>
+              )}
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground">{t('course')}</label>

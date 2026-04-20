@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDbSessions, useCreateSession, useUpdateSession } from '@/hooks/useDbSessions';
+import { useDbSessions, useCreateSession, useUpdateSession, useCoaches } from '@/hooks/useDbSessions';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { formatTime12 } from '@/data/mockData';
@@ -38,6 +38,7 @@ const SessionsPage = () => {
   const { data: sessions = [], isLoading } = useDbSessions();
   const { data: seekers = [] } = useSeekerProfiles();
   const { data: courses = [] } = useDbCourses();
+  const { data: coaches = [] } = useCoaches();
   const createSession = useCreateSession();
   const updateSession = useUpdateSession();
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ const SessionsPage = () => {
   const [templates, setTemplates] = useState<SessionTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [newSession, setNewSession] = useState({
-    seeker_id: '', course_id: '', date: '', start_time: '10:00', end_time: '11:00',
+    seeker_id: '', course_id: '', coach_id: '', date: '', start_time: '10:00', end_time: '11:00',
     session_type: 'video' as 'video' | 'in_person', duration_minutes: 60, notes: '',
   });
 
@@ -73,6 +74,13 @@ const SessionsPage = () => {
     };
     fetchTemplates();
   }, []);
+
+  // Auto-select coach if exactly one exists
+  useEffect(() => {
+    if (coaches.length === 1 && !newSession.coach_id) {
+      setNewSession(p => ({ ...p, coach_id: coaches[0].id }));
+    }
+  }, [coaches, newSession.coach_id]);
 
   useEffect(() => {
     if (timerRunning) {
@@ -505,6 +513,13 @@ const SessionsPage = () => {
               </select>
             </div>
             <div>
+              <label className="text-sm font-medium text-foreground">Coach *</label>
+              <select value={newSession.coach_id} onChange={e => setNewSession(p => ({ ...p, coach_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="">Select Coach</option>
+                {coaches.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
+              </select>
+            </div>
+            <div>
               <label className="text-sm font-medium text-foreground">Course *</label>
               <select value={newSession.course_id} onChange={e => setNewSession(p => ({ ...p, course_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
                 <option value="">Select Course</option>
@@ -547,11 +562,16 @@ const SessionsPage = () => {
                   toast.error('Please fill Seeker, Course and Date');
                   return;
                 }
+                if (!newSession.coach_id) {
+                  toast.error('Please select a coach');
+                  return;
+                }
                 const seekerSessions = sessions.filter(s => s.seeker_id === newSession.seeker_id);
                 const nextNum = seekerSessions.length > 0 ? Math.max(...seekerSessions.map(s => s.session_number)) + 1 : 1;
                 createSession.mutate({
                   seeker_id: newSession.seeker_id,
                   course_id: newSession.course_id,
+                  coach_id: newSession.coach_id,
                   date: newSession.date,
                   start_time: newSession.start_time,
                   end_time: newSession.end_time,
@@ -563,7 +583,7 @@ const SessionsPage = () => {
                   onSuccess: () => {
                     toast.success('Session scheduled!');
                     setShowSchedule(false);
-                    setNewSession({ seeker_id: '', course_id: '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '' });
+                    setNewSession({ seeker_id: '', course_id: '', coach_id: coaches.length === 1 ? coaches[0].id : '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '' });
                     setSelectedTemplateId('');
                   },
                 });
