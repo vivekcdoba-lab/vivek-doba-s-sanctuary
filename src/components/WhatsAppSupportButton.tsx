@@ -1,16 +1,19 @@
 import { MessageCircle } from 'lucide-react';
+import { openWhatsApp, WHATSAPP_SUPPORT_MESSAGE } from '@/lib/openExternal';
 
 export default function WhatsAppSupportButton() {
   const phone = '919607050111';
-  const message = encodeURIComponent(
-    "Hello, I recently explored your website and program details. I'm really interested and would love to understand how the program works and how it can help transform my life."
-  );
+  const href = `https://wa.me/${phone}?text=${encodeURIComponent(WHATSAPP_SUPPORT_MESSAGE)}`;
 
   return (
     <a
-      href={`https://wa.me/${phone}?text=${message}`}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={(e) => {
+        e.preventDefault();
+        openWhatsApp(phone);
+      }}
       className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-white shadow-lg hover:bg-[#20bd5a] transition-colors print:hidden"
       aria-label="WhatsApp Support"
     >

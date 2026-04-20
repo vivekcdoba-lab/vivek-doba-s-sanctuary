@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Phone, MessageSquare, Lock, ChevronRight, Instagram, Youtube, Linkedin, Facebook } from 'lucide-react';
 import vivekDobaPhoto from '@/assets/vivek-doba.png';
+import { openWhatsApp } from '@/lib/openExternal';
 
 const stats = [
   { value: '80,000+', label: 'Lives Transformed' },
@@ -27,6 +28,7 @@ const Index = () => (
             href={`https://wa.me/919607050111?text=${encodeURIComponent("Hello, I recently explored your website and program details. I'm really interested and would love to understand how the program works and how it can help transform my life.")}`}
             target="_blank"
             rel="noopener noreferrer me"
+            onClick={(e) => { e.preventDefault(); openWhatsApp(); }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white"
             style={{ backgroundColor: '#25D366' }}
           >

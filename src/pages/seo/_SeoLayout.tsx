@@ -19,6 +19,7 @@ export const SeoNav = () => (
           href={`https://wa.me/919607050111?text=${encodeURIComponent("Hello, I recently explored your website and program details. I'm really interested and would love to understand how the program works and how it can help transform my life.")}`}
           target="_blank"
           rel="noopener noreferrer me"
+          onClick={(e) => { e.preventDefault(); import("@/lib/openExternal").then(m => m.openWhatsApp()); }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white"
           style={{ backgroundColor: "#25D366" }}
         >
