@@ -1,59 +1,49 @@
 
-Two issues:
+User wants end-to-end verification of everything built today, with no leftover test records.
 
-1. **`/admin/coaches` shows admins** — `AdminCoaches.tsx` line 21 filters `p.role === 'coach' || p.role === 'admin'`. Should be coaches only.
-2. **No UI to reset passwords** — the previously approved `admin-reset-password` edge function + reset UI in `AdminSearchUsers.tsx` was planned but not yet built. Also needs sidebar visibility/navigation so admin can find it.
+## What was built today (to verify)
+1. **Strict role-based route access** (`AuthGuard.tsx` + `authStore.ts`)
+   - Seeker → only `/seeker/*`
+   - Coach → only `/coaching/*`
+   - Regular Admin → only `/admin/*` (blocked from coach/seeker)
+   - Super Admin → universal access
+2. **`/admin/coaches` filter fix** — only `role === 'coach'` shown (no admins)
+3. **Password reset feature**
+   - Edge function `admin-reset-password` (auth rules, Resend email, in-app notification)
+   - Shared `ResetPasswordDialog.tsx`
+   - `KeyRound` button in `AdminSearchUsers`, `AdminCoaches`, `AdminAdmins`
+   - Super-admin-only visibility for resetting admin accounts
 
-## Changes
+## Test plan (read-only, no data created)
 
-### 1. Fix `/admin/coaches` to show only coaches
-**`src/pages/admin/AdminCoaches.tsx`**
-- Change filter to `p.role === 'coach'` only (drop admin).
-- Update the "Total Seekers Managed" stat card label/logic to stay seeker-count (already correct).
-- Remove the "Role" column or keep it (will always show "coach") — keep but simpler.
+### A. Static / code verification (no browser, no DB writes)
+1. Re-read `AuthGuard.tsx` — confirm super_admin override + per-role redirects.
+2. Re-read `authStore.ts` — confirm `admin_level` in `Profile` type and select query.
+3. Re-read `AdminCoaches.tsx` — confirm filter is `role === 'coach'` only.
+4. Re-read `ResetPasswordDialog.tsx` — confirm `validatePassword` use, confirm-password match, show/hide toggle, invokes `admin-reset-password`.
+5. Re-read `admin-reset-password/index.ts` — confirm: JWT check, `is_admin` gate, `is_super_admin` gate when target is admin, self-reset block, `updateUserById` call, Resend email, `notifications` insert, all non-fatal failures handled.
+6. Re-read `AdminSearchUsers.tsx` and `AdminAdmins.tsx` — confirm super-admin visibility guard on the reset button for admin rows.
+7. Run `supabase--linter` to surface any new SQL/security issues.
+8. Spot-check edge function logs for `admin-reset-password` (should be none / clean since not yet invoked).
 
-### 2. Build the password-reset feature (carry-over of prior approved plans)
+### B. Live data verification (read-only DB queries via `supabase--read_query`)
+- Count rows by role in `profiles` to confirm `/admin/coaches` would only render coaches.
+- Verify at least one `super_admin` exists so the universal-access path is reachable.
+- Confirm no orphan/test users were created today (filter `created_at >= today`).
 
-**a) New Edge Function `supabase/functions/admin-reset-password/index.ts`**
-- CORS + JWT validation
-- Body (Zod): `{ target_user_id: string (uuid), new_password: string }`
-- Password rules match `src/lib/passwordValidation.ts` (≥12, 1 uppercase, 1 number, 1 special)
-- Auth rules:
-  - Caller must be admin (`is_admin` RPC)
-  - If target's role is `admin` → caller must be `super_admin` (`is_super_admin` RPC)
-  - If target is `seeker` / `coach` → any admin allowed
-  - Block resetting your own password via this endpoint
-- Service role: `supabase.auth.admin.updateUserById(target_user_id, { password })`
-- Send security email via Resend to target user (subject: "Your VDTS account password was changed", with caller name + IST timestamp + support contact). Email failure logged but non-fatal.
-- Insert row into `notifications` table for target user (type: security). Non-fatal.
-- Returns `{ success, email_sent, email_error? }`
+### C. Edge function smoke test (NO real password change)
+- Call `admin-reset-password` via `supabase--curl_edge_functions` with:
+  - **No auth header** → expect `401 Unauthorized`
+  - **Invalid body** (missing fields) → expect `400` with Zod validation error
+  - **Weak password** (e.g. `"short"`) → expect `400` from Zod regex check
+- These calls never reach `updateUserById`, so no account is modified and no email is sent.
+- Skip any "happy path" call that would actually change a real user's password.
 
-**b) UI in `src/pages/admin/AdminSearchUsers.tsx`**
-- Add `KeyRound` icon button in row actions for every user row.
-- Visibility:
-  - Seeker / Coach rows → any admin
-  - Admin rows → only when current user is `super_admin` (read `profile.admin_level` from `useAuthStore`)
-- Dialog:
-  - Read-only context (name, email, role badge)
-  - New password + Confirm password inputs (with show/hide toggle)
-  - `PASSWORD_HELP` hint text
-  - Client-side `validatePassword()`
-  - Warning: "Communicate the new password to the user securely. They will use it on next login."
-- Submit via `supabase.functions.invoke('admin-reset-password', ...)`. Toast reflects email-send status.
+### D. Explicit non-actions (to honor "don't create test records")
+- No new users, profiles, sessions, notifications, or any DB inserts.
+- No real password resets executed against any account.
+- No browser-based UI clicks that would persist data.
+- If any test artifact slips in, delete it immediately and report.
 
-**c) Discoverability — make the page easy to find**
-- `/admin/search-users` already exists and is now the home for password resets. In `AdminCoaches.tsx` and `AdminAdmins.tsx`, also add the same `KeyRound` reset button per row (same dialog component, extracted into a small shared component `src/components/admin/ResetPasswordDialog.tsx` to avoid duplication). This way admin can reset from any of the three list pages (Search Users, Coaches, Admins).
-
-### 3. Files
-- **EDIT** `src/pages/admin/AdminCoaches.tsx` — filter coaches only; add reset button
-- **EDIT** `src/pages/admin/AdminAdmins.tsx` — add reset button (super_admin only visibility)
-- **EDIT** `src/pages/admin/AdminSearchUsers.tsx` — add reset button + dialog
-- **CREATE** `src/components/admin/ResetPasswordDialog.tsx` — shared dialog component
-- **CREATE** `supabase/functions/admin-reset-password/index.ts` — edge function
-
-## Out of scope
-- No DB schema changes (uses existing `is_admin`, `is_super_admin`, `profiles`, `notifications`)
-- No SMS/WhatsApp notification (email + in-app only)
-- No password history/reuse prevention
-- No changes to user self-service password change flows
-- No sidebar nav additions — Search Users, Coaches, Admins already exist in admin nav
+## Deliverable
+A single summary report listing each item above with PASS / FAIL / NOTES, plus confirmation that zero test records were created.
