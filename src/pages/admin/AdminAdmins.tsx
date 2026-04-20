@@ -237,6 +237,12 @@ const AdminAdmins = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ResetPasswordDialog
+        user={resetUser ? { user_id: resetUser.user_id, full_name: resetUser.full_name, email: resetUser.email, role: resetUser.role } : null}
+        open={!!resetUser}
+        onOpenChange={(o) => !o && setResetUser(null)}
+      />
     </div>
   );
 };

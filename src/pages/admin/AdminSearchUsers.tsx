@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useAllProfiles, type SeekerProfile } from '@/hooks/useSeekerProfiles';
-import { Search, Download, Eye, Edit, Trash2, Loader2 } from 'lucide-react';
+import { Search, Download, Eye, Edit, Trash2, Loader2, KeyRound } from 'lucide-react';
+import { ResetPasswordDialog } from '@/components/admin/ResetPasswordDialog';
+import { useAuthStore } from '@/store/authStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +50,10 @@ const AdminSearchUsers = () => {
 
   const [deleteUser, setDeleteUser] = useState<SeekerProfile | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [resetUser, setResetUser] = useState<SeekerProfile | null>(null);
+
+  const { profile: callerProfile } = useAuthStore();
+  const callerIsSuper = (callerProfile as any)?.admin_level === 'super_admin';
 
   useEffect(() => {
     if (editingUser) {
@@ -224,15 +230,27 @@ const AdminSearchUsers = () => {
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0"><Eye className="w-3.5 h-3.5" /></Button>
                         </Link>
                       )}
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingUser(user)}>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingUser(user)} title="Edit">
                         <Edit className="w-3.5 h-3.5" />
                       </Button>
+                      {(user.role !== 'admin' || callerIsSuper) && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0"
+                          onClick={() => setResetUser(user)}
+                          title="Reset password"
+                        >
+                          <KeyRound className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
                       {user.role === 'seeker' && (
                         <Button
                           size="sm"
                           variant="ghost"
                           className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => setDeleteUser(user)}
+                          title="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
