@@ -256,15 +256,10 @@ const Index = () => (
           <div className="bg-card rounded-2xl border border-border p-6">
             <h3 className="text-lg font-bold text-foreground mb-3">Life Coach in</h3>
             <div className="flex flex-wrap gap-2">
-              {[
-                { to: "/life-coach-in-pune", label: "Pune" },
-                { to: "/life-coach-in-mumbai", label: "Mumbai" },
-                { to: "/life-coach-in-maharashtra", label: "Maharashtra" },
-                { to: "/life-coach-in-india", label: "India" },
-              ].map((l) => (
-                <Link key={l.to} to={l.to} className="px-3 py-1.5 rounded-full bg-muted text-sm text-foreground hover:bg-accent transition-colors">
-                  {l.label}
-                </Link>
+              {["Pune", "Mumbai", "Maharashtra", "India"].map((label) => (
+                <span key={label} className="px-3 py-1.5 rounded-full bg-muted text-sm text-foreground">
+                  {label}
+                </span>
               ))}
             </div>
           </div>
@@ -272,15 +267,10 @@ const Index = () => (
           <div className="bg-card rounded-2xl border border-border p-6">
             <h3 className="text-lg font-bold text-foreground mb-3">Business Coach in</h3>
             <div className="flex flex-wrap gap-2">
-              {[
-                { to: "/business-coach-in-pune", label: "Pune" },
-                { to: "/business-coach-in-mumbai", label: "Mumbai" },
-                { to: "/business-coach-in-maharashtra", label: "Maharashtra" },
-                { to: "/business-coach-in-india", label: "India" },
-              ].map((l) => (
-                <Link key={l.to} to={l.to} className="px-3 py-1.5 rounded-full bg-muted text-sm text-foreground hover:bg-accent transition-colors">
-                  {l.label}
-                </Link>
+              {["Pune", "Mumbai", "Maharashtra", "India"].map((label) => (
+                <span key={label} className="px-3 py-1.5 rounded-full bg-muted text-sm text-foreground">
+                  {label}
+                </span>
               ))}
             </div>
           </div>
