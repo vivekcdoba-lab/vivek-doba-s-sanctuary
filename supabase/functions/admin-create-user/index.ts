@@ -256,7 +256,15 @@ Deno.serve(async (req) => {
       user_metadata: { full_name, phone, city, state, company, occupation, role },
     });
     if (createErr || !created?.user) {
-      return new Response(JSON.stringify({ error: createErr?.message || 'Failed to create user' }), {
+      const msg = createErr?.message || 'Failed to create user';
+      if (/already.*registered|already exists|duplicate/i.test(msg)) {
+        return new Response(JSON.stringify({
+          error: "This email already has a login account. Use a different email for the admin/coach role, or change the existing user's role instead.",
+        }), {
+          status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify({ error: msg }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
