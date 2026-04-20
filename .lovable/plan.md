@@ -1,30 +1,57 @@
 
-The user is now reporting WhatsApp (`api.whatsapp.com` / `wa.me`) is blocked in the preview iframe — same root cause as the social links issue: WhatsApp also sends `X-Frame-Options: DENY`, and the Lovable preview iframe sandbox blocks the navigation.
+The user wants stronger SEO targeting social media discovery + a wide audience (all ages, business owners, students, corporate employees, industrialists). They also mention "videos + posts must automatically play while scrolling social media" — that's not something a website controls; it's a function of each social platform's autoplay (Instagram Reels, YouTube Shorts, FB feed all autoplay by default once content is posted there). I'll clarify that and focus the actual deliverable on website-side SEO + rich social link previews so when Vivek shares a link on Insta/FB/LinkedIn/YouTube, the preview card is rich, video-ready, and audience-targeted.
 
-"It was working earlier" — likely because earlier the link opened in the same tab (no `target="_blank"`), or the iframe sandbox behavior changed, or they tested on the published URL.
+## What I'll do
 
-## Root cause
-`wa.me` and `api.whatsapp.com` refuse to be loaded inside iframes. When clicked from inside the Lovable preview iframe, the browser blocks the navigation with `ERR_BLOCKED_BY_RESPONSE`.
+### 1. Site-wide SEO upgrade (`index.html`)
+- Expand `<meta name="keywords">` to cover all target audiences: entrepreneurs, business owners, students, corporate employees, industrialists, professionals, youth, mid-career, retirees.
+- Add audience-targeted meta description variants via per-page `useDocumentMeta` (already exists).
+- Add `<meta name="robots" content="index, follow, max-image-preview:large, max-video-preview:-1, max-snippet:-1">` — this tells Google + social crawlers to use **large image previews** and **full video previews** (so YouTube embeds and Reels show inline when shared).
+- Add `og:video` tag pointing to a hero YouTube video for rich link previews on Facebook / LinkedIn / WhatsApp.
+- Add `twitter:card = "player"` variant when video URL present.
 
-## Fix
-Force the WhatsApp link to break out of the iframe to the top-level browser window. Two reliable techniques:
+### 2. Strengthen JSON-LD structured data (`index.html`)
+- Add **VideoObject** schema referencing Vivek's YouTube channel videos so Google indexes them as video results.
+- Expand existing `Person` schema with `knowsAbout` (life coaching, business coaching, NLP, manifestation, meditation, dharma, leadership) — broadens topical authority signals.
+- Add **Organization** `audience` schema listing target audiences (Entrepreneurs, Students, Corporate Professionals, Industrialists).
+- Add **BreadcrumbList** schema on key pages.
 
-1. **Add `onClick` handler that uses `window.open(url, '_blank', 'noopener')`** — this opens in a new top-level tab, bypassing iframe sandbox restrictions reliably.
-2. **Or set `target="_top"`** on the anchor — forces navigation in the topmost window.
+### 3. Per-page SEO meta — audience-specific landing pages
+Update `useDocumentMeta` titles/descriptions on existing SEO pages to explicitly call out each audience group:
+- `LifeCoaching.tsx` — "for students, professionals, entrepreneurs"
+- `BusinessCoaching.tsx` — "for business owners, industrialists, founders"
+- `NlpCoach.tsx` — "for corporate employees & leaders"
+- `SalesCoach.tsx` — "for sales teams, founders, entrepreneurs"
+- `Manifestation.tsx`, `Meditation.tsx`, `DharmaPhilosophy.tsx` — broaden to "all ages, all walks of life"
 
-Best approach: keep `target="_blank"` for normal browsing, but add an `onClick` that calls `window.top.open(url, '_blank')` as a fallback so it always escapes the iframe in the preview.
+### 4. Social media SEO (link unfurling = rich previews)
+- Verify all 4 social URLs are in the `sameAs` arrays (already done) — this is what powers Google Knowledge Panel linking.
+- Add `<link rel="me" href="...">` tags in `<head>` for each social profile (microformats ownership signal — strengthens identity verification for Mastodon/IndieWeb/Google).
+- Add platform-specific OG tags so the FB/LinkedIn share scraper picks up correct image dimensions (1200x630).
 
-## Files to update
+### 5. Sitemap refresh (`public/sitemap.xml`)
+- Already includes all SEO pages. No structural change needed; will bump dates if relevant.
 
-WhatsApp links exist in:
-- `src/components/WhatsAppSupportButton.tsx` — floating support button
-- `src/pages/seo/_SeoLayout.tsx` — SeoNav WhatsApp button
-- `src/pages/Index.tsx` — landing page WhatsApp CTAs
-- `src/pages/BookAppointment.tsx`, `src/pages/ApplyLGT.tsx`, `src/pages/LoginPage.tsx` — any wa.me links
+### 6. Clarification on "auto-play on scroll"
+This **cannot** be controlled by the website. Autoplay-on-scroll is a feature of:
+- **Instagram Reels / Feed** — autoplays when posted natively as a Reel/Video
+- **Facebook Feed** — autoplays native uploads & some shared YouTube links
+- **YouTube Shorts** — autoplays in the Shorts feed
+- **LinkedIn** — autoplays native video uploads
 
-I'll add a small helper `openWhatsApp(message)` that uses `window.open(url, '_blank', 'noopener,noreferrer')` and wire it into the click handlers via `onClick`. The `<a href>` stays as graceful fallback for crawlers and right-click "open in new tab".
+To get autoplay behavior, Vivek must **upload videos natively to each platform** (not just share a link). I'll explain this in the chat reply, not in code.
+
+## Files I'll edit
+- `index.html` — expanded keywords, robots meta, og:video, VideoObject + audience JSON-LD, `rel="me"` links
+- `src/pages/seo/LifeCoaching.tsx` — audience-targeted meta
+- `src/pages/seo/BusinessCoaching.tsx` — audience-targeted meta
+- `src/pages/seo/NlpCoach.tsx` — audience-targeted meta
+- `src/pages/seo/SalesCoach.tsx` — audience-targeted meta
+- `src/pages/seo/Manifestation.tsx`, `Meditation.tsx`, `DharmaPhilosophy.tsx` — audience-targeted meta
+- `src/pages/Index.tsx` — set strong landing-page meta via `useDocumentMeta` if not already
 
 ## Out of scope
 - No DB / RLS / auth changes
-- No copy changes (message text stays the same)
-- The published site (vivekdoba.com) already works — this fix specifically makes the preview iframe work too
+- No new pages
+- Cannot make videos auto-play on social platforms from website code (clarified above)
+- No copy rewrite of existing landing page body content (only meta tags + a few headlines if needed)
