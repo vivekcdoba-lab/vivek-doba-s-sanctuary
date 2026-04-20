@@ -4,8 +4,8 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const Meditation = () => {
   useDocumentMeta({
-    title: "Meditation for Entrepreneurs & Success | VDTS",
-    description: "Meditation for success and entrepreneurs. Practical guided practice to build mental clarity, emotional control and a calm leadership presence.",
+    title: "Meditation for Success — Entrepreneurs, Professionals & Students",
+    description: "Practical meditation for entrepreneurs, corporate professionals, students and seekers of every age. Build mental clarity, emotional control and calm leadership presence.",
     canonicalPath: "/meditation",
   });
 
