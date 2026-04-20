@@ -2501,6 +2501,7 @@ export type Database = {
           hometown: string | null
           id: string
           industry: string | null
+          is_also_coach: boolean
           leaderboard_visible: boolean
           linkedin_url: string | null
           marriage_anniversary: string | null
@@ -2535,6 +2536,7 @@ export type Database = {
           hometown?: string | null
           id?: string
           industry?: string | null
+          is_also_coach?: boolean
           leaderboard_visible?: boolean
           linkedin_url?: string | null
           marriage_anniversary?: string | null
@@ -2569,6 +2571,7 @@ export type Database = {
           hometown?: string | null
           id?: string
           industry?: string | null
+          is_also_coach?: boolean
           leaderboard_visible?: boolean
           linkedin_url?: string | null
           marriage_anniversary?: string | null
