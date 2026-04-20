@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { COURSES } from '@/data/mockData';
@@ -97,6 +97,7 @@ const ApplyLGT = () => {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ program: true, A: true });
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [missingFields, setMissingFields] = useState<Set<string>>(new Set());
+  const programRef = useRef<HTMLDivElement>(null);
 
   const [f, setF] = useState<Record<string, any>>({
     programId: '', fullName: '', preferredName: '', dob: '', gender: '', maritalStatus: '', children: 0,
@@ -215,6 +216,15 @@ const ApplyLGT = () => {
         if (fields.some(fld => missing.has(fld))) toOpen[sec] = true;
       }
       if (Object.keys(toOpen).length > 0) setOpenSections(p => ({ ...p, ...toOpen }));
+      // Scroll to program field if missing (top-most), otherwise to first highlighted field
+      setTimeout(() => {
+        if (missing.has('programId')) {
+          programRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          const firstEl = document.querySelector('[data-missing="true"]');
+          firstEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
       return;
     }
 
@@ -294,8 +304,24 @@ const ApplyLGT = () => {
 
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-4">
         {/* Program Selector */}
-        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
-          <h3 className={`font-semibold text-foreground mb-4 ${missingFields.has('programId') ? 'text-destructive' : ''}`}>Select Program *</h3>
+        <div
+          ref={programRef}
+          data-missing={missingFields.has('programId') ? 'true' : 'false'}
+          className={`bg-card rounded-xl p-6 shadow-sm border-2 scroll-mt-24 transition-all ${
+            missingFields.has('programId')
+              ? 'border-destructive ring-4 ring-destructive/30 animate-pulse'
+              : 'border-border'
+          }`}
+        >
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${missingFields.has('programId') ? 'text-destructive' : 'text-foreground'}`}>
+            {missingFields.has('programId') && <AlertCircle className="w-5 h-5" />}
+            Select Program *
+          </h3>
+          {missingFields.has('programId') && (
+            <p className="text-sm text-destructive mb-3 flex items-center gap-1">
+              <AlertCircle className="w-4 h-4" /> Please select a program to continue
+            </p>
+          )}
           <div className="space-y-3">
             {PROGRAMS.map(p => (
               <button key={p.id} onClick={() => set('programId', p.id)} className={`w-full text-left p-4 rounded-xl border-2 transition-all ${f.programId === p.id ? 'border-primary shadow-md' : 'border-border hover:border-primary/40'}`}>
