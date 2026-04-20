@@ -3,7 +3,8 @@ import { useAllProfiles, type SeekerProfile } from '@/hooks/useSeekerProfiles';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, ShieldAlert, Shield, Activity, Pencil, Loader2 } from 'lucide-react';
+import { Search, ShieldAlert, Shield, Activity, Pencil, Loader2, KeyRound } from 'lucide-react';
+import { ResetPasswordDialog } from '@/components/admin/ResetPasswordDialog';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ const AdminAdmins = () => {
   const [editLevel, setEditLevel] = useState<'admin' | 'super_admin'>('admin');
   const [editPerms, setEditPerms] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
+  const [resetUser, setResetUser] = useState<AdminProfile | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -156,9 +158,16 @@ const AdminAdmins = () => {
                     </TableCell>
                     <TableCell className="text-muted-foreground">{format(new Date(admin.created_at), 'dd MMM yyyy')}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => openEdit(admin)}>
-                        <Pencil className="w-4 h-4" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        {callerIsSuper && (
+                          <Button variant="ghost" size="sm" onClick={() => setResetUser(admin)} title="Reset password">
+                            <KeyRound className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(admin)} title="Edit">
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
