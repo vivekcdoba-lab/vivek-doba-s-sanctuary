@@ -359,7 +359,7 @@ const AdminSearchUsers = () => {
                 <Label htmlFor="is_also_coach" className="cursor-pointer">
                   Also act as coach
                   <span className="block text-xs text-muted-foreground font-normal">
-                    Admin will appear in coach lists and assignment dropdowns.
+                    This user will appear in coach lists and pickers without losing admin access.
                   </span>
                 </Label>
               </div>

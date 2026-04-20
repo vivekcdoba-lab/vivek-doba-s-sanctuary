@@ -42,9 +42,10 @@ const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
     return <>{children}</>;
   }
 
-  // Regular admin: only admin routes
+  // Regular admin: only admin routes (plus coach routes if flagged as also-coach)
   if (profile.role === 'admin') {
     if (requiredRole === 'admin') return <>{children}</>;
+    if (requiredRole === 'coach' && (profile as any).is_also_coach === true) return <>{children}</>;
     return <Navigate to="/dashboard" replace />;
   }
 
