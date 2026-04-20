@@ -4,8 +4,8 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const BusinessCoaching = () => {
   useDocumentMeta({
-    title: "Business Coach for Entrepreneurs | Spiritual Growth",
-    description: "A spiritual business coach for entrepreneurs blending mindset, dharma and growth strategy. Build a purpose-driven business that scales sustainably.",
+    title: "Business Coach for Entrepreneurs, Industrialists & Founders | India",
+    description: "Spiritual business coach for entrepreneurs, business owners and industrialists. Combine mindset, dharma and growth strategy to scale a purpose-driven business.",
     canonicalPath: "/business-coaching",
   });
 

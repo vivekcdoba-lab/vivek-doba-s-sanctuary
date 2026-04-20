@@ -4,8 +4,8 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const Manifestation = () => {
   useDocumentMeta({
-    title: "Manifestation Coaching | Law of Attraction | VDTS",
-    description: "Manifestation coaching that combines law of attraction with disciplined action. Turn intention into measurable outcomes in life and business.",
+    title: "Manifestation Coaching for All Ages | Law of Attraction India",
+    description: "Manifestation & law of attraction coaching for students, professionals, entrepreneurs and seekers of every age. Turn intention into measurable life & business outcomes.",
     canonicalPath: "/manifestation",
   });
 

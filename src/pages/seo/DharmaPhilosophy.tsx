@@ -4,8 +4,8 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const DharmaPhilosophy = () => {
   useDocumentMeta({
-    title: "Dharma Karma Moksha Meaning | Coaching | VDTS",
-    description: "Understand the dharma karma moksha meaning and how dharma-based coaching applies these timeless principles to modern life and business.",
+    title: "Dharma, Karma & Moksha — Wisdom for All Ages & Walks of Life",
+    description: "Understand dharma, karma and moksha and apply these timeless principles to modern life and business — for students, professionals, entrepreneurs and industrialists alike.",
     canonicalPath: "/dharma-philosophy",
   });
 

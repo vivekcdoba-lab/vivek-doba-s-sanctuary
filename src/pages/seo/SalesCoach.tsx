@@ -5,9 +5,9 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const SalesCoach = () => {
   useDocumentMeta({
-    title: "Sales Coach for Founders & Teams | VDTS",
+    title: "Sales Coach for Founders, Entrepreneurs & B2B Sales Teams",
     description:
-      "Sales coaching for founders, consultants and B2B teams in India. Build a calm, ethical sales process that converts without pressure or burnout.",
+      "Sales coaching for founders, consultants, corporate sales teams and entrepreneurs across India. Build a calm, ethical, repeatable sales process that converts.",
     canonicalPath: "/sales-coach",
   });
 

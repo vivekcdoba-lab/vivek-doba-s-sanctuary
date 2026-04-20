@@ -5,9 +5,9 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const NlpCoach = () => {
   useDocumentMeta({
-    title: "NLP Coach in India | Mindset & Behaviour Change",
+    title: "NLP Coach in India for Corporate Professionals & Leaders",
     description:
-      "Certified NLP coach Vivek Doba helps entrepreneurs and professionals rewire mindset, break limiting beliefs and build conscious leadership habits.",
+      "Certified NLP coach for corporate employees, managers, founders and entrepreneurs. Rewire mindset, break limiting beliefs and lead with calm, conscious clarity.",
     canonicalPath: "/nlp-coach",
   });
 

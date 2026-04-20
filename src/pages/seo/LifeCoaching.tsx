@@ -4,8 +4,8 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const LifeCoaching = () => {
   useDocumentMeta({
-    title: "Life Coach for Purpose & Inner Alignment | VDTS",
-    description: "Work with a life coach for purpose-driven living. Dharma-based coaching helps you find clarity, inner alignment and lasting fulfillment.",
+    title: "Life Coach in India for Students, Professionals & Entrepreneurs",
+    description: "Trusted life coach for students, working professionals, entrepreneurs and seekers of all ages. Dharma-based coaching for clarity, purpose and lasting fulfillment.",
     canonicalPath: "/life-coaching",
   });
 
