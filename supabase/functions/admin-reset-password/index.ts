@@ -109,6 +109,7 @@ Deno.serve(async (req) => {
     let email_error: string | undefined;
     if (RESEND_API_KEY && targetProfile.email) {
       try {
+        const fromAddress = Deno.env.get('RESEND_FROM') || 'VDTS Security <info@vivekdoba.com>';
         const html = `
           <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#222">
             <h2 style="color:#800020;margin:0 0 16px">Your VDTS account password was changed</h2>
