@@ -19,6 +19,7 @@ export interface SeekerProfile {
   created_at: string;
   marriage_anniversary: string | null;
   access_end_date: string | null;
+  is_also_coach?: boolean | null;
 }
 
 export function useSeekerProfiles() {
