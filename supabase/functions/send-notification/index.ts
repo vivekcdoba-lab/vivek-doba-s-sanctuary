@@ -129,14 +129,14 @@ async function validateAdmin(req: Request): Promise<{ authorized: boolean; error
     return { authorized: false, error: "Invalid token" };
   }
 
-  // Check admin role
+  // Check admin/coach role (including dual-role admins with is_also_coach=true)
   const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("role")
+    .select("role, is_also_coach")
     .eq("user_id", data.user.id)
     .single();
 
-  if (!profile || (profile.role !== "admin" && profile.role !== "coach")) {
+  if (!profile || (profile.role !== "admin" && profile.role !== "coach" && profile.is_also_coach !== true)) {
     return { authorized: false, error: "Insufficient permissions" };
   }
 
