@@ -35,24 +35,28 @@ const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Admin can access everything
+  const isSuperAdmin = profile.role === 'admin' && profile.admin_level === 'super_admin';
+
+  // Super admin: universal access
+  if (isSuperAdmin) {
+    return <>{children}</>;
+  }
+
+  // Regular admin: only admin routes
   if (profile.role === 'admin') {
-    return <>{children}</>;
+    if (requiredRole === 'admin') return <>{children}</>;
+    return <Navigate to="/dashboard" replace />;
   }
 
-  // Coach can access coach routes
-  if (profile.role === 'coach' && requiredRole === 'coach') {
-    return <>{children}</>;
+  // Coach: only coach routes
+  if (profile.role === 'coach') {
+    if (requiredRole === 'coach') return <>{children}</>;
+    return <Navigate to="/coaching" replace />;
   }
 
-  // Seeker can access seeker routes
+  // Seeker: only seeker routes
   if (profile.role === 'seeker' && requiredRole === 'seeker') {
     return <>{children}</>;
-  }
-
-  // Redirect mismatched roles to their home
-  if (profile.role === 'coach') {
-    return <Navigate to="/coaching" replace />;
   }
   return <Navigate to="/seeker/home" replace />;
 };
