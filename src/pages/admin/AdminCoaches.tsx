@@ -77,7 +77,6 @@ const AdminCoaches = () => {
               <TableRow>
                 <TableHead>Coach</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
                 <TableHead>City</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Joined</TableHead>
@@ -86,7 +85,7 @@ const AdminCoaches = () => {
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No coaches found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No coaches found</TableCell></TableRow>
               ) : filtered.map(coach => (
                 <TableRow key={coach.id}>
                   <TableCell>
@@ -99,9 +98,6 @@ const AdminCoaches = () => {
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{coach.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={coach.role === 'admin' ? 'default' : 'secondary'}>{coach.role}</Badge>
-                  </TableCell>
                   <TableCell className="text-muted-foreground">{coach.city || '—'}</TableCell>
                   <TableCell>
                     <Badge className="bg-green-500/10 text-green-600 border-green-200">Active</Badge>
