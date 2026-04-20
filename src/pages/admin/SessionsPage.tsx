@@ -489,11 +489,11 @@ const SessionsPage = () => {
       )}
 
       <Dialog open={showSchedule} onOpenChange={setShowSchedule}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
+        <DialogContent className="max-w-md max-h-[90vh] flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>📅 Schedule New Session</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
+          <div className="flex-1 overflow-y-auto pr-1 -mr-1 space-y-3">
             {templates.length > 0 && (
               <div className="bg-muted/30 rounded-lg p-3 border border-dashed border-border">
                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -555,6 +555,15 @@ const SessionsPage = () => {
               <label className="text-sm font-medium text-foreground">Notes</label>
               <textarea value={newSession.notes} onChange={e => setNewSession(p => ({ ...p, notes: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" />
             </div>
+          </div>
+          <div className="shrink-0 border-t pt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setShowSchedule(false)}
+              className="flex-1 py-2.5 rounded-xl border border-input bg-background text-foreground font-medium text-sm hover:bg-muted"
+            >
+              Cancel
+            </button>
             <button
               disabled={createSession.isPending}
               onClick={() => {
@@ -588,7 +597,7 @@ const SessionsPage = () => {
                   },
                 });
               }}
-              className="w-full py-2.5 rounded-xl gradient-sacred text-primary-foreground font-medium text-sm disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-xl gradient-sacred text-primary-foreground font-medium text-sm disabled:opacity-50"
             >
               {createSession.isPending ? 'Scheduling...' : 'Schedule Session'}
             </button>
