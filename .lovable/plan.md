@@ -1,40 +1,37 @@
 
+The user wants strict role-based route access enforced:
+- **Seeker** → only seeker pages (`/seeker/*`)
+- **Coach** → only coach pages (`/coaching/*`)
+- **Admin** (regular) → only admin pages (and NOT coach/seeker pages)
+- **Super Admin** → universal access to all pages and all accounts
+
+Currently `AuthGuard.tsx` lets ANY admin access everything (including coach + seeker pages). That needs to change so regular admins are restricted to admin routes only — only `super_admin` gets the universal pass.
+
 ## Changes
 
-### 1. Remove hyperlinks from "Life Coach in" / "Business Coach in" sections (`src/pages/Index.tsx`, lines 255-287)
-Replace the `<Link>` city pills with plain `<span>` text pills (same visual style, just non-clickable). The headings and city names stay; they just won't navigate anywhere.
+### 1. Update `src/components/AuthGuard.tsx`
+Replace the role-matching logic with strict per-role enforcement plus super_admin override:
 
-```
-PuneMumbaiMaharashtraIndia  ← becomes plain text chips
-```
+- Read `profile.admin_level` (already on profile per `adminPermissions.ts`).
+- **Super admin** (`role === 'admin' && admin_level === 'super_admin'`) → access to everything (admin, coach, seeker routes).
+- **Regular admin** (`role === 'admin' && admin_level !== 'super_admin'`) → access ONLY to `requiredRole === 'admin'` routes. If they hit a coach/seeker route, redirect to `/dashboard` (admin home).
+- **Coach** → only `requiredRole === 'coach'`. Else redirect to `/coaching`.
+- **Seeker** → only `requiredRole === 'seeker'`. Else redirect to `/seeker/home`.
 
-### 2. Add "Back to Home" link to NLP Coach & Sales Coach pages
-- `src/pages/seo/NlpCoach.tsx` — add a `<Link to="/">← Back to Home</Link>` near the top of the article (just under `SeoHero`, above the first `<section>`).
-- `src/pages/seo/SalesCoach.tsx` — same treatment.
+### 2. Update `src/store/authStore.ts` Profile type
+Add `admin_level?: string | null` to the `Profile` interface and include it in the `fetchProfile` select query, so AuthGuard can read it.
 
-(Style: small muted link with `ArrowLeft` icon, matches the existing pattern used elsewhere in the SEO area.)
+The fallback profile (3s timeout case) keeps `admin_level` undefined → treated as regular user (safe default).
 
-### 3. Restructure `LifeCoaching.tsx` & `BusinessCoaching.tsx` to match `NlpCoach.tsx` layout
-Currently they use a single `<article>` with mixed `<h2>` + `<h3>` and `prose` styling. Restructure to the **NLP Coach pattern**:
-
-- Remove `prose` wrapper.
-- Use `space-y-8` article with multiple `<section>` blocks, each with an `<h2 className="text-2xl font-bold ...">` + paragraph.
-- Add the same "Back to Home" link at the top.
-- Add a final "Get Started" section with the `<Link to="/book-appointment">Book your discovery call <ChevronRight /></Link>` CTA — identical pattern to NLP page.
-- Keep all existing copy/context but reorganized into clean section headings:
-  - **Life Coaching** sections: What a Life Coach Actually Does · Who Benefits Most · How the Work Is Structured (Diagnose / Practice / Integrate) · Why Dharma-Based Life Coaching Works · Get Started
-  - **Business Coaching** sections: What Business Coaching Actually Solves · Who Benefits Most · The Artha Framework · Mindset + Strategy Together · Get Started
-
-Each retains its unique context (Life = purpose/dharma/inner alignment; Business = Artha pillar/strategy + mindset).
+### 3. Update reset-password Edge Function plan (carry-over from prior approved plan)
+No change to the previously approved `admin-reset-password` plan — its rule "regular admin can reset seeker/coach only; super_admin can reset anyone including admins" already aligns perfectly with this new access model.
 
 ## Files to edit
-- `src/pages/Index.tsx` — strip `<Link>`, replace with `<span>` for the 8 city chips
-- `src/pages/seo/NlpCoach.tsx` — add Back to Home link
-- `src/pages/seo/SalesCoach.tsx` — add Back to Home link
-- `src/pages/seo/LifeCoaching.tsx` — restructure to NLP-style sections + Back link
-- `src/pages/seo/BusinessCoaching.tsx` — restructure to NLP-style sections + Back link
+- `src/components/AuthGuard.tsx` — strict role enforcement + super_admin override
+- `src/store/authStore.ts` — add `admin_level` to Profile type + select query
 
 ## Out of scope
-- No route changes — `/life-coach-in-pune` etc. still exist (and are still linked from the SeoFooter on every SEO page for SEO crawlers); only the homepage chips become non-clickable as requested.
-- No DB / RLS / auth changes.
-- No copy of unrelated pages touched.
+- No DB changes (uses existing `profiles.admin_level` column + `is_super_admin` function)
+- No sidebar/menu changes — guards at the route level are sufficient; menus already render per role
+- No changes to login routing logic in `LoginPage.tsx` — it already routes by `role`; super_admins still land on `/dashboard` and can navigate elsewhere freely
+- Previously approved `admin-reset-password` function + UI work remains as planned
