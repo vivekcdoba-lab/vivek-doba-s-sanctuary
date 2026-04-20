@@ -216,6 +216,15 @@ const ApplyLGT = () => {
         if (fields.some(fld => missing.has(fld))) toOpen[sec] = true;
       }
       if (Object.keys(toOpen).length > 0) setOpenSections(p => ({ ...p, ...toOpen }));
+      // Scroll to program field if missing (top-most), otherwise to first highlighted field
+      setTimeout(() => {
+        if (missing.has('programId')) {
+          programRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          const firstEl = document.querySelector('[data-missing="true"]');
+          firstEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
       return;
     }
 
