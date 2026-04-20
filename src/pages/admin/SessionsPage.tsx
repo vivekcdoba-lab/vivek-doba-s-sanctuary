@@ -48,7 +48,7 @@ const SessionsPage = () => {
   const [templates, setTemplates] = useState<SessionTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [newSession, setNewSession] = useState({
-    seeker_id: '', course_id: '', date: '', start_time: '10:00', end_time: '11:00',
+    seeker_id: '', course_id: '', coach_id: '', date: '', start_time: '10:00', end_time: '11:00',
     session_type: 'video' as 'video' | 'in_person', duration_minutes: 60, notes: '',
   });
 
