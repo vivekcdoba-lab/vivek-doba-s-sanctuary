@@ -347,6 +347,23 @@ const AdminSearchUsers = () => {
                 )}
               </div>
             </div>
+            {form.role === 'admin' && (
+              <div className="flex items-center gap-2 rounded-md border border-border p-3">
+                <input
+                  id="is_also_coach"
+                  type="checkbox"
+                  checked={form.is_also_coach}
+                  onChange={(e) => setForm({ ...form, is_also_coach: e.target.checked })}
+                  className="h-4 w-4 accent-primary"
+                />
+                <Label htmlFor="is_also_coach" className="cursor-pointer">
+                  Also act as coach
+                  <span className="block text-xs text-muted-foreground font-normal">
+                    Admin will appear in coach lists and assignment dropdowns.
+                  </span>
+                </Label>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingUser(null)} disabled={saving}>Cancel</Button>
