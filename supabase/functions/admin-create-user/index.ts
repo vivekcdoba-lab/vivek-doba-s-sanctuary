@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
     const callerIsSuper = callerProfile?.admin_level === 'super_admin';
 
     const body = await req.json().catch(() => ({}));
-    const {
+    let {
       email, full_name, phone, role,
       password = null,
       city = '', state = '', company = '', occupation = '', gender = '',
@@ -188,7 +188,13 @@ Deno.serve(async (req) => {
       auto_generate_password = false,
     } = body || {};
 
-    if (!email || !full_name || !phone || !role) {
+    // Normalize empty/whitespace phone → null to avoid '' collisions on profiles_phone_unique
+    if (typeof phone === 'string') {
+      const trimmed = phone.trim();
+      phone = trimmed === '' ? null : trimmed;
+    }
+
+    if (!email || !full_name || !role) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
