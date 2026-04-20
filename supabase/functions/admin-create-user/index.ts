@@ -212,17 +212,30 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Duplicate check — only enforced for seekers.
-    // Admin/coach can reuse email/phone already present in profiles (e.g. existing seeker promoted).
+    // Duplicate phone check — enforced for ALL roles, because the
+    // handle_new_user trigger inserts a profile row and a duplicate
+    // phone violates profiles_phone_unique, crashing auth.admin.createUser.
+    if (phone) {
+      const { data: phoneOwner } = await admin
+        .from('profiles').select('user_id').eq('phone', phone).maybeSingle();
+      if (phoneOwner && phoneOwner.user_id) {
+        // For admin/coach, allow reuse only if the phone belongs to the SAME email we're about to (re)use.
+        const { data: emailOwner } = await admin
+          .from('profiles').select('user_id').eq('email', email).maybeSingle();
+        const sameUser = emailOwner?.user_id && emailOwner.user_id === phoneOwner.user_id;
+        if (!sameUser) {
+          return new Response(JSON.stringify({ error: 'Phone already in use by another account' }), {
+            status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
+    }
+
+    // Email duplicate — strict block for seekers (admin/coach can reuse).
     if (role === 'seeker') {
       const { data: dup } = await admin.rpc('check_profile_duplicate', { _email: email, _phone: phone });
       if (dup === 'email') {
         return new Response(JSON.stringify({ error: 'Email already registered' }), {
-          status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      if (dup === 'phone') {
-        return new Response(JSON.stringify({ error: 'Phone already in use' }), {
           status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
