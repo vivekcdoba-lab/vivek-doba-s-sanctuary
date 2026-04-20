@@ -1681,6 +1681,7 @@ export type Database = {
           created_at: string
           end_date: string | null
           id: string
+          notes: string | null
           payment_status: string
           seeker_id: string
           start_date: string
@@ -1693,6 +1694,7 @@ export type Database = {
           created_at?: string
           end_date?: string | null
           id?: string
+          notes?: string | null
           payment_status?: string
           seeker_id: string
           start_date?: string
@@ -1705,6 +1707,7 @@ export type Database = {
           created_at?: string
           end_date?: string | null
           id?: string
+          notes?: string | null
           payment_status?: string
           seeker_id?: string
           start_date?: string
@@ -3366,6 +3369,7 @@ export type Database = {
           breakthroughs: string | null
           client_good_things: Json | null
           client_growth_json: Json | null
+          coach_id: string | null
           coach_private_notes: string | null
           course_id: string | null
           created_at: string
@@ -3411,6 +3415,7 @@ export type Database = {
           breakthroughs?: string | null
           client_good_things?: Json | null
           client_growth_json?: Json | null
+          coach_id?: string | null
           coach_private_notes?: string | null
           course_id?: string | null
           created_at?: string
@@ -3456,6 +3461,7 @@ export type Database = {
           breakthroughs?: string | null
           client_good_things?: Json | null
           client_growth_json?: Json | null
+          coach_id?: string | null
           coach_private_notes?: string | null
           course_id?: string | null
           created_at?: string
@@ -3497,6 +3503,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sessions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sessions_course_id_fkey"
             columns: ["course_id"]
@@ -4238,6 +4251,7 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_coach: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
