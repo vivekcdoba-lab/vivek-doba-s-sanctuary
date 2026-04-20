@@ -1,47 +1,27 @@
 
-## Changes
+The user is reporting that clicking the social links shows "blocked / refused to connect / ERR_BLOCKED_BY_RESPONSE". This is **not** a code bug — it's the browser refusing to load Instagram/YouTube/Facebook **inside the Lovable preview iframe**.
 
-### 1. WhatsApp prefilled message (visitor-facing)
-New copy:
-> Hello, I recently explored your website and program details. I'm really interested and would love to understand how the program works and how it can help transform my life.
+Why: Instagram, YouTube, and Facebook send `X-Frame-Options: DENY` / `Content-Security-Policy: frame-ancestors` headers that prevent them from being embedded in any iframe (including the Lovable preview). When the user clicks a link inside the preview, the new tab is constrained by the iframe's sandbox, so the browser blocks the navigation.
 
-Update everywhere a public visitor can tap WhatsApp:
-- `src/components/WhatsAppSupportButton.tsx` — replace current "Namaste! I need help with the VDTS platform." message
-- `src/pages/seo/_SeoLayout.tsx` — `SeoNav` WhatsApp link (currently `text=Hello`)
-- `src/pages/Index.tsx` — any `wa.me` links on the landing page
-- Any other public pages (BookAppointment, ApplyLGT, RegisterWorkshop, SEO pages) using `wa.me/919607050111` — grep + update consistently
+The links work correctly when:
+- The site is opened in its own tab (published URL `vivekdoba.com` or `vivek-doba-portal.lovable.app`)
+- Opened directly outside the Lovable editor preview
 
-Internal/logged-in usages (if any inside admin/coach/seeker layouts) stay untouched.
+## Fix
+Make the social links break out of the iframe by adding `target="_blank"` (already there) **plus** ensuring the click opens in the top-level window. The cleanest fix: add `rel="noopener noreferrer me"` (already done) and explicitly set `target="_blank"` — which is already in place.
 
-### 2. Social media link replacement
-Replace old handles with new URLs everywhere:
+The remaining issue is the **preview iframe sandbox**. To make links reliably escape the iframe in the preview, we should ensure all social `<a>` tags have `target="_blank"`. They already do.
 
-| Platform  | Old | New |
-|-----------|-----|-----|
-| YouTube   | `youtube.com/@coachvivekdoba` | `https://www.youtube.com/@VIVEKDOBA` |
-| LinkedIn  | `linkedin.com/in/coachvivekdoba/` | `https://www.linkedin.com/in/vivek-doba-life-nlp-success-business-coach/` |
-| Instagram | `instagram.com/coachvivekdoba/` | `https://www.instagram.com/vivekdoba/` |
-| Facebook  | `facebook.com/coachvivekdoba` | `https://www.facebook.com/askVivekDoba` |
+So the actual user action: **open the published site, not the preview**. No code change is strictly required — but to make this bulletproof I'll:
 
-Files to grep + update: `src/pages/seo/_SeoLayout.tsx` footer, `src/pages/Index.tsx` footer, plus any other page referencing the old handles.
+1. Audit `src/pages/Index.tsx` and `src/pages/seo/_SeoLayout.tsx` social `<a>` tags to confirm every one has `target="_blank" rel="noopener noreferrer me"`.
+2. If any are missing, add them.
 
-### 3. SEO for social media (new)
-Add proper social SEO so the new profiles are discoverable and link previews are rich:
+## Files to verify (read-only audit, then targeted edits if gaps found)
+- `src/pages/Index.tsx` — landing page footer social icons
+- `src/pages/seo/_SeoLayout.tsx` — already confirmed `target="_blank" rel="noopener noreferrer me"` ✓
 
-**a) `index.html` — site-wide additions in `<head>`:**
-- `<meta name="twitter:site" content="@vivekdoba">` and `twitter:creator`
-- Additional `og:` tags: `og:locale="en_IN"`
-- Inject a `Person` JSON-LD schema with `sameAs` array linking all 4 new social profiles — this is the standard signal Google uses to associate the brand with its social accounts (Knowledge Graph).
-- Update the existing `ProfessionalService` JSON-LD to also include `sameAs` with the 4 new URLs.
+## What I'll tell the user
+The links are correct — the "blocked" error is the Lovable preview iframe sandbox, not the code. Verify on the **published URL** (`https://vivekdoba.com` or open in a new browser tab) where the links work normally.
 
-**b) `public/sitemap.xml`** — verify present (no change needed unless missing entries).
-
-**c) `public/robots.txt`** — ensure social crawlers (facebookexternalhit, Twitterbot, LinkedInBot) are allowed (likely already permitted via wildcard, will verify).
-
-**d) Footer rel attributes** — update social `<a>` tags in `_SeoLayout.tsx` and `Index.tsx` footers to use `rel="noopener noreferrer me"` (the `me` token is the microformats signal that the linked profile belongs to the site owner, complementing `sameAs`).
-
-### Out of scope
-- No DB / RLS / auth changes
-- No changes to internal seeker/coach/admin layouts
-- No new pages
-- Phone number `9607050111` stays the same
+No DB / auth / RLS changes. No feature changes.
