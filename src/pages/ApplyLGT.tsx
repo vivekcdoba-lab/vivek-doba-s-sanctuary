@@ -304,8 +304,24 @@ const ApplyLGT = () => {
 
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-4">
         {/* Program Selector */}
-        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
-          <h3 className={`font-semibold text-foreground mb-4 ${missingFields.has('programId') ? 'text-destructive' : ''}`}>Select Program *</h3>
+        <div
+          ref={programRef}
+          data-missing={missingFields.has('programId') ? 'true' : 'false'}
+          className={`bg-card rounded-xl p-6 shadow-sm border-2 scroll-mt-24 transition-all ${
+            missingFields.has('programId')
+              ? 'border-destructive ring-4 ring-destructive/30 animate-pulse'
+              : 'border-border'
+          }`}
+        >
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${missingFields.has('programId') ? 'text-destructive' : 'text-foreground'}`}>
+            {missingFields.has('programId') && <AlertCircle className="w-5 h-5" />}
+            Select Program *
+          </h3>
+          {missingFields.has('programId') && (
+            <p className="text-sm text-destructive mb-3 flex items-center gap-1">
+              <AlertCircle className="w-4 h-4" /> Please select a program to continue
+            </p>
+          )}
           <div className="space-y-3">
             {PROGRAMS.map(p => (
               <button key={p.id} onClick={() => set('programId', p.id)} className={`w-full text-left p-4 rounded-xl border-2 transition-all ${f.programId === p.id ? 'border-primary shadow-md' : 'border-border hover:border-primary/40'}`}>
