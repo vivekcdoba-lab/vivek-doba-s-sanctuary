@@ -2511,7 +2511,7 @@ export type Database = {
           must_change_password: boolean
           occupation: string | null
           password_change_prompted: boolean
-          phone: string
+          phone: string | null
           pincode: string | null
           revenue_range: string | null
           role: string
@@ -2546,7 +2546,7 @@ export type Database = {
           must_change_password?: boolean
           occupation?: string | null
           password_change_prompted?: boolean
-          phone?: string
+          phone?: string | null
           pincode?: string | null
           revenue_range?: string | null
           role?: string
@@ -2581,7 +2581,7 @@ export type Database = {
           must_change_password?: boolean
           occupation?: string | null
           password_change_prompted?: boolean
-          phone?: string
+          phone?: string | null
           pincode?: string | null
           revenue_range?: string | null
           role?: string
