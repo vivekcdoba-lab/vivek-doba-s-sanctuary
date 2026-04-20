@@ -38,6 +38,7 @@ const SessionsPage = () => {
   const { data: sessions = [], isLoading } = useDbSessions();
   const { data: seekers = [] } = useSeekerProfiles();
   const { data: courses = [] } = useDbCourses();
+  const { data: coaches = [] } = useCoaches();
   const createSession = useCreateSession();
   const updateSession = useUpdateSession();
   const navigate = useNavigate();
