@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useAllProfiles } from '@/hooks/useSeekerProfiles';
+import { useAllProfiles, type SeekerProfile } from '@/hooks/useSeekerProfiles';
 import { useDbSessions } from '@/hooks/useDbSessions';
-import { Search, Shield, ShieldCheck, UserCheck, UserX } from 'lucide-react';
+import { Search, Shield, ShieldCheck, UserCheck, KeyRound } from 'lucide-react';
+import { ResetPasswordDialog } from '@/components/admin/ResetPasswordDialog';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,8 +16,9 @@ const AdminCoaches = () => {
   const { data: allProfiles = [], isLoading } = useAllProfiles();
   const { data: sessions = [] } = useDbSessions();
   const [search, setSearch] = useState('');
+  const [resetUser, setResetUser] = useState<SeekerProfile | null>(null);
 
-  const coaches = allProfiles.filter(p => p.role === 'coach' || p.role === 'admin');
+  const coaches = allProfiles.filter(p => p.role === 'coach');
 
   const getAssignedSeekersCount = (coachId: string) => {
     const seekerIds = new Set(sessions.filter(s => s.seeker_id).map(s => s.seeker_id));
@@ -79,11 +81,12 @@ const AdminCoaches = () => {
                 <TableHead>City</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Joined</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No coaches found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No coaches found</TableCell></TableRow>
               ) : filtered.map(coach => (
                 <TableRow key={coach.id}>
                   <TableCell>
@@ -104,12 +107,23 @@ const AdminCoaches = () => {
                     <Badge className="bg-green-500/10 text-green-600 border-green-200">Active</Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{format(new Date(coach.created_at), 'dd MMM yyyy')}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={() => setResetUser(coach)} title="Reset password">
+                      <KeyRound className="w-4 h-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <ResetPasswordDialog
+        user={resetUser ? { user_id: resetUser.user_id, full_name: resetUser.full_name, email: resetUser.email, role: resetUser.role } : null}
+        open={!!resetUser}
+        onOpenChange={(o) => !o && setResetUser(null)}
+      />
     </div>
   );
 };
