@@ -249,27 +249,60 @@ Deno.serve(async (req) => {
       mustChange = false;
     }
 
+    let newUserId: string;
+    let reusedExistingAuthUser = false;
+
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email,
       password: finalPassword,
       email_confirm: true,
       user_metadata: { full_name, phone, city, state, company, occupation, role },
     });
+
     if (createErr || !created?.user) {
       const msg = createErr?.message || 'Failed to create user';
-      if (/already.*registered|already exists|duplicate/i.test(msg)) {
-        return new Response(JSON.stringify({
-          error: "This email already has a login account. Use a different email for the admin/coach role, or change the existing user's role instead.",
-        }), {
+      const isDuplicate = /already.*registered|already exists|duplicate/i.test(msg);
+
+      // Seekers: strict block on duplicate email
+      if (isDuplicate && role === 'seeker') {
+        return new Response(JSON.stringify({ error: 'Email already registered' }), {
           status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      return new Response(JSON.stringify({ error: msg }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+
+      // Admin/coach: reuse the existing auth user instead of erroring
+      if (isDuplicate && (role === 'admin' || role === 'coach')) {
+        // Look up existing auth user by email
+        const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+        const existing = list?.users?.find((u: any) => (u.email || '').toLowerCase() === email.toLowerCase());
+        if (listErr || !existing) {
+          return new Response(JSON.stringify({ error: 'Email exists but could not be located. Try again.' }), {
+            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        newUserId = existing.id;
+        reusedExistingAuthUser = true;
+
+        // Optionally update password to the admin-typed one so they can share it
+        await admin.auth.admin.updateUserById(newUserId, { password: finalPassword });
+      } else {
+        return new Response(JSON.stringify({ error: msg }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    } else {
+      newUserId = created.user.id;
     }
 
-    const newUserId = created.user.id;
+    // Ensure profile row exists (handle_new_user trigger creates one on signUp;
+    // for reused users it already exists — upsert is safest).
+    const { data: existingProfile } = await admin
+      .from('profiles').select('id').eq('user_id', newUserId).maybeSingle();
+    if (!existingProfile) {
+      await admin.from('profiles').insert({
+        user_id: newUserId, email, full_name, role, phone, city, state, company, occupation,
+      });
+    }
 
     const updatePayload: Record<string, any> = {
       role, full_name, phone, city, state, company, occupation,
