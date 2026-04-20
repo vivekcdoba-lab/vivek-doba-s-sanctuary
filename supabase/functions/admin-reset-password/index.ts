@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'VDTS Security <onboarding@resend.dev>',
+            from: fromAddress,
             to: [targetProfile.email],
             subject: 'Your VDTS account password was changed',
             html,
