@@ -2,8 +2,10 @@ import { MessageCircle } from 'lucide-react';
 
 export default function WhatsAppSupportButton() {
   const phone = '919607050111';
-  const message = encodeURIComponent('Namaste! I need help with the VDTS platform.');
-  
+  const message = encodeURIComponent(
+    "Hello, I recently explored your website and program details. I'm really interested and would love to understand how the program works and how it can help transform my life."
+  );
+
   return (
     <a
       href={`https://wa.me/${phone}?text=${message}`}

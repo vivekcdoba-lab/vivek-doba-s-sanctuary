@@ -298,9 +298,9 @@ const LoginPage = () => {
           {/* WhatsApp + Journey */}
           <div className="pt-4 border-t border-border space-y-3">
             <a
-              href="https://wa.me/919607050111?text=Hello"
+              href={`https://wa.me/919607050111?text=${encodeURIComponent("Hello, I recently explored your website and program details. I'm really interested and would love to understand how the program works and how it can help transform my life.")}`}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer me"
               className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#25D366' }}
             >

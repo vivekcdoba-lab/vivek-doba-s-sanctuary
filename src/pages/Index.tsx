@@ -24,9 +24,9 @@ const Index = () => (
             <Phone className="w-4 h-4" /> 9607050111
           </a>
           <a
-            href="https://wa.me/919607050111?text=Hello"
+            href={`https://wa.me/919607050111?text=${encodeURIComponent("Hello, I recently explored your website and program details. I'm really interested and would love to understand how the program works and how it can help transform my life.")}`}
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer me"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white"
             style={{ backgroundColor: '#25D366' }}
           >
@@ -304,16 +304,16 @@ const Index = () => (
         <p className="text-sm text-muted-foreground mb-4">📞 9607050111 | 📧 info@vivekdoba.com | 🌐 vivekdoba.com</p>
         <div className="flex justify-center gap-3 mb-4">
           {[
-            { name: 'Instagram', url: 'https://www.instagram.com/coachvivekdoba/', icon: Instagram, hoverColor: '#E4405F' },
-            { name: 'YouTube', url: 'https://www.youtube.com/@coachvivekdoba', icon: Youtube, hoverColor: '#FF0000' },
-            { name: 'LinkedIn', url: 'https://www.linkedin.com/in/coachvivekdoba/', icon: Linkedin, hoverColor: '#0A66C2' },
-            { name: 'Facebook', url: 'https://www.facebook.com/coachvivekdoba', icon: Facebook, hoverColor: '#1877F2' },
+            { name: 'Instagram', url: 'https://www.instagram.com/vivekdoba/', icon: Instagram, hoverColor: '#E4405F' },
+            { name: 'YouTube', url: 'https://www.youtube.com/@VIVEKDOBA', icon: Youtube, hoverColor: '#FF0000' },
+            { name: 'LinkedIn', url: 'https://www.linkedin.com/in/vivek-doba-life-nlp-success-business-coach/', icon: Linkedin, hoverColor: '#0A66C2' },
+            { name: 'Facebook', url: 'https://www.facebook.com/askVivekDoba', icon: Facebook, hoverColor: '#1877F2' },
           ].map((s) => (
             <a
               key={s.name}
               href={s.url}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer me"
               title={s.name}
               className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-white transition-all duration-200 hover:scale-110"
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = s.hoverColor)}

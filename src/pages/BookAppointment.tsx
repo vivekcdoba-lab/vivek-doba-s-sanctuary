@@ -160,7 +160,7 @@ const BookAppointment = () => {
           <p className="text-sm text-muted-foreground mb-4">📞 Questions? Call 9607050111</p>
           <div className="flex gap-3">
             <Link to="/" className="flex-1 py-2.5 rounded-xl border border-border text-center text-sm font-medium text-foreground hover:bg-muted transition-colors">← Back to Home</Link>
-            <a href="https://wa.me/919607050111" target="_blank" rel="noopener noreferrer" className="flex-1 py-2.5 rounded-xl text-center text-sm font-medium text-white" style={{ backgroundColor: '#25D366' }}>💬 WhatsApp Us</a>
+            <a href={`https://wa.me/919607050111?text=${encodeURIComponent("Hello, I recently explored your website and program details. I'm really interested and would love to understand how the program works and how it can help transform my life.")}`} target="_blank" rel="noopener noreferrer me" className="flex-1 py-2.5 rounded-xl text-center text-sm font-medium text-white" style={{ backgroundColor: '#25D366' }}>💬 WhatsApp Us</a>
           </div>
         </div>
       </div>
