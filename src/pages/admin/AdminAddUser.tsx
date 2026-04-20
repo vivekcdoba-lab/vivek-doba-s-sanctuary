@@ -104,7 +104,23 @@ const AdminAddUser = () => {
         },
       });
       if (error || (data as any)?.error) {
-        toast.error((data as any)?.error || error?.message || 'Failed to create user');
+        let serverMsg: string | undefined = (data as any)?.error;
+        // supabase.functions.invoke puts non-2xx response body in error.context
+        if (!serverMsg && (error as any)?.context) {
+          try {
+            const ctx = (error as any).context;
+            if (typeof ctx?.json === 'function') {
+              const body = await ctx.json();
+              serverMsg = body?.error;
+            } else if (typeof ctx?.text === 'function') {
+              const txt = await ctx.text();
+              try { serverMsg = JSON.parse(txt)?.error; } catch { serverMsg = txt; }
+            } else if (typeof ctx === 'string') {
+              try { serverMsg = JSON.parse(ctx)?.error; } catch { serverMsg = ctx; }
+            }
+          } catch { /* ignore */ }
+        }
+        toast.error(serverMsg || error?.message || 'Failed to create user');
         setLoading(false);
         return;
       }
