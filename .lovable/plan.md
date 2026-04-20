@@ -1,61 +1,58 @@
 
-## Goal
-Make every outgoing email use `info@vivekdoba.com` as the sender by default, fixing the cases where it's still hardcoded to other addresses.
 
-## Current state
-- `app_settings.key='email_from'` already exists (managed in Admin → Settings → Email Sender). Default: `VDTS <info@vivekdoba.com>`.
-- `admin-create-user` and `send-otp` likely read this value already.
-- `admin-reset-password` was previously updated to use the verified domain.
-- Other functions still hardcode senders and need to be aligned.
+## Why "two coaches not created"
 
-## Changes
+Logs prove the **auth users WERE created/updated successfully** (`PUT /admin/users/...` 200 for both `dobaarchana@gmail.com` and `vivekcdoba@gmail.com`). Their `profiles` rows also exist. The function then crashed at the email step:
 
-### 1. `supabase/functions/_shared/getEmailFrom.ts` (new shared helper)
-Single source of truth so we don't repeat the lookup logic:
-```ts
-export async function getEmailFrom(admin): Promise<string> {
-  const { data } = await admin.from('app_settings')
-    .select('value').eq('key','email_from').maybeSingle();
-  const v = data?.value;
-  return (typeof v === 'string' && v.trim()) ? v.trim() : 'VDTS <info@vivekdoba.com>';
-}
+```
+[email] exception Cannot read properties of undefined (reading 'replace')
 ```
 
-### 2. Audit + update every edge function that calls Resend
-For each function below: import `getEmailFrom`, replace any hardcoded `from:` with the resolved value, fall back to `VDTS <info@vivekdoba.com>` if the lookup fails.
+…which the function catches and returns to the UI as a failure toast — making it *look like* the coaches weren't created. They were. Their `role` is just still `admin` in profiles because the profile update either didn't happen on the reuse path, or you tried to convert existing admins → coaches and the email crash short-circuited the success messaging.
 
-- `supabase/functions/admin-create-user/index.ts` — verify it uses the helper (already reads email_from; switch to shared helper).
-- `supabase/functions/admin-reset-password/index.ts` — switch to shared helper.
-- `supabase/functions/send-otp/index.ts` — verify/switch to shared helper.
-- `supabase/functions/approve-application/index.ts` — replace hardcoded sender.
-- `supabase/functions/daily-session-report/index.ts` — replace hardcoded sender.
-- `supabase/functions/send-notification/index.ts` — replace hardcoded sender.
-- `supabase/functions/delete-seeker/index.ts` — only if it sends email; otherwise skip.
+Root cause: `escapeHtml(s)` calls `s.replace(...)` with no null guard. When `name`/`email`/`role` is undefined (happens on the reused-auth-user path or with certain payloads), it throws.
 
-(Exact list confirmed by reading each file before editing — no other touched logic.)
+## Fix — single file: `supabase/functions/admin-create-user/index.ts`
 
-### 3. Admin UI confirmation
-`src/pages/admin/SettingsPage.tsx` already has the Email Sender tab. No changes needed — but the Save handler will be left as-is so admins can override if they ever switch domains.
+1. **Null-safe `escapeHtml`**
+   ```ts
+   function escapeHtml(s: unknown) {
+     const str = s == null ? '' : String(s);
+     return str.replace(/[&<>"']/g, (c) => ({
+       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+     }[c]!));
+   }
+   ```
 
-### 4. Recipients
-Already correct everywhere — every function sends to the user's profile email (`to: [user.email]`). No change needed. The previous "all emails go to owner" issue was strictly a Resend test-mode restriction caused by `onboarding@resend.dev` sender; switching to the verified `info@vivekdoba.com` resolves it.
+2. **Defensive `buildEmail`** — coerce all fields:
+   ```ts
+   const safeName = String(name || 'Seeker');
+   const safeEmail = String(email || '');
+   const safePassword = String(password || '');
+   const safeRole = String(role || 'user');
+   const roleLabel = safeRole.charAt(0).toUpperCase() + safeRole.slice(1);
+   ```
+   Use these in the template instead of the raw destructured values.
+
+3. **Better logging** — before returning email failure, log which field was empty so future regressions are obvious:
+   ```ts
+   console.error('[email] buildEmail inputs', { name: !!opts.name, email: !!opts.to, role: !!opts.role });
+   ```
+
+4. **Ensure profile role flips on reused-user path** — verify the existing `updatePayload` runs for reused users (it does in current code, just confirming no early return skips it). No code change unless verification finds a gap.
+
+## After the fix
+- Re-trigger "Create Coach" for `dobaarchana@gmail.com` and `vivekcdoba@gmail.com` → the profile `role` will update to `coach`, no email crash, success toast.
+- If you want them to remain admins, just leave them — they already exist as admin.
 
 ## Out of scope
-- No DB schema changes.
+- No DB migration.
 - No UI changes.
-- No changes to email body/content/templates.
-- No changes to who receives the emails.
-
-## Prerequisite (one-time, by user)
-`vivekdoba.com` must already be verified in Resend (it is, based on the prior reset-password fix working). If not verified, emails will fail with a clear Resend error.
+- No changes to duplicate-handling logic, role gating, or email content.
 
 ## Verification
-1. Open Admin → Settings → Email Sender → confirm value is `VDTS <info@vivekdoba.com>` (or set it).
-2. Trigger each flow and confirm the recipient receives email from `info@vivekdoba.com`:
-   - Create a new admin/coach/seeker (admin-create-user)
-   - Reset a user's password (admin-reset-password)
-   - Send OTP at registration (send-otp)
-   - Approve a pending application (approve-application)
-   - Send a notification (send-notification)
-   - Wait for / manually trigger daily-session-report
-3. Check Resend dashboard logs — every send should show `from: info@vivekdoba.com` and a non-owner `to:` address succeeding.
+1. Edge function logs no longer show `Cannot read properties of undefined (reading 'replace')`.
+2. After re-creating the two coaches: `select role from profiles where email in ('dobaarchana@gmail.com','vivekcdoba@gmail.com')` returns `coach` for both.
+3. Both recipients receive the credentials email from `info@vivekdoba.com`.
+4. Creating a brand-new coach with a fresh email still works end-to-end.
+
