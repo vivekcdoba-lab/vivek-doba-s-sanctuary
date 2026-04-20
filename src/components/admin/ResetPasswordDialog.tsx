@@ -51,8 +51,9 @@ export const ResetPasswordDialog = ({ user, open, onOpenChange }: Props) => {
     });
     setSubmitting(false);
 
-    if (error || (data as any)?.error) {
-      toast.error(`Reset failed: ${error?.message || (data as any)?.error}`);
+    const errMsg = (data as any)?.error || (error as any)?.context?.error || error?.message;
+    if (errMsg) {
+      toast.error(errMsg);
       return;
     }
     if ((data as any)?.email_sent) {
