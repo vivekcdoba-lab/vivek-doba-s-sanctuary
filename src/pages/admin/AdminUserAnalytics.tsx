@@ -13,7 +13,7 @@ const AdminUserAnalytics = () => {
   if (isLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   const seekers = profiles.filter(p => p.role === 'seeker');
-  const coaches = profiles.filter(p => p.role === 'coach');
+  const coaches = profiles.filter(p => p.role === 'coach' || (p as any).is_also_coach === true);
   const admins = profiles.filter(p => p.role === 'admin');
 
   const thisMonth = startOfMonth(new Date());
