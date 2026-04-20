@@ -38,14 +38,19 @@ function sanitizePermissions(input: any): Record<string, boolean> {
   return out;
 }
 
-function escapeHtml(s: string) {
-  return s.replace(/[&<>"']/g, (c) => ({
+function escapeHtml(s: unknown) {
+  const str = s == null ? '' : String(s);
+  return str.replace(/[&<>"']/g, (c) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   }[c]!));
 }
 
 function buildEmail(opts: { name: string; email: string; password: string; role: string; isTemp: boolean; loginUrl: string; }) {
-  const { name, email, password, role, isTemp, loginUrl } = opts;
+  const { isTemp, loginUrl } = opts;
+  const name = String(opts.name || 'Seeker');
+  const email = String(opts.email || '');
+  const password = String(opts.password || '');
+  const role = String(opts.role || 'user');
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
   const passwordNote = isTemp
     ? `<p style="margin:12px 0;color:#7a4a00;font-size:14px;">⚠️ This is a <strong>temporary password</strong>. You will be asked to set your own password the first time you sign in.</p>`
