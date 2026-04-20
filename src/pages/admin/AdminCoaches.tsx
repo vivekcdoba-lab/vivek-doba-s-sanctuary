@@ -18,7 +18,7 @@ const AdminCoaches = () => {
   const [search, setSearch] = useState('');
   const [resetUser, setResetUser] = useState<SeekerProfile | null>(null);
 
-  const coaches = allProfiles.filter(p => p.role === 'coach');
+  const coaches = allProfiles.filter(p => p.role === 'coach' || p.is_also_coach === true);
 
   const getAssignedSeekersCount = (coachId: string) => {
     const seekerIds = new Set(sessions.filter(s => s.seeker_id).map(s => s.seeker_id));

@@ -44,7 +44,7 @@ const StatCard = ({ icon: Icon, label, value, prefix, gradient, trend, trendUp }
 const AdminDashboard = () => {
   const { data: seekers = [], isLoading: seekersLoading } = useSeekerProfiles();
   const { data: allProfiles = [] } = useAllProfiles();
-  const coachCount = allProfiles.filter(p => p.role === 'coach').length;
+  const coachCount = allProfiles.filter(p => p.role === 'coach' || (p as any).is_also_coach === true).length;
   const adminCount = allProfiles.filter(p => p.role === 'admin').length;
   const { data: sessions = [], isLoading: sessionsLoading } = useDbSessions();
   const { data: assignments = [] } = useDbAssignments();
@@ -97,7 +97,7 @@ const AdminDashboard = () => {
 
   // Coach performance — live data from profiles with role 'coach'
   const coachData = allProfiles
-    .filter(p => p.role === 'coach')
+    .filter(p => p.role === 'coach' || (p as any).is_also_coach === true)
     .map(c => ({
       name: c.full_name?.split(' ')[0] || 'Coach',
       seekers: sessions.filter(s => s.seeker_id === c.id).length,

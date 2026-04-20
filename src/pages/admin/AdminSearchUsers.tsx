@@ -31,10 +31,11 @@ type EditForm = {
   occupation: string;
   role: 'seeker' | 'coach' | 'admin';
   access_end_date: string;
+  is_also_coach: boolean;
 };
 
 const emptyForm: EditForm = {
-  full_name: '', phone: '', city: '', state: '', company: '', occupation: '', role: 'seeker', access_end_date: '',
+  full_name: '', phone: '', city: '', state: '', company: '', occupation: '', role: 'seeker', access_end_date: '', is_also_coach: false,
 };
 
 const AdminSearchUsers = () => {
@@ -66,6 +67,7 @@ const AdminSearchUsers = () => {
         occupation: editingUser.occupation || '',
         role: (editingUser.role as 'seeker' | 'coach' | 'admin') || 'seeker',
         access_end_date: editingUser.access_end_date || '',
+        is_also_coach: (editingUser as any).is_also_coach === true,
       });
     }
   }, [editingUser]);
@@ -123,7 +125,8 @@ const AdminSearchUsers = () => {
         occupation: form.occupation || null,
         role: form.role,
         access_end_date: form.access_end_date || null,
-      })
+        is_also_coach: form.role === 'admin' ? form.is_also_coach : false,
+      } as any)
       .eq('id', editingUser.id);
     setSaving(false);
     if (error) {
@@ -220,7 +223,14 @@ const AdminSearchUsers = () => {
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{user.email}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">{user.phone || '—'}</TableCell>
-                  <TableCell><Badge variant={roleBadgeVariant(user.role)}>{user.role}</Badge></TableCell>
+                  <TableCell>
+                    <div className="flex gap-1 flex-wrap">
+                      <Badge variant={roleBadgeVariant(user.role)}>{user.role}</Badge>
+                      {user.role === 'admin' && (user as any).is_also_coach === true && (
+                        <Badge variant="default">coach</Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{user.city || '—'}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">{format(new Date(user.created_at), 'dd MMM yy')}</TableCell>
                   <TableCell>
@@ -337,6 +347,23 @@ const AdminSearchUsers = () => {
                 )}
               </div>
             </div>
+            {form.role === 'admin' && (
+              <div className="flex items-center gap-2 rounded-md border border-border p-3">
+                <input
+                  id="is_also_coach"
+                  type="checkbox"
+                  checked={form.is_also_coach}
+                  onChange={(e) => setForm({ ...form, is_also_coach: e.target.checked })}
+                  className="h-4 w-4 accent-primary"
+                />
+                <Label htmlFor="is_also_coach" className="cursor-pointer">
+                  Also act as coach
+                  <span className="block text-xs text-muted-foreground font-normal">
+                    Admin will appear in coach lists and assignment dropdowns.
+                  </span>
+                </Label>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingUser(null)} disabled={saving}>Cancel</Button>
