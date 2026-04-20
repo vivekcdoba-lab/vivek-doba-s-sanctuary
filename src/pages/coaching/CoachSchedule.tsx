@@ -320,6 +320,20 @@ export default function CoachSchedule() {
               </select>
             </div>
             <div>
+              <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'कोच *' : 'Coach *'}</label>
+              {isAdmin ? (
+                <select value={newForm.coach_id} onChange={e => setNewForm(p => ({ ...p, coach_id: e.target.value }))}
+                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background">
+                  <option value="">Select Coach</option>
+                  {coaches.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
+                </select>
+              ) : (
+                <div className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-muted/40 text-foreground">
+                  {profile?.full_name || '—'}
+                </div>
+              )}
+            </div>
+            <div>
               <label className="text-xs font-medium text-muted-foreground">{t('course')}</label>
               <select value={newForm.course_id} onChange={e => setNewForm(p => ({ ...p, course_id: e.target.value }))}
                 className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background">
