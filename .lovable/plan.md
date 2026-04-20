@@ -1,40 +1,43 @@
 
 ## Goal
-Allow the same email/phone to be reused when creating an **admin** or **coach**, but keep the strict duplicate block for **seekers**.
+On `/apply-lgt`, when the user submits without choosing a program, make the missing "Select Program *" field obvious and scroll it into view.
 
-## Change
-Single edit in `supabase/functions/admin-create-user/index.ts`: gate the duplicate check so it only runs when `role === 'seeker'`.
+## Changes — single file: `src/pages/ApplyLGT.tsx`
 
-### File: `supabase/functions/admin-create-user/index.ts`
-Wrap the existing `check_profile_duplicate` block:
+1. **Track validation error state**
+   - Add `const [programError, setProgramError] = useState(false);`
+   - Add `const programRef = useRef<HTMLDivElement>(null);`
 
-```ts
-if (role === 'seeker') {
-  const { data: dup } = await admin.rpc('check_profile_duplicate', { _email: email, _phone: phone });
-  if (dup === 'email') { return 409 'Email already registered'; }
-  if (dup === 'phone') { return 409 'Phone already in use'; }
-}
-```
+2. **On submit, validate program first**
+   - In the form submit handler, before the existing submission logic:
+     - If `formData.program` is empty/unselected:
+       - `setProgramError(true)`
+       - Show toast: `"Please select a program to continue"`
+       - `programRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })`
+       - Focus the SelectTrigger
+       - `return` early
+   - Reset `programError` to `false` when a program is chosen (in the Select's `onValueChange`).
 
-For admin/coach, skip the RPC entirely and let `auth.admin.createUser` proceed.
+3. **Visual highlight on the program field**
+   - Wrap the existing program `<Select>` block in a `<div ref={programRef} className="scroll-mt-24">`.
+   - When `programError` is true:
+     - SelectTrigger gets: `border-destructive border-2 ring-2 ring-destructive/30 animate-pulse`
+     - Label "Select Program *" gets: `text-destructive font-semibold`
+     - Add a helper line below: `<p className="text-sm text-destructive flex items-center gap-1"><AlertCircle className="w-4 h-4" /> Please select a program to continue</p>`
+   - The pulse animation runs until the user picks a value (then `programError` flips false and styles return to normal).
 
-## Edge case: Supabase Auth uniqueness
-`auth.users.email` is globally unique in Supabase. If an admin/coach is added with an email that already exists in `auth.users` (e.g. the person is already a seeker), `createUser` will fail with `"User already registered"`. Handle this:
-
-- Detect that specific error from `createErr.message`.
-- Return a **409** with a clear message: `"This email already has a login account. Use a different email for the admin/coach role, or change the existing user's role instead."`
-- This prevents a confusing 500 and tells the admin exactly what to do.
-
-Phone is NOT unique in `auth.users`, so phone reuse for admin/coach will work without further handling.
+4. **Apply the same pattern to other required fields** (consistency, minimal additions)
+   - Use one shared `errors` state object `{ program, name, email, phone }` and one `firstErrorRef` that points to whichever required field is empty first (top-down order: name → email → phone → program).
+   - On submit: collect missing required fields, set `errors`, scroll to the first missing one, show a single toast `"Please complete the highlighted fields"`, return early.
+   - Same red border + label color + helper text treatment for each.
 
 ## Out of scope
-- No DB schema changes (no unique constraint changes on `profiles.email` / `profiles.phone`).
-- No change to seeker registration flow or the public `/register` submissions path.
-- No change to `check_profile_duplicate` RPC (still used for seekers and registration).
-- No UI changes to `AdminAddUser.tsx` — existing error toast already surfaces the edge function's error message.
+- No DB or schema changes.
+- No change to the actual submission logic, success flow, or thank-you screen.
+- No change to other pages (`RegisterWorkshop`, `BookAppointment`) — apply later if requested.
 
 ## Verification
-1. Create admin with an email already used by a seeker → if not in `auth.users`, succeeds; if in `auth.users`, returns the new 409 with guidance.
-2. Create coach reusing an existing coach's phone → succeeds.
-3. Create seeker with an email already in `profiles` → still blocked with `"Email already registered"`.
-4. Create seeker with phone already in `profiles` → still blocked with `"Phone already in use"`.
+1. Open `/apply-lgt`, fill name/email/phone, leave Program empty, click submit → page scrolls to Program field, field pulses red, helper text appears, toast shows.
+2. Pick a program → red highlight and helper text disappear immediately.
+3. Submit with multiple empty required fields → scrolls to the topmost missing field; all missing fields are highlighted.
+4. Submit with everything filled → submits normally, no regressions.
