@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ArrowLeft } from "lucide-react";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
@@ -18,6 +18,12 @@ const NlpCoach = () => {
         title="NLP Coach for Mindset & Behaviour Change"
         subtitle="Rewire limiting beliefs, install empowering patterns and lead from a calmer, clearer self."
       />
+
+      <div className="max-w-4xl mx-auto px-4 pt-6">
+        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to Home
+        </Link>
+      </div>
 
       <article className="max-w-4xl mx-auto px-4 py-12 space-y-8 text-muted-foreground leading-relaxed">
         <section>
