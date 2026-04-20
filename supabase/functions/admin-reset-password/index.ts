@@ -109,7 +109,15 @@ Deno.serve(async (req) => {
     let email_error: string | undefined;
     if (RESEND_API_KEY && targetProfile.email) {
       try {
-        const fromAddress = Deno.env.get('RESEND_FROM') || 'VDTS Security <info@vivekdoba.com>';
+        // Resolve from-address from app_settings (single source of truth)
+        let fromAddress = Deno.env.get('RESEND_FROM') || 'VDTS <info@vivekdoba.com>';
+        try {
+          const { data: setting } = await admin
+            .from('app_settings').select('value').eq('key', 'email_from').maybeSingle();
+          if (setting?.value && typeof setting.value === 'string') fromAddress = setting.value as string;
+        } catch (e) {
+          console.warn('app_settings lookup failed:', (e as Error).message);
+        }
         const html = `
           <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#222">
             <h2 style="color:#800020;margin:0 0 16px">Your VDTS account password was changed</h2>
