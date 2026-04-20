@@ -8,6 +8,7 @@ interface Profile {
   email: string;
   full_name: string;
   role: 'admin' | 'seeker' | 'coach';
+  admin_level?: string | null;
 }
 
 interface AuthState {
