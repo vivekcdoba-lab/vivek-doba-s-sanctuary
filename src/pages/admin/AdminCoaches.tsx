@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useAllProfiles } from '@/hooks/useSeekerProfiles';
+import { useAllProfiles, type SeekerProfile } from '@/hooks/useSeekerProfiles';
 import { useDbSessions } from '@/hooks/useDbSessions';
-import { Search, Shield, ShieldCheck, UserCheck, UserX } from 'lucide-react';
+import { Search, Shield, ShieldCheck, UserCheck, KeyRound } from 'lucide-react';
+import { ResetPasswordDialog } from '@/components/admin/ResetPasswordDialog';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,8 +16,9 @@ const AdminCoaches = () => {
   const { data: allProfiles = [], isLoading } = useAllProfiles();
   const { data: sessions = [] } = useDbSessions();
   const [search, setSearch] = useState('');
+  const [resetUser, setResetUser] = useState<SeekerProfile | null>(null);
 
-  const coaches = allProfiles.filter(p => p.role === 'coach' || p.role === 'admin');
+  const coaches = allProfiles.filter(p => p.role === 'coach');
 
   const getAssignedSeekersCount = (coachId: string) => {
     const seekerIds = new Set(sessions.filter(s => s.seeker_id).map(s => s.seeker_id));
