@@ -1,49 +1,26 @@
 
-User wants end-to-end verification of everything built today, with no leftover test records.
+The Resend test-mode error happens because `admin-reset-password` hardcodes `from: 'VDTS Security <onboarding@resend.dev>'`, which Resend restricts to the account owner's email only.
 
-## What was built today (to verify)
-1. **Strict role-based route access** (`AuthGuard.tsx` + `authStore.ts`)
-   - Seeker → only `/seeker/*`
-   - Coach → only `/coaching/*`
-   - Regular Admin → only `/admin/*` (blocked from coach/seeker)
-   - Super Admin → universal access
-2. **`/admin/coaches` filter fix** — only `role === 'coach'` shown (no admins)
-3. **Password reset feature**
-   - Edge function `admin-reset-password` (auth rules, Resend email, in-app notification)
-   - Shared `ResetPasswordDialog.tsx`
-   - `KeyRound` button in `AdminSearchUsers`, `AdminCoaches`, `AdminAdmins`
-   - Super-admin-only visibility for resetting admin accounts
+## Fix
+Switch the sender to your verified domain so emails reach the actual recipient.
 
-## Test plan (read-only, no data created)
+### File: `supabase/functions/admin-reset-password/index.ts`
+- Change the `from` field in the Resend payload from:
+  - `'VDTS Security <onboarding@resend.dev>'`
+  - to: `'VDTS Security <info@vivekdoba.com>'`
+- Keep `to: [targetProfile.email]` (already correct — sends to the user being reset).
+- Optional resilience: read an override from env (`RESEND_FROM`) with `info@vivekdoba.com` as the fallback default, mirroring the pattern used in `supabase/functions/send-otp/index.ts` (which already resolves a from-address dynamically).
 
-### A. Static / code verification (no browser, no DB writes)
-1. Re-read `AuthGuard.tsx` — confirm super_admin override + per-role redirects.
-2. Re-read `authStore.ts` — confirm `admin_level` in `Profile` type and select query.
-3. Re-read `AdminCoaches.tsx` — confirm filter is `role === 'coach'` only.
-4. Re-read `ResetPasswordDialog.tsx` — confirm `validatePassword` use, confirm-password match, show/hide toggle, invokes `admin-reset-password`.
-5. Re-read `admin-reset-password/index.ts` — confirm: JWT check, `is_admin` gate, `is_super_admin` gate when target is admin, self-reset block, `updateUserById` call, Resend email, `notifications` insert, all non-fatal failures handled.
-6. Re-read `AdminSearchUsers.tsx` and `AdminAdmins.tsx` — confirm super-admin visibility guard on the reset button for admin rows.
-7. Run `supabase--linter` to surface any new SQL/security issues.
-8. Spot-check edge function logs for `admin-reset-password` (should be none / clean since not yet invoked).
+## Prerequisite (must be true, otherwise Resend will 403 again)
+- The domain `vivekdoba.com` must be **verified** in Resend (DNS records: SPF, DKIM, DMARC published and Resend shows "Verified").
+- If not yet verified, the same 403 will occur with a different message ("domain not verified"). In that case the user must complete domain verification at resend.com/domains before this fix takes effect.
 
-### B. Live data verification (read-only DB queries via `supabase--read_query`)
-- Count rows by role in `profiles` to confirm `/admin/coaches` would only render coaches.
-- Verify at least one `super_admin` exists so the universal-access path is reachable.
-- Confirm no orphan/test users were created today (filter `created_at >= today`).
+## Out of scope
+- No other edge functions touched. `send-otp` already uses a configurable from-address and does not need changes.
+- No DB or UI changes.
+- No password reset logic changes.
 
-### C. Edge function smoke test (NO real password change)
-- Call `admin-reset-password` via `supabase--curl_edge_functions` with:
-  - **No auth header** → expect `401 Unauthorized`
-  - **Invalid body** (missing fields) → expect `400` with Zod validation error
-  - **Weak password** (e.g. `"short"`) → expect `400` from Zod regex check
-- These calls never reach `updateUserById`, so no account is modified and no email is sent.
-- Skip any "happy path" call that would actually change a real user's password.
-
-### D. Explicit non-actions (to honor "don't create test records")
-- No new users, profiles, sessions, notifications, or any DB inserts.
-- No real password resets executed against any account.
-- No browser-based UI clicks that would persist data.
-- If any test artifact slips in, delete it immediately and report.
-
-## Deliverable
-A single summary report listing each item above with PASS / FAIL / NOTES, plus confirmation that zero test records were created.
+## Verification (after deploy)
+- Trigger a password reset for a non-owner email from `/admin/search-users`.
+- Expect toast: "Password reset for <name>. Email notification sent."
+- Recipient receives the email from `info@vivekdoba.com`.
