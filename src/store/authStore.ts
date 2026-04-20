@@ -94,7 +94,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 async function fetchProfile(userId: string, userEmail?: string, metadata?: any): Promise<Profile | null> {
   const profilePromise = supabase
     .from('profiles')
-    .select('id, user_id, email, full_name, role')
+    .select('id, user_id, email, full_name, role, admin_level')
     .eq('user_id', userId)
     .maybeSingle();
 
