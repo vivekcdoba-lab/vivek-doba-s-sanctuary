@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import PhoneInput from '@/components/inputs/PhoneInput';
+import { validatePhone, toE164, DEFAULT_COUNTRY_CODE } from '@/lib/phoneValidation';
 
 const SOURCES = ['Website', 'Social Media', 'Referral', 'Live Event', 'Cold Call', 'LinkedIn', 'WhatsApp', 'Other'];
 const PRIORITIES = ['hot', 'warm', 'cold'];
@@ -28,7 +30,7 @@ const AdminAddLead = () => {
   const createLead = useCreateLead();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
-    name: '', phone: '', email: '', source: 'Website',
+    name: '', phoneCode: DEFAULT_COUNTRY_CODE, phone: '', email: '', source: 'Website',
     priority: 'warm', interested_course_id: '', current_challenge: '', notes: '',
   });
 
@@ -36,9 +38,13 @@ const AdminAddLead = () => {
   const canNext = () => { if (step === 0) return form.name && (form.phone || form.email); return true; };
 
   const handleCreate = async () => {
+    if (form.phone) {
+      const err = validatePhone(form.phoneCode, form.phone);
+      if (err) { toast.error(err); return; }
+    }
     try {
       await createLead.mutateAsync({
-        name: form.name, phone: form.phone, email: form.email, source: form.source,
+        name: form.name, phone: form.phone ? toE164(form.phoneCode, form.phone) : '', email: form.email, source: form.source,
         priority: form.priority, interested_course_id: form.interested_course_id || undefined,
         current_challenge: form.current_challenge, notes: form.notes,
       });
@@ -73,7 +79,7 @@ const AdminAddLead = () => {
           {step === 0 && (<>
             <div className="space-y-2"><Label>Full Name *</Label><Input value={form.name} onChange={e => set('name', e.target.value)} placeholder="Lead's full name" /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+91 98765 43210" /></div>
+              <PhoneInput countryCode={form.phoneCode} phone={form.phone} onCountryCodeChange={v => set('phoneCode', v)} onPhoneChange={v => set('phone', v)} label="Phone" />
               <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="email@example.com" /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
