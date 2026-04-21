@@ -14,6 +14,9 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { PERMISSION_KEYS, PERMISSION_LABELS, allPermissionsTrue, type PermissionKey } from '@/lib/adminPermissions';
 import { validatePassword, PASSWORD_HELP } from '@/lib/passwordValidation';
+import PhoneInput from '@/components/inputs/PhoneInput';
+import StatePincodeInput from '@/components/inputs/StatePincodeInput';
+import { validatePhone, validatePincode, toE164, DEFAULT_COUNTRY_CODE } from '@/lib/phoneValidation';
 
 const STEPS = ['Role & Basic Info', 'Profile Details', 'Review & Create'];
 
@@ -27,11 +30,13 @@ const AdminAddUser = () => {
     role: 'seeker',
     full_name: '',
     email: '',
+    phoneCode: DEFAULT_COUNTRY_CODE,
     phone: '',
     password: '',
     confirm_password: '',
     city: '',
     state: '',
+    pincode: '',
     company: '',
     occupation: '',
     gender: '',
@@ -74,6 +79,10 @@ const AdminAddUser = () => {
       toast.error('Please fill required fields');
       return;
     }
+    const phoneErr = validatePhone(form.phoneCode, form.phone);
+    if (phoneErr) { toast.error(phoneErr); return; }
+    const pinErr = validatePincode(form.pincode);
+    if (pinErr) { toast.error(pinErr); return; }
     if (!autoGen) {
       const pErr = validatePassword(form.password);
       if (pErr) { toast.error(pErr); return; }
@@ -86,13 +95,14 @@ const AdminAddUser = () => {
         body: {
           email: form.email,
           full_name: form.full_name,
-          phone: form.phone,
+          phone: toE164(form.phoneCode, form.phone),
           // When auto-gen is on (or seeker), server ignores password and generates a temp one
           password: autoGen ? null : form.password,
           auto_generate_password: autoGen,
           role: form.role,
           city: form.city,
           state: form.state,
+          pincode: form.pincode,
           company: form.company,
           occupation: form.occupation,
           gender: form.gender,
@@ -154,7 +164,7 @@ const AdminAddUser = () => {
         toast.warning(`${baseMsg} ${detail}`, { duration: 18000 });
       }
 
-      setForm({ role: 'seeker', full_name: '', email: '', phone: '', password: '', confirm_password: '', city: '', state: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true, auto_generate_password: false, admin_level: 'admin', admin_permissions: {} });
+      setForm({ role: 'seeker', full_name: '', email: '', phoneCode: DEFAULT_COUNTRY_CODE, phone: '', password: '', confirm_password: '', city: '', state: '', pincode: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true, auto_generate_password: false, admin_level: 'admin', admin_permissions: {} });
       setStep(0);
     } catch (e: any) {
       toast.error(e?.message || 'Error creating user');
@@ -212,10 +222,14 @@ const AdminAddUser = () => {
                 <Label>Email *</Label>
                 <Input type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="email@example.com" />
               </div>
-              <div className="space-y-2">
-                <Label>Phone *</Label>
-                <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="+91 9876543210" />
-              </div>
+              <PhoneInput
+                countryCode={form.phoneCode}
+                phone={form.phone}
+                onCountryCodeChange={v => update('phoneCode', v)}
+                onPhoneChange={v => update('phone', v)}
+                label="Phone"
+                required
+              />
               {isSeeker ? (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-foreground">
                   🔐 A <strong>temporary password</strong> will be generated and emailed to the seeker. They will be required to set their own password on first login.
@@ -266,16 +280,16 @@ const AdminAddUser = () => {
 
           {step === 1 && (
             <>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>City</Label>
-                  <Input value={form.city} onChange={e => update('city', e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label>State</Label>
-                  <Input value={form.state} onChange={e => update('state', e.target.value)} />
-                </div>
+              <div className="space-y-2">
+                <Label>City</Label>
+                <Input value={form.city} onChange={e => update('city', e.target.value)} />
               </div>
+              <StatePincodeInput
+                state={form.state}
+                pincode={form.pincode}
+                onStateChange={v => update('state', v)}
+                onPincodeChange={v => update('pincode', v)}
+              />
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Company</Label>
