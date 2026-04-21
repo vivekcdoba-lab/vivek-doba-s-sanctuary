@@ -13,6 +13,7 @@ import {
   Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, Cell,
 } from "recharts";
+import { SeekerSignaturesTab } from "@/components/SeekerSignaturesTab";
 
 const CoachSeekerDetail = () => {
   const { seekerId } = useParams();
