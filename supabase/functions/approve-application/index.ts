@@ -248,17 +248,10 @@ Deno.serve(async (req) => {
 
       if (existingProfile) {
         profileId = existingProfile.id;
+        const fullPayload = stripNulls({ ...buildProfilePayload(fd, sub), role: 'seeker' });
         await supabaseAdmin
           .from("profiles")
-          .update({
-            city: fd.city || "",
-            state: fd.state || "",
-            company: fd.company || fd.companyName || "",
-            occupation: fd.profession || fd.designation || fd.occupation || "",
-            phone: fd.phone || "",
-            whatsapp: fd.whatsapp || fd.phone || "",
-            role: "seeker",
-          })
+          .update(fullPayload)
           .eq("id", profileId);
         // Existing user — they already have credentials; email confirms approval (no password disclosed)
         credentialsForEmail = isRegistration && fd.password
