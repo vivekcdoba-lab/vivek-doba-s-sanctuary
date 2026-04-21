@@ -2052,6 +2052,36 @@ export type Database = {
           },
         ]
       }
+      key_rotation_log: {
+        Row: {
+          from_version: string | null
+          id: string
+          notes: string | null
+          rotated_at: string
+          rotated_by: string | null
+          to_version: string
+          trigger_source: string
+        }
+        Insert: {
+          from_version?: string | null
+          id?: string
+          notes?: string | null
+          rotated_at?: string
+          rotated_by?: string | null
+          to_version: string
+          trigger_source?: string
+        }
+        Update: {
+          from_version?: string | null
+          id?: string
+          notes?: string | null
+          rotated_at?: string
+          rotated_by?: string | null
+          to_version?: string
+          trigger_source?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           created_at: string
@@ -2409,6 +2439,7 @@ export type Database = {
       otp_codes: {
         Row: {
           attempts: number
+          code_enc: string | null
           created_at: string
           expires_at: string
           id: string
@@ -2418,6 +2449,7 @@ export type Database = {
         }
         Insert: {
           attempts?: number
+          code_enc?: string | null
           created_at?: string
           expires_at: string
           id?: string
@@ -2427,6 +2459,7 @@ export type Database = {
         }
         Update: {
           attempts?: number
+          code_enc?: string | null
           created_at?: string
           expires_at?: string
           id?: string
@@ -2635,6 +2668,7 @@ export type Database = {
           pan_enc: string | null
           pan_hash: string | null
           password_change_prompted: boolean
+          password_changed_at: string | null
           phone: string | null
           phone_hash: string | null
           pincode: string | null
@@ -2687,6 +2721,7 @@ export type Database = {
           pan_enc?: string | null
           pan_hash?: string | null
           password_change_prompted?: boolean
+          password_changed_at?: string | null
           phone?: string | null
           phone_hash?: string | null
           pincode?: string | null
@@ -2739,6 +2774,7 @@ export type Database = {
           pan_enc?: string | null
           pan_hash?: string | null
           password_change_prompted?: boolean
+          password_changed_at?: string | null
           phone?: string | null
           phone_hash?: string | null
           pincode?: string | null
@@ -4390,6 +4426,7 @@ export type Database = {
       decrypt_field: { Args: { _payload: string }; Returns: string }
       encrypt_field: { Args: { _plaintext: string }; Returns: string }
       get_daily_session_report: { Args: never; Returns: Json }
+      get_encryption_status: { Args: never; Returns: Json }
       get_leaderboard_data: {
         Args: {
           _batch_user_id?: string
@@ -4426,6 +4463,10 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_coach: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      rotate_encryption_keys: {
+        Args: { _trigger_source?: string }
+        Returns: Json
+      }
     }
     Enums: {
       submission_status: "pending" | "approved" | "rejected" | "info_requested"
