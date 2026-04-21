@@ -11,6 +11,49 @@ function escapeHtml(s: string) {
   }[c]!));
 }
 
+function s(v: any): string | null {
+  const x = (v ?? '').toString().trim();
+  return x ? x : null;
+}
+function intFrom(v: any): number | null {
+  const m = String(v ?? '').match(/\d+/);
+  if (!m) return null;
+  const n = parseInt(m[0], 10);
+  return Number.isFinite(n) ? n : null;
+}
+function buildProfilePayload(fd: Record<string, any>, sub: any) {
+  const linkedin = s(fd.linkedin) || s(fd.linkedinUrl);
+  const website = s(fd.website);
+  const linkedin_url = linkedin || (website && website.toLowerCase().includes('linkedin') ? website : null);
+  return {
+    dob: s(fd.dob),
+    gender: s(fd.gender),
+    blood_group: s(fd.bloodGroup),
+    pincode: s(fd.pincode),
+    hometown: s(fd.hometown),
+    city: s(fd.city),
+    state: s(fd.state),
+    phone: s(fd.phone) || s(fd.mobile) || s(sub?.mobile),
+    whatsapp: s(fd.whatsapp) || s(fd.phone) || s(sub?.mobile),
+    company: s(fd.company) || s(fd.companyName),
+    occupation: s(fd.profession) || s(fd.occupation) || s(fd.designation),
+    designation: s(fd.designation),
+    industry: s(fd.industry),
+    experience_years: intFrom(fd.yearsInBiz),
+    revenue_range: s(fd.revenue) || s(fd.annualRevenue),
+    team_size: intFrom(fd.teamSize),
+    linkedin_url,
+    marriage_anniversary: s(fd.marriageAnniversary),
+  };
+}
+function stripNulls<T extends Record<string, any>>(obj: T): Partial<T> {
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== null && v !== undefined) out[k] = v;
+  }
+  return out as Partial<T>;
+}
+
 function randomTempPassword() {
   const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const lower = 'abcdefghjkmnpqrstuvwxyz';
