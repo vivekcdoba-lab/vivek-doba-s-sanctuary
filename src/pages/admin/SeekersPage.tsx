@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { Loader2 } from 'lucide-react';
+import PhoneInput from '@/components/inputs/PhoneInput';
+import { validatePhone, toE164, DEFAULT_COUNTRY_CODE } from '@/lib/phoneValidation';
 
 const SeekersPage = () => {
   const { data: seekers = [], isLoading } = useSeekerProfiles();
@@ -18,7 +20,7 @@ const SeekersPage = () => {
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [newSeeker, setNewSeeker] = useState({ full_name: '', email: '', phone: '', city: '' });
+  const [newSeeker, setNewSeeker] = useState({ full_name: '', email: '', phoneCode: DEFAULT_COUNTRY_CODE, phone: '', city: '' });
 
   const [addLoading, setAddLoading] = useState(false);
 
@@ -27,13 +29,16 @@ const SeekersPage = () => {
       toast.error('Please fill name, email and phone');
       return;
     }
+    const phoneErr = validatePhone(newSeeker.phoneCode, newSeeker.phone);
+    if (phoneErr) { toast.error(phoneErr); return; }
+    const phoneE164 = toE164(newSeeker.phoneCode, newSeeker.phone);
 
     setAddLoading(true);
     try {
       // Check duplicate email or phone using RPC
       const { data: dupResult } = await supabase.rpc('check_profile_duplicate', {
         _email: newSeeker.email,
-        _phone: newSeeker.phone,
+        _phone: phoneE164,
       });
       if (dupResult === 'email') {
         toast.error('This email is already registered. Please use a different email.');
@@ -48,7 +53,7 @@ const SeekersPage = () => {
 
       toast.success(`Seeker "${newSeeker.full_name}" — please register them via the signup page`);
       setShowAddDialog(false);
-      setNewSeeker({ full_name: '', email: '', phone: '', city: '' });
+      setNewSeeker({ full_name: '', email: '', phoneCode: DEFAULT_COUNTRY_CODE, phone: '', city: '' });
     } catch {
       toast.error('Error checking for duplicates');
     } finally {
@@ -82,7 +87,7 @@ const SeekersPage = () => {
           <div className="space-y-4">
             <div><Label>Full Name *</Label><Input value={newSeeker.full_name} onChange={e => setNewSeeker({ ...newSeeker, full_name: e.target.value })} placeholder="Full name" /></div>
             <div><Label>Email *</Label><Input type="email" value={newSeeker.email} onChange={e => setNewSeeker({ ...newSeeker, email: e.target.value })} placeholder="Email" /></div>
-            <div><Label>Phone</Label><Input value={newSeeker.phone} onChange={e => setNewSeeker({ ...newSeeker, phone: e.target.value })} placeholder="Phone" /></div>
+            <PhoneInput countryCode={newSeeker.phoneCode} phone={newSeeker.phone} onCountryCodeChange={v => setNewSeeker({ ...newSeeker, phoneCode: v })} onPhoneChange={v => setNewSeeker({ ...newSeeker, phone: v })} label="Phone" required />
             <div><Label>City</Label><Input value={newSeeker.city} onChange={e => setNewSeeker({ ...newSeeker, city: e.target.value })} placeholder="City" /></div>
           </div>
           <DialogFooter>
