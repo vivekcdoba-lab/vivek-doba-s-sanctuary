@@ -19,42 +19,54 @@ export type Database = {
           business_id: string
           created_at: string
           expenses: number | null
+          expenses_enc: string | null
           id: string
           month: number
           notes: string | null
+          notes_enc: string | null
           payables: number | null
           profit: number | null
           receivables: number | null
           revenue: number | null
+          revenue_enc: string | null
           taxes: number | null
+          taxes_enc: string | null
           year: number
         }
         Insert: {
           business_id: string
           created_at?: string
           expenses?: number | null
+          expenses_enc?: string | null
           id?: string
           month: number
           notes?: string | null
+          notes_enc?: string | null
           payables?: number | null
           profit?: number | null
           receivables?: number | null
           revenue?: number | null
+          revenue_enc?: string | null
           taxes?: number | null
+          taxes_enc?: string | null
           year: number
         }
         Update: {
           business_id?: string
           created_at?: string
           expenses?: number | null
+          expenses_enc?: string | null
           id?: string
           month?: number
           notes?: string | null
+          notes_enc?: string | null
           payables?: number | null
           profit?: number | null
           receivables?: number | null
           revenue?: number | null
+          revenue_enc?: string | null
           taxes?: number | null
+          taxes_enc?: string | null
           year?: number
         }
         Relationships: [
@@ -638,12 +650,19 @@ export type Database = {
       }
       business_profiles: {
         Row: {
+          bank_account_enc: string | null
           business_name: string
           created_at: string
           founded_year: number | null
+          gst_hash: string | null
+          gst_number_enc: string | null
           id: string
+          ifsc_enc: string | null
           industry: string | null
           logo_url: string | null
+          pan_enc: string | null
+          pan_hash: string | null
+          revenue_enc: string | null
           revenue_range: string | null
           seeker_id: string
           tagline: string | null
@@ -652,12 +671,19 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          bank_account_enc?: string | null
           business_name: string
           created_at?: string
           founded_year?: number | null
+          gst_hash?: string | null
+          gst_number_enc?: string | null
           id?: string
+          ifsc_enc?: string | null
           industry?: string | null
           logo_url?: string | null
+          pan_enc?: string | null
+          pan_hash?: string | null
+          revenue_enc?: string | null
           revenue_range?: string | null
           seeker_id: string
           tagline?: string | null
@@ -666,12 +692,19 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          bank_account_enc?: string | null
           business_name?: string
           created_at?: string
           founded_year?: number | null
+          gst_hash?: string | null
+          gst_number_enc?: string | null
           id?: string
+          ifsc_enc?: string | null
           industry?: string | null
           logo_url?: string | null
+          pan_enc?: string | null
+          pan_hash?: string | null
+          revenue_enc?: string | null
           revenue_range?: string | null
           seeker_id?: string
           tagline?: string | null
@@ -821,34 +854,40 @@ export type Database = {
       cashflow_records: {
         Row: {
           amount: number
+          amount_enc: string | null
           balance_after: number | null
           business_id: string
           category: string | null
           created_at: string
           date: string
           description: string | null
+          description_enc: string | null
           id: string
           type: string
         }
         Insert: {
           amount?: number
+          amount_enc?: string | null
           balance_after?: number | null
           business_id: string
           category?: string | null
           created_at?: string
           date?: string
           description?: string | null
+          description_enc?: string | null
           id?: string
           type: string
         }
         Update: {
           amount?: number
+          amount_enc?: string | null
           balance_after?: number | null
           business_id?: string
           category?: string | null
           created_at?: string
           date?: string
           description?: string | null
+          description_enc?: string | null
           id?: string
           type?: string
         }
@@ -2234,6 +2273,7 @@ export type Database = {
       messages: {
         Row: {
           content: string
+          content_enc: string | null
           created_at: string
           id: string
           is_read: boolean | null
@@ -2242,6 +2282,7 @@ export type Database = {
         }
         Insert: {
           content: string
+          content_enc?: string | null
           created_at?: string
           id?: string
           is_read?: boolean | null
@@ -2250,6 +2291,7 @@ export type Database = {
         }
         Update: {
           content?: string
+          content_enc?: string | null
           created_at?: string
           id?: string
           is_read?: boolean | null
@@ -2397,6 +2439,8 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          amount_enc: string | null
+          bank_ref_enc: string | null
           created_at: string
           due_date: string | null
           gst_amount: number
@@ -2404,14 +2448,21 @@ export type Database = {
           invoice_number: string
           method: string
           notes: string | null
+          notes_enc: string | null
+          payer_gst_enc: string | null
+          payer_pan_enc: string | null
           payment_date: string | null
           seeker_id: string
           status: string
           total_amount: number
+          total_amount_enc: string | null
           transaction_id: string | null
+          transaction_id_enc: string | null
         }
         Insert: {
           amount: number
+          amount_enc?: string | null
+          bank_ref_enc?: string | null
           created_at?: string
           due_date?: string | null
           gst_amount?: number
@@ -2419,14 +2470,21 @@ export type Database = {
           invoice_number: string
           method?: string
           notes?: string | null
+          notes_enc?: string | null
+          payer_gst_enc?: string | null
+          payer_pan_enc?: string | null
           payment_date?: string | null
           seeker_id: string
           status?: string
           total_amount: number
+          total_amount_enc?: string | null
           transaction_id?: string | null
+          transaction_id_enc?: string | null
         }
         Update: {
           amount?: number
+          amount_enc?: string | null
+          bank_ref_enc?: string | null
           created_at?: string
           due_date?: string | null
           gst_amount?: number
@@ -2434,11 +2492,16 @@ export type Database = {
           invoice_number?: string
           method?: string
           notes?: string | null
+          notes_enc?: string | null
+          payer_gst_enc?: string | null
+          payer_pan_enc?: string | null
           payment_date?: string | null
           seeker_id?: string
           status?: string
           total_amount?: number
+          total_amount_enc?: string | null
           transaction_id?: string | null
+          transaction_id_enc?: string | null
         }
         Relationships: []
       }
