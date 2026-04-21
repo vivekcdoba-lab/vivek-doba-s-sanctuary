@@ -6,9 +6,16 @@ import { User, Mail, Phone, Lock, Flower2, Loader2, ArrowLeft } from 'lucide-rea
 import { COURSES } from '@/data/mockData';
 import { supabase } from '@/integrations/supabase/client';
 import { validatePassword, PASSWORD_HELP } from '@/lib/passwordValidation';
+import PhoneInput from '@/components/inputs/PhoneInput';
+import { validatePhone, toE164, DEFAULT_COUNTRY_CODE } from '@/lib/phoneValidation';
 
 const RegisterPage = () => {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', whatsapp: '', password: '', confirm: '', course: '', source: '' });
+  const [form, setForm] = useState({
+    name: '', email: '',
+    phoneCode: DEFAULT_COUNTRY_CODE, phone: '',
+    whatsappCode: DEFAULT_COUNTRY_CODE, whatsapp: '',
+    password: '', confirm: '', course: '', source: '',
+  });
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
