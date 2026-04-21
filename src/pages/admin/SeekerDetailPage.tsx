@@ -21,12 +21,13 @@ import { format } from 'date-fns';
 import { useDbSessions } from '@/hooks/useDbSessions';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { useDbCourses } from '@/hooks/useDbCourses';
+import { SeekerSignaturesTab } from '@/components/SeekerSignaturesTab';
 
 const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
 const formatDate = (d: string) => { if (!d) return '—'; try { return format(new Date(d), 'dd-MMMM-yyyy'); } catch { return d; } };
 const formatTime12 = (t: string) => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`; };
 
-const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Assignments', 'Daily Tracking', 'Payments', 'Private Notes 🔒'];
+const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Assignments', 'Daily Tracking', 'Payments', 'Documents', 'Private Notes 🔒'];
 
 const moodEmoji = (score?: number | null) => {
   if (!score) return '—';
@@ -617,8 +618,11 @@ const SeekerDetailPage = () => {
         </div>
       )}
 
-      {/* TAB 7: PRIVATE NOTES */}
-      {activeTab === 7 && (
+      {/* TAB 7: DOCUMENTS & SIGNATURES */}
+      {activeTab === 7 && <SeekerSignaturesTab seekerId={seeker.id} />}
+
+      {/* TAB 8: PRIVATE NOTES */}
+      {activeTab === 8 && (
         <div className="bg-card rounded-xl p-6 shadow-sm border-2 border-warning-amber/30">
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><Lock className="w-5 h-5 text-warning-amber" /> Coach's Private Notes</h3>
           <p className="text-xs text-muted-foreground mb-3">These notes are only visible to the admin/coach. Seekers cannot see them.</p>
