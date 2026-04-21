@@ -1,1 +1,7 @@
 project_id = "pobjadmnmfbeydqsymhx"
+
+[functions.get-signature-request]
+verify_jwt = false
+
+[functions.submit-signature]
+verify_jwt = false

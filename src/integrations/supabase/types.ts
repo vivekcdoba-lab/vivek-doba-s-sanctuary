@@ -1732,6 +1732,115 @@ export type Database = {
           },
         ]
       }
+      document_signatures: {
+        Row: {
+          document_id: string
+          file_size_bytes: number | null
+          id: string
+          ip_address: unknown
+          place: string
+          request_id: string
+          seeker_id: string
+          signature_date: string
+          signed_at: string
+          signed_pdf_path: string
+          typed_full_name: string
+          user_agent: string | null
+          verification_id: string
+        }
+        Insert: {
+          document_id: string
+          file_size_bytes?: number | null
+          id?: string
+          ip_address?: unknown
+          place: string
+          request_id: string
+          seeker_id: string
+          signature_date?: string
+          signed_at?: string
+          signed_pdf_path: string
+          typed_full_name: string
+          user_agent?: string | null
+          verification_id: string
+        }
+        Update: {
+          document_id?: string
+          file_size_bytes?: number | null
+          id?: string
+          ip_address?: unknown
+          place?: string
+          request_id?: string
+          seeker_id?: string
+          signature_date?: string
+          signed_at?: string
+          signed_pdf_path?: string
+          typed_full_name?: string
+          user_agent?: string | null
+          verification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_signatures_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_signatures_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "signature_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_signatures_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          storage_path: string
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+          version: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          storage_path: string
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+          version?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          storage_path?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       encryption_keys: {
         Row: {
           algorithm: string
@@ -3717,6 +3826,78 @@ export type Database = {
           },
           {
             foreignKeyName: "sessions_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signature_requests: {
+        Row: {
+          cancelled_at: string | null
+          created_at: string
+          created_by: string | null
+          custom_message: string | null
+          document_id: string
+          expires_at: string
+          id: string
+          seeker_id: string
+          sent_at: string
+          session_id: string | null
+          signed_at: string | null
+          signer_email_encrypted: string | null
+          signer_name: string | null
+          status: string
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_message?: string | null
+          document_id: string
+          expires_at?: string
+          id?: string
+          seeker_id: string
+          sent_at?: string
+          session_id?: string | null
+          signed_at?: string | null
+          signer_email_encrypted?: string | null
+          signer_name?: string | null
+          status?: string
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_message?: string | null
+          document_id?: string
+          expires_at?: string
+          id?: string
+          seeker_id?: string
+          sent_at?: string
+          session_id?: string | null
+          signed_at?: string | null
+          signer_email_encrypted?: string | null
+          signer_name?: string | null
+          status?: string
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_requests_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signature_requests_seeker_id_fkey"
             columns: ["seeker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
