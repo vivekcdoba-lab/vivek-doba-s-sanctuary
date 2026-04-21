@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { RESOURCES, COURSES } from '@/data/mockData';
 import { STORY_LIBRARY } from '@/data/storyLibrary';
-import { FileText, Headphones, Video, FileSpreadsheet, Search, Download, Eye, BookOpen, Plus } from 'lucide-react';
+import { FileText, Headphones, Video, FileSpreadsheet, Search, Download, Eye, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Resource } from '@/types';
 
@@ -11,42 +12,51 @@ const typeIcon: Record<string, any> = { pdf: FileText, audio: Headphones, video:
 const categories = ['All', 'Course Materials', 'Worksheets', 'Meditation', 'Affirmations', 'Templates', 'Books'];
 const langColors: Record<string, string> = { EN: 'bg-sky-blue/10 text-sky-blue', MR: 'bg-saffron/10 text-saffron', HI: 'bg-lotus-pink/10 text-lotus-pink' };
 
+const openResource = async (url?: string) => {
+  if (!url) return;
+  if (url.startsWith('storage:resources/')) {
+    const path = url.replace('storage:resources/', '');
+    const { data, error } = await supabase.storage.from('resources').createSignedUrl(path, 60);
+    if (error || !data?.signedUrl) { toast.error('Could not open file'); return; }
+    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+};
+
 const ResourcesPage = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [activeTab, setActiveTab] = useState<'resources' | 'stories'>('resources');
   const [storySource, setStorySource] = useState('all');
-  const [resources, setResources] = useState<Resource[]>(RESOURCES);
-  const [showUpload, setShowUpload] = useState(false);
-  const [newResource, setNewResource] = useState({ title: '', description: '', type: 'pdf' as Resource['type'], category: 'Course Materials', course_id: '', language: 'EN' as Resource['language'], tags: '' });
 
-  const filtered = resources.filter((r) => {
+  const { data: dbResources = [] } = useQuery({
+    queryKey: ['learning-content'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('learning_content').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []).map((r: any): Resource => ({
+        id: r.id,
+        title: r.title,
+        description: r.description || '',
+        type: r.type,
+        category: r.category || 'Course Materials',
+        language: (r.language || 'EN') as Resource['language'],
+        tags: [],
+        view_count: 0,
+        download_count: 0,
+        url: r.url,
+      } as Resource & { url?: string }));
+    },
+  });
+
+  const allResources: (Resource & { url?: string })[] = [...dbResources, ...RESOURCES];
+
+  const filtered = allResources.filter((r) => {
     const matchSearch = r.title.toLowerCase().includes(search.toLowerCase());
     const matchCat = category === 'All' || r.category === category;
     return matchSearch && matchCat;
   });
-
-  const handleUpload = () => {
-    if (!newResource.title || !newResource.description) {
-      toast.error('Please fill Title and Description');
-      return;
-    }
-    setResources(prev => [...prev, {
-      id: `res_${Date.now()}`,
-      title: newResource.title,
-      description: newResource.description,
-      type: newResource.type,
-      category: newResource.category,
-      course_id: newResource.course_id || undefined,
-      language: newResource.language,
-      tags: newResource.tags.split(',').map(t => t.trim()).filter(Boolean),
-      view_count: 0,
-      download_count: 0,
-    }]);
-    toast.success(`Resource "${newResource.title}" uploaded`);
-    setShowUpload(false);
-    setNewResource({ title: '', description: '', type: 'pdf', category: 'Course Materials', course_id: '', language: 'EN', tags: '' });
-  };
 
   const filteredStories = STORY_LIBRARY.filter(s => {
     const matchSearch = s.title.toLowerCase().includes(search.toLowerCase()) || s.theme.toLowerCase().includes(search.toLowerCase());
@@ -59,11 +69,8 @@ const ResourcesPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Resource Library</h1>
-          <p className="text-sm text-muted-foreground">{RESOURCES.length} resources • {STORY_LIBRARY.length} stories</p>
+          <p className="text-sm text-muted-foreground">{allResources.length} resources • {STORY_LIBRARY.length} stories</p>
         </div>
-        <button onClick={() => setShowUpload(true)} className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm hover:opacity-90 flex items-center gap-1.5">
-          <Plus className="w-4 h-4" /> Upload Resource
-        </button>
       </div>
 
       {/* Tab Toggle */}
@@ -93,7 +100,8 @@ const ResourcesPage = () => {
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 stagger-children">
             {filtered.map((r) => {
               const Icon = typeIcon[r.type] || FileText;
-              const course = r.course_id ? COURSES.find(c => c.id === r.course_id) : null;
+              const course = (r as any).course_id ? COURSES.find(c => c.id === (r as any).course_id) : null;
+              const url = (r as any).url as string | undefined;
               return (
                 <div key={r.id} className="bg-card rounded-2xl shadow-md border border-border overflow-hidden card-hover">
                   <div className="p-5">
@@ -116,7 +124,11 @@ const ResourcesPage = () => {
                         <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {r.view_count}</span>
                         <span className="flex items-center gap-1"><Download className="w-3 h-3" /> {r.download_count}</span>
                       </div>
-                      <button className="text-primary hover:underline font-medium">View →</button>
+                      {url ? (
+                        <button onClick={() => openResource(url)} className="text-primary hover:underline font-medium">View →</button>
+                      ) : (
+                        <span title="No URL available" className="text-muted-foreground/60 font-medium cursor-not-allowed">View →</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -197,63 +209,6 @@ const ResourcesPage = () => {
           <p className="text-muted-foreground">No results match your search.</p>
         </div>
       )}
-
-      <Dialog open={showUpload} onOpenChange={setShowUpload}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>📁 Upload Resource</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium text-foreground">Title *</label>
-              <input value={newResource.title} onChange={e => setNewResource(p => ({ ...p, title: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" placeholder="Resource title" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Description *</label>
-              <textarea value={newResource.description} onChange={e => setNewResource(p => ({ ...p, description: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="Brief description..." />
-            </div>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className="text-sm font-medium text-foreground">Type</label>
-                <select value={newResource.type} onChange={e => setNewResource(p => ({ ...p, type: e.target.value as Resource['type'] }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
-                  <option value="pdf">📄 PDF</option>
-                  <option value="audio">🎧 Audio</option>
-                  <option value="video">🎥 Video</option>
-                  <option value="worksheet">📋 Worksheet</option>
-                </select>
-              </div>
-              <div className="flex-1">
-                <label className="text-sm font-medium text-foreground">Language</label>
-                <select value={newResource.language} onChange={e => setNewResource(p => ({ ...p, language: e.target.value as Resource['language'] }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
-                  <option value="EN">English</option>
-                  <option value="MR">Marathi</option>
-                  <option value="HI">Hindi</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Category</label>
-              <select value={newResource.category} onChange={e => setNewResource(p => ({ ...p, category: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
-                {categories.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Course (optional)</label>
-              <select value={newResource.course_id} onChange={e => setNewResource(p => ({ ...p, course_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
-                <option value="">No specific course</option>
-                {COURSES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Tags (comma separated)</label>
-              <input value={newResource.tags} onChange={e => setNewResource(p => ({ ...p, tags: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" placeholder="e.g. meditation, morning routine" />
-            </div>
-            <button onClick={handleUpload} className="w-full py-2.5 rounded-xl gradient-chakravartin text-primary-foreground font-medium text-sm">
-              Upload Resource
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
