@@ -95,7 +95,7 @@ const SeekerProfile = () => {
       const e = validatePhone(profile.whatsappCode, profile.whatsapp);
       if (e) { toast({ title: `WhatsApp: ${e}`, variant: 'destructive' }); return; }
     }
-    const pinErr = validatePincode(profile.pincode);
+    const pinErr = validatePincode(profile.pincode, !!profile.state && !INDIAN_STATES.includes(profile.state));
     if (pinErr) { toast({ title: pinErr, variant: 'destructive' }); return; }
 
     const phoneE164 = profile.phone ? toE164(profile.phoneCode, profile.phone) : '';
