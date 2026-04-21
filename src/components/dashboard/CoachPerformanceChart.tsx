@@ -5,7 +5,7 @@ import { CHART_COLORS } from '@/components/charts/chartColors';
 interface CoachData {
   name: string;
   seekers: number;
-  rating: number;
+  rating?: number;
 }
 
 interface CoachPerformanceChartProps {

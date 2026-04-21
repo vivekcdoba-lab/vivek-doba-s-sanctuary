@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, CalendarDays, Clock, IndianRupee, Video, MapPin, Plus, PhoneCall, Bell, Target, TrendingUp, TrendingDown, ClipboardList, Clipboard, GraduationCap } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
+import { Users, CalendarDays, Clock, IndianRupee, Video, MapPin, Plus, PhoneCall, Bell, Target, TrendingUp, TrendingDown, ClipboardList, Clipboard, GraduationCap, FileSignature } from 'lucide-react';
 import { MOTIVATIONAL_QUOTES, formatINR, getGreeting } from '@/data/mockData';
 import { useSeekerProfiles, useAllProfiles } from '@/hooks/useSeekerProfiles';
 import { useDbSessions } from '@/hooks/useDbSessions';
@@ -8,6 +10,7 @@ import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { usePayments } from '@/hooks/usePayments';
 import { useDbLeads } from '@/hooks/useDbLeads';
 import { useDbCourses } from '@/hooks/useDbCourses';
+import { supabase } from '@/integrations/supabase/client';
 import BirthdayAnniversaryReminders from '@/components/BirthdayAnniversaryReminders';
 import { SkeletonDashboard } from '@/components/SkeletonCard';
 import DonutChart from '@/components/charts/DonutChart';
@@ -95,22 +98,45 @@ const AdminDashboard = () => {
     { name: 'Overdue', value: assignments.filter(a => a.status === 'overdue').length },
   ].filter(d => d.value > 0);
 
-  // Coach performance — live data from profiles with role 'coach'
+  // Coach performance — live data from profiles with role 'coach' (rating omitted: no session_feedback table yet)
   const coachData = allProfiles
     .filter(p => p.role === 'coach' || (p as any).is_also_coach === true)
     .map(c => ({
       name: c.full_name?.split(' ')[0] || 'Coach',
       seekers: sessions.filter(s => s.seeker_id === c.id).length,
-      rating: 0,
     }));
 
-  // Activity feed
-  const activityItems = seekers.slice(0, 3).map((s, i) => ({
-    id: s.id,
-    emoji: ['🟢', '💰', '🔥'][i] || '🟢',
-    text: [`New enrollment: ${s.full_name}`, `Payment received from ${s.full_name}`, `Lead converted: ${s.full_name}`][i] || s.full_name,
-    time: `${i + 1}h ago`,
-  }));
+  // Real activity feed — union of recent notifications, payments, enrollments
+  const { data: activityItems = [] } = useQuery({
+    queryKey: ['admin-dashboard-activity'],
+    queryFn: async () => {
+      const [notifRes, payRes, enrolRes] = await Promise.all([
+        supabase.from('notifications').select('id,type,title,message,created_at').order('created_at', { ascending: false }).limit(10),
+        supabase.from('payments').select('id,total_amount,seeker_id,created_at,status').order('created_at', { ascending: false }).limit(10),
+        supabase.from('enrollments').select('id,seeker_id,created_at,status').order('created_at', { ascending: false }).limit(10),
+      ]);
+      const seekerNameById = new Map(seekers.map(s => [s.id, s.full_name]));
+      const items: { id: string; emoji: string; text: string; time: string; ts: string }[] = [];
+      (notifRes.data || []).forEach((n: any) => {
+        const k = (n.type || '').toLowerCase();
+        const emoji = k.includes('payment') ? '💰' : k.includes('reminder') ? '⏰' : k.includes('celebr') || k.includes('streak') ? '🔥' : k.includes('application') ? '📝' : '🔔';
+        items.push({ id: `n-${n.id}`, emoji, text: n.title || n.message || 'Notification', time: '', ts: n.created_at });
+      });
+      (payRes.data || []).forEach((p: any) => {
+        const name = seekerNameById.get(p.seeker_id) || 'Seeker';
+        items.push({ id: `p-${p.id}`, emoji: '💰', text: `Payment ${p.status === 'received' ? 'received' : 'recorded'} from ${name}${p.total_amount ? ` (₹${Number(p.total_amount).toLocaleString('en-IN')})` : ''}`, time: '', ts: p.created_at });
+      });
+      (enrolRes.data || []).forEach((e: any) => {
+        const name = seekerNameById.get(e.seeker_id) || 'Seeker';
+        items.push({ id: `e-${e.id}`, emoji: '🟢', text: `New enrollment: ${name}`, time: '', ts: e.created_at });
+      });
+      return items
+        .filter(i => i.ts)
+        .sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+        .slice(0, 10)
+        .map(i => ({ ...i, time: formatDistanceToNow(new Date(i.ts), { addSuffix: true }) }));
+    },
+  });
 
   if (seekersLoading || sessionsLoading) {
     return <div className="p-4"><SkeletonDashboard /></div>;
@@ -256,7 +282,7 @@ const AdminDashboard = () => {
       {/* Quick Actions */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-3">Quick Actions</h2>
-        <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-3 lg:grid-cols-7 gap-3">
           {[
             { label: 'Add User', icon: Plus, gradient: 'gradient-chakravartin', path: '/admin/add-user' },
             { label: 'Add Lead', icon: Target, gradient: 'bg-lotus-pink', path: '/leads' },
@@ -264,6 +290,7 @@ const AdminDashboard = () => {
             { label: 'Record Payment', icon: IndianRupee, gradient: 'gradient-growth', path: '/admin/record-payment' },
             { label: 'Follow-up', icon: PhoneCall, gradient: 'gradient-saffron', path: '/follow-ups' },
             { label: 'Reports', icon: ClipboardList, gradient: 'gradient-hero', path: '/reports' },
+            { label: 'Documents & Signatures', icon: FileSignature, gradient: 'bg-lotus-pink', path: '/admin/documents' },
           ].map(action => (
             <Link key={action.label} to={action.path} className={`${action.gradient} rounded-xl p-4 text-center text-primary-foreground card-hover btn-press`}>
               <action.icon className="w-6 h-6 mx-auto mb-2" />

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Bell, Save, Settings, MessageSquare, Mail, Smartphone, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Bell, Save, Settings, MessageSquare, Mail, Smartphone, Zap, FileSignature, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +9,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/store/authStore';
 import ChangeOwnPasswordForm from '@/components/admin/ChangeOwnPasswordForm';
 import type { AutomationRule } from '@/types';
+import { useQuery } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const channelIcons: Record<string, typeof MessageSquare> = { whatsapp: MessageSquare, email: Mail, sms: Smartphone, in_app: Bell, dashboard: Settings };
 const channelColors: Record<string, string> = { whatsapp: 'text-dharma-green', email: 'text-sky-blue', sms: 'text-saffron', in_app: 'text-primary', dashboard: 'text-muted-foreground' };
@@ -93,13 +97,52 @@ const SettingsPage = () => {
     toast({ title: '✅ Settings saved', description: 'Automation rules updated successfully' });
   };
 
-  const automationHistory = [
-    { action: 'Sent streak reminder to Amit Joshi', time: '2 hours ago' },
-    { action: 'Marked Priya Nair\'s session as missed', time: 'Yesterday' },
-    { action: 'Payment reminder sent to Sneha Kulkarni', time: 'Yesterday' },
-    { action: 'Streak celebration (30 days) for Amit Joshi', time: '2 days ago' },
-    { action: 'New application notification: Anil Bhosle', time: '3 days ago' },
-  ];
+  const { data: automationHistory = [], isLoading: historyLoading } = useQuery({
+    queryKey: ['admin-automation-history'],
+    queryFn: async () => {
+      const [notifRes, auditRes, sigRes] = await Promise.all([
+        supabase.from('notifications').select('id,type,title,message,created_at').order('created_at', { ascending: false }).limit(20),
+        supabase.from('session_audit_log').select('id,action,created_at').order('created_at', { ascending: false }).limit(20),
+        supabase.from('signature_requests').select('id,status,signer_name,sent_at,signed_at,cancelled_at,created_at').order('created_at', { ascending: false }).limit(20),
+      ]);
+      const items: { id: string; emoji: string; action: string; ts: string }[] = [];
+      const emojiFor = (t?: string) => {
+        const k = (t || '').toLowerCase();
+        if (k.includes('payment')) return '💰';
+        if (k.includes('reminder')) return '⏰';
+        if (k.includes('celebr') || k.includes('streak')) return '🔥';
+        if (k.includes('application') || k.includes('enrol')) return '📝';
+        if (k.includes('missed')) return '⚠️';
+        return '🔔';
+      };
+      (notifRes.data || []).forEach((n: any) => items.push({
+        id: `n-${n.id}`,
+        emoji: emojiFor(n.type),
+        action: n.title || n.message || 'Notification sent',
+        ts: n.created_at,
+      }));
+      (auditRes.data || []).forEach((a: any) => items.push({
+        id: `a-${a.id}`,
+        emoji: '🛠️',
+        action: a.action ? a.action.replace(/[._]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'System action',
+        ts: a.created_at,
+      }));
+      (sigRes.data || []).forEach((s: any) => {
+        const status = s.status || 'pending';
+        const verb = status === 'signed' ? 'signed' : status === 'cancelled' ? 'cancelled' : status === 'expired' ? 'expired' : 'sent';
+        items.push({
+          id: `s-${s.id}`,
+          emoji: status === 'signed' ? '✍️' : status === 'cancelled' ? '🚫' : '📄',
+          action: `Document ${verb}${s.signer_name ? ` — ${s.signer_name}` : ''}`,
+          ts: s.signed_at || s.cancelled_at || s.sent_at || s.created_at,
+        });
+      });
+      return items
+        .filter(i => i.ts)
+        .sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+        .slice(0, 20);
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -167,16 +210,44 @@ const SettingsPage = () => {
             })}
           </div>
 
+          {/* Documents & Signatures helper banner */}
+          <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <FileSignature className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Need to send a document for signature?</p>
+                <p className="text-xs text-muted-foreground">Open a seeker's profile → Documents &amp; Signatures tab, or manage the library.</p>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <Button asChild size="sm" variant="default">
+                <Link to="/admin/documents"><FileSignature className="w-3.5 h-3.5 mr-1" /> Document Library</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/admin/seekers"><Users className="w-3.5 h-3.5 mr-1" /> Find a Seeker</Link>
+              </Button>
+            </div>
+          </div>
+
           {/* Automation History */}
           <div className="bg-card rounded-xl p-5 border border-border">
             <h3 className="font-semibold text-foreground mb-3">📜 Recent Automation History</h3>
             <div className="space-y-2">
-              {automationHistory.map((h, i) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
-                  <p className="text-sm text-foreground">{h.action}</p>
-                  <span className="text-xs text-muted-foreground">{h.time}</span>
-                </div>
-              ))}
+              {historyLoading ? (
+                Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)
+              ) : automationHistory.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">No automation activity yet — events will appear here as the system runs.</p>
+              ) : (
+                automationHistory.map((h) => (
+                  <div key={h.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/30 gap-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-base flex-shrink-0">{h.emoji}</span>
+                      <p className="text-sm text-foreground truncate">{h.action}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground flex-shrink-0">{formatDistanceToNow(new Date(h.ts), { addSuffix: true })}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
