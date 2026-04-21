@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { encryptField, decryptMany } from '@/lib/encryption';
 
 export interface DbPayment {
   id: string;
@@ -29,7 +30,22 @@ export function usePayments(seekerId?: string) {
       }
       const { data, error } = await q;
       if (error) throw error;
-      return (data || []) as unknown as DbPayment[];
+      const rows = (data || []) as any[];
+      if (rows.length === 0) return [];
+
+      // Batched decrypt of transaction_id_enc + notes_enc in 2 round trips total
+      const txnEnc = rows.map(r => r.transaction_id_enc ?? null);
+      const notesEnc = rows.map(r => r.notes_enc ?? null);
+      const [txnPlain, notesPlain] = await Promise.all([
+        decryptMany(txnEnc),
+        decryptMany(notesEnc),
+      ]);
+
+      return rows.map((r, i) => ({
+        ...r,
+        transaction_id: txnPlain[i] ?? r.transaction_id ?? null,
+        notes: notesPlain[i] ?? r.notes ?? null,
+      })) as unknown as DbPayment[];
     },
   });
 
@@ -42,8 +58,13 @@ export function usePayments(seekerId?: string) {
       payment_date: string;
       method: string;
       transaction_id?: string;
+      notes?: string;
     }) => {
       const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
+      const [transaction_id_enc, notes_enc] = await Promise.all([
+        encryptField(payment.transaction_id),
+        encryptField(payment.notes),
+      ]);
       const { data, error } = await supabase.from('payments').insert({
         seeker_id: payment.seeker_id,
         invoice_number: invoiceNumber,
@@ -53,7 +74,8 @@ export function usePayments(seekerId?: string) {
         payment_date: payment.payment_date,
         due_date: payment.payment_date,
         method: payment.method,
-        transaction_id: payment.transaction_id || null,
+        transaction_id_enc,
+        notes_enc,
         status: 'received',
       } as any).select().single();
       if (error) throw error;

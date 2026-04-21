@@ -39,6 +39,35 @@ export async function hashForLookup(value: string | null | undefined): Promise<s
   return data as string | null;
 }
 
+/** One-way SHA-256 hash for password-reset / one-time tokens. */
+export async function hashToken(token: string | null | undefined): Promise<string | null> {
+  if (!token) return null;
+  const { data, error } = await supabase.rpc('hash_token' as any, { _token: token });
+  if (error) throw error;
+  return data as string | null;
+}
+
+/** Batched decrypt — single round trip for list views. Pass an array of bytea
+ *  payloads (hex strings starting with `\x` as returned by Supabase) and get
+ *  back an array of plaintext (or null) values, in the same order. */
+export async function decryptMany(
+  payloads: (string | null | undefined)[],
+): Promise<(string | null)[]> {
+  if (!payloads || payloads.length === 0) return [];
+  // Filter to non-null indices, preserve mapping
+  const indexMap: number[] = [];
+  const compact: string[] = [];
+  payloads.forEach((p, i) => {
+    if (p) { indexMap.push(i); compact.push(p); }
+  });
+  if (compact.length === 0) return payloads.map(() => null);
+  const { data, error } = await supabase.rpc('decrypt_many' as any, { _payloads: compact });
+  if (error) throw error;
+  const out: (string | null)[] = payloads.map(() => null);
+  (data as (string | null)[]).forEach((v, i) => { out[indexMap[i]] = v; });
+  return out;
+}
+
 /** Admin-only: returns current key version, age, rotation history summary. */
 export async function getEncryptionStatus() {
   const { data, error } = await supabase.rpc('get_encryption_status' as any);
