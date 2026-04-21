@@ -23,7 +23,7 @@ import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { useDbCourses } from '@/hooks/useDbCourses';
 
 const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
-const formatDate = (d: string) => { if (!d) return '—'; try { return format(new Date(d), 'dd MMM yyyy'); } catch { return d; } };
+const formatDate = (d: string) => { if (!d) return '—'; try { return format(new Date(d), 'dd-MMMM-yyyy'); } catch { return d; } };
 const formatTime12 = (t: string) => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`; };
 
 const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Assignments', 'Daily Tracking', 'Payments', 'Private Notes 🔒'];
@@ -342,7 +342,7 @@ const SeekerDetailPage = () => {
               <div className="space-y-3">
                 {[
                   ['Full Name', seeker.full_name], ['Email', seeker.email], ['Phone', seeker.phone || '—'],
-                  ['WhatsApp', seeker.whatsapp || seeker.phone || '—'], ['Date of Birth', seeker.dob || '—'],
+                  ['WhatsApp', seeker.whatsapp || seeker.phone || '—'], ['Date of Birth', formatDate(seeker.dob)],
                   ['Gender', seeker.gender || '—'], ['City', seeker.city || '—'], ['State', seeker.state || '—'],
                   ['Blood Group', seeker.blood_group || '—'],
                 ].map(([label, value]) => (
