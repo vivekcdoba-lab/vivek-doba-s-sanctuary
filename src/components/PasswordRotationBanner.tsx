@@ -46,16 +46,16 @@ const PasswordRotationBanner = () => {
   };
 
   return (
-    <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 flex items-center gap-3 text-sm">
-      <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
-      <span className="flex-1 text-amber-900 dark:text-amber-200">
+    <div className="bg-warning/10 border-b border-warning/30 px-4 py-2 flex items-center gap-3 text-sm">
+      <ShieldAlert className="w-4 h-4 text-warning shrink-0" />
+      <span className="flex-1 text-foreground">
         Your password is <strong>{ageDays} days old</strong>. For security, we recommend updating it every {PASSWORD_AGE_REMINDER_DAYS} days.{' '}
         <Link to="/admin/settings" className="underline font-medium">Update password</Link>
       </span>
       <button
         onClick={handleDismiss}
         aria-label="Dismiss for 7 days"
-        className="text-amber-700/70 hover:text-amber-900 transition"
+        className="text-muted-foreground hover:text-foreground transition"
       >
         <X className="w-4 h-4" />
       </button>
