@@ -6,9 +6,16 @@ import { User, Mail, Phone, Lock, Flower2, Loader2, ArrowLeft } from 'lucide-rea
 import { COURSES } from '@/data/mockData';
 import { supabase } from '@/integrations/supabase/client';
 import { validatePassword, PASSWORD_HELP } from '@/lib/passwordValidation';
+import PhoneInput from '@/components/inputs/PhoneInput';
+import { validatePhone, toE164, DEFAULT_COUNTRY_CODE } from '@/lib/phoneValidation';
 
 const RegisterPage = () => {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', whatsapp: '', password: '', confirm: '', course: '', source: '' });
+  const [form, setForm] = useState({
+    name: '', email: '',
+    phoneCode: DEFAULT_COUNTRY_CODE, phone: '',
+    whatsappCode: DEFAULT_COUNTRY_CODE, whatsapp: '',
+    password: '', confirm: '', course: '', source: '',
+  });
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -29,10 +36,15 @@ const RegisterPage = () => {
       toast.error(pwdErr);
       return;
     }
-    if (form.phone.length !== 10) {
-      toast.error('Phone must be 10 digits');
-      return;
+    const phoneErr = validatePhone(form.phoneCode, form.phone);
+    if (phoneErr) { toast.error(phoneErr); return; }
+    if (form.whatsapp) {
+      const waErr = validatePhone(form.whatsappCode, form.whatsapp);
+      if (waErr) { toast.error(`WhatsApp: ${waErr}`); return; }
     }
+
+    const phoneE164 = toE164(form.phoneCode, form.phone);
+    const whatsappE164 = form.whatsapp ? toE164(form.whatsappCode, form.whatsapp) : phoneE164;
 
     setLoading(true);
     try {
@@ -42,13 +54,13 @@ const RegisterPage = () => {
         full_name: form.name,
         email: form.email,
         mobile: form.phone,
-        country_code: '+91',
+        country_code: form.phoneCode,
         status: 'pending',
         form_data: {
           fullName: form.name,
           email: form.email,
-          phone: form.phone,
-          whatsapp: form.whatsapp || form.phone,
+          phone: phoneE164,
+          whatsapp: whatsappE164,
           password: form.password,
           course: form.course,
           source: form.source,
@@ -73,12 +85,12 @@ const RegisterPage = () => {
             form_type: 'registration',
             applicant_name: form.name,
             applicant_email: form.email,
-            applicant_mobile: `+91${form.phone}`,
+            applicant_mobile: phoneE164,
             form_data: {
               fullName: form.name,
               email: form.email,
-              phone: form.phone,
-              whatsapp: form.whatsapp || form.phone,
+              phone: phoneE164,
+              whatsapp: whatsappE164,
               course: form.course,
               source: form.source,
             },
@@ -125,8 +137,21 @@ const RegisterPage = () => {
           <div className="space-y-3">
             <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Full Name *" value={form.name} onChange={(e) => update('name', e.target.value)} className="pl-10" /></div>
             <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input type="email" placeholder="Email *" value={form.email} onChange={(e) => update('email', e.target.value)} className="pl-10" /></div>
-            <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Phone (10 digits) *" value={form.phone} onChange={(e) => update('phone', e.target.value.replace(/\D/g, '').slice(0, 10))} className="pl-10" /></div>
-            <Input placeholder="WhatsApp Number" value={form.whatsapp} onChange={(e) => update('whatsapp', e.target.value)} />
+            <PhoneInput
+              countryCode={form.phoneCode}
+              phone={form.phone}
+              onCountryCodeChange={(c) => update('phoneCode', c)}
+              onPhoneChange={(p) => update('phone', p)}
+              label="Phone"
+              required
+            />
+            <PhoneInput
+              countryCode={form.whatsappCode}
+              phone={form.whatsapp}
+              onCountryCodeChange={(c) => update('whatsappCode', c)}
+              onPhoneChange={(p) => update('whatsapp', p)}
+              label="WhatsApp (optional)"
+            />
             <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input type="password" placeholder="Password (min 12 chars) *" value={form.password} onChange={(e) => update('password', e.target.value)} className="pl-10" /></div>
             <p className="text-xs text-muted-foreground -mt-1 ml-1">{PASSWORD_HELP}</p>
             <Input type="password" placeholder="Confirm Password *" value={form.confirm} onChange={(e) => update('confirm', e.target.value)} />
