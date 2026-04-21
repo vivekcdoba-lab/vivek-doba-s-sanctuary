@@ -16,7 +16,7 @@ import { PERMISSION_KEYS, PERMISSION_LABELS, allPermissionsTrue, type Permission
 import { validatePassword, PASSWORD_HELP } from '@/lib/passwordValidation';
 import PhoneInput from '@/components/inputs/PhoneInput';
 import StatePincodeInput from '@/components/inputs/StatePincodeInput';
-import { validatePhone, validatePincode, toE164, DEFAULT_COUNTRY_CODE } from '@/lib/phoneValidation';
+import { validatePhone, validatePincode, toE164, DEFAULT_COUNTRY_CODE, INDIAN_STATES } from '@/lib/phoneValidation';
 
 const STEPS = ['Role & Basic Info', 'Profile Details', 'Review & Create'];
 
