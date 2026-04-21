@@ -4,6 +4,8 @@ import { useDbCourses } from '@/hooks/useDbCourses';
 import { Plus, ChevronLeft, ChevronRight, X, Phone, Mail, MessageSquare, Loader2, Search, Filter, BarChart3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import PhoneInput from '@/components/inputs/PhoneInput';
+import { validatePhone, toE164, parseE164, DEFAULT_COUNTRY_CODE } from '@/lib/phoneValidation';
 
 type LeadStage = 'new' | 'contacted' | 'discovery' | 'consultation_scheduled' | 'consultation_done' | 'proposal' | 'followup' | 'converted' | 'lost';
 
@@ -32,7 +34,7 @@ const LeadsPage = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
   const [showReports, setShowReports] = useState(false);
-  const [newLead, setNewLead] = useState({ name: '', phone: '', email: '', source: 'Website', interested_course_id: '', priority: 'warm', current_challenge: '', notes: '' });
+  const [newLead, setNewLead] = useState({ name: '', phoneCode: DEFAULT_COUNTRY_CODE, phone: '', email: '', source: 'Website', interested_course_id: '', priority: 'warm', current_challenge: '', notes: '' });
   const { toast } = useToast();
 
   // Search & Filters
@@ -84,14 +86,16 @@ const LeadsPage = () => {
 
   const addLead = () => {
     if (!newLead.name || !newLead.phone) return;
+    const err = validatePhone(newLead.phoneCode, newLead.phone);
+    if (err) { toast({ title: err, variant: 'destructive' }); return; }
     createLead.mutate({
-      name: newLead.name, phone: newLead.phone, email: newLead.email || undefined,
+      name: newLead.name, phone: toE164(newLead.phoneCode, newLead.phone), email: newLead.email || undefined,
       source: newLead.source, interested_course_id: newLead.interested_course_id || undefined,
       priority: newLead.priority, current_challenge: newLead.current_challenge || undefined, notes: newLead.notes || undefined,
     }, {
       onSuccess: () => {
         setShowAdd(false);
-        setNewLead({ name: '', phone: '', email: '', source: 'Website', interested_course_id: '', priority: 'warm', current_challenge: '', notes: '' });
+        setNewLead({ name: '', phoneCode: DEFAULT_COUNTRY_CODE, phone: '', email: '', source: 'Website', interested_course_id: '', priority: 'warm', current_challenge: '', notes: '' });
         toast({ title: '✅ New lead added!' });
       },
     });
@@ -214,7 +218,7 @@ const LeadsPage = () => {
             </div>
             <div className="space-y-3">
               <input placeholder="Name *" value={newLead.name} onChange={e => setNewLead(p => ({ ...p, name: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
-              <input placeholder="Phone *" value={newLead.phone} onChange={e => setNewLead(p => ({ ...p, phone: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
+              <PhoneInput countryCode={newLead.phoneCode} phone={newLead.phone} onCountryCodeChange={v => setNewLead(p => ({ ...p, phoneCode: v }))} onPhoneChange={v => setNewLead(p => ({ ...p, phone: v }))} label="Phone *" />
               <input placeholder="Email" value={newLead.email} onChange={e => setNewLead(p => ({ ...p, email: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
               <select value={newLead.source} onChange={e => setNewLead(p => ({ ...p, source: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm">
                 {['Website', 'Social Media', 'Referral', 'Live Event', 'Cold Call', 'LinkedIn'].map(s => <option key={s}>{s}</option>)}
@@ -272,7 +276,7 @@ const LeadsPage = () => {
                           {lead.next_followup_date && <p className="text-xs text-primary">📅 Follow-up: {lead.next_followup_date}</p>}
                           <div className="flex gap-1.5">
                             {lead.phone && <button onClick={() => window.open(`tel:${lead.phone}`)} className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-primary/10"><Phone className="w-3 h-3" /></button>}
-                            {lead.phone && <button onClick={() => window.open(`https://wa.me/91${lead.phone?.replace(/\D/g, '')}`)} className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-primary/10"><MessageSquare className="w-3 h-3" /></button>}
+                            {lead.phone && <button onClick={() => window.open(`https://wa.me/${lead.phone?.replace(/\D/g, '')}`)} className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-primary/10"><MessageSquare className="w-3 h-3" /></button>}
                             {lead.email && <button onClick={() => window.open(`mailto:${lead.email}`)} className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-primary/10"><Mail className="w-3 h-3" /></button>}
                           </div>
                           <div className="flex gap-1.5">
