@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useSessionHeartbeat } from '@/hooks/useSessionHeartbeat';
 import { useAuthStore } from '@/store/authStore';
 import NotificationBell from '@/components/NotificationBell';
+import PasswordRotationBanner from '@/components/PasswordRotationBanner';
 import {
   LayoutDashboard, Users, Target, BookOpen, CalendarDays, Calendar,
   ClipboardList, BarChart3, Sun, TrendingUp, RefreshCw, IndianRupee,
