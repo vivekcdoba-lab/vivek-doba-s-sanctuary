@@ -19,20 +19,22 @@ export function useSessionHeartbeat() {
     lastActivityRef.current = Date.now();
   }, []);
 
-  const forceLogout = useCallback(async (message: string) => {
+  const forceLogout = useCallback(async (message: string, silent = false) => {
     await logout();
-    toast.error(message);
-    navigate('/login');
+    if (!silent) toast.error(message);
+    if (window.location.pathname !== '/login') navigate('/login');
   }, [logout, navigate]);
 
   const sendHeartbeat = async () => {
     if (!sessionId || !user) return;
+    // Skip on auth pages
+    if (window.location.pathname === '/login' || window.location.pathname === '/reset-password') return;
     try {
-      // Get fresh access token — if expired, force logout
+      // Get fresh access token — if missing/expired, silently clear (no toast spam)
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
       if (!accessToken) {
-        await forceLogout('Session expired. Please log in again.');
+        await forceLogout('Session expired. Please log in again.', true);
         return;
       }
 
@@ -50,7 +52,7 @@ export function useSessionHeartbeat() {
       );
 
       if (response.status === 401) {
-        await forceLogout('Session expired. Please log in again.');
+        await forceLogout('Session expired. Please log in again.', true);
         return;
       }
 
