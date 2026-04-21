@@ -310,6 +310,7 @@ const AdminLayout = () => {
           <NotificationBell />
         </header>
 
+        <PasswordRotationBanner />
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
           <BreadcrumbOverrideContext.Provider value={{ overrides: breadcrumbOverrides, setOverride }}>
             <Outlet />
