@@ -1,31 +1,60 @@
 
 
-## Diagnosis
+## Goal
+Fix the **HTML injection vulnerability** in `send-notification` edge function by escaping all user-submitted data before injecting into admin/applicant email HTML.
 
-The dev server is **running cleanly** at `http://localhost:8080/` with no build errors, and the published site is live at `https://vivek-doba-portal.lovable.app`. Recent logs show only successful HMR updates from the phone/pincode work — no compile failures.
+The other four findings are already marked `ignore: true` (outdated/accepted) — no action needed on those.
 
-The "Preview redirects to Files" and "Publish not visible" symptoms are **not caused by the codebase**. They're caused by the **editor's current view being stuck on the Files panel** (the `<current-view>` system flag confirms: *"The user is currently viewing generated files"*). When you're in Files view, the top toolbar swaps out — Preview/Publish buttons aren't rendered there.
+## Root cause
 
-## Fix — switch the editor view (no code change needed)
+In `supabase/functions/send-notification/index.ts`, user-controlled fields (`applicant_name`, `applicant_email`, `applicant_mobile`, `admin_notes`, and every key/value in `form_data`) are interpolated directly into HTML template strings:
 
-**Desktop:**
-1. In the navigation bar above the panel, click the **Preview** icon (eye/monitor icon) — this exits Files view and returns to the live app preview.
-2. Once back in Preview, the **Publish** button reappears in the **top-right corner** of the editor.
+```ts
+<h2>Applicant: ${data.applicant_name}</h2>
+<td>${label}</td><td>${val}</td>
+```
 
-**Mobile:**
-1. Tap the **`...` (ellipsis)** button in the bottom-right corner.
-2. Tap **Preview** to exit Files view.
-3. Tap `...` again → **Publish** to publish.
+A registrant submitting `<script>` / `<a href="evil">` / styled markup gets that markup rendered inside the admin's inbox — classic HTML/phishing injection.
 
-## Why this happened
+## Changes
 
-You opened the Files view (likely to download an artifact from `/mnt/documents/`). The editor remembers that view across messages. Switching back to Preview restores the normal toolbar with Preview + Publish buttons.
+**`supabase/functions/send-notification/index.ts`**
 
-## If Preview still looks blank after switching
+1. Add a small `escapeHtml(s)` helper at the top:
+   ```ts
+   function escapeHtml(v: unknown): string {
+     return String(v ?? "")
+       .replace(/&/g, "&amp;")
+       .replace(/</g, "&lt;")
+       .replace(/>/g, "&gt;")
+       .replace(/"/g, "&quot;")
+       .replace(/'/g, "&#39;");
+   }
+   ```
 
-That would indicate a runtime route issue — not the case here. The app is responding normally on both preview and published URLs. If after switching views the preview is genuinely broken, send a screenshot and I'll investigate the route/auth state. But based on logs + URLs, **no code fix is required** — just toggle the editor view.
+2. In `buildAdminEmailHtml`:
+   - Wrap every `${...}` that contains user data with `escapeHtml(...)`: `applicant_name`, `applicant_email`, `applicant_mobile`, and the `label`/`val` cells in the details table.
+   - `formType` comes from a fixed lookup map → safe, but escape the fallback `data.form_type` branch.
 
-## No files to modify
+3. In `buildApplicantEmailHtml`:
+   - Escape `applicant_name` and `admin_notes`.
+   - For `admin_notes`, also convert newlines to `<br/>` **after** escaping (so `\n` from coach notes still renders as line breaks safely).
 
-This is an editor UI state issue, not a project code issue. Once you click the Preview icon, everything will be visible as expected.
+4. Subject lines (`New ${subjectLabel} — ${data.applicant_name}`): Resend treats subjects as plain text, but strip control chars / CRLF from `applicant_name` to prevent header injection — `String(name).replace(/[\r\n]/g, " ").slice(0, 200)`.
+
+5. No behavior change for trusted fields (status icons, brand copy, fixed labels).
+
+## Out of scope
+- The four `ignore: true` findings (passwords in submissions, public bucket listing, always-true RLS on submissions, intentional public INSERT) — already documented as accepted/outdated.
+- Refactoring the email templates' visual design.
+- Changing the WhatsApp message body (plain text, not HTML — no injection vector).
+
+## Post-fix
+Mark the `agent_security` finding for "Unescaped User Data Injected Into Admin Notification Emails" as `mark_as_fixed` with a one-line explanation.
+
+## Smoke test
+1. Submit a registration with name `<script>alert(1)</script> Bob` → admin email shows literal text `<script>alert(1)</script> Bob`, no script execution, no broken layout.
+2. Submit with `form_data.note = "<b>fake urgent</b>"` → renders as escaped text in the details table.
+3. Approve an application with `admin_notes = "Line1\nLine2 <img src=x>"` → applicant email shows `Line1<br/>Line2 &lt;img src=x&gt;`.
+4. Existing happy-path (normal name + email) still renders identically.
 
