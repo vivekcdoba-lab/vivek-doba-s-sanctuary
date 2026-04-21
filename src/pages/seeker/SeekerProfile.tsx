@@ -7,6 +7,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useBadges } from '@/hooks/useBadges';
 import { format } from 'date-fns';
 import { encryptField, decryptField } from '@/lib/encryption';
+import PhoneInput from '@/components/inputs/PhoneInput';
+import StatePincodeInput from '@/components/inputs/StatePincodeInput';
+import { parseE164, toE164, validatePhone, validatePincode, DEFAULT_COUNTRY_CODE } from '@/lib/phoneValidation';
 
 const SeekerProfile = () => {
   const { profile: authProfile, logout } = useAuthStore();
@@ -17,9 +20,12 @@ const SeekerProfile = () => {
   const [seekerProfileId, setSeekerProfileId] = useState<string | null>(null);
 
   const [profile, setProfile] = useState({
-    full_name: '', email: '', phone: '', city: '', state: '',
+    full_name: '', email: '',
+    phoneCode: DEFAULT_COUNTRY_CODE, phone: '',
+    whatsappCode: DEFAULT_COUNTRY_CODE, whatsapp: '',
+    city: '', state: '',
     occupation: '', company: '', dob: '', gender: '', pincode: '',
-    whatsapp: '', hometown: '', linkedin_url: '',
+    hometown: '', linkedin_url: '',
     blood_group: '', designation: '', industry: '',
   });
 
@@ -47,10 +53,16 @@ const SeekerProfile = () => {
             decryptField(d.linkedin_url_enc),
             decryptField(d.blood_group_enc),
           ]);
+        const phoneParsed = parseE164(data.phone);
+        const waPlain = whatsapp_dec || data.whatsapp || '';
+        const waParsed = parseE164(waPlain);
         setProfile({
           full_name: data.full_name || '',
           email: data.email || '',
-          phone: data.phone || '',
+          phoneCode: phoneParsed.code,
+          phone: phoneParsed.phone,
+          whatsappCode: waParsed.code,
+          whatsapp: waParsed.phone,
           city: data.city || '',
           state: data.state || '',
           occupation: data.occupation || '',
@@ -58,7 +70,6 @@ const SeekerProfile = () => {
           dob: dob_dec || data.dob || '',
           gender: gender_dec || data.gender || '',
           pincode: pincode_dec || data.pincode || '',
-          whatsapp: whatsapp_dec || data.whatsapp || '',
           hometown: hometown_dec || data.hometown || '',
           linkedin_url: linkedin_dec || data.linkedin_url || '',
           blood_group: blood_dec || data.blood_group || '',
