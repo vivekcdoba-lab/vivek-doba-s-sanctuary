@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import NotificationBell from '@/components/NotificationBell';
+import PasswordRotationBanner from '@/components/PasswordRotationBanner';
 import { useSessionHeartbeat } from '@/hooks/useSessionHeartbeat';
 import {
   LayoutDashboard, Users, ClipboardList, CalendarDays, BookOpen,
@@ -269,6 +270,7 @@ export default function CoachingLayout() {
               </button>
             </div>
           </header>
+          <PasswordRotationBanner />
           <main className="flex-1 overflow-y-auto p-4 md:p-6">
             <Outlet />
           </main>

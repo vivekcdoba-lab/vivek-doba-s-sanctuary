@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useSessionHeartbeat } from '@/hooks/useSessionHeartbeat';
 import { useAuthStore } from '@/store/authStore';
 import NotificationBell from '@/components/NotificationBell';
+import PasswordRotationBanner from '@/components/PasswordRotationBanner';
 import {
   LayoutDashboard, Users, Target, BookOpen, CalendarDays, Calendar,
   ClipboardList, BarChart3, Sun, TrendingUp, RefreshCw, IndianRupee,
@@ -121,6 +122,7 @@ const adminNav: NavGroup[] = [
       { icon: Link2, label: 'Integrations', path: '/admin/integrations' },
       { icon: ScrollText, label: 'Audit Logs', path: '/admin/audit-logs' },
       { icon: Database, label: 'Backup', path: '/admin/backup' },
+      { icon: Shield, label: 'Encryption Status', path: '/admin/encryption-status' },
       { icon: Settings, label: 'Settings', path: '/settings' },
       { icon: Monitor, label: 'Active Sessions', path: '/active-sessions' },
     ],
@@ -310,6 +312,7 @@ const AdminLayout = () => {
           <NotificationBell />
         </header>
 
+        <PasswordRotationBanner />
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
           <BreadcrumbOverrideContext.Provider value={{ overrides: breadcrumbOverrides, setOverride }}>
             <Outlet />
