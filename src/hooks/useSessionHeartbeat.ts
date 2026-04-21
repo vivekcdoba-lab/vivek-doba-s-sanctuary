@@ -52,7 +52,7 @@ export function useSessionHeartbeat() {
       );
 
       if (response.status === 401) {
-        await forceLogout('Session expired. Please log in again.');
+        await forceLogout('Session expired. Please log in again.', true);
         return;
       }
 
