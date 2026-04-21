@@ -1,82 +1,49 @@
 
 
 ## Goal
-Three cleanups across the admin surface:
-1. Replace the hardcoded "Recent Automation History" mock list with real data.
-2. Add visible entry points to the Document Library + Send for Signature flow.
-3. Sweep the codebase for remaining hardcoded/test data and replace with live database queries.
+Four cleanups on the resources area (the joining-date and automation tasks were handled in prior turns).
 
----
+## Changes
 
-## Part 1 — Real Automation History
-File: `src/pages/admin/AdminAutomations.tsx`
-- Remove the four hardcoded entries (Amit Joshi, Priya Nair, Sneha Kulkarni, Anil Bhosle).
-- Fetch the latest 20 real events via TanStack Query, unioning:
-  - `notifications` (reminders, celebrations, payment nudges, applications)
-  - `audit_logs` (system actions like "session marked missed", "reminder sent")
-  - `signature_requests` (document sent / signed / expired events)
-- Merge by `created_at DESC`, cap at 20. Map type → emoji, render relative time via `formatDistanceToNow`.
-- Loading skeleton + empty state ("No automation activity yet").
+### 1. Remove "Upload Resource" button from `/resources`
+File: `src/pages/admin/ResourcesPage.tsx`
+- Delete the top-right **"Upload Resource"** button and its inline `<Dialog>` (state `showUpload`, `newResource`, `handleUpload`).
+- The dedicated `/admin/upload-resource` page becomes the single upload entry point.
 
----
+### 2. Enhance `/admin/upload-resource` — keep current form + add file source options
+File: `src/pages/admin/AdminUploadResource.tsx`
+- Keep all existing fields exactly as they are (title, description, type, category, language, duration, URL).
+- Add a **"Source"** segmented control above the URL field with three options:
+  - **From Laptop** — file picker; uploads to the existing private `resources` storage bucket via `supabase.storage.from('resources').upload(...)`. On success, auto-fills the URL field with the storage path. Accepts `.pdf, .mp3, .m4a, .wav, .mp4` based on the selected `type`. Shows upload progress; submit button disabled until upload completes.
+  - **From Google Drive** — text input for a Drive share link with a small helper note ("Set link sharing to 'Anyone with the link can view'"). Stored as-is in `url`.
+  - **From URL / Other Online** — current behaviour (paste any direct URL: YouTube, Vimeo, Dropbox, etc.).
+- No DB schema change — `learning_content.url` accepts any string.
 
-## Part 2 — Surface Document Signature Flow
-The flow exists end-to-end but is hard to find from the top level.
+### 3. Fix non-working "View" hyperlink in `/resources`
+File: `src/pages/admin/ResourcesPage.tsx`
+- Replace the inert `<button>View →</button>` with an `<a href={url} target="_blank" rel="noopener noreferrer">` when a URL is present; otherwise render a disabled state with tooltip "No URL available".
+- Also wire the page to additionally fetch real entries from the `learning_content` table (read-only TanStack Query) and merge them with the mock list, so admin-uploaded items show up with working "View" links. For private-bucket paths, generate a signed URL on click via `supabase.storage.from('resources').createSignedUrl(path, 60)` before opening.
+- Mock entries without URLs simply show "View" disabled — preserved per "Only Add and Enhance".
 
-**a. Quick-action card on `/admin` Dashboard** (`src/pages/admin/Dashboard.tsx`)
-- Add "📄 Documents & Signatures" card → `/admin/documents` with subtitle "Upload templates, send for signature, track status".
-
-**b. Helper banner on `/admin/automations`**
-- Above the history list: short note + two buttons — "Document Library" → `/admin/documents`, "Find a Seeker" → `/admin/seekers`.
-
-(The actual "Send for Signature" button stays on the seeker-scoped Documents tab where it already works correctly.)
-
----
-
-## Part 3 — Remove Hardcoded / Test Data Across the App
-
-Audit-driven sweep. Each file below currently uses mock arrays or sample seeded data; replace with live queries to existing tables.
-
-| File | Current hardcoded data | Replace with |
-|---|---|---|
-| `src/pages/admin/Dashboard.tsx` | `activityItems` mocked from first 3 seekers with fake "1h/2h/3h ago" + emoji-cycled labels ("New enrollment", "Payment received", "Lead converted") | Real recent events from `notifications` + `payments` + `enrollments` ordered by `created_at` |
-| `src/pages/admin/Dashboard.tsx` | `coachData.rating: 0` placeholder | Compute from `session_feedback.rating` averages per coach (or hide column if no feedback yet) |
-| `src/components/dashboard/ActivityFeed.tsx` | Items prop sourced from mock above | Same as above (driven by parent fix) |
-| `src/pages/seeker/SeekerRelationshipTracker.tsx` | `SAMPLE` array of 4 hardcoded relationships (Archana, Ananya, Papa, Raj) | Wire to existing `seeker_relationships` table if present; otherwise start empty + show empty-state CTA "Add your first relationship". Keep the "Add Relationship" form functional and persist via Supabase. |
-| `src/data/storyLibrary.ts` | Already addressed in prior step (emptied) | No action |
-| `src/data/mockData.ts` `MOTIVATIONAL_QUOTES` | Used by Dashboard hero | Keep — these are static curated content, not test data. **No change.** |
-| `src/components/dashboard/CoachPerformanceChart.tsx` | Receives data from Dashboard | Already live after Dashboard fix |
-| `src/pages/admin/AdminAutomations.tsx` (rules section) | If any rules list is hardcoded, leave existing rules toggles intact (preservation) — only history is replaced | History only |
-| Any remaining `// mock` / `// sample` / `// TODO: replace` markers in `src/pages/admin/**` and `src/pages/coaching/**` | Audit and either: (a) wire to real DB if a matching table exists, (b) replace with empty state if no source exists yet | Per-file decision |
-
-**Audit method**: grep for `mock`, `SAMPLE`, `placeholder`, `dummy`, `TODO`, `hardcoded`, `1h ago`, `2h ago`, `Amit Joshi`, `Priya Nair`, `Sneha Kulkarni` across `src/pages/**` and `src/components/**`. Each hit gets fixed in this pass or explicitly preserved (curated static content like quotes/affirmations/story templates).
-
-**Preservation guardrails**:
-- Curated static content (motivational quotes, affirmations, framework definitions, assessment question banks, dharma stories templates) is **not** test data — left untouched.
-- Mock data files used as fallbacks during loading are kept but only rendered when DB returns empty AND we add a clear "Sample data" badge so it's not mistaken for real entries.
-- No DB schema changes; if a target table doesn't exist for a given mock (e.g., relationships), switch to a clean empty state instead of inventing tables.
-
----
+### 4. Remove all old stories
+File: `src/data/storyLibrary.ts`
+- Replace the 22-entry array with `export const STORY_LIBRARY: Story[] = [];`
+- The Story Library tab on `/resources` will then show the existing empty state — no further code changes needed.
 
 ## Verification
-
-1. `/admin/automations` shows real notifications/audit/signature events (or clean empty state); banner with "Document Library" + "Find a Seeker" buttons present and working.
-2. `/admin` Dashboard:
-   - "Recent Activity" widget reflects actual recent enrollments/payments/notifications, not "1h ago / 2h ago" cycled seekers.
-   - Coach performance ratings reflect real `session_feedback` averages (or hide rating).
-   - New "Documents & Signatures" quick-action card visible and links to `/admin/documents`.
-3. `/seeker/relationship-tracker` no longer pre-loads Archana/Ananya/Papa/Raj — empty state until seeker adds their own; added relationships persist.
-4. Grep across `src/pages/**` for known test names returns no matches.
-5. All existing tabs, widgets, and charts continue to render without errors when their underlying tables are empty.
+1. `/resources` no longer shows the "Upload Resource" button or its dialog.
+2. `/admin/upload-resource` shows three source tabs; uploading a PDF from laptop creates a `learning_content` row pointing to the `resources` bucket; Drive and URL options save the pasted link.
+3. On `/resources`, "View" opens the resource in a new tab for items with URLs (signed URL for private storage paths); disabled with tooltip otherwise.
+4. Story Library tab on `/resources` shows the empty state — no Ramayana/Mahabharata cards.
+5. All other tabs, filters, and search behaviour remain unchanged.
 
 ## Files affected
-- Edited: `src/pages/admin/AdminAutomations.tsx`, `src/pages/admin/Dashboard.tsx`, `src/components/dashboard/ActivityFeed.tsx`, `src/pages/seeker/SeekerRelationshipTracker.tsx`
-- Edited (per audit findings): any additional admin/coach pages discovered to contain test data during the sweep
-- No DB or edge-function changes
-- No deletions — all preserved per "Only Add and Enhance" policy
+- Edited: `src/pages/admin/ResourcesPage.tsx`
+- Edited: `src/pages/admin/AdminUploadResource.tsx`
+- Edited: `src/data/storyLibrary.ts`
 
 ## Out of scope
-- Curated static content (quotes, affirmations, framework data) — preserved
-- New tables for features without backing storage — handled with empty states
-- Visual redesign of any widget — content swap only
+- No DB schema or RLS changes (the `resources` bucket already exists and admins already have write access).
+- No changes to the seeker-facing learning pages.
+- No deletion of `storyLibrary.ts` itself — only its array contents are emptied (preservation policy).
 
