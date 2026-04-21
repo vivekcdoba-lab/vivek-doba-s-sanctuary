@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuthStore } from '@/store/authStore';
+import ChangeOwnPasswordForm from '@/components/admin/ChangeOwnPasswordForm';
 import type { AutomationRule } from '@/types';
 
 const channelIcons: Record<string, typeof MessageSquare> = { whatsapp: MessageSquare, email: Mail, sms: Smartphone, in_app: Bell, dashboard: Settings };
@@ -28,9 +30,12 @@ const AUTOMATION_RULES: AutomationRule[] = [
   { id: 'ar15', label: 'New Application Received', description: 'Notify on new form submission', enabled: true, trigger: 'Any form submitted', channel: 'dashboard' },
 ];
 
-const tabs = ['General', 'Email Sender', 'Notifications', 'Automation Rules', 'Business Info', 'Appearance'];
+const BASE_TABS = ['General', 'Email Sender', 'Notifications', 'Automation Rules', 'Business Info', 'Appearance'];
 
 const SettingsPage = () => {
+  const profile = useAuthStore(s => s.profile);
+  const isSuperAdmin = profile?.role === 'admin' && profile?.admin_level === 'super_admin';
+  const tabs = isSuperAdmin ? [...BASE_TABS, 'Security'] : BASE_TABS;
   const [activeTab, setActiveTab] = useState('Automation Rules');
   const [rules, setRules] = useState<AutomationRule[]>(() => {
     const saved = localStorage.getItem('vdts_automation_rules');
@@ -104,7 +109,7 @@ const SettingsPage = () => {
         {tabs.map(t => (
           <button key={t} onClick={() => setActiveTab(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${activeTab === t ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}>
-            {t === 'Automation Rules' ? '🤖 ' + t : t}
+            {t === 'Automation Rules' ? '🤖 ' + t : t === 'Security' ? '🔐 ' + t : t}
           </button>
         ))}
       </div>
@@ -257,6 +262,10 @@ const SettingsPage = () => {
           <h2 className="text-lg font-semibold text-foreground mb-4">Appearance</h2>
           <p className="text-sm text-muted-foreground">Dark mode toggle is available in the sidebar. Additional theme customization coming soon. 🙏</p>
         </div>
+      )}
+
+      {activeTab === 'Security' && isSuperAdmin && (
+        <ChangeOwnPasswordForm />
       )}
     </div>
   );
