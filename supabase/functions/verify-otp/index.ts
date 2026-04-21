@@ -62,7 +62,18 @@ serve(async (req) => {
       });
     }
 
-    if (data.otp_code !== otp_code) {
+    // Prefer encrypted code if present; fall back to plaintext column for back-compat
+    let storedCode: string | null = data.otp_code ?? null;
+    if (data.code_enc) {
+      try {
+        const { data: dec, error: decErr } = await supabase.rpc("decrypt_field" as any, { _payload: data.code_enc });
+        if (!decErr && dec) storedCode = dec as string;
+      } catch (e) {
+        console.error("OTP decrypt failed, falling back to plaintext:", e);
+      }
+    }
+
+    if (storedCode !== otp_code) {
       // Increment attempts
       await supabase.from("otp_codes").update({ attempts: data.attempts + 1 }).eq("identifier", identifier);
       return new Response(JSON.stringify({ valid: false, error: "Invalid OTP" }), {
