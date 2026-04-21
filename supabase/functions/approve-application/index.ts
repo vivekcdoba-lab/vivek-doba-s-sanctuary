@@ -310,10 +310,7 @@ Deno.serve(async (req) => {
 
       profileId = newProfile.id;
 
-      const profileUpdate: Record<string, any> = {
-        phone: fd.phone || sub.mobile || "",
-        whatsapp: fd.whatsapp || fd.phone || "",
-      };
+      const profileUpdate: Record<string, any> = stripNulls(buildProfilePayload(fd, sub));
       if (isTemp) {
         profileUpdate.must_change_password = true;
         profileUpdate.password_change_prompted = false;
