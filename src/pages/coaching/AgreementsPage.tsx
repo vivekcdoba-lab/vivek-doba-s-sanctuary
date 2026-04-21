@@ -98,9 +98,13 @@ export default function AgreementsPage() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData?.user) throw new Error("Not authenticated");
 
+      const { data: profile, error: profileErr } = await supabase
+        .from("profiles").select("id").eq("user_id", userData.user.id).single();
+      if (profileErr || !profile) throw new Error("Coach profile not found");
+
       const { error } = await supabase.from("agreements").insert({
         client_id: data.clientId,
-        coach_id: userData.user.id,
+        coach_id: profile.id,
         type: "coaching",
         fields_json: data,
         signed_at: new Date().toISOString(),
@@ -120,9 +124,13 @@ export default function AgreementsPage() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData?.user) throw new Error("Not authenticated");
 
+      const { data: profile, error: profileErr } = await supabase
+        .from("profiles").select("id").eq("user_id", userData.user.id).single();
+      if (profileErr || !profile) throw new Error("Coach profile not found");
+
       const { error } = await supabase.from("agreements").insert({
         client_id: data.clientId,
-        coach_id: userData.user.id,
+        coach_id: profile.id,
         type: "goal",
         fields_json: { ...data, commitments: checkedCommitments },
         signed_at: new Date().toISOString(),
