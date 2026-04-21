@@ -1,124 +1,88 @@
 
 
 ## Goal
-Extend the previously-approved field-level encryption plan to also cover **password-related fields** and **all personal/identity details** beyond just email + phone.
+Activate the encryption infrastructure already in place by wiring `encryptField` / `decryptField` into the live write/read paths so all NEW sensitive data is stored as `*_enc` (AES-256-GCM, versioned, auto-rotated) instead of plaintext.
 
-## Clarification on "password"
-Passwords are **never** encrypted with reversible AES — they must be **one-way hashed**. Supabase Auth already stores passwords as bcrypt hashes in `auth.users.encrypted_password` (managed by Supabase, not accessible to us). We will **not** touch that. What we WILL do:
-- Enforce **HIBP leaked-password check** on signup/change (currently off).
-- Add **password rotation reminder** (90-day recommendation banner — not forced) for admins/coaches.
-- Encrypt any **password-adjacent secrets** we store ourselves (OTP codes in flight, password-reset tokens) using AES-256-GCM with short TTL.
+## Scope — what gets switched on
 
-## Expanded encryption scope
-
-Adding to the previously-approved table list:
-
-| Table | Additional encrypted columns | Searchable hash |
+| Surface | Reads/writes affected | Encrypted columns now used |
 |---|---|---|
-| `profiles` | `dob_enc`, `gender_enc`, `pincode_enc`, `whatsapp_enc`, `hometown_enc`, `linkedin_url_enc`, `blood_group_enc`, `address_enc`, `emergency_contact_enc`, `marriage_anniversary_enc`, `pan_enc`, `aadhaar_enc` (if/when added) | `whatsapp_hash`, `pan_hash`, `aadhaar_hash` |
-| `clients` (intake) | `personal_history_enc`, `medical_history_enc`, `family_details_enc`, `relationship_status_enc`, `children_details_enc`, `parents_details_enc` | — |
-| `business_profiles` | `gst_number_enc`, `pan_enc`, `bank_account_enc`, `ifsc_enc`, `revenue_enc` | `gst_hash`, `pan_hash` |
-| `payments` (already in plan) | + `payer_pan_enc`, `payer_gst_enc`, `bank_ref_enc` | — |
-| `otp_codes` (in-flight) | `code_enc` (AES, 10-min TTL) | — |
-| `password_reset_tokens` | `token_hash` (SHA-256 only — never decryptable) | `token_hash` |
-| `messages` (already in plan) | unchanged | — |
-| `accounting_records`, `cashflow_records` (already in plan) | unchanged | — |
+| `SeekerProfile.tsx` (seeker profile editor) | save + load | `profiles.dob_enc`, `gender_enc`, `pincode_enc`, `whatsapp_enc`, `hometown_enc`, `linkedin_url_enc`, `blood_group_enc` |
+| `useBusinessProfile.ts` | create + update + read | `business_profiles.gst_number_enc`, `pan_enc`, `bank_account_enc`, `ifsc_enc`, `revenue_enc` (+ `gst_hash`, `pan_hash`) |
+| `usePayments.ts` (+ `AdminInvoices`, `AdminExportFinancials`) | create + list | `payments.transaction_id_enc`, `notes_enc`, `payer_pan_enc`, `payer_gst_enc`, `bank_ref_enc` |
+| `useDbMessages.ts` | send + list | `messages.body_enc` |
+| `supabase/functions/send-otp` | insert | `otp_codes.code_enc` (+ keep plaintext briefly for back-compat, removed in cleanup) |
+| `supabase/functions/verify-otp` | lookup | reads `code_enc` via `decrypt_field` RPC |
+| `supabase/functions/admin-reset-password` | token issue | `password_reset_tokens.token_hash` only (one-way SHA-256) |
+| `ClientIntakePage.tsx` | save + load | `clients.personal_history_enc`, `medical_history_enc`, `family_details_enc`, `relationship_status_enc`, `children_details_enc`, `parents_details_enc` |
+| `CoachBusinessNotes.tsx` | reads | decrypted business fields via batched RPC |
 
-**Plaintext kept (intentionally)**:
-- `profiles.email`, `profiles.phone`, `profiles.full_name` — required by Supabase Auth + RLS joins. Each gets a `*_hash` for duplicate checks; full encryption deferred to a Phase-6 Auth-migration project.
-- Display-only first names on leaderboard (already privacy-trimmed).
+## Strategy — no perceptible latency
 
-## Password-handling additions
+1. **Writes**: call `encryptField()` once per sensitive field in the mutation; numeric/financial values are stringified before encrypt, parsed back on decrypt.
+2. **Reads**: add a server-side batched RPC `decrypt_many(payloads bytea[]) → text[]` so a list view does ONE round trip regardless of row count. Single-row pages use the existing `decrypt_field` RPC.
+3. **Caching**: rely on existing TanStack Query cache — decrypted plaintext lives in memory, never re-fetched within session.
+4. **Backward compatibility**: every read path falls back to the legacy plaintext column when `*_enc` is NULL (so existing rows keep working until the one-time backfill runs).
 
-1. **HIBP check** — enable `password_hibp_enabled: true` on signup + password change.
-2. **Password strength** — `src/lib/passwordValidation.ts` already enforces 12 chars + complexity; extend to reject top-1000 common passwords client-side as a fast pre-check.
-3. **Password rotation reminder** — non-blocking banner for admins/coaches after 90 days since last change (tracked via new `profiles.password_changed_at` timestamp, set by an `auth.users` webhook). Seekers exempt.
-4. **OTP codes** — encrypt at rest, auto-delete after 10 min via existing cron.
-5. **Reset tokens** — store SHA-256 hash only (one-way), 30-min TTL.
+## Implementation phases
 
-## Architecture (unchanged from prior plan, extended scope)
+**Phase 1 — Server helpers**
+- New RPC `decrypt_many(bytea[]) → text[]` (SECURITY DEFINER) for batched list-page decryption.
+- New RPC `hash_token(text) → text` thin wrapper for password-reset token hashing.
 
-```text
-Supabase Vault (KEK, rotates every 30 days)
-        │
-        ▼
-encryption_keys (wrapped DEKs, versioned)
-        │
-        ▼
-AES-256-GCM field encryption
-   • PII: dob, gender, address, whatsapp, blood_group...
-   • Financial: PAN, GST, bank, revenue, payments
-   • Intake: medical/family/relationship history
-   • Short-lived secrets: OTP, reset tokens
-        │
-        ▼
-SHA-256 hash columns (salted) for lookup-only fields
-   • email_hash, phone_hash, pan_hash, gst_hash, whatsapp_hash
-```
+**Phase 2 — Profile + Business writes**
+- `SeekerProfile.handleSave`: encrypt 7 PII fields before update; load path decrypts via `decrypt_field`.
+- `useBusinessProfile`: encrypt 5 financial fields on insert/update; populate `gst_hash`/`pan_hash` via `hash_for_lookup`.
 
-Performance, batched-decrypt RPC, TanStack cache strategy, and 30-day automatic KEK rotation are exactly as approved in the prior plan — no change.
+**Phase 3 — Payments + Messages**
+- `usePayments.createPayment`: encrypt `transaction_id`, `notes`, optional `payer_pan`, `payer_gst`, `bank_ref`.
+- `usePayments` list query: hydrate decrypted values via `decrypt_many`.
+- `AdminInvoices`, `AdminExportFinancials`, `CoachBusinessNotes`: consume the same decrypted hook output (no per-component decrypt).
+- `useDbMessages.useSendMessage`: encrypt `body`; list query decrypts via `decrypt_many`.
 
-## Implementation phases (revised)
+**Phase 4 — Auth-adjacent secrets**
+- `send-otp` edge function: write `code_enc` via `encrypt_field` RPC (service-role); keep ttl + rate limits unchanged.
+- `verify-otp`: fetch row, call `decrypt_field` RPC, compare; bump attempts on failure as today.
+- `admin-reset-password`: store SHA-256 hash of token only; verifier compares hashes.
 
-**Phase 1 — Key infrastructure** (unchanged)
-`pgcrypto`, `encryption_keys` table, Vault KEK, `encrypt_field` / `decrypt_field` / `hash_for_lookup` SECURITY DEFINER functions.
+**Phase 5 — Intake form**
+- `ClientIntakePage.tsx`: encrypt 6 long-form medical/family text fields on save; decrypt on load. Coach-side viewer uses `decrypt_many`.
 
-**Phase 2 — Schema migration (expanded)**
-Add `*_enc` (`bytea`) and `*_hash` (`text`) columns on: `profiles` (12 fields), `clients` (6 fields), `business_profiles` (5 fields), `payments` (3 extra fields), `otp_codes`, `password_reset_tokens`. Backfill existing rows. Update hooks/pages: `SeekerProfile.tsx`, `useBusinessProfile.ts`, `ClientIntakePage.tsx`, `usePayments.ts`, `AdminInvoices.tsx`, `AdminExportFinancials.tsx`, `CoachBusinessNotes.tsx`, `useDbMessages.ts`, OTP/reset edge functions.
+**Phase 6 — One-time backfill (optional, post-deploy)**
+- Migration: for each touched table, `UPDATE ... SET col_enc = encrypt_field(col), col = NULL WHERE col_enc IS NULL AND col IS NOT NULL` in batches of 500. Safe because read paths already fall back.
 
-**Phase 3 — Password hardening**
-- Enable HIBP (`configure_auth`).
-- Add `profiles.password_changed_at` column + Auth webhook to update it.
-- Banner component on admin/coach layouts after 90 days.
-- Extend `passwordValidation.ts` with top-1000 common-password reject list.
+## Files to be modified / created
 
-**Phase 4 — 30-day automatic KEK rotation** (unchanged)
-`pg_cron` + `rotate-encryption-keys` edge function + `key-rotation-monitor` for admin alerts.
+**New migration**
+- `<ts>_decrypt_many_rpc.sql` — batched decrypt helper
+- `<ts>_backfill_encrypted_fields.sql` — Phase-6 one-time backfill (run after app code ships)
 
-**Phase 5 — Performance** (unchanged)
-Batched `decrypt_many(ids[])`, TanStack cache, AES-NI hardware accel → <50 ms added latency on 100-row pages.
-
-**Phase 6 — Admin UI**
-`/admin/encryption-status` page: current KEK version, next rotation date, rotation history, count of encrypted rows per table, password-change-age stats.
-
-## Files to be created / modified
-
-**New migrations**
-- `<ts>_encryption_infrastructure.sql` — extension, keys table, helper functions
-- `<ts>_encrypted_columns_pii.sql` — profiles + clients PII columns + backfill
-- `<ts>_encrypted_columns_financial.sql` — business_profiles + payments + accounting + cashflow + backfill
-- `<ts>_encrypted_columns_secrets.sql` — otp_codes + password_reset_tokens
-- `<ts>_password_changed_at.sql` — profiles column + Auth webhook hookup
-- `<ts>_rotation_cron.sql` — pg_cron monthly schedule
-
-**New edge functions**
-- `supabase/functions/rotate-encryption-keys/index.ts`
-- `supabase/functions/key-rotation-monitor/index.ts`
-
-**New / modified app files**
-- `src/lib/encryption.ts` (new — client decrypt helpers)
-- `src/lib/passwordValidation.ts` (extend with common-password list + age check)
-- `src/components/PasswordRotationBanner.tsx` (new)
-- `src/pages/admin/AdminEncryptionStatus.tsx` (new) + sidebar link under Settings
-- Updates: `SeekerProfile`, `useBusinessProfile`, `ClientIntakePage`, `usePayments`, `AdminInvoices`, `AdminExportFinancials`, `CoachBusinessNotes`, `useDbMessages`, `send-otp`, `verify-otp`, `admin-reset-password`, `check_profile_duplicate` RPC
-
-**Auth config**
-- `password_hibp_enabled: true`
+**Modified**
+- `src/pages/seeker/SeekerProfile.tsx`
+- `src/hooks/useBusinessProfile.ts`
+- `src/hooks/usePayments.ts`
+- `src/hooks/useDbMessages.ts`
+- `src/lib/encryption.ts` (add `decryptMany`, `hashToken` helpers)
+- `src/pages/admin/AdminInvoices.tsx` (consume decrypted hook output only)
+- `src/pages/admin/AdminExportFinancials.tsx` (same)
+- `src/pages/coaching/CoachBusinessNotes.tsx` (same)
+- `src/pages/coaching/ClientIntakePage.tsx`
+- `supabase/functions/send-otp/index.ts`
+- `supabase/functions/verify-otp/index.ts`
+- `supabase/functions/admin-reset-password/index.ts`
 
 ## Out of scope
-- Encrypting `profiles.full_name`, `email`, `phone` plaintext columns (kept for Auth + RLS compatibility — deferred to a later Auth-schema migration project).
-- Encrypting Supabase-managed `auth.users` table (already managed by Supabase).
-- Forced password rotation (only reminder banner — UX decision; can be tightened later).
-- Hardware HSM / external KMS (Supabase Vault sufficient for current scale).
-- Re-encrypting public marketing content, leaderboard display names, badge metadata.
+- Encrypting `profiles.email` / `phone` / `full_name` plaintext columns (kept for Auth + RLS joins; hashes already maintained by trigger).
+- Re-encrypting historical Supabase-managed `auth.users` data.
+- Forced password rotation (banner already covers reminder).
+- Touching public marketing, leaderboard names, badge metadata.
 
 ## Smoke test
-1. Update seeker profile with DOB, blood group, LinkedIn → verify `*_enc` columns populated, plaintext columns nulled (except email/phone/full_name).
-2. Create payment with PAN/GST → verify encrypted, list page renders correctly via batched decrypt.
-3. Submit intake form → verify medical/family histories encrypted at rest (raw SQL select shows `\x...` bytea).
-4. Trigger OTP → row in `otp_codes` is encrypted; verify-OTP edge function still validates correctly.
-5. Run manual `SELECT rotate_encryption_keys()` → new KEK version, old rows still decrypt, new writes use new version.
-6. Set fake `password_changed_at` to 100 days ago for an admin → banner appears on next login.
-7. Try signup with `Password123!` (a known-pwned password) → HIBP rejects with friendly message.
-8. Lighthouse on `/admin/payments`, `/seeker/profile`, `/coaching/intake` before vs after → latency delta < 50 ms per page.
+1. Edit seeker profile (DOB, blood group, LinkedIn) → SQL `SELECT dob, dob_enc FROM profiles WHERE id=…` shows `dob_enc` populated; UI re-renders correct values.
+2. Create payment with transaction id + notes → `transaction_id` NULL, `transaction_id_enc` `\x…`; admin invoices list still shows the id.
+3. Send a message → `body_enc` populated; recipient sees plaintext via realtime.
+4. Trigger OTP → `otp_codes.code_enc` populated; `verify-otp` succeeds with correct code, fails + increments attempts on wrong code.
+5. Submit intake form → 6 medical/family text fields encrypted at rest; coach intake viewer renders plaintext.
+6. Open admin payments page with 100 rows → network tab shows ONE `decrypt_many` RPC call; Lighthouse latency delta < 50 ms vs baseline.
+7. Manually run `SELECT rotate_encryption_keys('manual')` → new key version; both old (v1) and new (v2) encrypted rows decrypt correctly.
 
