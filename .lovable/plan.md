@@ -1,60 +1,25 @@
 
 
-## Goal
-Fix the **HTML injection vulnerability** in `send-notification` edge function by escaping all user-submitted data before injecting into admin/applicant email HTML.
+## Pre-publish health check
 
-The other four findings are already marked `ignore: true` (outdated/accepted) — no action needed on those.
+**Build/runtime**: Dev server returns HTTP 200, no compile errors, edge function present. ✅
+**Recent fixes verified**: HTML-escape helpers + subject sanitization shipped in `send-notification`, RLS hardened on `agreements`/`assessments`, `points_ledger` insert policy removed. ✅
 
-## Root cause
+## Outstanding security findings
 
-In `supabase/functions/send-notification/index.ts`, user-controlled fields (`applicant_name`, `applicant_email`, `applicant_mobile`, `admin_notes`, and every key/value in `form_data`) are interpolated directly into HTML template strings:
+| Finding | Level | Status | Action |
+|---|---|---|---|
+| Public INSERT on `submissions` | info | already ignored (intentional) | none |
+| Plaintext passwords in `submissions` | warn | already ignored (accepted risk, documented) | none |
+| HTML injection in `send-notification` | warn | **already fixed in code, but still listed open in stale scan** | mark as fixed |
+| Supabase: RLS always true / public bucket listing | warn | already ignored | none |
 
-```ts
-<h2>Applicant: ${data.applicant_name}</h2>
-<td>${label}</td><td>${val}</td>
-```
+No `level: "error"` findings remain. No actual code bugs detected.
 
-A registrant submitting `<script>` / `<a href="evil">` / styled markup gets that markup rendered inside the admin's inbox — classic HTML/phishing injection.
+## Single action this turn
 
-## Changes
+Mark the `notify_html_inject` finding as fixed in the security dashboard so the pre-publish scan is clean. The fix itself (escapeHtml + sanitizeSubject across `buildAdminEmailHtml`, `buildApplicantEmailHtml`, and all subject lines) was applied in the previous turn — nothing else to change.
 
-**`supabase/functions/send-notification/index.ts`**
-
-1. Add a small `escapeHtml(s)` helper at the top:
-   ```ts
-   function escapeHtml(v: unknown): string {
-     return String(v ?? "")
-       .replace(/&/g, "&amp;")
-       .replace(/</g, "&lt;")
-       .replace(/>/g, "&gt;")
-       .replace(/"/g, "&quot;")
-       .replace(/'/g, "&#39;");
-   }
-   ```
-
-2. In `buildAdminEmailHtml`:
-   - Wrap every `${...}` that contains user data with `escapeHtml(...)`: `applicant_name`, `applicant_email`, `applicant_mobile`, and the `label`/`val` cells in the details table.
-   - `formType` comes from a fixed lookup map → safe, but escape the fallback `data.form_type` branch.
-
-3. In `buildApplicantEmailHtml`:
-   - Escape `applicant_name` and `admin_notes`.
-   - For `admin_notes`, also convert newlines to `<br/>` **after** escaping (so `\n` from coach notes still renders as line breaks safely).
-
-4. Subject lines (`New ${subjectLabel} — ${data.applicant_name}`): Resend treats subjects as plain text, but strip control chars / CRLF from `applicant_name` to prevent header injection — `String(name).replace(/[\r\n]/g, " ").slice(0, 200)`.
-
-5. No behavior change for trusted fields (status icons, brand copy, fixed labels).
-
-## Out of scope
-- The four `ignore: true` findings (passwords in submissions, public bucket listing, always-true RLS on submissions, intentional public INSERT) — already documented as accepted/outdated.
-- Refactoring the email templates' visual design.
-- Changing the WhatsApp message body (plain text, not HTML — no injection vector).
-
-## Post-fix
-Mark the `agent_security` finding for "Unescaped User Data Injected Into Admin Notification Emails" as `mark_as_fixed` with a one-line explanation.
-
-## Smoke test
-1. Submit a registration with name `<script>alert(1)</script> Bob` → admin email shows literal text `<script>alert(1)</script> Bob`, no script execution, no broken layout.
-2. Submit with `form_data.note = "<b>fake urgent</b>"` → renders as escaped text in the details table.
-3. Approve an application with `admin_notes = "Line1\nLine2 <img src=x>"` → applicant email shows `Line1<br/>Line2 &lt;img src=x&gt;`.
-4. Existing happy-path (normal name + email) still renders identically.
+## After this
+You're clear to publish. Frontend changes go live when you click **Publish → Update**; the edge function (`send-notification`) is already deployed automatically.
 
