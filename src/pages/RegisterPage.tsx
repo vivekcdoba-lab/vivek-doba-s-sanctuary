@@ -36,10 +36,15 @@ const RegisterPage = () => {
       toast.error(pwdErr);
       return;
     }
-    if (form.phone.length !== 10) {
-      toast.error('Phone must be 10 digits');
-      return;
+    const phoneErr = validatePhone(form.phoneCode, form.phone);
+    if (phoneErr) { toast.error(phoneErr); return; }
+    if (form.whatsapp) {
+      const waErr = validatePhone(form.whatsappCode, form.whatsapp);
+      if (waErr) { toast.error(`WhatsApp: ${waErr}`); return; }
     }
+
+    const phoneE164 = toE164(form.phoneCode, form.phone);
+    const whatsappE164 = form.whatsapp ? toE164(form.whatsappCode, form.whatsapp) : phoneE164;
 
     setLoading(true);
     try {
@@ -49,13 +54,13 @@ const RegisterPage = () => {
         full_name: form.name,
         email: form.email,
         mobile: form.phone,
-        country_code: '+91',
+        country_code: form.phoneCode,
         status: 'pending',
         form_data: {
           fullName: form.name,
           email: form.email,
-          phone: form.phone,
-          whatsapp: form.whatsapp || form.phone,
+          phone: phoneE164,
+          whatsapp: whatsappE164,
           password: form.password,
           course: form.course,
           source: form.source,
