@@ -96,9 +96,10 @@ export const INDIAN_STATES = [
 
 export const STATE_OTHER = 'Other';
 
-/** Validate Indian pincode: 6 digits, first digit 1-9. */
-export const validatePincode = (pin: string): string | null => {
+/** Validate Indian pincode: 6 digits, first digit 1-9. Skips validation if isOther=true (non-Indian state). */
+export const validatePincode = (pin: string, isOther?: boolean): string | null => {
   if (!pin) return null; // optional
+  if (isOther) return null; // free-text postal/ZIP for non-Indian states
   if (!/^[1-9]\d{5}$/.test(pin)) return 'Pincode must be 6 digits (cannot start with 0)';
   return null;
 };

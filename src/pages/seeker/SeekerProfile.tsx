@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { encryptField, decryptField } from '@/lib/encryption';
 import PhoneInput from '@/components/inputs/PhoneInput';
 import StatePincodeInput from '@/components/inputs/StatePincodeInput';
-import { parseE164, toE164, validatePhone, validatePincode, DEFAULT_COUNTRY_CODE } from '@/lib/phoneValidation';
+import { parseE164, toE164, validatePhone, validatePincode, DEFAULT_COUNTRY_CODE, INDIAN_STATES } from '@/lib/phoneValidation';
 
 const SeekerProfile = () => {
   const { profile: authProfile, logout } = useAuthStore();
@@ -95,7 +95,7 @@ const SeekerProfile = () => {
       const e = validatePhone(profile.whatsappCode, profile.whatsapp);
       if (e) { toast({ title: `WhatsApp: ${e}`, variant: 'destructive' }); return; }
     }
-    const pinErr = validatePincode(profile.pincode);
+    const pinErr = validatePincode(profile.pincode, !!profile.state && !INDIAN_STATES.includes(profile.state));
     if (pinErr) { toast({ title: pinErr, variant: 'destructive' }); return; }
 
     const phoneE164 = profile.phone ? toE164(profile.phoneCode, profile.phone) : '';

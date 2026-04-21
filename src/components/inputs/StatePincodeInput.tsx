@@ -55,14 +55,23 @@ const StatePincodeInput = ({
         )}
       </div>
       <div className="space-y-1.5">
-        <Label>Pincode {required && <span className="text-destructive">*</span>}</Label>
-        <Input
-          inputMode="numeric"
-          value={pincode}
-          onChange={(e) => onPincodeChange(sanitizePincode(e.target.value))}
-          placeholder="6-digit pincode"
-          maxLength={6}
-        />
+        <Label>{isOther ? 'Postal / ZIP Code' : 'Pincode'} {required && <span className="text-destructive">*</span>}</Label>
+        {isOther ? (
+          <Input
+            value={pincode}
+            onChange={(e) => onPincodeChange(e.target.value.slice(0, 10))}
+            placeholder="Postal / ZIP code"
+            maxLength={10}
+          />
+        ) : (
+          <Input
+            inputMode="numeric"
+            value={pincode}
+            onChange={(e) => onPincodeChange(sanitizePincode(e.target.value))}
+            placeholder="6-digit pincode"
+            maxLength={6}
+          />
+        )}
       </div>
     </div>
   );
