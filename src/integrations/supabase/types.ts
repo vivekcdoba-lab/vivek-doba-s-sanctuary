@@ -911,52 +911,70 @@ export type Database = {
       }
       clients: {
         Row: {
+          children_details_enc: string | null
           coach_id: string
           course: string | null
           created_at: string
           dob: string | null
           education: string | null
           email: string | null
+          family_details_enc: string | null
           gender: string | null
           id: string
           income: string | null
+          medical_history_enc: string | null
           mobile: string | null
           name: string
+          parents_details_enc: string | null
+          personal_history_enc: string | null
           personal_history_json: Json | null
+          relationship_status_enc: string | null
           sessions_committed: number | null
           signature_data: string | null
           updated_at: string
         }
         Insert: {
+          children_details_enc?: string | null
           coach_id: string
           course?: string | null
           created_at?: string
           dob?: string | null
           education?: string | null
           email?: string | null
+          family_details_enc?: string | null
           gender?: string | null
           id?: string
           income?: string | null
+          medical_history_enc?: string | null
           mobile?: string | null
           name: string
+          parents_details_enc?: string | null
+          personal_history_enc?: string | null
           personal_history_json?: Json | null
+          relationship_status_enc?: string | null
           sessions_committed?: number | null
           signature_data?: string | null
           updated_at?: string
         }
         Update: {
+          children_details_enc?: string | null
           coach_id?: string
           course?: string | null
           created_at?: string
           dob?: string | null
           education?: string | null
           email?: string | null
+          family_details_enc?: string | null
           gender?: string | null
           id?: string
           income?: string | null
+          medical_history_enc?: string | null
           mobile?: string | null
           name?: string
+          parents_details_enc?: string | null
+          personal_history_enc?: string | null
           personal_history_json?: Json | null
+          relationship_status_enc?: string | null
           sessions_committed?: number | null
           signature_data?: string | null
           updated_at?: string
@@ -2517,32 +2535,47 @@ export type Database = {
       }
       profiles: {
         Row: {
+          aadhaar_enc: string | null
+          aadhaar_hash: string | null
           access_end_date: string | null
+          address_enc: string | null
           admin_level: string | null
           admin_permissions: Json
           avatar_url: string | null
           blood_group: string | null
+          blood_group_enc: string | null
           city: string | null
           company: string | null
           created_at: string
           designation: string | null
           dob: string | null
+          dob_enc: string | null
           email: string
+          email_hash: string | null
+          emergency_contact_enc: string | null
           experience_years: number | null
           full_name: string
           gender: string | null
+          gender_enc: string | null
           hometown: string | null
+          hometown_enc: string | null
           id: string
           industry: string | null
           is_also_coach: boolean
           leaderboard_visible: boolean
           linkedin_url: string | null
+          linkedin_url_enc: string | null
           marriage_anniversary: string | null
+          marriage_anniversary_enc: string | null
           must_change_password: boolean
           occupation: string | null
+          pan_enc: string | null
+          pan_hash: string | null
           password_change_prompted: boolean
           phone: string | null
+          phone_hash: string | null
           pincode: string | null
+          pincode_enc: string | null
           revenue_range: string | null
           role: string
           state: string | null
@@ -2550,34 +2583,51 @@ export type Database = {
           updated_at: string
           user_id: string
           whatsapp: string | null
+          whatsapp_enc: string | null
+          whatsapp_hash: string | null
         }
         Insert: {
+          aadhaar_enc?: string | null
+          aadhaar_hash?: string | null
           access_end_date?: string | null
+          address_enc?: string | null
           admin_level?: string | null
           admin_permissions?: Json
           avatar_url?: string | null
           blood_group?: string | null
+          blood_group_enc?: string | null
           city?: string | null
           company?: string | null
           created_at?: string
           designation?: string | null
           dob?: string | null
+          dob_enc?: string | null
           email: string
+          email_hash?: string | null
+          emergency_contact_enc?: string | null
           experience_years?: number | null
           full_name: string
           gender?: string | null
+          gender_enc?: string | null
           hometown?: string | null
+          hometown_enc?: string | null
           id?: string
           industry?: string | null
           is_also_coach?: boolean
           leaderboard_visible?: boolean
           linkedin_url?: string | null
+          linkedin_url_enc?: string | null
           marriage_anniversary?: string | null
+          marriage_anniversary_enc?: string | null
           must_change_password?: boolean
           occupation?: string | null
+          pan_enc?: string | null
+          pan_hash?: string | null
           password_change_prompted?: boolean
           phone?: string | null
+          phone_hash?: string | null
           pincode?: string | null
+          pincode_enc?: string | null
           revenue_range?: string | null
           role?: string
           state?: string | null
@@ -2585,34 +2635,51 @@ export type Database = {
           updated_at?: string
           user_id: string
           whatsapp?: string | null
+          whatsapp_enc?: string | null
+          whatsapp_hash?: string | null
         }
         Update: {
+          aadhaar_enc?: string | null
+          aadhaar_hash?: string | null
           access_end_date?: string | null
+          address_enc?: string | null
           admin_level?: string | null
           admin_permissions?: Json
           avatar_url?: string | null
           blood_group?: string | null
+          blood_group_enc?: string | null
           city?: string | null
           company?: string | null
           created_at?: string
           designation?: string | null
           dob?: string | null
+          dob_enc?: string | null
           email?: string
+          email_hash?: string | null
+          emergency_contact_enc?: string | null
           experience_years?: number | null
           full_name?: string
           gender?: string | null
+          gender_enc?: string | null
           hometown?: string | null
+          hometown_enc?: string | null
           id?: string
           industry?: string | null
           is_also_coach?: boolean
           leaderboard_visible?: boolean
           linkedin_url?: string | null
+          linkedin_url_enc?: string | null
           marriage_anniversary?: string | null
+          marriage_anniversary_enc?: string | null
           must_change_password?: boolean
           occupation?: string | null
+          pan_enc?: string | null
+          pan_hash?: string | null
           password_change_prompted?: boolean
           phone?: string | null
+          phone_hash?: string | null
           pincode?: string | null
+          pincode_enc?: string | null
           revenue_range?: string | null
           role?: string
           state?: string | null
@@ -2620,6 +2687,8 @@ export type Database = {
           updated_at?: string
           user_id?: string
           whatsapp?: string | null
+          whatsapp_enc?: string | null
+          whatsapp_hash?: string | null
         }
         Relationships: []
       }
