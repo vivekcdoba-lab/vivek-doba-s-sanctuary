@@ -193,7 +193,7 @@ const ApplyLGT = () => {
     // Email validation
     if (f.email && !isValidEmail(f.email)) missing.add('email');
     if (f.mobile && f.mobile.length !== 10) missing.add('mobile');
-    if (f.pincode && f.pincode.length !== 6) missing.add('pincode');
+    if (f.state !== 'Other' && f.pincode && f.pincode.length !== 6) missing.add('pincode');
 
     setMissingFields(missing);
 
