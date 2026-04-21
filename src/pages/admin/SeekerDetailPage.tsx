@@ -26,7 +26,7 @@ const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
 const formatDate = (d: string) => { if (!d) return '—'; try { return format(new Date(d), 'dd-MMMM-yyyy'); } catch { return d; } };
 const formatTime12 = (t: string) => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`; };
 
-const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Assignments', 'Daily Tracking', 'Payments', 'Private Notes 🔒'];
+const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Assignments', 'Daily Tracking', 'Payments', 'Documents', 'Private Notes 🔒'];
 
 const moodEmoji = (score?: number | null) => {
   if (!score) return '—';
