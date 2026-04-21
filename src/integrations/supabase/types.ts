@@ -1675,6 +1675,36 @@ export type Database = {
           },
         ]
       }
+      encryption_keys: {
+        Row: {
+          algorithm: string
+          created_at: string
+          dek: string
+          id: string
+          is_current: boolean
+          rotated_at: string | null
+          version: string
+        }
+        Insert: {
+          algorithm?: string
+          created_at?: string
+          dek: string
+          id?: string
+          is_current?: boolean
+          rotated_at?: string | null
+          version: string
+        }
+        Update: {
+          algorithm?: string
+          created_at?: string
+          dek?: string
+          id?: string
+          is_current?: boolean
+          rotated_at?: string | null
+          version?: string
+        }
+        Relationships: []
+      }
       enrollments: {
         Row: {
           course_id: string
@@ -4211,12 +4241,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _current_dek: {
+        Args: never
+        Returns: {
+          dek: string
+          version: string
+        }[]
+      }
+      _dek_for_version: { Args: { _version: string }; Returns: string }
       check_profile_duplicate: {
         Args: { _email: string; _phone: string }
         Returns: string
       }
       cleanup_old_sessions: { Args: never; Returns: number }
       close_inactive_sessions: { Args: never; Returns: number }
+      decrypt_field: { Args: { _payload: string }; Returns: string }
+      encrypt_field: { Args: { _plaintext: string }; Returns: string }
       get_daily_session_report: { Args: never; Returns: Json }
       get_leaderboard_data: {
         Args: {
@@ -4250,6 +4290,7 @@ export type Database = {
           typed_name: string
         }[]
       }
+      hash_for_lookup: { Args: { _value: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_coach: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
