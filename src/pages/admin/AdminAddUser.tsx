@@ -81,7 +81,7 @@ const AdminAddUser = () => {
     }
     const phoneErr = validatePhone(form.phoneCode, form.phone);
     if (phoneErr) { toast.error(phoneErr); return; }
-    const pinErr = validatePincode(form.pincode);
+    const pinErr = validatePincode(form.pincode, !!form.state && !INDIAN_STATES.includes(form.state));
     if (pinErr) { toast.error(pinErr); return; }
     if (!autoGen) {
       const pErr = validatePassword(form.password);
