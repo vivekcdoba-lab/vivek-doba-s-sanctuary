@@ -86,6 +86,21 @@ const SeekerProfile = () => {
 
   const handleSave = async () => {
     if (!seekerProfileId) return;
+    // Validate phone, whatsapp, pincode
+    if (profile.phone) {
+      const e = validatePhone(profile.phoneCode, profile.phone);
+      if (e) { toast({ title: e, variant: 'destructive' }); return; }
+    }
+    if (profile.whatsapp) {
+      const e = validatePhone(profile.whatsappCode, profile.whatsapp);
+      if (e) { toast({ title: `WhatsApp: ${e}`, variant: 'destructive' }); return; }
+    }
+    const pinErr = validatePincode(profile.pincode);
+    if (pinErr) { toast({ title: pinErr, variant: 'destructive' }); return; }
+
+    const phoneE164 = profile.phone ? toE164(profile.phoneCode, profile.phone) : '';
+    const whatsappE164 = profile.whatsapp ? toE164(profile.whatsappCode, profile.whatsapp) : '';
+
     setSaving(true);
     try {
       // Encrypt sensitive PII fields in parallel
@@ -94,16 +109,18 @@ const SeekerProfile = () => {
           encryptField(profile.dob || null),
           encryptField(profile.gender || null),
           encryptField(profile.pincode || null),
-          encryptField(profile.whatsapp || null),
+          encryptField(whatsappE164 || null),
           encryptField(profile.hometown || null),
           encryptField(profile.linkedin_url || null),
           encryptField(profile.blood_group || null),
         ]);
       const { error } = await supabase.from('profiles').update({
         full_name: profile.full_name,
-        phone: profile.phone,
+        phone: phoneE164,
+        whatsapp: whatsappE164,
         city: profile.city,
         state: profile.state,
+        pincode: profile.pincode,
         occupation: profile.occupation,
         company: profile.company,
         designation: profile.designation,
@@ -190,19 +207,64 @@ const SeekerProfile = () => {
       {/* Personal Info */}
       <div className="bg-card rounded-xl p-4 border border-border shadow-sm space-y-3">
         <h3 className="text-sm font-semibold text-foreground border-b border-border pb-2">Personal Info</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Full Name" value={profile.full_name} field="full_name" />
-          <Field label="Email" value={profile.email} field="email" />
-          <Field label="Phone" value={profile.phone} field="phone" />
-          <Field label="WhatsApp" value={profile.whatsapp} field="whatsapp" />
-          <Field label="City" value={profile.city} field="city" />
-          <Field label="State" value={profile.state} field="state" />
-          <Field label="Date of Birth" value={profile.dob} field="dob" type="date" />
-          <Field label="Gender" value={profile.gender} field="gender" />
-          <Field label="Pincode" value={profile.pincode} field="pincode" />
-          <Field label="Hometown" value={profile.hometown} field="hometown" />
-          <Field label="Blood Group" value={profile.blood_group} field="blood_group" />
-        </div>
+
+        {editing ? (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Full Name" value={profile.full_name} field="full_name" />
+              <Field label="Email" value={profile.email} field="email" />
+            </div>
+            <PhoneInput
+              countryCode={profile.phoneCode}
+              phone={profile.phone}
+              onCountryCodeChange={v => setProfile(p => ({ ...p, phoneCode: v }))}
+              onPhoneChange={v => setProfile(p => ({ ...p, phone: v }))}
+              label="Phone"
+            />
+            <PhoneInput
+              countryCode={profile.whatsappCode}
+              phone={profile.whatsapp}
+              onCountryCodeChange={v => setProfile(p => ({ ...p, whatsappCode: v }))}
+              onPhoneChange={v => setProfile(p => ({ ...p, whatsapp: v }))}
+              label="WhatsApp"
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="City" value={profile.city} field="city" />
+              <Field label="Hometown" value={profile.hometown} field="hometown" />
+            </div>
+            <StatePincodeInput
+              state={profile.state}
+              pincode={profile.pincode}
+              onStateChange={v => setProfile(p => ({ ...p, state: v }))}
+              onPincodeChange={v => setProfile(p => ({ ...p, pincode: v }))}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Date of Birth" value={profile.dob} field="dob" type="date" />
+              <Field label="Gender" value={profile.gender} field="gender" />
+              <Field label="Blood Group" value={profile.blood_group} field="blood_group" />
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Full Name" value={profile.full_name} field="full_name" />
+            <Field label="Email" value={profile.email} field="email" />
+            <div>
+              <label className="text-xs text-muted-foreground">Phone</label>
+              <p className="text-sm text-foreground font-medium">{profile.phone ? `${profile.phoneCode} ${profile.phone}` : '—'}</p>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">WhatsApp</label>
+              <p className="text-sm text-foreground font-medium">{profile.whatsapp ? `${profile.whatsappCode} ${profile.whatsapp}` : '—'}</p>
+            </div>
+            <Field label="City" value={profile.city} field="city" />
+            <Field label="State" value={profile.state} field="state" />
+            <Field label="Date of Birth" value={profile.dob} field="dob" type="date" />
+            <Field label="Gender" value={profile.gender} field="gender" />
+            <Field label="Pincode" value={profile.pincode} field="pincode" />
+            <Field label="Hometown" value={profile.hometown} field="hometown" />
+            <Field label="Blood Group" value={profile.blood_group} field="blood_group" />
+          </div>
+        )}
       </div>
 
       {/* Professional */}
