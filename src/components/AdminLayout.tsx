@@ -77,7 +77,8 @@ const adminNav: NavGroup[] = [
     label: 'RESOURCES', emoji: '📚', dividerBefore: 'CONTENT', items: [
       { icon: Video, label: 'Videos', path: '/admin/videos' },
       { icon: Headphones, label: 'Audios', path: '/admin/audios' },
-      { icon: FileText, label: 'Documents', path: '/resources' },
+      { icon: FileText, label: 'Resources', path: '/resources' },
+      { icon: FileText, label: 'Document Library', path: '/admin/documents' },
       { icon: UserPlus, label: 'Upload Resource', path: '/admin/upload-resource' },
       { icon: FolderOpen, label: 'Categories', path: '/admin/categories' },
     ],

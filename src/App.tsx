@@ -85,6 +85,8 @@ import AdminBackup from "./pages/admin/AdminBackup";
 import AdminAssessmentConfig from "./pages/admin/AdminAssessmentConfig";
 import AdminAssessmentAnalytics from "./pages/admin/AdminAssessmentAnalytics";
 import AdminEncryptionStatus from "./pages/admin/AdminEncryptionStatus";
+import AdminDocuments from "./pages/admin/AdminDocuments";
+import SignDocument from "./pages/SignDocument";
 
 import SeekerHome from "./pages/seeker/SeekerHome";
 import SeekerDailyLog from "./pages/seeker/SeekerDailyLog";
@@ -257,6 +259,7 @@ const App = () => (
           <Route path="/sales-coach" element={<SeoSalesCoach />} />
           <Route path="/life-coach-in-:location" element={<SeoLifeCoachLocation />} />
           <Route path="/business-coach-in-:location" element={<SeoBusinessCoachLocation />} />
+          <Route path="/sign/:token" element={<SignDocument />} />
 
           {/* Admin Routes */}
           <Route element={<AuthGuard requiredRole="admin"><AdminLayout /></AuthGuard>}>
@@ -287,6 +290,7 @@ const App = () => (
             <Route path="/active-sessions" element={<ActiveSessionsPage />} />
             {/* Admin placeholder routes */}
             <Route path="/admin/coaches" element={<AdminCoaches />} />
+            <Route path="/admin/documents" element={<AdminDocuments />} />
             <Route path="/admin/admins" element={<AdminAdmins />} />
             <Route path="/admin/add-user" element={<AdminAddUser />} />
             <Route path="/admin/user-analytics" element={<AdminUserAnalytics />} />
