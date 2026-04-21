@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { FileText, Building2, DollarSign, TrendingUp, Users } from 'lucide-react';
 import { format } from 'date-fns';
+import { decryptMany } from '@/lib/encryption';
 
 export default function CoachBusinessNotes() {
   const { data: seekers = [] } = useSeekerProfiles();
@@ -18,7 +19,11 @@ export default function CoachBusinessNotes() {
     queryFn: async () => {
       const { data, error } = await supabase.from('business_profiles').select('*').eq('seeker_id', selectedSeeker);
       if (error) throw error;
-      return data || [];
+      const rows = (data || []) as any[];
+      if (rows.length === 0) return [];
+      // Batched decrypt of revenue_enc across all businesses (single RPC)
+      const revs = await decryptMany(rows.map(r => r.revenue_enc ?? null));
+      return rows.map((r, i) => ({ ...r, revenue: revs[i] ?? null }));
     },
   });
 
