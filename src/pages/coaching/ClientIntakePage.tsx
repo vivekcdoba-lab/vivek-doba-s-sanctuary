@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useCoachingLang } from "@/components/CoachingLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { encryptField } from "@/lib/encryption";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -108,6 +109,37 @@ export default function ClientIntakePage() {
         return;
       }
 
+      // Encrypt sensitive long-form personal history into separate enc columns
+      const personalHistoryBlob = JSON.stringify({
+        hobbies: data.hobbies,
+        movies: data.movies,
+        book: data.book,
+        interest: data.interest,
+        suggestedBy: data.suggestedBy,
+        socialMedia: data.socialMedia,
+        companyName: data.companyName,
+        jobType: data.jobType,
+        courseJoinFor: data.courseJoinFor,
+        investment: data.investment,
+        date: data.date,
+        duration: data.duration,
+        storyCaseStudy: data.storyCaseStudy,
+        foodHabit: data.foodHabit,
+        businessName: data.businessName,
+        salary: data.salary,
+        childhoodHobbies: data.childhoodHobbies,
+        serial: data.serial,
+        actorActress: data.actorActress,
+        influenceBy: data.influenceBy,
+        howKnow: data.howKnow,
+        designation: data.designation,
+        referBy: data.referBy,
+        sessionNo: data.sessionNo,
+        day: data.day,
+        time: data.time,
+      });
+      const personal_history_enc = await encryptField(personalHistoryBlob);
+
       const { error } = await supabase.from("clients").insert({
         coach_id: userData.user.id,
         name: data.name,
@@ -120,35 +152,8 @@ export default function ClientIntakePage() {
         course: data.course,
         sessions_committed: parseInt(data.sessionCommitted) || 0,
         signature_data: data.signature,
-        personal_history_json: {
-          hobbies: data.hobbies,
-          movies: data.movies,
-          book: data.book,
-          interest: data.interest,
-          suggestedBy: data.suggestedBy,
-          socialMedia: data.socialMedia,
-          companyName: data.companyName,
-          jobType: data.jobType,
-          courseJoinFor: data.courseJoinFor,
-          investment: data.investment,
-          date: data.date,
-          duration: data.duration,
-          storyCaseStudy: data.storyCaseStudy,
-          foodHabit: data.foodHabit,
-          businessName: data.businessName,
-          salary: data.salary,
-          childhoodHobbies: data.childhoodHobbies,
-          serial: data.serial,
-          actorActress: data.actorActress,
-          influenceBy: data.influenceBy,
-          howKnow: data.howKnow,
-          designation: data.designation,
-          referBy: data.referBy,
-          sessionNo: data.sessionNo,
-          day: data.day,
-          time: data.time,
-        },
-      });
+        personal_history_enc,
+      } as any);
 
       if (error) throw error;
       toast({ title: lang === "en" ? "Client saved successfully!" : "ग्राहक सफलतापूर्वक सहेजा गया!" });

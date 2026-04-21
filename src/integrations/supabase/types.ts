@@ -4424,6 +4424,7 @@ export type Database = {
       cleanup_old_sessions: { Args: never; Returns: number }
       close_inactive_sessions: { Args: never; Returns: number }
       decrypt_field: { Args: { _payload: string }; Returns: string }
+      decrypt_many: { Args: { _payloads: string[] }; Returns: string[] }
       encrypt_field: { Args: { _plaintext: string }; Returns: string }
       get_daily_session_report: { Args: never; Returns: Json }
       get_encryption_status: { Args: never; Returns: Json }
@@ -4460,6 +4461,7 @@ export type Database = {
         }[]
       }
       hash_for_lookup: { Args: { _value: string }; Returns: string }
+      hash_token: { Args: { _token: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_coach: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }

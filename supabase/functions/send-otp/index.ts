@@ -60,10 +60,25 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Store OTP with 15 min expiry
+    // Encrypt OTP code at rest via the server-side AES-256-GCM helper
+    let code_enc: string | null = null;
+    try {
+      const { data: encData, error: encErr } = await supabase.rpc("encrypt_field" as any, { _plaintext: otp });
+      if (encErr) throw encErr;
+      code_enc = encData as string | null;
+    } catch (e) {
+      console.error("OTP encryption failed:", e);
+      return new Response(JSON.stringify({ error: "Failed to secure OTP" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Store OTP with 15 min expiry (encrypted; plaintext kept temporarily for back-compat)
     const { error: storeError } = await supabase.from("otp_codes").upsert({
       identifier: email || phone,
       otp_code: otp,
+      code_enc,
       expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
       attempts: 0,
       is_used: false,

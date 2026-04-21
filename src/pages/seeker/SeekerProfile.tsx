@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useBadges } from '@/hooks/useBadges';
 import { format } from 'date-fns';
+import { encryptField, decryptField } from '@/lib/encryption';
 
 const SeekerProfile = () => {
   const { profile: authProfile, logout } = useAuthStore();
@@ -34,6 +35,18 @@ const SeekerProfile = () => {
       const { data } = await supabase.from('profiles').select('*').eq('user_id', user.id).single();
       if (data) {
         setSeekerProfileId(data.id);
+        // Decrypt sensitive PII fields in parallel; fallback to plaintext column
+        const d: any = data;
+        const [dob_dec, gender_dec, pincode_dec, whatsapp_dec, hometown_dec, linkedin_dec, blood_dec] =
+          await Promise.all([
+            decryptField(d.dob_enc),
+            decryptField(d.gender_enc),
+            decryptField(d.pincode_enc),
+            decryptField(d.whatsapp_enc),
+            decryptField(d.hometown_enc),
+            decryptField(d.linkedin_url_enc),
+            decryptField(d.blood_group_enc),
+          ]);
         setProfile({
           full_name: data.full_name || '',
           email: data.email || '',
@@ -42,13 +55,13 @@ const SeekerProfile = () => {
           state: data.state || '',
           occupation: data.occupation || '',
           company: data.company || '',
-          dob: data.dob || '',
-          gender: data.gender || '',
-          pincode: data.pincode || '',
-          whatsapp: data.whatsapp || '',
-          hometown: data.hometown || '',
-          linkedin_url: data.linkedin_url || '',
-          blood_group: data.blood_group || '',
+          dob: dob_dec || data.dob || '',
+          gender: gender_dec || data.gender || '',
+          pincode: pincode_dec || data.pincode || '',
+          whatsapp: whatsapp_dec || data.whatsapp || '',
+          hometown: hometown_dec || data.hometown || '',
+          linkedin_url: linkedin_dec || data.linkedin_url || '',
+          blood_group: blood_dec || data.blood_group || '',
           designation: data.designation || '',
           industry: data.industry || '',
         });
@@ -64,6 +77,17 @@ const SeekerProfile = () => {
     if (!seekerProfileId) return;
     setSaving(true);
     try {
+      // Encrypt sensitive PII fields in parallel
+      const [dob_enc, gender_enc, pincode_enc, whatsapp_enc, hometown_enc, linkedin_url_enc, blood_group_enc] =
+        await Promise.all([
+          encryptField(profile.dob || null),
+          encryptField(profile.gender || null),
+          encryptField(profile.pincode || null),
+          encryptField(profile.whatsapp || null),
+          encryptField(profile.hometown || null),
+          encryptField(profile.linkedin_url || null),
+          encryptField(profile.blood_group || null),
+        ]);
       const { error } = await supabase.from('profiles').update({
         full_name: profile.full_name,
         phone: profile.phone,
@@ -71,16 +95,17 @@ const SeekerProfile = () => {
         state: profile.state,
         occupation: profile.occupation,
         company: profile.company,
-        dob: profile.dob || null,
-        gender: profile.gender,
-        pincode: profile.pincode,
-        whatsapp: profile.whatsapp,
-        hometown: profile.hometown,
-        linkedin_url: profile.linkedin_url,
-        blood_group: profile.blood_group,
         designation: profile.designation,
         industry: profile.industry,
-      }).eq('id', seekerProfileId);
+        // Encrypted columns (plaintext columns left untouched for back-compat)
+        dob_enc,
+        gender_enc,
+        pincode_enc,
+        whatsapp_enc,
+        hometown_enc,
+        linkedin_url_enc,
+        blood_group_enc,
+      } as any).eq('id', seekerProfileId);
       if (error) {
         if (error.code === '23505') {
           if (error.message.includes('profiles_email_unique')) {
