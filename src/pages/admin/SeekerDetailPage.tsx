@@ -21,6 +21,7 @@ import { format } from 'date-fns';
 import { useDbSessions } from '@/hooks/useDbSessions';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { useDbCourses } from '@/hooks/useDbCourses';
+import { SeekerSignaturesTab } from '@/components/SeekerSignaturesTab';
 
 const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
 const formatDate = (d: string) => { if (!d) return '—'; try { return format(new Date(d), 'dd-MMMM-yyyy'); } catch { return d; } };
