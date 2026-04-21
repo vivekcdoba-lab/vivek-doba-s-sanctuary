@@ -122,6 +122,7 @@ const adminNav: NavGroup[] = [
       { icon: Link2, label: 'Integrations', path: '/admin/integrations' },
       { icon: ScrollText, label: 'Audit Logs', path: '/admin/audit-logs' },
       { icon: Database, label: 'Backup', path: '/admin/backup' },
+      { icon: Shield, label: 'Encryption Status', path: '/admin/encryption-status' },
       { icon: Settings, label: 'Settings', path: '/settings' },
       { icon: Monitor, label: 'Active Sessions', path: '/active-sessions' },
     ],
