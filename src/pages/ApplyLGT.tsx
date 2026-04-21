@@ -425,8 +425,12 @@ const ApplyLGT = () => {
                 </div>
               )}
             </Field>
-            <Field label="Pincode" required highlight={missingFields.has('pincode')}>
-              <input className={inputCls} inputMode="numeric" maxLength={6} value={f.pincode} onChange={e => set('pincode', sanitizeDigits(e.target.value, 6))} />
+            <Field label={f.state === 'Other' ? 'Postal / ZIP Code' : 'Pincode'} required highlight={missingFields.has('pincode')}>
+              {f.state === 'Other' ? (
+                <input className={inputCls} maxLength={10} value={f.pincode} onChange={e => set('pincode', e.target.value.slice(0, 10))} placeholder="Postal / ZIP code" />
+              ) : (
+                <input className={inputCls} inputMode="numeric" maxLength={6} value={f.pincode} onChange={e => set('pincode', sanitizeDigits(e.target.value, 6))} />
+              )}
             </Field>
             <Field label="Hometown" required highlight={missingFields.has('hometown')}>
               <input className={inputCls} maxLength={20} value={f.hometown} onChange={e => set('hometown', sanitize(e.target.value, 20))} />
