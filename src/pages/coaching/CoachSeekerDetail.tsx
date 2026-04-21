@@ -190,8 +190,13 @@ const CoachSeekerDetail = () => {
           <TabsTrigger value="wheel">🎡 Wheel of Life</TabsTrigger>
           <TabsTrigger value="swot">📋 SWOT</TabsTrigger>
           <TabsTrigger value="lgt">△ LGT</TabsTrigger>
+          <TabsTrigger value="documents">📄 Documents</TabsTrigger>
           <TabsTrigger value="overview">📈 Overview</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="documents">
+          <SeekerSignaturesTab seekerId={seekerId!} />
+        </TabsContent>
 
         <TabsContent value="wheel" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
