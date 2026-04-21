@@ -1,41 +1,31 @@
 
 
-## Goal
-Apply the "State = Other → Pincode is free-text up to 10 chars, no validation" rule **everywhere** pincode is captured, not just `/apply-lgt`. When State is an Indian state, the existing 6-digit numeric pincode rule still applies.
+## Diagnosis
 
-## Single source of truth
+The dev server is **running cleanly** at `http://localhost:8080/` with no build errors, and the published site is live at `https://vivek-doba-portal.lovable.app`. Recent logs show only successful HMR updates from the phone/pincode work — no compile failures.
 
-The shared `StatePincodeInput` component is already used by all standardized forms. Updating it once propagates the behavior to every consumer automatically.
+The "Preview redirects to Files" and "Publish not visible" symptoms are **not caused by the codebase**. They're caused by the **editor's current view being stuck on the Files panel** (the `<current-view>` system flag confirms: *"The user is currently viewing generated files"*). When you're in Files view, the top toolbar swaps out — Preview/Publish buttons aren't rendered there.
 
-## Changes
+## Fix — switch the editor view (no code change needed)
 
-**`src/components/inputs/StatePincodeInput.tsx`**
-- Compute `isOther = !!state && !INDIAN_STATES.includes(state)` (already present).
-- Conditional pincode input:
-  - `isOther === true` → free-text `<Input>` with `maxLength={10}`, no `inputMode="numeric"`, no `sanitizePincode`, placeholder `"Postal / ZIP code"`. Pass raw value sliced to 10 chars to `onPincodeChange`.
-  - `isOther === false` → keep current digits-only, max 6, `sanitizePincode`, placeholder `"6-digit pincode"`.
+**Desktop:**
+1. In the navigation bar above the panel, click the **Preview** icon (eye/monitor icon) — this exits Files view and returns to the live app preview.
+2. Once back in Preview, the **Publish** button reappears in the **top-right corner** of the editor.
 
-**`src/lib/phoneValidation.ts`**
-- Extend `validatePincode(pin, isOther?)`. When `isOther === true`, return `null` (skip 6-digit India rule). Default behavior preserved → existing call sites unaffected.
+**Mobile:**
+1. Tap the **`...` (ellipsis)** button in the bottom-right corner.
+2. Tap **Preview** to exit Files view.
+3. Tap `...` again → **Publish** to publish.
 
-**Consumer call sites** — pass `isOther` into validation at submit time:
-- `src/pages/ApplyLGT.tsx`
-- `src/pages/admin/AdminAddUser.tsx`
-- `src/pages/seeker/SeekerProfile.tsx`
-- Any other form found via grep on `validatePincode(` — update to `validatePincode(pin, state && !INDIAN_STATES.includes(state))`.
+## Why this happened
 
-Forms that don't validate pincode at submit (only rely on the input component) need no changes — the component already enforces the new behavior.
+You opened the Files view (likely to download an artifact from `/mnt/documents/`). The editor remembers that view across messages. Switching back to Preview restores the normal toolbar with Preview + Publish buttons.
 
-## Out of scope
-- DB schema changes — `pincode` column is already free-text on every table.
-- Backfill of existing pincode values.
-- International pincode format-specific validation (UK, US, etc.) — accept any 10-char string.
+## If Preview still looks blank after switching
 
-## Smoke test
-1. `/apply-lgt`, State=Maharashtra, Pincode `400001` → submits OK.
-2. `/apply-lgt`, State=Maharashtra, Pincode `0000` → rejected.
-3. `/apply-lgt`, State=Other "London", Pincode `SW1A 1AA` → submits OK.
-4. `/admin/add-user`, State=Other "Dubai", Pincode `12345` → submits OK; Pincode 11 chars → hard-capped at 10.
-5. `/seeker/profile`, State=Other "Singapore", Pincode `238801` → submits OK; legacy India seeker still validated 6-digit.
-6. Any Indian state across all forms → existing 6-digit numeric rule still enforced.
+That would indicate a runtime route issue — not the case here. The app is responding normally on both preview and published URLs. If after switching views the preview is genuinely broken, send a screenshot and I'll investigate the route/auth state. But based on logs + URLs, **no code fix is required** — just toggle the editor view.
+
+## No files to modify
+
+This is an editor UI state issue, not a project code issue. Once you click the Preview icon, everything will be visible as expected.
 
