@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Save, Settings, MessageSquare, Mail, Smartphone, Zap, FileSignature, Users } from 'lucide-react';
+import { Bell, Save, Settings, MessageSquare, Mail, Smartphone, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -208,25 +208,6 @@ const SettingsPage = () => {
                 </div>
               );
             })}
-          </div>
-
-          {/* Documents & Signatures helper banner */}
-          <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20 flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <FileSignature className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Need to send a document for signature?</p>
-                <p className="text-xs text-muted-foreground">Open a seeker's profile → Documents &amp; Signatures tab, or manage the library.</p>
-              </div>
-            </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <Button asChild size="sm" variant="default">
-                <Link to="/admin/documents"><FileSignature className="w-3.5 h-3.5 mr-1" /> Document Library</Link>
-              </Button>
-              <Button asChild size="sm" variant="outline">
-                <Link to="/admin/seekers"><Users className="w-3.5 h-3.5 mr-1" /> Find a Seeker</Link>
-              </Button>
-            </div>
           </div>
 
           {/* Automation History */}
