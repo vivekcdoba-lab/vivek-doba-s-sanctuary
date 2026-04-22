@@ -288,6 +288,8 @@ const App = () => (
             <Route path="/session-templates" element={<SessionTemplatesPage />} />
             <Route path="/swot" element={<SwotPage />} />
             <Route path="/active-sessions" element={<ActiveSessionsPage />} />
+            {/* Legacy redirects */}
+            <Route path="/admin/seekers" element={<Navigate to="/seekers" replace />} />
             {/* Admin placeholder routes */}
             <Route path="/admin/coaches" element={<AdminCoaches />} />
             <Route path="/admin/documents" element={<AdminDocuments />} />
