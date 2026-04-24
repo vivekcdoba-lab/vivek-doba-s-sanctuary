@@ -90,19 +90,22 @@ Deno.serve(async (req) => {
     line("IP Address:", ip ?? "—");
     line("Verification ID:", verificationId, true);
 
-    y -= 20;
-    page.drawText("Signature:", { x: 50, y, size: 11, font: helvBold, color: rgb(0.3, 0.3, 0.3) });
-    page.drawText(full_name, { x: 200, y: y - 4, size: 24, font: italic, color: rgb(0.05, 0.1, 0.4) });
-    y -= 50;
-    page.drawLine({ start: { x: 200, y }, end: { x: 540, y }, thickness: 0.5, color: rgb(0.6, 0.6, 0.6) });
+    // Bottom-LEFT: Coach Signature  |  Bottom-RIGHT: Signer block
+    const baseY = 90;
+    page.drawText("Coach Signature", { x: 50, y: baseY + 50, size: 10, font: helvBold, color: rgb(0.3, 0.3, 0.3) });
+    page.drawText("Vivek Doba", { x: 50, y: baseY + 22, size: 22, font: italic, color: rgb(0.05, 0.1, 0.4) });
+    page.drawLine({ start: { x: 50, y: baseY + 18 }, end: { x: 270, y: baseY + 18 }, thickness: 0.5, color: rgb(0.6, 0.6, 0.6) });
+    page.drawText("Vivek Doba — Coach (Guruji)", { x: 50, y: baseY + 4, size: 9, font: helv, color: rgb(0.4, 0.4, 0.4) });
+    page.drawText(signature_date, { x: 50, y: baseY - 8, size: 9, font: helv, color: rgb(0.4, 0.4, 0.4) });
 
-    y -= 40;
+    page.drawText("Signer Signature", { x: 325, y: baseY + 50, size: 10, font: helvBold, color: rgb(0.3, 0.3, 0.3) });
+    page.drawText(full_name, { x: 325, y: baseY + 22, size: 22, font: italic, color: rgb(0.05, 0.1, 0.4) });
+    page.drawLine({ start: { x: 325, y: baseY + 18 }, end: { x: 545, y: baseY + 18 }, thickness: 0.5, color: rgb(0.6, 0.6, 0.6) });
+    page.drawText(`${full_name} — ${place}`, { x: 325, y: baseY + 4, size: 9, font: helv, color: rgb(0.4, 0.4, 0.4) });
+    page.drawText(`${signature_date}  •  ${verificationId}`, { x: 325, y: baseY - 8, size: 9, font: helv, color: rgb(0.4, 0.4, 0.4) });
+
     page.drawText("Electronically signed under the Information Technology Act, 2000.", {
-      x: 50, y, size: 9, font: italic, color: rgb(0.4, 0.4, 0.4),
-    });
-    y -= 14;
-    page.drawText("This signature is legally binding. Verification ID can be used to confirm authenticity.", {
-      x: 50, y, size: 9, font: italic, color: rgb(0.4, 0.4, 0.4),
+      x: 50, y: 40, size: 9, font: italic, color: rgb(0.4, 0.4, 0.4),
     });
 
     pdfDoc.setTitle(`${doc?.title ?? "Document"} — Signed`);
@@ -144,13 +147,18 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             from: "Vivek Doba <onboarding@resend.dev>",
             to: [seeker.email],
-            subject: `Signed: ${doc?.title ?? "Document"} — your copy`,
+            subject: "Thank You for Signing the Agreement",
             html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937">
-              <h2 style="color:#FF6B00">🙏 Thank you, ${full_name}!</h2>
-              <p>Your <strong>${doc?.title}</strong> has been digitally signed and saved.</p>
-              <p>Verification ID: <strong>${verificationId}</strong></p>
-              <p>We're honored to walk this transformation path with you.</p>
-              <p style="font-size:12px;color:#9ca3af;margin-top:24px">Vivek Doba Training Solutions</p>
+              <p>Dear ${seeker?.full_name ?? full_name},</p>
+              <p>Thank you for signing the agreement.</p>
+              <p>We appreciate your prompt response and look forward to working together. Please let me know if there is anything further required from my side.</p>
+              <p style="background:#FFF8F0;padding:12px;border-radius:8px;border-left:4px solid #FF6B00;font-size:14px">
+                <strong>Document:</strong> ${doc?.title}<br/>
+                <strong>Verification ID:</strong> ${verificationId}
+              </p>
+              <p>Best regards,<br/>VDTS</p>
+              <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+              <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions</p>
             </div>`,
             attachments: [{ filename: `${(doc?.title ?? "document").replace(/[^a-z0-9]/gi, "_")}-signed.pdf`, content: b64 }],
           }),

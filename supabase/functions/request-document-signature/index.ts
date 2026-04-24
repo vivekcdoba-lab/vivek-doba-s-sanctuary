@@ -77,9 +77,9 @@ Deno.serve(async (req) => {
       const link = `${APP_URL}/sign/${token}`;
       const html = `
         <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937">
-          <h2 style="color:#FF6B00">🙏 Welcome to your transformation journey!</h2>
           <p>Dear ${seeker.full_name ?? "Seeker"},</p>
-          <p>Congratulations on enrolling with Vivek Doba Training Solutions. To begin your sessions, please review and digitally sign the document below:</p>
+          <p>I hope this message finds you well.</p>
+          <p>Please review and sign the attached agreement document at your earliest convenience. If you have any questions or need any clarification, feel free to reach out.</p>
           <p style="background:#FFF8F0;padding:16px;border-radius:8px;border-left:4px solid #FF6B00">
             <strong>${doc.title}</strong><br/>
             <span style="color:#6b7280;font-size:14px">${doc.description ?? ""}</span>
@@ -89,8 +89,10 @@ Deno.serve(async (req) => {
             <a href="${link}" style="background:#FF6B00;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600">Open Signing Page</a>
           </p>
           <p style="font-size:13px;color:#6b7280">This link expires in 7 days. If the button doesn't work, copy this URL: <br/><span style="word-break:break-all">${link}</span></p>
+          <p>Looking forward to your confirmation.</p>
+          <p>Best regards,<br/>VDTS</p>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-          <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions · Honored to walk this path with you</p>
+          <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions</p>
         </div>`;
 
       if (RESEND_API_KEY && LOVABLE_API_KEY) {
@@ -105,7 +107,7 @@ Deno.serve(async (req) => {
             body: JSON.stringify({
               from: "Vivek Doba <onboarding@resend.dev>",
               to: [seeker.email],
-              subject: `Action required: Sign your ${doc.title}`,
+              subject: "Request to Sign Agreement Document",
               html,
             }),
           });

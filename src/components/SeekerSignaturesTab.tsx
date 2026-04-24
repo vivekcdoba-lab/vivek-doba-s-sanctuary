@@ -6,7 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { SendForSignatureDialog } from "@/components/SendForSignatureDialog";
-import { Download, RefreshCw, X, FileSignature, Loader2 } from "lucide-react";
+import { SignHereDialog } from "@/components/SignHereDialog";
+import { Download, RefreshCw, X, FileSignature, Loader2, PenLine, Mail } from "lucide-react";
 
 interface Props { seekerId: string; }
 
@@ -35,6 +36,7 @@ export const SeekerSignaturesTab = ({ seekerId }: Props) => {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [signOpen, setSignOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -85,7 +87,14 @@ export const SeekerSignaturesTab = ({ seekerId }: Props) => {
           <h3 className="text-lg font-semibold text-foreground flex items-center gap-2"><FileSignature className="w-5 h-5" /> Documents & Signatures</h3>
           <p className="text-sm text-muted-foreground">Send agreements, NDAs and other documents to this seeker for digital signature.</p>
         </div>
-        <Button onClick={() => setOpen(true)}>📄 Send Document for Signature</Button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={() => setSignOpen(true)}>
+            <PenLine className="w-4 h-4 mr-2" /> Sign Here
+          </Button>
+          <Button onClick={() => setOpen(true)}>
+            <Mail className="w-4 h-4 mr-2" /> Send Email for Signature
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -150,6 +159,7 @@ export const SeekerSignaturesTab = ({ seekerId }: Props) => {
       )}
 
       <SendForSignatureDialog open={open} onOpenChange={setOpen} seekerId={seekerId} onSent={load} />
+      <SignHereDialog open={signOpen} onOpenChange={setSignOpen} seekerId={seekerId} onSent={load} />
     </Card>
   );
 };

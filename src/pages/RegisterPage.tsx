@@ -14,7 +14,7 @@ const RegisterPage = () => {
     name: '', email: '',
     phoneCode: DEFAULT_COUNTRY_CODE, phone: '',
     whatsappCode: DEFAULT_COUNTRY_CODE, whatsapp: '',
-    password: '', confirm: '', course: '', source: '',
+    password: '', confirm: '', course: '', source: '', country: 'IN',
   });
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -64,6 +64,7 @@ const RegisterPage = () => {
           password: form.password,
           course: form.course,
           source: form.source,
+          country: form.country,
         },
       }]);
 
@@ -155,6 +156,17 @@ const RegisterPage = () => {
             <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input type="password" placeholder="Password (min 12 chars) *" value={form.password} onChange={(e) => update('password', e.target.value)} className="pl-10" /></div>
             <p className="text-xs text-muted-foreground -mt-1 ml-1">{PASSWORD_HELP}</p>
             <Input type="password" placeholder="Confirm Password *" value={form.confirm} onChange={(e) => update('confirm', e.target.value)} />
+
+            <select value={form.country} onChange={(e) => update('country', e.target.value)} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm">
+              <option value="IN">India</option>
+              <option value="US">United States</option>
+              <option value="GB">United Kingdom</option>
+              <option value="AE">United Arab Emirates</option>
+              <option value="CA">Canada</option>
+              <option value="AU">Australia</option>
+              <option value="SG">Singapore</option>
+              <option value="OTHER">Other</option>
+            </select>
 
             <select value={form.course} onChange={(e) => update('course', e.target.value)} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm">
               <option value="">Which program interests you?</option>

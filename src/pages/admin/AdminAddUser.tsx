@@ -15,7 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { PERMISSION_KEYS, PERMISSION_LABELS, allPermissionsTrue, type PermissionKey } from '@/lib/adminPermissions';
 import { validatePassword, PASSWORD_HELP } from '@/lib/passwordValidation';
 import PhoneInput from '@/components/inputs/PhoneInput';
-import StatePincodeInput from '@/components/inputs/StatePincodeInput';
+import CountryStateInput from '@/components/inputs/CountryStateInput';
 import { validatePhone, validatePincode, toE164, DEFAULT_COUNTRY_CODE, INDIAN_STATES } from '@/lib/phoneValidation';
 
 const STEPS = ['Role & Basic Info', 'Profile Details', 'Review & Create'];
@@ -35,6 +35,7 @@ const AdminAddUser = () => {
     password: '',
     confirm_password: '',
     city: '',
+    country: 'IN',
     state: '',
     pincode: '',
     company: '',
@@ -81,8 +82,11 @@ const AdminAddUser = () => {
     }
     const phoneErr = validatePhone(form.phoneCode, form.phone);
     if (phoneErr) { toast.error(phoneErr); return; }
-    const pinErr = validatePincode(form.pincode, !!form.state && !INDIAN_STATES.includes(form.state));
-    if (pinErr) { toast.error(pinErr); return; }
+    // Only enforce pincode rules for India
+    if (form.country === 'IN') {
+      const pinErr = validatePincode(form.pincode, !!form.state && !INDIAN_STATES.includes(form.state));
+      if (pinErr) { toast.error(pinErr); return; }
+    }
     if (!autoGen) {
       const pErr = validatePassword(form.password);
       if (pErr) { toast.error(pErr); return; }
@@ -101,6 +105,7 @@ const AdminAddUser = () => {
           auto_generate_password: autoGen,
           role: form.role,
           city: form.city,
+          country: form.country,
           state: form.state,
           pincode: form.pincode,
           company: form.company,
@@ -164,7 +169,7 @@ const AdminAddUser = () => {
         toast.warning(`${baseMsg} ${detail}`, { duration: 18000 });
       }
 
-      setForm({ role: 'seeker', full_name: '', email: '', phoneCode: DEFAULT_COUNTRY_CODE, phone: '', password: '', confirm_password: '', city: '', state: '', pincode: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true, auto_generate_password: false, admin_level: 'admin', admin_permissions: {} });
+      setForm({ role: 'seeker', full_name: '', email: '', phoneCode: DEFAULT_COUNTRY_CODE, phone: '', password: '', confirm_password: '', city: '', country: 'IN', state: '', pincode: '', company: '', occupation: '', gender: '', course_id: '', send_welcome: true, auto_generate_password: false, admin_level: 'admin', admin_permissions: {} });
       setStep(0);
     } catch (e: any) {
       toast.error(e?.message || 'Error creating user');
@@ -284,9 +289,11 @@ const AdminAddUser = () => {
                 <Label>City</Label>
                 <Input value={form.city} onChange={e => update('city', e.target.value)} />
               </div>
-              <StatePincodeInput
+              <CountryStateInput
+                country={form.country}
                 state={form.state}
                 pincode={form.pincode}
+                onCountryChange={v => update('country', v)}
                 onStateChange={v => update('state', v)}
                 onPincodeChange={v => update('pincode', v)}
               />
