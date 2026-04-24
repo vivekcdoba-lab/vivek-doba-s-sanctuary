@@ -90,19 +90,22 @@ Deno.serve(async (req) => {
     line("IP Address:", ip ?? "—");
     line("Verification ID:", verificationId, true);
 
-    y -= 20;
-    page.drawText("Signature:", { x: 50, y, size: 11, font: helvBold, color: rgb(0.3, 0.3, 0.3) });
-    page.drawText(full_name, { x: 200, y: y - 4, size: 24, font: italic, color: rgb(0.05, 0.1, 0.4) });
-    y -= 50;
-    page.drawLine({ start: { x: 200, y }, end: { x: 540, y }, thickness: 0.5, color: rgb(0.6, 0.6, 0.6) });
+    // Bottom-LEFT: Coach Signature  |  Bottom-RIGHT: Signer block
+    const baseY = 90;
+    page.drawText("Coach Signature", { x: 50, y: baseY + 50, size: 10, font: helvBold, color: rgb(0.3, 0.3, 0.3) });
+    page.drawText("Vivek Doba", { x: 50, y: baseY + 22, size: 22, font: italic, color: rgb(0.05, 0.1, 0.4) });
+    page.drawLine({ start: { x: 50, y: baseY + 18 }, end: { x: 270, y: baseY + 18 }, thickness: 0.5, color: rgb(0.6, 0.6, 0.6) });
+    page.drawText("Vivek Doba — Coach (Guruji)", { x: 50, y: baseY + 4, size: 9, font: helv, color: rgb(0.4, 0.4, 0.4) });
+    page.drawText(signature_date, { x: 50, y: baseY - 8, size: 9, font: helv, color: rgb(0.4, 0.4, 0.4) });
 
-    y -= 40;
+    page.drawText("Signer Signature", { x: 325, y: baseY + 50, size: 10, font: helvBold, color: rgb(0.3, 0.3, 0.3) });
+    page.drawText(full_name, { x: 325, y: baseY + 22, size: 22, font: italic, color: rgb(0.05, 0.1, 0.4) });
+    page.drawLine({ start: { x: 325, y: baseY + 18 }, end: { x: 545, y: baseY + 18 }, thickness: 0.5, color: rgb(0.6, 0.6, 0.6) });
+    page.drawText(`${full_name} — ${place}`, { x: 325, y: baseY + 4, size: 9, font: helv, color: rgb(0.4, 0.4, 0.4) });
+    page.drawText(`${signature_date}  •  ${verificationId}`, { x: 325, y: baseY - 8, size: 9, font: helv, color: rgb(0.4, 0.4, 0.4) });
+
     page.drawText("Electronically signed under the Information Technology Act, 2000.", {
-      x: 50, y, size: 9, font: italic, color: rgb(0.4, 0.4, 0.4),
-    });
-    y -= 14;
-    page.drawText("This signature is legally binding. Verification ID can be used to confirm authenticity.", {
-      x: 50, y, size: 9, font: italic, color: rgb(0.4, 0.4, 0.4),
+      x: 50, y: 40, size: 9, font: italic, color: rgb(0.4, 0.4, 0.4),
     });
 
     pdfDoc.setTitle(`${doc?.title ?? "Document"} — Signed`);
