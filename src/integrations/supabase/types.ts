@@ -2193,6 +2193,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          country: string | null
           created_at: string
           current_challenge: string | null
           days_in_pipeline: number | null
@@ -2209,6 +2210,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          country?: string | null
           created_at?: string
           current_challenge?: string | null
           days_in_pipeline?: number | null
@@ -2225,6 +2227,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          country?: string | null
           created_at?: string
           current_challenge?: string | null
           days_in_pipeline?: number | null
@@ -2751,6 +2754,7 @@ export type Database = {
           blood_group_enc: string | null
           city: string | null
           company: string | null
+          country: string | null
           created_at: string
           designation: string | null
           dob: string | null
@@ -2804,6 +2808,7 @@ export type Database = {
           blood_group_enc?: string | null
           city?: string | null
           company?: string | null
+          country?: string | null
           created_at?: string
           designation?: string | null
           dob?: string | null
@@ -2857,6 +2862,7 @@ export type Database = {
           blood_group_enc?: string | null
           city?: string | null
           company?: string | null
+          country?: string | null
           created_at?: string
           designation?: string | null
           dob?: string | null
