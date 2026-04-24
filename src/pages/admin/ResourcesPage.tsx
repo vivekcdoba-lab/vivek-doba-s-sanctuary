@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Resource } from '@/types';
+import { ResourcePreviewModal } from '@/components/ResourcePreviewModal';
 
 const typeIcon: Record<string, any> = { pdf: FileText, audio: Headphones, video: Video, worksheet: FileSpreadsheet };
 const typeColors: Record<string, string> = {
@@ -111,6 +112,7 @@ const ResourcesPage = () => {
   const [langFilter, setLangFilter] = useState('all');
   const [activeTab, setActiveTab] = useState<'resources' | 'stories'>('resources');
   const [storySource, setStorySource] = useState('all');
+  const [preview, setPreview] = useState<{ title: string; type: string; url?: string } | null>(null);
 
   const { data: dbResources = [] } = useQuery({
     queryKey: ['learning-content'],
@@ -279,7 +281,7 @@ const ResourcesPage = () => {
                         <span className="flex items-center gap-1"><Download className="w-3 h-3" /> {r.download_count}</span>
                       </div>
                       {url ? (
-                        <button onClick={() => openResource(url)} className="text-primary hover:underline font-medium">View →</button>
+                        <button onClick={() => setPreview({ title: r.title, type: r.type, url })} className="text-primary hover:underline font-medium">View →</button>
                       ) : (
                         <span title="No URL available" className="text-muted-foreground/60 font-medium cursor-not-allowed">View →</span>
                       )}
@@ -362,6 +364,16 @@ const ResourcesPage = () => {
           <span className="text-5xl block mb-4">📁</span>
           <p className="text-muted-foreground">No results match your search.</p>
         </div>
+      )}
+
+      {preview && (
+        <ResourcePreviewModal
+          open={!!preview}
+          onOpenChange={(v) => !v && setPreview(null)}
+          title={preview.title}
+          type={preview.type}
+          url={preview.url}
+        />
       )}
     </div>
   );

@@ -26,11 +26,11 @@ Deno.serve(async (req) => {
     }
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } });
-    const { data: claimData, error: claimErr } = await supabase.auth.getClaims(authHeader.replace("Bearer ", ""));
-    if (claimErr || !claimData?.claims) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: { user }, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const { data: caller } = await admin.from("profiles").select("role, is_also_coach").eq("user_id", claimData.claims.sub).maybeSingle();
+    const { data: caller } = await admin.from("profiles").select("role, is_also_coach").eq("user_id", user.id).maybeSingle();
     if (!caller || (caller.role !== "admin" && caller.role !== "coach" && !caller.is_also_coach)) {
       return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }

@@ -29,11 +29,11 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } },
     );
-    const { data: claimData, error: claimErr } = await supabase.auth.getClaims(authHeader.replace("Bearer ", ""));
-    if (claimErr || !claimData?.claims) {
+    const { data: { user }, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const callerId = claimData.claims.sub as string;
+    const callerId = user.id;
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: callerProfile } = await admin.from("profiles").select("id, role, is_also_coach").eq("user_id", callerId).maybeSingle();
