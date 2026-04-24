@@ -181,7 +181,7 @@ Deno.serve(async (req) => {
     let {
       email, full_name, phone, role,
       password = null,
-      city = '', state = '', company = '', occupation = '', gender = '',
+      city = '', state = '', country = 'IN', company = '', occupation = '', gender = '',
       course_id = null,
       admin_level = null,
       admin_permissions = null,
@@ -325,12 +325,12 @@ Deno.serve(async (req) => {
       .from('profiles').select('id').eq('user_id', newUserId).maybeSingle();
     if (!existingProfile) {
       await admin.from('profiles').insert({
-        user_id: newUserId, email, full_name, role, phone, city, state, company, occupation,
+        user_id: newUserId, email, full_name, role, phone, city, state, country, company, occupation,
       });
     }
 
     const updatePayload: Record<string, any> = {
-      role, full_name, phone, city, state, company, occupation,
+      role, full_name, phone, city, state, country, company, occupation,
       gender: gender || null,
       must_change_password: mustChange,
       password_change_prompted: false,

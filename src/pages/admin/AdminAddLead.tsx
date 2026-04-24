@@ -32,6 +32,7 @@ const AdminAddLead = () => {
   const [form, setForm] = useState({
     name: '', phoneCode: DEFAULT_COUNTRY_CODE, phone: '', email: '', source: 'Website',
     priority: 'warm', interested_course_id: '', current_challenge: '', notes: '',
+    country: 'IN',
   });
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
@@ -47,7 +48,8 @@ const AdminAddLead = () => {
         name: form.name, phone: form.phone ? toE164(form.phoneCode, form.phone) : '', email: form.email, source: form.source,
         priority: form.priority, interested_course_id: form.interested_course_id || undefined,
         current_challenge: form.current_challenge, notes: form.notes,
-      });
+        country: form.country,
+      } as any);
       toast.success(`Lead "${form.name}" added!`);
       navigate('/leads');
     } catch (err: any) { toast.error(err.message || 'Failed to add lead'); }
@@ -97,6 +99,19 @@ const AdminAddLead = () => {
           </>)}
 
           {step === 1 && (<>
+            <div className="space-y-2"><Label>Country</Label>
+              <select value={form.country} onChange={e => set('country', e.target.value)}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <option value="IN">India</option>
+                <option value="US">United States</option>
+                <option value="GB">United Kingdom</option>
+                <option value="AE">United Arab Emirates</option>
+                <option value="CA">Canada</option>
+                <option value="AU">Australia</option>
+                <option value="SG">Singapore</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
             <div className="space-y-2"><Label>Interested Program</Label>
               <Select value={form.interested_course_id} onValueChange={v => set('interested_course_id', v)}>
                 <SelectTrigger><SelectValue placeholder="Select program (optional)" /></SelectTrigger>
