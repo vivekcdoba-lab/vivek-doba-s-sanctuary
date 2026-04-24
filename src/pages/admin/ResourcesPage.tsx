@@ -365,6 +365,16 @@ const ResourcesPage = () => {
           <p className="text-muted-foreground">No results match your search.</p>
         </div>
       )}
+
+      {preview && (
+        <ResourcePreviewModal
+          open={!!preview}
+          onOpenChange={(v) => !v && setPreview(null)}
+          title={preview.title}
+          type={preview.type}
+          url={preview.url}
+        />
+      )}
     </div>
   );
 };
