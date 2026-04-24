@@ -147,13 +147,18 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             from: "Vivek Doba <onboarding@resend.dev>",
             to: [seeker.email],
-            subject: `Signed: ${doc?.title ?? "Document"} — your copy`,
+            subject: "Thank You for Signing the Agreement",
             html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937">
-              <h2 style="color:#FF6B00">🙏 Thank you, ${full_name}!</h2>
-              <p>Your <strong>${doc?.title}</strong> has been digitally signed and saved.</p>
-              <p>Verification ID: <strong>${verificationId}</strong></p>
-              <p>We're honored to walk this transformation path with you.</p>
-              <p style="font-size:12px;color:#9ca3af;margin-top:24px">Vivek Doba Training Solutions</p>
+              <p>Dear ${seeker?.full_name ?? full_name},</p>
+              <p>Thank you for signing the agreement.</p>
+              <p>We appreciate your prompt response and look forward to working together. Please let me know if there is anything further required from my side.</p>
+              <p style="background:#FFF8F0;padding:12px;border-radius:8px;border-left:4px solid #FF6B00;font-size:14px">
+                <strong>Document:</strong> ${doc?.title}<br/>
+                <strong>Verification ID:</strong> ${verificationId}
+              </p>
+              <p>Best regards,<br/>VDTS</p>
+              <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+              <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions</p>
             </div>`,
             attachments: [{ filename: `${(doc?.title ?? "document").replace(/[^a-z0-9]/gi, "_")}-signed.pdf`, content: b64 }],
           }),
