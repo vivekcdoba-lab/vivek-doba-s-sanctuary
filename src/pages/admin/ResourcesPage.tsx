@@ -112,6 +112,7 @@ const ResourcesPage = () => {
   const [langFilter, setLangFilter] = useState('all');
   const [activeTab, setActiveTab] = useState<'resources' | 'stories'>('resources');
   const [storySource, setStorySource] = useState('all');
+  const [preview, setPreview] = useState<{ title: string; type: string; url?: string } | null>(null);
 
   const { data: dbResources = [] } = useQuery({
     queryKey: ['learning-content'],
