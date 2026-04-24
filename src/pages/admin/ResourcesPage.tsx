@@ -281,7 +281,7 @@ const ResourcesPage = () => {
                         <span className="flex items-center gap-1"><Download className="w-3 h-3" /> {r.download_count}</span>
                       </div>
                       {url ? (
-                        <button onClick={() => openResource(url)} className="text-primary hover:underline font-medium">View →</button>
+                        <button onClick={() => setPreview({ title: r.title, type: r.type, url })} className="text-primary hover:underline font-medium">View →</button>
                       ) : (
                         <span title="No URL available" className="text-muted-foreground/60 font-medium cursor-not-allowed">View →</span>
                       )}
