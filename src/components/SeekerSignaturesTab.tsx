@@ -18,6 +18,7 @@ interface Row {
   signed_at: string | null;
   expires_at: string | null;
   custom_message: string | null;
+  sign_method: "email" | "in_person" | null;
   documents: { id: string; title: string; category: string | null } | null;
   document_signatures: { signed_pdf_path: string | null }[] | null;
 }
@@ -43,7 +44,7 @@ export const SeekerSignaturesTab = ({ seekerId }: Props) => {
     setLoading(true);
     const { data, error } = await supabase
       .from("signature_requests")
-      .select("id, status, sent_at, signed_at, expires_at, custom_message, documents(id, title, category), document_signatures(signed_pdf_path)")
+      .select("id, status, sent_at, signed_at, expires_at, custom_message, sign_method, documents(id, title, category), document_signatures(signed_pdf_path)")
       .eq("seeker_id", seekerId)
       .order("sent_at", { ascending: false });
     if (error) toast({ title: "Failed to load", description: error.message, variant: "destructive" });
@@ -111,6 +112,7 @@ export const SeekerSignaturesTab = ({ seekerId }: Props) => {
               <TableHead>Document</TableHead>
               <TableHead>Sent</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Method</TableHead>
               <TableHead>Signed</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -128,6 +130,15 @@ export const SeekerSignaturesTab = ({ seekerId }: Props) => {
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{fmt(r.sent_at)}</TableCell>
                   <TableCell><Badge variant={statusVariant(effective)} className="capitalize">{effective}</Badge></TableCell>
+                  <TableCell>
+                    {r.sign_method === "in_person" ? (
+                      <Badge variant="outline" className="gap-1"><PenLine className="w-3 h-3" /> In-Person</Badge>
+                    ) : r.sign_method === "email" ? (
+                      <Badge variant="outline" className="gap-1"><Mail className="w-3 h-3" /> Email</Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">—</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{fmt(r.signed_at)}</TableCell>
                   <TableCell className="text-right space-x-1">
                     {effective === "pending" && (

@@ -1,63 +1,50 @@
 ## Goal
-Fix signature emails not arriving by switching the four signature edge functions from the Lovable connector gateway (silent failures) to the direct Resend API — same transport already used successfully by the seeker-approval flow.
+Show how each signature was captured — **Email** (seeker signed via the link sent by email) vs **In-Person / Sign Here** (admin signed inline on the seeker's behalf) — as a new column in the `SeekerSignaturesTab` table.
 
-## Changes
+## 1. Database — add `sign_method` to `signature_requests`
+New migration:
+```sql
+ALTER TABLE public.signature_requests
+  ADD COLUMN IF NOT EXISTS sign_method text
+  CHECK (sign_method IN ('email','in_person')) DEFAULT 'email';
 
-### 1. Edge functions — direct Resend API
-For each of:
-- `supabase/functions/request-document-signature/index.ts`
-- `supabase/functions/sign-document-inline/index.ts`
-- `supabase/functions/submit-signature/index.ts`
-- `supabase/functions/resend-document-signature/index.ts`
+-- Backfill existing rows based on what created them:
+-- 'in_person' if signed_at exists AND the matching document_signatures.place was captured in-app (Sign Here flow always sets place + signature_date),
+-- 'email' otherwise.
+UPDATE public.signature_requests sr
+SET sign_method = 'in_person'
+FROM public.document_signatures ds
+WHERE ds.request_id = sr.id
+  AND ds.place IS NOT NULL
+  AND sr.custom_message IS NULL
+  AND sr.sent_at = sr.signed_at;  -- inline flow stamps both at the same instant
 
-Replace the gateway block:
-```ts
-await fetch("https://connector-gateway.lovable.dev/resend/emails", {
-  headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "X-Connection-Api-Key": RESEND_API_KEY, ... }, ...
-})
-```
-with direct Resend:
-```ts
-const res = await fetch("https://api.resend.com/emails", {
-  method: "POST",
-  headers: {
-    "Authorization": `Bearer ${RESEND_API_KEY}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    from: "Vivek Doba <info@vivekdoba.com>",
-    to: [seeker.email],
-    subject,
-    html,
-  }),
-});
-const emailJson = await res.json().catch(() => ({}));
-if (!res.ok) console.error("resend_failed", res.status, emailJson);
+UPDATE public.signature_requests
+SET sign_method = 'email'
+WHERE sign_method IS NULL;
 ```
 
-- Drop the `LOVABLE_API_KEY` requirement from the guard (keep `RESEND_API_KEY` check).
-- Capture `email_sent: boolean` and `email_error?: string` per request, and include them in the function's JSON response (alongside existing `created[]` / `signed[]`).
-- Keep all existing PDF generation, DB inserts, and templates unchanged.
+## 2. Edge functions — set `sign_method` on insert
+- **`supabase/functions/sign-document-inline/index.ts`** — when inserting into `signature_requests`, add `sign_method: 'in_person'`.
+- **`supabase/functions/request-document-signature/index.ts`** — add `sign_method: 'email'` on insert.
+- **`submit-signature`** and **`resend-document-signature`** — no change (they update existing rows; method is preserved).
 
-### 2. Frontend — surface real send status
-- `src/components/SendForSignatureDialog.tsx`: read `data.created[].email_sent` / `email_error`. Show success toast only when at least one email actually sent; otherwise show destructive toast with the Resend error message and keep the dialog open so the user can retry.
-- `src/components/SignHereDialog.tsx`: same treatment for `data.signed[]`.
+## 3. Frontend — new "Method" column in `SeekerSignaturesTab.tsx`
+- Extend the `Row` interface to include `sign_method: 'email' | 'in_person' | null`.
+- Add `sign_method` to the `select(...)` query.
+- Insert a new `<TableHead>Method</TableHead>` between **Status** and **Signed**.
+- Render as a small badge:
+  - `Email` → outline badge with `Mail` icon
+  - `In-Person` → outline badge with `PenLine` icon
+  - fallback `—` if null
 
-### 3. Deploy + verify
-- Deploy all 4 functions.
-- `curl_edge_functions` POST to `request-document-signature` with a known seeker → confirm response includes `email_sent: true`.
-- Tail `edge_function_logs` for `request-document-signature` and `sign-document-inline` → confirm no `resend_failed` entries.
-- `grep -r "connector-gateway.lovable.dev/resend" supabase/functions/` → must return 0 matches.
+No other UI/flow changes. Existing actions (Resend, Cancel, Download) continue to work identically.
 
 ## Files affected
-- `supabase/functions/request-document-signature/index.ts`
+- New migration file under `supabase/migrations/`
 - `supabase/functions/sign-document-inline/index.ts`
-- `supabase/functions/submit-signature/index.ts`
-- `supabase/functions/resend-document-signature/index.ts`
-- `src/components/SendForSignatureDialog.tsx`
-- `src/components/SignHereDialog.tsx`
+- `supabase/functions/request-document-signature/index.ts`
+- `src/components/SeekerSignaturesTab.tsx`
 
 ## Out of scope
-- No DB / RLS changes.
-- No template / PDF / sender-address changes (sender stays `info@vivekdoba.com`, already verified).
-- No changes to other email functions (they already work via direct Resend or are out of this report's scope).
+- No changes to PDF templates, email templates, sender address, RLS, or duplicate-prevention logic (those remain as previously discussed/handled).

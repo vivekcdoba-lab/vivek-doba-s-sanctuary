@@ -70,6 +70,7 @@ Deno.serve(async (req) => {
         seeker_id, document_id: doc.id, session_id: session_id ?? null,
         signer_name: seeker.full_name, token_hash: tokenHash,
         custom_message: custom_message ?? null, created_by: callerProfile.id,
+        sign_method: "email",
       }).select("id").single();
       if (reqErr) { console.error(reqErr); continue; }
 

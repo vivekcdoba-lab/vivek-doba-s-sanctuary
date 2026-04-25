@@ -162,6 +162,7 @@ Deno.serve(async (req) => {
         status: "signed",
         signed_at: new Date().toISOString(),
         created_by: callerProfile.id,
+        sign_method: "in_person",
       }).select("id").single();
       if (reqErr) { console.error("request insert failed", reqErr); continue; }
 

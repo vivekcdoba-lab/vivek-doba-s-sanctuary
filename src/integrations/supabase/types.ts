@@ -3851,6 +3851,7 @@ export type Database = {
           seeker_id: string
           sent_at: string
           session_id: string | null
+          sign_method: string | null
           signed_at: string | null
           signer_email_encrypted: string | null
           signer_name: string | null
@@ -3869,6 +3870,7 @@ export type Database = {
           seeker_id: string
           sent_at?: string
           session_id?: string | null
+          sign_method?: string | null
           signed_at?: string | null
           signer_email_encrypted?: string | null
           signer_name?: string | null
@@ -3887,6 +3889,7 @@ export type Database = {
           seeker_id?: string
           sent_at?: string
           session_id?: string | null
+          sign_method?: string | null
           signed_at?: string | null
           signer_email_encrypted?: string | null
           signer_name?: string | null
