@@ -44,7 +44,7 @@ export const SeekerSignaturesTab = ({ seekerId }: Props) => {
     setLoading(true);
     const { data, error } = await supabase
       .from("signature_requests")
-      .select("id, status, sent_at, signed_at, expires_at, custom_message, documents(id, title, category), document_signatures(signed_pdf_path)")
+      .select("id, status, sent_at, signed_at, expires_at, custom_message, sign_method, documents(id, title, category), document_signatures(signed_pdf_path)")
       .eq("seeker_id", seekerId)
       .order("sent_at", { ascending: false });
     if (error) toast({ title: "Failed to load", description: error.message, variant: "destructive" });
