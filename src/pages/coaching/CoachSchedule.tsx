@@ -65,7 +65,7 @@ export default function CoachSchedule() {
   const [showBlockTime, setShowBlockTime] = useState(false);
   const [dragSession, setDragSession] = useState<string | null>(null);
 
-  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00' });
+  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '' });
   const [blockForm, setBlockForm] = useState({ title: '', date: '', start_time: '12:00', end_time: '13:00' });
 
   // Calendar events for blocked time
@@ -150,6 +150,14 @@ export default function CoachSchedule() {
       toast.error(lang === 'hi' ? 'कृपया कोच चुनें' : 'Please select a coach');
       return;
     }
+    if (newForm.session_type === 'couple' && !newForm.partner_seeker_id) {
+      toast.error(lang === 'hi' ? 'कृपया साथी चुनें' : 'Please select a partner seeker');
+      return;
+    }
+    if (newForm.session_type === 'couple' && newForm.partner_seeker_id === newForm.seeker_id) {
+      toast.error(lang === 'hi' ? 'साथी अलग होना चाहिए' : 'Partner must be a different seeker');
+      return;
+    }
     createSession.mutate({
       seeker_id: newForm.seeker_id,
       date: newForm.date,
@@ -158,11 +166,13 @@ export default function CoachSchedule() {
       course_id: newForm.course_id || undefined,
       coach_id: newForm.coach_id,
       status: 'scheduled',
+      session_type: newForm.session_type,
+      partner_seeker_id: newForm.session_type === 'couple' ? newForm.partner_seeker_id : undefined,
     }, {
       onSuccess: () => {
         setShowNewSession(false);
-        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00' });
-        toast.success('Session scheduled');
+        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '' });
+        toast.success(newForm.session_type === 'couple' ? 'Couple session scheduled — invites sent' : 'Session scheduled — invite sent');
       },
     });
   };
@@ -312,13 +322,38 @@ export default function CoachSchedule() {
           <DialogHeader><DialogTitle>{t('newSession')}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground">{t('seeker')}</label>
+              <label className="text-xs font-medium text-muted-foreground">Session Type</label>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                <button type="button"
+                  onClick={() => setNewForm(p => ({ ...p, session_type: 'individual', partner_seeker_id: '' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newForm.session_type === 'individual' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  👤 Individual
+                </button>
+                <button type="button"
+                  onClick={() => setNewForm(p => ({ ...p, session_type: 'couple' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newForm.session_type === 'couple' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  💑 Couple
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">{newForm.session_type === 'couple' ? 'Primary Seeker' : t('seeker')}</label>
               <select value={newForm.seeker_id} onChange={e => setNewForm(p => ({ ...p, seeker_id: e.target.value }))}
                 className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background">
                 <option value="">Select seeker</option>
                 {seekers.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
               </select>
             </div>
+            {newForm.session_type === 'couple' && (
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Partner Seeker *</label>
+                <select value={newForm.partner_seeker_id} onChange={e => setNewForm(p => ({ ...p, partner_seeker_id: e.target.value }))}
+                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background">
+                  <option value="">Select partner</option>
+                  {seekers.filter(s => s.id !== newForm.seeker_id).map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                </select>
+              </div>
+            )}
             <div>
               <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'कोच *' : 'Coach *'}</label>
               {isAdmin ? (

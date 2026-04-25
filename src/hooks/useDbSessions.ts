@@ -63,6 +63,20 @@ export function useDbSessions(seekerId?: string) {
   });
 }
 
+// Fire-and-forget calendar invite sender. Never blocks the caller.
+async function sendSessionInvite(
+  session_id: string,
+  action: 'created' | 'rescheduled' | 'cancelled',
+) {
+  try {
+    await supabase.functions.invoke('send-session-invite', {
+      body: { session_id, action },
+    });
+  } catch (e) {
+    console.warn('send-session-invite failed', e);
+  }
+}
+
 export function useCreateSession() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -78,7 +92,10 @@ export function useCreateSession() {
       status?: string;
       session_notes?: string;
       coach_id?: string;
+      session_type?: 'individual' | 'couple' | 'group';
+      partner_seeker_id?: string;
     }) => {
+      const sessionType = session.session_type || 'individual';
       const { data, error } = await supabase.from('sessions').insert({
         seeker_id: session.seeker_id,
         date: session.date,
@@ -91,8 +108,31 @@ export function useCreateSession() {
         status: session.status || 'scheduled',
         session_notes: session.session_notes || null,
         coach_id: session.coach_id || null,
+        session_type: sessionType,
       } as any).select().single();
       if (error) throw error;
+
+      // Insert participants (primary + partner if couple)
+      const participants: any[] = [
+        { session_id: data.id, seeker_id: session.seeker_id, role: 'primary' },
+      ];
+      if (sessionType === 'couple' && session.partner_seeker_id) {
+        participants.push({
+          session_id: data.id,
+          seeker_id: session.partner_seeker_id,
+          role: 'partner',
+        });
+      }
+      const { error: pErr } = await supabase.from('session_participants').insert(participants);
+      if (pErr) {
+        // Roll back the session if participants couldn't be added
+        await supabase.from('sessions').delete().eq('id', data.id);
+        throw pErr;
+      }
+
+      // Auto-send calendar invite (non-blocking)
+      sendSessionInvite(data.id, 'created');
+
       return data;
     },
     onSuccess: () => {
@@ -112,10 +152,33 @@ export function useUpdateSession() {
         .select()
         .single();
       if (error) throw error;
+
+      // Detect whether time/date or status changed → re-send invite
+      const timeChanged = ['date', 'start_time', 'end_time', 'meeting_link', 'location_type']
+        .some((k) => k in updates);
+      const statusChanged = 'status' in updates;
+      if (statusChanged && updates.status === 'cancelled') {
+        sendSessionInvite(id, 'cancelled');
+      } else if (timeChanged) {
+        sendSessionInvite(id, 'rescheduled');
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['db-sessions'] });
+    },
+  });
+}
+
+export function useResendSessionInvite() {
+  return useMutation({
+    mutationFn: async (session_id: string) => {
+      const { data, error } = await supabase.functions.invoke('send-session-invite', {
+        body: { session_id, action: 'created' },
+      });
+      if (error) throw error;
+      return data;
     },
   });
 }

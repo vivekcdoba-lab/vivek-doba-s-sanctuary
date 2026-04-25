@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDbSessions, useCreateSession, useUpdateSession, useCoaches } from '@/hooks/useDbSessions';
+import { useDbSessions, useCreateSession, useUpdateSession, useCoaches, useResendSessionInvite } from '@/hooks/useDbSessions';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { formatTime12 } from '@/data/mockData';
-import { Plus, Video, MapPin, Bell, Play, X, Check, Clock, Shield, Eye, FileText, Loader2 } from 'lucide-react';
+import { Plus, Video, MapPin, Bell, Play, X, Check, Clock, Shield, Eye, FileText, Loader2, CalendarPlus } from 'lucide-react';
 import SendReminderModal from '@/components/SendReminderModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -41,6 +41,7 @@ const SessionsPage = () => {
   const { data: coaches = [] } = useCoaches();
   const createSession = useCreateSession();
   const updateSession = useUpdateSession();
+  const resendInvite = useResendSessionInvite();
   const navigate = useNavigate();
 
   const [statusFilter, setStatusFilter] = useState('all');
@@ -51,6 +52,7 @@ const SessionsPage = () => {
   const [newSession, setNewSession] = useState({
     seeker_id: '', course_id: '', coach_id: '', date: '', start_time: '10:00', end_time: '11:00',
     session_type: 'video' as 'video' | 'in_person', duration_minutes: 60, notes: '',
+    booking_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '',
   });
 
   // Live session state
@@ -447,6 +449,22 @@ const SessionsPage = () => {
                             <Bell className="w-3 h-3" /> Remind
                           </button>
                         )}
+                        {['scheduled', 'confirmed'].includes(session.status) && (
+                          <button
+                            onClick={() => {
+                              resendInvite.mutate(session.id, {
+                                onSuccess: (d: any) => {
+                                  if (d?.email_sent) toast.success(`Calendar invite resent to ${d.recipients} recipient(s)`);
+                                  else toast.error(`Invite failed: ${d?.email_error || 'unknown'}`);
+                                },
+                                onError: (e: any) => toast.error(e?.message || 'Failed to resend'),
+                              });
+                            }}
+                            disabled={resendInvite.isPending}
+                            className="px-2 py-1 rounded-lg text-[10px] font-medium bg-saffron/10 text-saffron flex items-center gap-1 disabled:opacity-50">
+                            <CalendarPlus className="w-3 h-3" /> {resendInvite.isPending ? 'Sending…' : 'Resend Invite'}
+                          </button>
+                        )}
                         {['submitted', 'reviewing'].includes(session.status) && (
                           <button onClick={() => approveSession(session.id)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-dharma-green/10 text-dharma-green flex items-center gap-1">
                             <Check className="w-3 h-3" /> Approve
@@ -506,12 +524,36 @@ const SessionsPage = () => {
               </div>
             )}
             <div>
-              <label className="text-sm font-medium text-foreground">Seeker *</label>
+              <label className="text-sm font-medium text-foreground">Booking Type</label>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                <button type="button"
+                  onClick={() => setNewSession(p => ({ ...p, booking_type: 'individual', partner_seeker_id: '' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newSession.booking_type === 'individual' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  👤 Individual
+                </button>
+                <button type="button"
+                  onClick={() => setNewSession(p => ({ ...p, booking_type: 'couple' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newSession.booking_type === 'couple' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  💑 Couple
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">{newSession.booking_type === 'couple' ? 'Primary Seeker *' : 'Seeker *'}</label>
               <select value={newSession.seeker_id} onChange={e => setNewSession(p => ({ ...p, seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
                 <option value="">Select Seeker</option>
                 {seekers.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
               </select>
             </div>
+            {newSession.booking_type === 'couple' && (
+              <div>
+                <label className="text-sm font-medium text-foreground">Partner Seeker *</label>
+                <select value={newSession.partner_seeker_id} onChange={e => setNewSession(p => ({ ...p, partner_seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                  <option value="">Select Partner</option>
+                  {seekers.filter(s => s.id !== newSession.seeker_id).map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                </select>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-foreground">Coach *</label>
               <select value={newSession.coach_id} onChange={e => setNewSession(p => ({ ...p, coach_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
@@ -575,6 +617,16 @@ const SessionsPage = () => {
                   toast.error('Please select a coach');
                   return;
                 }
+                if (newSession.booking_type === 'couple') {
+                  if (!newSession.partner_seeker_id) {
+                    toast.error('Please select a partner seeker');
+                    return;
+                  }
+                  if (newSession.partner_seeker_id === newSession.seeker_id) {
+                    toast.error('Partner must be a different seeker');
+                    return;
+                  }
+                }
                 const seekerSessions = sessions.filter(s => s.seeker_id === newSession.seeker_id);
                 const nextNum = seekerSessions.length > 0 ? Math.max(...seekerSessions.map(s => s.session_number)) + 1 : 1;
                 createSession.mutate({
@@ -588,11 +640,13 @@ const SessionsPage = () => {
                   location_type: newSession.session_type === 'video' ? 'online' : 'in_person',
                   duration_minutes: newSession.duration_minutes,
                   session_notes: newSession.notes || undefined,
+                  session_type: newSession.booking_type,
+                  partner_seeker_id: newSession.booking_type === 'couple' ? newSession.partner_seeker_id : undefined,
                 }, {
                   onSuccess: () => {
-                    toast.success('Session scheduled!');
+                    toast.success(newSession.booking_type === 'couple' ? 'Couple session scheduled — invites sent to both seekers' : 'Session scheduled — calendar invite sent');
                     setShowSchedule(false);
-                    setNewSession({ seeker_id: '', course_id: '', coach_id: coaches.length === 1 ? coaches[0].id : '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '' });
+                    setNewSession({ seeker_id: '', course_id: '', coach_id: coaches.length === 1 ? coaches[0].id : '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '', booking_type: 'individual', partner_seeker_id: '' });
                     setSelectedTemplateId('');
                   },
                 });
