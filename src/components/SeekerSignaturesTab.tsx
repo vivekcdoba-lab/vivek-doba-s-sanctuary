@@ -112,6 +112,7 @@ export const SeekerSignaturesTab = ({ seekerId }: Props) => {
               <TableHead>Document</TableHead>
               <TableHead>Sent</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Method</TableHead>
               <TableHead>Signed</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
