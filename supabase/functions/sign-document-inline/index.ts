@@ -148,7 +148,6 @@ Deno.serve(async (req) => {
 
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? null;
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const signed: any[] = [];
 
     for (const doc of docs) {
@@ -187,15 +186,16 @@ Deno.serve(async (req) => {
       });
 
       // Email seeker the signed copy with "Thank You" template
-      if (RESEND_API_KEY && LOVABLE_API_KEY && seeker.email) {
+      let email_sent = false;
+      let email_error: string | undefined;
+      if (RESEND_API_KEY && seeker.email) {
         const b64 = btoa(String.fromCharCode(...new Uint8Array(signedBytes)));
         try {
-          await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+          const resp = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-              "X-Connection-Api-Key": RESEND_API_KEY,
+              "Authorization": `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
               from: "Vivek Doba <info@vivekdoba.com>",
@@ -205,7 +205,21 @@ Deno.serve(async (req) => {
               attachments: [{ filename: `${doc.title.replace(/[^a-z0-9]/gi, "_")}-signed.pdf`, content: b64 }],
             }),
           });
-        } catch (e) { console.error("seeker email failed", e); }
+          const j = await resp.json().catch(() => ({}));
+          if (!resp.ok) {
+            email_error = `${resp.status}: ${JSON.stringify(j)}`;
+            console.error("resend_failed", email_error);
+          } else {
+            email_sent = true;
+          }
+        } catch (e) {
+          email_error = String(e);
+          console.error("seeker email failed", e);
+        }
+      } else if (!seeker.email) {
+        email_error = "Seeker has no email on file";
+      } else {
+        email_error = "RESEND_API_KEY not configured";
       }
 
       try {
@@ -217,7 +231,7 @@ Deno.serve(async (req) => {
         });
       } catch (_) { /* optional */ }
 
-      signed.push({ request_id: req2.id, document: doc.title, verification_id: verificationId });
+      signed.push({ request_id: req2.id, document: doc.title, verification_id: verificationId, email_sent, email_error });
     }
 
     return new Response(JSON.stringify({ success: true, signed }), {
