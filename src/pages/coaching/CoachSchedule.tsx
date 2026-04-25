@@ -150,6 +150,14 @@ export default function CoachSchedule() {
       toast.error(lang === 'hi' ? 'कृपया कोच चुनें' : 'Please select a coach');
       return;
     }
+    if (newForm.session_type === 'couple' && !newForm.partner_seeker_id) {
+      toast.error(lang === 'hi' ? 'कृपया साथी चुनें' : 'Please select a partner seeker');
+      return;
+    }
+    if (newForm.session_type === 'couple' && newForm.partner_seeker_id === newForm.seeker_id) {
+      toast.error(lang === 'hi' ? 'साथी अलग होना चाहिए' : 'Partner must be a different seeker');
+      return;
+    }
     createSession.mutate({
       seeker_id: newForm.seeker_id,
       date: newForm.date,
@@ -158,11 +166,13 @@ export default function CoachSchedule() {
       course_id: newForm.course_id || undefined,
       coach_id: newForm.coach_id,
       status: 'scheduled',
+      session_type: newForm.session_type,
+      partner_seeker_id: newForm.session_type === 'couple' ? newForm.partner_seeker_id : undefined,
     }, {
       onSuccess: () => {
         setShowNewSession(false);
-        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00' });
-        toast.success('Session scheduled');
+        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '' });
+        toast.success(newForm.session_type === 'couple' ? 'Couple session scheduled — invites sent' : 'Session scheduled — invite sent');
       },
     });
   };
