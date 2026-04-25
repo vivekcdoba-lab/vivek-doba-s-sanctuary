@@ -61,10 +61,16 @@ export const SignHereDialog = ({ open, onOpenChange, seekerId, onSent }: Props) 
       });
       if (error) throw new Error(error.message ?? "Sign failed");
       if (data?.error) throw new Error(data.error);
-      const count = data?.signed?.length ?? selected.length;
+      const items: any[] = data?.signed ?? [];
+      const count = items.length || selected.length;
+      const sent = items.filter(i => i.email_sent).length;
+      const firstErr = items.find(i => !i.email_sent)?.email_error;
       toast({
         title: "Document signed",
-        description: `${count} document(s) signed${seeker?.email ? ` and emailed to ${seeker.email}` : ""}.`,
+        description: sent > 0 && seeker?.email
+          ? `${count} document(s) signed and emailed to ${seeker.email}.`
+          : `${count} document(s) signed${firstErr ? ` (email not sent: ${firstErr})` : ""}.`,
+        variant: sent === 0 && items.length > 0 ? "destructive" : undefined,
       });
       onSent?.();
       onOpenChange(false);

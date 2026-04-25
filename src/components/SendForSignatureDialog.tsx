@@ -43,10 +43,15 @@ export const SendForSignatureDialog = ({ open, onOpenChange, seekerId, onSent }:
       });
       if (error) throw new Error(error.message ?? "Request failed");
       if (data?.error) throw new Error(data.error);
-      const count = data?.created?.length ?? 0;
+      const items: any[] = data?.created ?? [];
+      const sent = items.filter(i => i.email_sent).length;
+      const failures = items.filter(i => !i.email_sent);
+      if (sent === 0 && failures.length > 0) {
+        throw new Error(failures[0].email_error ?? "Email could not be sent");
+      }
       toast({
         title: "Email sent for signature",
-        description: seekerEmail ? `${count} email(s) sent to ${seekerEmail}` : `${count} email(s) sent`,
+        description: seekerEmail ? `${sent} email(s) sent to ${seekerEmail}` : `${sent} email(s) sent`,
       });
       setSelected([]);
       setMessage("");
