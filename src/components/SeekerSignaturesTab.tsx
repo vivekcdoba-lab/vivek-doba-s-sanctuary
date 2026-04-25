@@ -18,6 +18,7 @@ interface Row {
   signed_at: string | null;
   expires_at: string | null;
   custom_message: string | null;
+  sign_method: "email" | "in_person" | null;
   documents: { id: string; title: string; category: string | null } | null;
   document_signatures: { signed_pdf_path: string | null }[] | null;
 }
