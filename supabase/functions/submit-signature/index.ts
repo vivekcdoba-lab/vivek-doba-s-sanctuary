@@ -133,16 +133,14 @@ Deno.serve(async (req) => {
 
     // Email signed PDF to seeker + notify coach/admins
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (RESEND_API_KEY && LOVABLE_API_KEY && seeker?.email) {
+    if (RESEND_API_KEY && seeker?.email) {
       const b64 = btoa(String.fromCharCode(...new Uint8Array(signedBytes)));
       try {
-        await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+        const resp = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-            "X-Connection-Api-Key": RESEND_API_KEY,
+            "Authorization": `Bearer ${RESEND_API_KEY}`,
           },
           body: JSON.stringify({
             from: "Vivek Doba <info@vivekdoba.com>",
@@ -163,6 +161,7 @@ Deno.serve(async (req) => {
             attachments: [{ filename: `${(doc?.title ?? "document").replace(/[^a-z0-9]/gi, "_")}-signed.pdf`, content: b64 }],
           }),
         });
+        if (!resp.ok) console.error("resend_failed seeker", resp.status, await resp.text().catch(() => ""));
       } catch (e) { console.error("seeker email failed", e); }
 
       // Notify admins + coaches
@@ -170,12 +169,11 @@ Deno.serve(async (req) => {
       const adminEmails = (admins ?? []).map((a: any) => a.email).filter(Boolean);
       if (adminEmails.length) {
         try {
-          await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+          const resp = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-              "X-Connection-Api-Key": RESEND_API_KEY,
+              "Authorization": `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
               from: "VDTS Notifications <info@vivekdoba.com>",
@@ -185,6 +183,7 @@ Deno.serve(async (req) => {
                 <p>Verification ID: <strong>${verificationId}</strong></p>`,
             }),
           });
+          if (!resp.ok) console.error("resend_failed admin", resp.status, await resp.text().catch(() => ""));
         } catch (e) { console.error("admin email failed", e); }
       }
     }

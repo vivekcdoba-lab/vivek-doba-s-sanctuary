@@ -61,7 +61,6 @@ Deno.serve(async (req) => {
     }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const created: any[] = [];
 
     for (const doc of docs) {
@@ -95,14 +94,15 @@ Deno.serve(async (req) => {
           <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions</p>
         </div>`;
 
-      if (RESEND_API_KEY && LOVABLE_API_KEY) {
+      let email_sent = false;
+      let email_error: string | undefined;
+      if (RESEND_API_KEY) {
         try {
-          await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+          const resp = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-              "X-Connection-Api-Key": RESEND_API_KEY,
+              "Authorization": `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
               from: "Vivek Doba <info@vivekdoba.com>",
@@ -111,9 +111,21 @@ Deno.serve(async (req) => {
               html,
             }),
           });
-        } catch (e) { console.error("email send failed", e); }
+          const j = await resp.json().catch(() => ({}));
+          if (!resp.ok) {
+            email_error = `${resp.status}: ${JSON.stringify(j)}`;
+            console.error("resend_failed", email_error);
+          } else {
+            email_sent = true;
+          }
+        } catch (e) {
+          email_error = String(e);
+          console.error("email send failed", e);
+        }
+      } else {
+        email_error = "RESEND_API_KEY not configured";
       }
-      created.push({ request_id: req.id, document: doc.title });
+      created.push({ request_id: req.id, document: doc.title, email_sent, email_error });
     }
 
     return new Response(JSON.stringify({ success: true, created }), {
