@@ -600,6 +600,16 @@ const SessionsPage = () => {
                   toast.error('Please select a coach');
                   return;
                 }
+                if (newSession.booking_type === 'couple') {
+                  if (!newSession.partner_seeker_id) {
+                    toast.error('Please select a partner seeker');
+                    return;
+                  }
+                  if (newSession.partner_seeker_id === newSession.seeker_id) {
+                    toast.error('Partner must be a different seeker');
+                    return;
+                  }
+                }
                 const seekerSessions = sessions.filter(s => s.seeker_id === newSession.seeker_id);
                 const nextNum = seekerSessions.length > 0 ? Math.max(...seekerSessions.map(s => s.session_number)) + 1 : 1;
                 createSession.mutate({
@@ -613,11 +623,13 @@ const SessionsPage = () => {
                   location_type: newSession.session_type === 'video' ? 'online' : 'in_person',
                   duration_minutes: newSession.duration_minutes,
                   session_notes: newSession.notes || undefined,
+                  session_type: newSession.booking_type,
+                  partner_seeker_id: newSession.booking_type === 'couple' ? newSession.partner_seeker_id : undefined,
                 }, {
                   onSuccess: () => {
-                    toast.success('Session scheduled!');
+                    toast.success(newSession.booking_type === 'couple' ? 'Couple session scheduled — invites sent to both seekers' : 'Session scheduled — calendar invite sent');
                     setShowSchedule(false);
-                    setNewSession({ seeker_id: '', course_id: '', coach_id: coaches.length === 1 ? coaches[0].id : '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '' });
+                    setNewSession({ seeker_id: '', course_id: '', coach_id: coaches.length === 1 ? coaches[0].id : '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '', booking_type: 'individual', partner_seeker_id: '' });
                     setSelectedTemplateId('');
                   },
                 });
