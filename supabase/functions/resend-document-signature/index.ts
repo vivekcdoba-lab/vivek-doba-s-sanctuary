@@ -55,13 +55,12 @@ Deno.serve(async (req) => {
     const { data: doc } = await admin.from("documents").select("title").eq("id", reqRow.document_id).single();
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const link = `${APP_URL}/sign/${token}`;
 
-    if (RESEND_API_KEY && LOVABLE_API_KEY && seeker?.email) {
-      await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+    if (RESEND_API_KEY && seeker?.email) {
+      const resp = await fetch("https://api.resend.com/emails", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}`, "X-Connection-Api-Key": RESEND_API_KEY },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
           from: "Vivek Doba <info@vivekdoba.com>",
           to: [seeker.email],
@@ -71,6 +70,7 @@ Deno.serve(async (req) => {
             <p style="font-size:12px;color:#6b7280">Link expires in 7 days.</p>`,
         }),
       });
+      if (!resp.ok) console.error("resend_failed", resp.status, await resp.text().catch(() => ""));
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
