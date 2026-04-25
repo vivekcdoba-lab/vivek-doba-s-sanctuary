@@ -449,6 +449,22 @@ const SessionsPage = () => {
                             <Bell className="w-3 h-3" /> Remind
                           </button>
                         )}
+                        {['scheduled', 'confirmed'].includes(session.status) && (
+                          <button
+                            onClick={() => {
+                              resendInvite.mutate(session.id, {
+                                onSuccess: (d: any) => {
+                                  if (d?.email_sent) toast.success(`Calendar invite resent to ${d.recipients} recipient(s)`);
+                                  else toast.error(`Invite failed: ${d?.email_error || 'unknown'}`);
+                                },
+                                onError: (e: any) => toast.error(e?.message || 'Failed to resend'),
+                              });
+                            }}
+                            disabled={resendInvite.isPending}
+                            className="px-2 py-1 rounded-lg text-[10px] font-medium bg-saffron/10 text-saffron flex items-center gap-1 disabled:opacity-50">
+                            <CalendarPlus className="w-3 h-3" /> {resendInvite.isPending ? 'Sending…' : 'Resend Invite'}
+                          </button>
+                        )}
                         {['submitted', 'reviewing'].includes(session.status) && (
                           <button onClick={() => approveSession(session.id)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-dharma-green/10 text-dharma-green flex items-center gap-1">
                             <Check className="w-3 h-3" /> Approve
