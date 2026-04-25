@@ -3554,6 +3554,48 @@ export type Database = {
           },
         ]
       }
+      session_participants: {
+        Row: {
+          added_at: string
+          attendance: string | null
+          id: string
+          role: string
+          seeker_id: string
+          session_id: string
+        }
+        Insert: {
+          added_at?: string
+          attendance?: string | null
+          id?: string
+          role?: string
+          seeker_id: string
+          session_id: string
+        }
+        Update: {
+          added_at?: string
+          attendance?: string | null
+          id?: string
+          role?: string
+          seeker_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_participants_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_signatures: {
         Row: {
           content_hash: string | null
@@ -3715,6 +3757,7 @@ export type Database = {
           session_name: string | null
           session_notes: string | null
           session_number: number
+          session_type: string | null
           start_time: string
           status: string
           stories_used: Json | null
@@ -3761,6 +3804,7 @@ export type Database = {
           session_name?: string | null
           session_notes?: string | null
           session_number?: number
+          session_type?: string | null
           start_time: string
           status?: string
           stories_used?: Json | null
@@ -3807,6 +3851,7 @@ export type Database = {
           session_name?: string | null
           session_notes?: string | null
           session_number?: number
+          session_type?: string | null
           start_time?: string
           status?: string
           stories_used?: Json | null
