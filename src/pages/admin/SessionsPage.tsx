@@ -41,6 +41,7 @@ const SessionsPage = () => {
   const { data: coaches = [] } = useCoaches();
   const createSession = useCreateSession();
   const updateSession = useUpdateSession();
+  const resendInvite = useResendSessionInvite();
   const navigate = useNavigate();
 
   const [statusFilter, setStatusFilter] = useState('all');
