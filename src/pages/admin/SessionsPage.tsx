@@ -51,6 +51,7 @@ const SessionsPage = () => {
   const [newSession, setNewSession] = useState({
     seeker_id: '', course_id: '', coach_id: '', date: '', start_time: '10:00', end_time: '11:00',
     session_type: 'video' as 'video' | 'in_person', duration_minutes: 60, notes: '',
+    booking_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '',
   });
 
   // Live session state
