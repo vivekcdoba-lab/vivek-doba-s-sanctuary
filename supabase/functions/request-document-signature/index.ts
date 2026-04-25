@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
               "X-Connection-Api-Key": RESEND_API_KEY,
             },
             body: JSON.stringify({
-              from: "Vivek Doba <onboarding@resend.dev>",
+              from: "Vivek Doba <info@vivekdoba.com>",
               to: [seeker.email],
               subject: "Request to Sign Agreement Document",
               html,

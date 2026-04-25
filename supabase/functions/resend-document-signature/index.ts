@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}`, "X-Connection-Api-Key": RESEND_API_KEY },
         body: JSON.stringify({
-          from: "Vivek Doba <onboarding@resend.dev>",
+          from: "Vivek Doba <info@vivekdoba.com>",
           to: [seeker.email],
           subject: `Reminder: Sign your ${doc?.title}`,
           html: `<p>Dear ${seeker.full_name},</p><p>This is a reminder to sign your <strong>${doc?.title}</strong>.</p>
