@@ -507,12 +507,36 @@ const SessionsPage = () => {
               </div>
             )}
             <div>
-              <label className="text-sm font-medium text-foreground">Seeker *</label>
+              <label className="text-sm font-medium text-foreground">Booking Type</label>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                <button type="button"
+                  onClick={() => setNewSession(p => ({ ...p, booking_type: 'individual', partner_seeker_id: '' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newSession.booking_type === 'individual' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  👤 Individual
+                </button>
+                <button type="button"
+                  onClick={() => setNewSession(p => ({ ...p, booking_type: 'couple' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newSession.booking_type === 'couple' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  💑 Couple
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">{newSession.booking_type === 'couple' ? 'Primary Seeker *' : 'Seeker *'}</label>
               <select value={newSession.seeker_id} onChange={e => setNewSession(p => ({ ...p, seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
                 <option value="">Select Seeker</option>
                 {seekers.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
               </select>
             </div>
+            {newSession.booking_type === 'couple' && (
+              <div>
+                <label className="text-sm font-medium text-foreground">Partner Seeker *</label>
+                <select value={newSession.partner_seeker_id} onChange={e => setNewSession(p => ({ ...p, partner_seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                  <option value="">Select Partner</option>
+                  {seekers.filter(s => s.id !== newSession.seeker_id).map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                </select>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-foreground">Coach *</label>
               <select value={newSession.coach_id} onChange={e => setNewSession(p => ({ ...p, coach_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
