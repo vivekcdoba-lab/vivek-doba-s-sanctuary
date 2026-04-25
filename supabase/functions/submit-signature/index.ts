@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
             "X-Connection-Api-Key": RESEND_API_KEY,
           },
           body: JSON.stringify({
-            from: "Vivek Doba <onboarding@resend.dev>",
+            from: "Vivek Doba <info@vivekdoba.com>",
             to: [seeker.email],
             subject: "Thank You for Signing the Agreement",
             html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937">
@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
               "X-Connection-Api-Key": RESEND_API_KEY,
             },
             body: JSON.stringify({
-              from: "VDTS Notifications <onboarding@resend.dev>",
+              from: "VDTS Notifications <info@vivekdoba.com>",
               to: adminEmails,
               subject: `Signed: ${seeker?.full_name ?? "Seeker"} → ${doc?.title}`,
               html: `<p>${seeker?.full_name} signed <strong>${doc?.title}</strong> at ${timestamp}.</p>
