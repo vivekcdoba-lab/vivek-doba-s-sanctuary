@@ -130,6 +130,15 @@ export const SeekerSignaturesTab = ({ seekerId }: Props) => {
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{fmt(r.sent_at)}</TableCell>
                   <TableCell><Badge variant={statusVariant(effective)} className="capitalize">{effective}</Badge></TableCell>
+                  <TableCell>
+                    {r.sign_method === "in_person" ? (
+                      <Badge variant="outline" className="gap-1"><PenLine className="w-3 h-3" /> In-Person</Badge>
+                    ) : r.sign_method === "email" ? (
+                      <Badge variant="outline" className="gap-1"><Mail className="w-3 h-3" /> Email</Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">—</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{fmt(r.signed_at)}</TableCell>
                   <TableCell className="text-right space-x-1">
                     {effective === "pending" && (
