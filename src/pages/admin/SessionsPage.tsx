@@ -4,7 +4,7 @@ import { useDbSessions, useCreateSession, useUpdateSession, useCoaches } from '@
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { formatTime12 } from '@/data/mockData';
-import { Plus, Video, MapPin, Bell, Play, X, Check, Clock, Shield, Eye, FileText, Loader2 } from 'lucide-react';
+import { Plus, Video, MapPin, Bell, Play, X, Check, Clock, Shield, Eye, FileText, Loader2, CalendarPlus } from 'lucide-react';
 import SendReminderModal from '@/components/SendReminderModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
