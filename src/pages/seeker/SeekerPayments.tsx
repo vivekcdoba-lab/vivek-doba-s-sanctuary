@@ -6,6 +6,8 @@ import InvoiceModal from '@/components/InvoiceModal';
 import { useAuthStore } from '@/store/authStore';
 import { usePayments } from '@/hooks/usePayments';
 import { useSeekerLinkGroup } from '@/hooks/useSeekerLinks';
+import FeeStructureForm from '@/components/FeeStructureForm';
+import { useFeeStructure } from '@/hooks/useFeeStructure';
 
 type FilterType = 'all' | 'individual' | 'joint';
 
