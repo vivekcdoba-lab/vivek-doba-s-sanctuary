@@ -343,6 +343,11 @@ export default function CoachSchedule() {
                 <option value="">Select seeker</option>
                 {seekers.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
               </select>
+              {seekers.length === 0 && !isAdmin && (
+                <p className="text-[11px] text-warning-amber mt-1">
+                  No seekers assigned to you yet. Ask an admin to assign seekers via <strong>Admin → Coach ↔ Seeker</strong>.
+                </p>
+              )}
             </div>
             {newForm.session_type === 'couple' && (
               <div>
