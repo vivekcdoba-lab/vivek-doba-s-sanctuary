@@ -22,6 +22,7 @@ import { useDbSessions } from '@/hooks/useDbSessions';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { SeekerSignaturesTab } from '@/components/SeekerSignaturesTab';
+import FeeStructureForm from '@/components/FeeStructureForm';
 import { useAuthStore } from '@/store/authStore';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import {
@@ -719,7 +720,20 @@ const SeekerDetailPage = () => {
       )}
 
       {/* TAB 7: DOCUMENTS & SIGNATURES */}
-      {activeTab === 7 && <SeekerSignaturesTab seekerId={seeker.id} />}
+      {activeTab === 7 && (
+        <div className="space-y-6">
+          <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-semibold text-foreground">Fee Structure / फीस संरचना</h3>
+                <p className="text-xs text-muted-foreground mt-1">Onboarding fee details. Auto-attached as the second-to-last page of the Coaching Agreement.</p>
+              </div>
+            </div>
+            <FeeStructureForm seekerId={seeker.id} />
+          </div>
+          <SeekerSignaturesTab seekerId={seeker.id} />
+        </div>
+      )}
 
       {/* TAB 8: PRIVATE NOTES */}
       {activeTab === 8 && (

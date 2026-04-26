@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import FeeStructureForm from "@/components/FeeStructureForm";
 
 const CLAUSES = {
   en: [
@@ -214,6 +215,20 @@ export default function AgreementsPage() {
                 </p>
               ))}
             </div>
+
+            {/* Fee Structure — second-to-last page (prints on its own page) */}
+            {coachingForm.watch("clientId") && (
+              <div className="pt-4 border-t border-border print:break-before-page">
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  {lang === "en" ? "Fee Structure (Onboarding)" : "फीस संरचना (ऑनबोर्डिंग)"}
+                </h3>
+                <FeeStructureForm
+                  seekerId={coachingForm.watch("clientId")}
+                  readOnly
+                  lang={lang as "en" | "hi"}
+                />
+              </div>
+            )}
 
             {/* Signatures */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">

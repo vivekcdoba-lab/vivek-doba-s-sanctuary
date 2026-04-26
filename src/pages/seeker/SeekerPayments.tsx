@@ -6,6 +6,8 @@ import InvoiceModal from '@/components/InvoiceModal';
 import { useAuthStore } from '@/store/authStore';
 import { usePayments } from '@/hooks/usePayments';
 import { useSeekerLinkGroup } from '@/hooks/useSeekerLinks';
+import FeeStructureForm from '@/components/FeeStructureForm';
+import { useFeeStructure } from '@/hooks/useFeeStructure';
 
 type FilterType = 'all' | 'individual' | 'joint';
 
@@ -82,6 +84,9 @@ const SeekerPayments = () => {
   return (
     <div className="space-y-6 pb-20">
       <h1 className="text-xl font-bold text-foreground">My Payments</h1>
+
+      {/* Fee structure — read-only (admin-managed) */}
+      <FeeStructureReadOnlyCard seekerId={profile?.id} />
 
       <div className="grid grid-cols-2 gap-3">
         {stats.map(s => (
@@ -182,3 +187,15 @@ const SeekerPayments = () => {
 };
 
 export default SeekerPayments;
+
+function FeeStructureReadOnlyCard({ seekerId }: { seekerId?: string }) {
+  const { data } = useFeeStructure(seekerId);
+  if (!seekerId || !data) return null;
+  return (
+    <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
+      <h2 className="text-sm font-semibold text-foreground mb-3">Fee Structure / फीस संरचना</h2>
+      <FeeStructureForm seekerId={seekerId} readOnly />
+    </div>
+  );
+}
+
