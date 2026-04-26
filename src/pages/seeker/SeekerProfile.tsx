@@ -20,6 +20,8 @@ const SeekerProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [seekerProfileId, setSeekerProfileId] = useState<string | null>(null);
+  const { data: linkGroup = [] } = useSeekerLinkGroup(seekerProfileId);
+  const linkedPartners = linkGroup.filter(r => r.seeker_id !== seekerProfileId);
 
   const [profile, setProfile] = useState({
     full_name: '', email: '',
