@@ -70,6 +70,60 @@ const SeekerDetailPage = () => {
   const { data: assignments = [] } = useDbAssignments(id);
   const { data: courses = [] } = useDbCourses();
 
+  // Linked profile state
+  const { profile: adminProfile } = useAuthStore();
+  const { data: allSeekers = [] } = useSeekerProfiles();
+  const { data: linkGroup = [], refetch: refetchLink } = useSeekerLinkGroup(id);
+  const linkSeekers = useLinkSeekers();
+  const unlinkSeekers = useUnlinkSeekers();
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkForm, setLinkForm] = useState<{
+    partner_seeker_id: string;
+    relationship: SeekerLinkRow['relationship'];
+    relationship_label: string;
+  }>({ partner_seeker_id: '', relationship: 'spouse', relationship_label: '' });
+
+  const linkedPartner = linkGroup.find(r => r.seeker_id !== id);
+  const linkGroupId = linkGroup[0]?.group_id;
+
+  const handleLinkSubmit = async () => {
+    if (!id || !linkForm.partner_seeker_id) {
+      toast.error('Select a partner seeker');
+      return;
+    }
+    if (linkForm.relationship === 'custom' && !linkForm.relationship_label.trim()) {
+      toast.error('Custom label required');
+      return;
+    }
+    try {
+      await linkSeekers.mutateAsync({
+        primary_seeker_id: id,
+        partner_seeker_id: linkForm.partner_seeker_id,
+        relationship: linkForm.relationship,
+        relationship_label: linkForm.relationship === 'custom' ? linkForm.relationship_label : undefined,
+        linked_by: adminProfile?.id || '',
+      });
+      toast.success('✅ Profiles linked');
+      setLinkDialogOpen(false);
+      setLinkForm({ partner_seeker_id: '', relationship: 'spouse', relationship_label: '' });
+      refetchLink();
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to link');
+    }
+  };
+
+  const handleUnlink = async () => {
+    if (!linkGroupId) return;
+    if (!confirm('Unlink these profiles? Existing joint payments will remain visible only to the original payer.')) return;
+    try {
+      await unlinkSeekers.mutateAsync(linkGroupId);
+      toast.success('✅ Unlinked');
+      refetchLink();
+    } catch {
+      toast.error('Failed to unlink');
+    }
+  };
+
   // Profile state
   const [seeker, setSeeker] = useState<any>(null);
   const [enrollment, setEnrollment] = useState<any>(null);
