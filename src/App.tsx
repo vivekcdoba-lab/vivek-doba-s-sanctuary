@@ -42,6 +42,7 @@ import SwotPage from "./pages/admin/SwotPage";
 import ActiveSessionsPage from "./pages/admin/ActiveSessionsPage";
 import AdminCoaches from "./pages/admin/AdminCoaches";
 import AdminLinkedProfiles from "./pages/admin/AdminLinkedProfiles";
+import AdminCoachSeekers from "./pages/admin/AdminCoachSeekers";
 import AdminAdmins from "./pages/admin/AdminAdmins";
 import AdminAddUser from "./pages/admin/AdminAddUser";
 import AdminUserAnalytics from "./pages/admin/AdminUserAnalytics";
@@ -294,6 +295,7 @@ const App = () => (
             {/* Admin placeholder routes */}
             <Route path="/admin/coaches" element={<AdminCoaches />} />
             <Route path="/admin/linked-profiles" element={<AdminLinkedProfiles />} />
+            <Route path="/admin/coach-seekers" element={<AdminCoachSeekers />} />
             <Route path="/admin/documents" element={<AdminDocuments />} />
             <Route path="/admin/admins" element={<AdminAdmins />} />
             <Route path="/admin/add-user" element={<AdminAddUser />} />

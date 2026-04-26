@@ -31,6 +31,7 @@ const adminNav: NavGroup[] = [
       { icon: Users, label: 'All Seekers', path: '/seekers' },
       { icon: Crown, label: 'All Coaches', path: '/admin/coaches' },
       { icon: Link2, label: 'Linked Profiles', path: '/admin/linked-profiles' },
+      { icon: UserCheck, label: 'Coach ↔ Seeker', path: '/admin/coach-seekers' },
       { icon: Shield, label: 'Admins', path: '/admin/admins' },
       { icon: UserPlus, label: 'Add User', path: '/admin/add-user' },
       { icon: BarChart3, label: 'User Analytics', path: '/admin/user-analytics' },
