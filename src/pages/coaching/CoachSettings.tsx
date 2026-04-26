@@ -56,6 +56,25 @@ export default function CoachSettings() {
       </Card>
 
       <Card className="p-5">
+        <h3 className="font-medium text-foreground flex items-center gap-2 mb-4"><BookOpen className="w-4 h-4" /> My Programs</h3>
+        {myPrograms.length === 0 ? (
+          <p className="text-sm text-muted-foreground">You are not assigned to any programs yet. Ask an admin to assign you on the Program Coaches page.</p>
+        ) : (
+          <div className="space-y-2">
+            {myPrograms.map(p => (
+              <div key={p.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{p.program?.name || '—'}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{p.program?.tier}</p>
+                </div>
+                <Badge className={`${ROLE_COLOR[p.role] || ''} border-0`}>{ROLE_LABEL[p.role] || p.role}</Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card className="p-5">
         <h3 className="font-medium text-foreground flex items-center gap-2 mb-4"><Bell className="w-4 h-4" /> Notifications</h3>
         <div className="space-y-3">
           {[
