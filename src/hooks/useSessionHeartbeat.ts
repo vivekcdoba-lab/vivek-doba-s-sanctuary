@@ -76,6 +76,8 @@ export function useSessionHeartbeat() {
 
   useEffect(() => {
     if (!sessionId || !user) return;
+    // Don't run heartbeat / inactivity on auth pages
+    if (window.location.pathname === '/login' || window.location.pathname === '/reset-password') return;
 
     // Reset activity on mount
     lastActivityRef.current = Date.now();
