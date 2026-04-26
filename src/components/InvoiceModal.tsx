@@ -26,6 +26,8 @@ interface InvoiceModalProps {
     method: string;
     transactionId?: string;
     emiInfo?: string;
+    isJoint?: boolean;
+    jointWith?: string | null;
   };
 }
 
