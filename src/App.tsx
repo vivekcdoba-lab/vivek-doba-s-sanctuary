@@ -304,6 +304,7 @@ const App = () => (
             <Route path="/admin/search-users" element={<AdminSearchUsers />} />
             <Route path="/admin/create-program" element={<AdminCreateProgram />} />
             <Route path="/admin/edit-programs" element={<AdminEditPrograms />} />
+            <Route path="/admin/program-coaches" element={<AdminProgramCoaches />} />
             <Route path="/admin/program-analytics" element={<AdminProgramAnalytics />} />
             <Route path="/admin/enrollments" element={<AdminEnrollments />} />
             <Route path="/admin/new-enrollment" element={<AdminNewEnrollment />} />
