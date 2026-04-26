@@ -6,8 +6,6 @@ const corsHeaders = {
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
 const RECIPIENTS = [
-  'crwanare@gmail.com',
-  'coachviveklgt@gmail.com',
   'vivekcdoba@gmail.com',
 ];
 
