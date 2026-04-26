@@ -1,92 +1,76 @@
-## End-to-End Dry Run: 5-Month Seeker Lifecycle Seed
+## Revised Seed Plan — End-to-End Dry Run with Notifications
 
-I'll generate **150 days of realistic activity data** for the existing accounts so you can walk every dashboard, report, and notification end-to-end. No new users will be created — all three accounts already exist:
+**Window:** Jan 1, 2026 → May 31, 2026 (151 days, 21 weeks)
+**Accounts (existing, no new users):**
+- Admin: `vivekcdoba@gmail.com`
+- Coach: `coachviveklgt@gmail.com`
+- Seeker: `crwanare@gmail.com` (joined Jan 1, 2026)
 
-| Role | Email | Profile ID |
+---
+
+### Part A — Database Seed (single idempotent SQL migration)
+
+All scores follow the requested growth pattern: **Up → Steady → Up → Down → Steady → Up → Up** across the 21 weeks.
+
+| Table | Rows | Notes |
 |---|---|---|
-| Admin | vivekcdoba@gmail.com | `5bce8fee…b56c10` |
-| Coach | coachviveklgt@gmail.com | `d1bbd4c2…0c723bdcb1` |
-| Seeker | crwanare@gmail.com | `0c0ada4d…77fdb270efa` |
+| `enrollments` | 1 | LGT PLATINUM™, effective Jan 1, 2026 |
+| `program_trainers` | 1 | Coach as `lead` (auto-fires `coach_seekers` link via existing trigger) |
+| `sessions` | 21 | Weekly Saturday 10:00–11:00; statuses progress scheduled→completed; pillars rotate Dharma/Artha/Kama/Moksha; coach notes, engagement_score, key_insights, major_win, client_growth_json |
+| `session_notifications` | 42 | Uses allowed types only: `session_assigned` (24 h before) + `session_approved` (post-completion) |
+| `daily_worksheets` | ~140 | `is_submitted=true`, completion_rate_percent on growth curve, ~10 strategic misses in "down" weeks |
+| `daily_lgt_checkins` | 151 | Dharma/Artha/Kama/Moksha 1–10 on growth curve |
+| `assignments` | 172 | 151 daily "Sadhana" (recurring) + 21 weekly homework (one_time, scored 1–10) |
+| `payments` | 5 | 10th of Jan, Feb, Mar, Apr, May × ₹11,800 (₹10k + 18% GST), status `received` |
+| `points_ledger` | ~250 | 10 pts per worksheet, 25 per session attended, 15 per assignment ≥7 |
+| `seeker_badges` | 6 | First Worksheet, 7-Day Streak, 30-Day Streak, First Session, 10 Sessions, Wheel Master |
+| `streaks` | 1 | current_streak + longest_streak |
+| `wheel_of_life_assessments` | 3 | Jan 5 (baseline 5.0) → Mar 1 (mid 6.5) → May 25 (final 9.0) |
+| `lgt_assessments` | 3 | Jan 7, Mar 5, May 28 |
+| `happiness_assessments` | 2 | Jan + May (before/after delta) |
+| `mooch_assessments` | 2 | Jan + May |
+| `messages` | ~25 | Coach ↔ seeker spaced across 5 months |
+| `client_feedback` | 3 | After sessions 5, 12, 21 with star ratings |
+| `notifications` | ~80 | Bell-icon entries (mix read/unread) — see Part B |
 
-**Window:** Jan 1, 2026 → May 31, 2026 (151 days, ~21 weeks, 5 months)
+**Skipped:** `agreements` table (requires `client_id` from a separate `clients` table not linked to this seeker). User can test agreement generation manually.
 
-### 1. Foundation Setup (one-time inserts)
-- **Program enrollment**: Enroll seeker into **LGT PLATINUM™** (`0239906e…12788`) effective Jan 1, 2026.
-- **Coach assignment**: Insert `program_trainers` (coach as `lead`) → triggers will auto-link `coach_seekers` for Chandrakant.
-- **Coaching Agreement** (`agreements` type=`coaching_agreement`): signed Jan 1.
-- **Fee Structure** (`agreements` type=`fee_structure`): 5 sessions × ₹10,000 + GST template, stored in `fields_json`.
+---
 
-### 2. Weekly Sessions (21 sessions, every Saturday 10:00–11:00)
-- Created in `sessions` table, status progressing: scheduled → completed for past dates.
-- `session_number` 1…21, `pillar` rotating across Dharma/Artha/Kama/Moksha.
-- For each completed session: `attendance='present'`, coach notes, `engagement_score`, `key_insights`, `major_win`, `client_growth_json` filled with the **growth pattern**.
-- Each session emits a `session_notifications` row (reminder + summary) and a generic `notifications` row for both seeker & coach.
+### Part B — In-App Notifications + Email Delivery with "Testing" Subject
 
-### 3. Daily Worksheets (151 rows, one per day)
-- `daily_worksheets` table — `worksheet_date` Jan 1…May 31.
-- `is_submitted=true`, `completion_rate_percent` follows the **growth curve** below.
-- Misses ~10 strategic days in the "down" weeks to make Streak/Risk widgets meaningful.
+**1. In-app notifications (`notifications` table):**
+~80 entries seeded for: enrollment welcome, every session reminder (24 h before), every session summary, payment receipts, badge awards, weekly summary, missed-worksheet alerts to coach. Mix of `is_read=true/false` so the bell shows realistic unread count for both seeker and coach.
 
-### 4. Daily Assignments (151 daily + 21 weekly)
-- **Daily** (`type='recurring'`): "Daily Sadhana" — 1 row per day, status `completed` for past dates with score 1–10 following growth curve.
-- **Weekly** (`type='one_time'`): post-session homework, due 6 days later, scored by coach.
+**2. Email notifications via existing `send-notification` edge function:**
 
-### 5. Daily LGT Check-ins + Streaks
-- `daily_lgt_checkins` row per day with Dharma/Artha/Kama/Moksha scores following the **growth pattern**.
-- `streaks` table seeded with current_streak, longest_streak based on gaps.
+To physically deliver test emails (so you can verify the full notification pipeline end-to-end), I'll add a small one-off edge function `seed-test-notifications` that:
 
-### 6. Monthly Payments (5 invoices × ₹10,000 + 18% GST = ₹11,800 each)
-- `payments` table: 10th of Jan, Feb, Mar, Apr, May. Status `received`. Auto invoice numbers.
+- Looks up the seeker, coach, and admin email addresses
+- Loops through key milestone events (enrollment, monthly payment receipt × 5, badge award × 6, weekly progress summary × 21, session reminder × 21)
+- Sends each as a Resend email **with subject prefixed `Testing — `** (e.g. `Testing — Session Reminder: Saturday 10:00 AM`, `Testing — Payment Received ₹11,800 (Feb 2026)`, `Testing — Badge Earned: 30-Day Streak`)
+- Throttles to ~1 email/sec to stay within Resend rate limits
+- Sends to all three addresses (seeker, coach, admin) so every inbox shows the full notification stream
 
-### 7. Assessments (4 baseline + 4 progress + 1 final)
-- `wheel_of_life_assessments`: Jan 5 (baseline), Mar 1 (mid), May 25 (final) — scores follow growth curve.
-- `lgt_assessments`: Jan 7, Mar 5, May 28.
-- `happiness_assessments`, `mooch_assessments`: Jan + May for before/after delta.
+This function is idempotent and safe to re-invoke. It will be invoked once after the seed migration completes.
 
-### 8. Gamification
-- `points_ledger`: rows for every worksheet (10 pts), session attended (25 pts), assignment scored ≥7 (15 pts).
-- `seeker_badges`: award **First Worksheet** (Jan 1), **7-Day Streak** (Jan 8), **30-Day Streak** (Jan 30), **First Session** (Jan 3), **10 Sessions** (Mar 14), **Wheel Master** (May 25).
+**Email templates** reuse the existing branded HTML from `send-notification/index.ts` so styling matches production.
 
-### 9. Notifications (≈80 entries)
-- `notifications` table seeded for: enrollment welcome, every session reminder (24h before), payment receipts, badge awards, weekly summary, missed-worksheet alerts to coach.
-- Mix of `is_read=true/false` so the bell shows realistic unread count.
+---
 
-### 10. Communication
-- `messages`: ~25 messages between coach ↔ seeker spaced across the 5 months (intros, weekly check-ins, encouragement during "down" weeks).
-- `client_feedback`: 3 entries (after sessions 5, 12, 21) with star ratings.
-
-### Growth Pattern Applied (your sequence: up → steady → up → down → steady → up → up)
-Mapped across 21 weeks:
-| Phase | Weeks | Pattern | Avg WoL Score |
-|---|---|---|---|
-| 1. Up | W1–W3 | Strong start | 5.0 → 6.5 |
-| 2. Steady | W4–W6 | Plateau | 6.5 |
-| 3. Up | W7–W9 | Breakthrough | 6.5 → 7.8 |
-| 4. Down | W10–W12 | Setback (life event) | 7.8 → 6.2 |
-| 5. Steady | W13–W15 | Recovery plateau | 6.2 |
-| 6. Up | W16–W18 | Re-engagement | 6.2 → 7.5 |
-| 7. Up | W19–W21 | Mastery | 7.5 → 9.0 |
-
-This pattern drives: WoL/LGT scores, worksheet completion %, assignment scores, engagement scores, and the visible growth chart on every report.
-
-### Execution Method
-A single SQL script with deterministic `generate_series` loops will insert ~600 rows across ~18 tables. All inserts use the existing profile IDs above so RLS / triggers (auto-link, point awards, etc.) fire naturally. Idempotent — safe to re-run (uses `ON CONFLICT DO NOTHING` where unique constraints exist).
-
-### What You'll Be Able to Test After Approval
-1. **Seeker dashboard** → streak card, points, badges, WoL chart, upcoming session, recent worksheets.
-2. **Coach dashboard** → seeker status grid (green/yellow/red across the 5 months), today's session list, action center.
-3. **Admin dashboard** → revenue (₹50k + GST), enrollment funnel, active seekers, audit logs.
-4. **Reports** → Coach Weekly Report (pick any week), seeker progress charts, payment history.
-5. **Notifications** → unread bell counts, history.
-6. **Documents tab** → generated Coaching Agreement + Fee Structure for Chandrakant.
-7. **Growth visualization** → WoL radar deltas (Jan vs May), LGT trend line showing your exact up/steady/up/down/steady/up/up pattern.
+### Execution Order
+1. Run SQL migration (creates all DB rows, fires existing triggers).
+2. Deploy `seed-test-notifications` edge function.
+3. Invoke the function once → ~75 emails delivered with "Testing — …" subject.
+4. Smoke-test as seeker / coach / admin (dashboards, bell, payments, reports).
 
 ### Smoke Test Checklist (post-seed)
-- [ ] Login as seeker → home shows correct streak + 5 badges + ₹50k paid + next session
-- [ ] Login as coach → Chandrakant appears in My Seekers; weekly report renders for any of 21 weeks
-- [ ] Login as admin → revenue chart shows 5 monthly bars; seeker 360 profile populated across all tabs
-- [ ] WoL history page → 3 assessments plotted; growth curve matches pattern
-- [ ] Payments page → 5 invoices listed
-- [ ] Notifications bell → mixed read/unread
+- Seeker home → streak, points, 6 badges, ₹50k paid, next session, WoL chart
+- Coach dashboard → seeker grid green/yellow/red across 21 weeks; weekly report
+- Admin dashboard → revenue chart 5 monthly bars; seeker 360 populated
+- Notifications bell → mixed read/unread count for all 3 roles
+- Email inboxes (vivekcdoba@, coachviveklgt@, crwanare@) → ~75 "Testing — …" emails covering full lifecycle
+- WoL history → 3 assessments showing the up/steady/up/down/steady/up/up curve
+- Payments page → 5 invoices
 
-**Approve to execute the seed script.**
+**Approve to execute the migration + deploy the test-notification function + send all emails.**
