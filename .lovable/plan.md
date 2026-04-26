@@ -1,25 +1,33 @@
 ## Goal
-Send a single plain-text/HTML test email to **coachviveklgt@gmail.com** from **info@vivekdoba.com** (no fallback) and capture the exact Resend API response so we can confirm whether the sender domain is actually verified.
+Add a **Play** button to each row on `/admin/videos` and `/admin/audios` so admins can preview the actual content (video or audio) without leaving the page.
 
-## Approach
-Run a one-off script through `code--exec` that calls the Resend API directly using the project's existing `RESEND_API_KEY` secret. No new edge function, no UI changes, no DB writes.
+## Why this is simple
+- The `learning_content` table already has a `url` column (used for YouTube/Vimeo links, Supabase storage paths like `storage:resources/...`, or direct URLs).
+- A reusable component `src/components/ResourcePreviewModal.tsx` already exists and handles:
+  - YouTube + Vimeo embeds
+  - Native `<audio>` and `<video>` players
+  - Signed URL resolution for Supabase storage paths
+  - Google Drive fallback ("open in new tab")
+- No DB changes, no new dependencies, no edge functions needed.
 
-### Steps
-1. **Fetch the `RESEND_API_KEY`** from project secrets at runtime (`secrets--fetch_secrets`) — already exists, no setup needed.
-2. **POST to `https://api.resend.com/emails`** with:
-   - `from: "VDTS <info@vivekdoba.com>"`
-   - `to: ["coachviveklgt@gmail.com"]`
-   - `subject: "VDTS — Deliverability Test"`
-   - Branded HTML body matching the existing VDTS email template (saffron header, ॐ symbol, plain confirmation message).
-3. **Log the full Resend response** — HTTP status, response body, and `id` (if successful) or error type (if rejected, e.g. `validation_error: from domain not verified`).
-4. **Report back to you** with one of:
-   - ✅ Sent — Resend message ID + ask you to confirm inbox/spam receipt.
-   - ❌ Rejected — exact Resend error so we know whether to verify the domain in Resend or switch to fallback.
+## Changes
 
-### Files Affected
-- None. This is a one-off `code--exec` curl/script. Nothing in the codebase will be modified.
+### 1. `src/pages/admin/AdminVideos.tsx`
+- Import `ResourcePreviewModal` and `Play` icon from `lucide-react`.
+- Add local state: `previewItem: { title, url } | null`.
+- Add a new **Play** action button (▶ icon, `variant="ghost"`, `size="sm"`) in the Actions column, placed before the Activate/Deactivate button.
+  - Disabled with a tooltip ("No URL") if `v.url` is missing.
+  - On click: `setPreviewItem({ title: v.title, url: v.url })`.
+- Render `<ResourcePreviewModal open={!!previewItem} onOpenChange={...} title={...} type="video" url={...} />` at the bottom of the component.
 
-### Why this is useful
-Past email failures to this address suggest the `vivekdoba.com` domain is unverified in Resend. This test confirms or denies that hypothesis directly, without changing any production flow.
+### 2. `src/pages/admin/AdminAudios.tsx`
+- Identical treatment as above, but pass `type="audio"` to the modal so it renders an `<audio controls>` player.
 
-**On approval:** I'll run the script and report the Resend response back to you.
+## Files affected
+- `src/pages/admin/AdminVideos.tsx` (edit)
+- `src/pages/admin/AdminAudios.tsx` (edit)
+
+## Out of scope
+- No schema changes
+- No changes to `ResourcePreviewModal` itself (already supports both types)
+- Existing Activate/Deactivate, Search, and view-count behavior preserved (per Preservation Policy)
