@@ -19,7 +19,9 @@ const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
 
 const AdminEditPrograms = () => {
   const { data: courses = [], isLoading } = useDbCourses();
+  const { data: allTrainers = [] } = useAllProgramTrainers();
   const updateCourse = useUpdateCourse();
+  const coachCount = (id: string) => allTrainers.filter(t => t.program_id === id).length;
   const [search, setSearch] = useState('');
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', tagline: '', description: '', duration: '', format: '', tier: '', price: '', max_participants: '', event_date: '', location: '', location_type: '' });
