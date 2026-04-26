@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useCoachingLang } from '@/components/CoachingLayout';
 import { useDbSessions, useCreateSession, useUpdateSession, useCoaches } from '@/hooks/useDbSessions';
 import { useAuthStore } from '@/store/authStore';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,7 +49,7 @@ export default function CoachSchedule() {
   const t = (key: keyof typeof L) => L[key][lang];
   const { profile } = useAuthStore();
   const { data: sessions = [], isLoading } = useDbSessions();
-  const { data: seekers = [] } = useSeekerProfiles();
+  const { data: seekers = [] } = useScopedSeekers();
   const { data: courses = [] } = useDbCourses();
   const { data: coaches = [] } = useCoaches();
   const createSession = useCreateSession();
