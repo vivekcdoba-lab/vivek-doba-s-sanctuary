@@ -52,6 +52,8 @@ export function useSessionHeartbeat() {
       );
 
       if (response.status === 401) {
+        // On /reset-password the token is intentionally rotated — stay silent, don't redirect
+        if (window.location.pathname === '/reset-password') return;
         await forceLogout('Session expired. Please log in again.', true);
         return;
       }
