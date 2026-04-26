@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 export default function CoachProgressReport() {
-  const { data: seekers = [] } = useSeekerProfiles();
+  const { data: seekers = [] } = useScopedSeekers();
 
   const { data: checkins = [] } = useQuery({
     queryKey: ['progress-checkins'],

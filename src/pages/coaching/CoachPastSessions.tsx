@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useCoachingLang } from '@/components/CoachingLayout';
 import { useDbSessions } from '@/hooks/useDbSessions';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { format, parseISO, isBefore, startOfToday } from 'date-fns';
 import { Search, Download, ChevronDown, ChevronUp, Clock, User, Loader2, FileText, BookOpen, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,7 +37,7 @@ export default function CoachPastSessions() {
   const { lang } = useCoachingLang();
   const t = (key: keyof typeof L) => L[key][lang];
   const { data: allSessions = [], isLoading } = useDbSessions();
-  const { data: seekers = [] } = useSeekerProfiles();
+  const { data: seekers = [] } = useScopedSeekers();
 
   const [search, setSearch] = useState('');
   const [seekerFilter, setSeekerFilter] = useState('');

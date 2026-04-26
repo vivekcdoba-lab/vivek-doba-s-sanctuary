@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { useDbSessions } from '@/hooks/useDbSessions';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Users, Search, MessageSquare, Calendar, Phone, MapPin, Mail, Building2 
 import { Link } from 'react-router-dom';
 
 export default function CoachAllSeekers() {
-  const { data: seekers = [], isLoading } = useSeekerProfiles();
+  const { data: seekers = [], isLoading } = useScopedSeekers();
   const { data: sessions = [] } = useDbSessions();
   const { data: assignments = [] } = useDbAssignments();
   const [search, setSearch] = useState('');

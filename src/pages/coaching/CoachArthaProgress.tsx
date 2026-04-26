@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building2, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
 
 export default function CoachArthaProgress() {
-  const { data: seekers = [] } = useSeekerProfiles();
+  const { data: seekers = [] } = useScopedSeekers();
 
   const { data: businesses = [] } = useQuery({
     queryKey: ['artha-businesses'],

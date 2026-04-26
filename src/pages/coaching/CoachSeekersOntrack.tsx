@@ -1,4 +1,4 @@
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -7,7 +7,7 @@ import { CheckCircle, Trophy, Flame } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 
 export default function CoachSeekersOntrack() {
-  const { data: seekers = [], isLoading } = useSeekerProfiles();
+  const { data: seekers = [], isLoading } = useScopedSeekers();
   const threeDaysAgo = format(subDays(new Date(), 3), 'yyyy-MM-dd');
 
   const { data: recentWorksheets = [] } = useQuery({

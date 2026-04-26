@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useCoachingLang } from '@/components/CoachingLayout';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { differenceInDays, parseISO, format } from 'date-fns';
@@ -36,7 +36,7 @@ export default function CoachPendingSubmissions() {
   const { lang } = useCoachingLang();
   const t = (key: keyof typeof L) => L[key][lang];
   const { data: assignments = [], isLoading } = useDbAssignments();
-  const { data: seekers = [] } = useSeekerProfiles();
+  const { data: seekers = [] } = useScopedSeekers();
   const qc = useQueryClient();
 
   const [filter, setFilter] = useState<'all' | 'submitted' | 'overdue'>('all');

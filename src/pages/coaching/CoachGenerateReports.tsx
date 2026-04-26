@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { FileText, BarChart3, Download, User } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function CoachGenerateReports() {
-  const { data: seekers = [] } = useSeekerProfiles();
+  const { data: seekers = [] } = useScopedSeekers();
   const [selectedSeeker, setSelectedSeeker] = useState('');
 
   const { data: assessments = [] } = useQuery({
