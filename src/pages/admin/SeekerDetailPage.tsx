@@ -22,6 +22,7 @@ import { useDbSessions } from '@/hooks/useDbSessions';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { SeekerSignaturesTab } from '@/components/SeekerSignaturesTab';
+import FeeStructureForm from '@/components/FeeStructureForm';
 import { useAuthStore } from '@/store/authStore';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import {
