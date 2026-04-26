@@ -2591,6 +2591,8 @@ export type Database = {
           gst_amount: number
           id: string
           invoice_number: string
+          is_joint: boolean
+          joint_group_id: string | null
           method: string
           notes: string | null
           notes_enc: string | null
@@ -2613,6 +2615,8 @@ export type Database = {
           gst_amount?: number
           id?: string
           invoice_number: string
+          is_joint?: boolean
+          joint_group_id?: string | null
           method?: string
           notes?: string | null
           notes_enc?: string | null
@@ -2635,6 +2639,8 @@ export type Database = {
           gst_amount?: number
           id?: string
           invoice_number?: string
+          is_joint?: boolean
+          joint_group_id?: string | null
           method?: string
           notes?: string | null
           notes_enc?: string | null
@@ -3277,6 +3283,51 @@ export type Database = {
             foreignKeyName: "seeker_badges_seeker_id_fkey"
             columns: ["seeker_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seeker_links: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          linked_by: string | null
+          relationship: string
+          relationship_label: string | null
+          seeker_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          linked_by?: string | null
+          relationship: string
+          relationship_label?: string | null
+          seeker_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          linked_by?: string | null
+          relationship?: string
+          relationship_label?: string | null
+          seeker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seeker_links_linked_by_fkey"
+            columns: ["linked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seeker_links_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4682,6 +4733,7 @@ export type Database = {
           worksheet_count: number
         }[]
       }
+      get_seeker_link_group: { Args: { _seeker_id: string }; Returns: string }
       get_session_signatures: {
         Args: { _session_id: string }
         Returns: {

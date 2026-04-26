@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/use-toast';
-import { Save, LogOut, Loader2 } from 'lucide-react';
+import { Save, LogOut, Loader2, Users } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useBadges } from '@/hooks/useBadges';
+import { useSeekerLinkGroup, RELATIONSHIP_EMOJIS, RELATIONSHIP_LABELS } from '@/hooks/useSeekerLinks';
 import { format } from 'date-fns';
 import { encryptField, decryptField } from '@/lib/encryption';
 import PhoneInput from '@/components/inputs/PhoneInput';

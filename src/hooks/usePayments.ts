@@ -15,6 +15,8 @@ export interface DbPayment {
   transaction_id: string | null;
   status: string;
   notes: string | null;
+  is_joint: boolean;
+  joint_group_id: string | null;
   created_at: string;
 }
 
@@ -59,6 +61,8 @@ export function usePayments(seekerId?: string) {
       method: string;
       transaction_id?: string;
       notes?: string;
+      is_joint?: boolean;
+      joint_group_id?: string | null;
     }) => {
       const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
       const [transaction_id_enc, notes_enc] = await Promise.all([
@@ -77,6 +81,8 @@ export function usePayments(seekerId?: string) {
         transaction_id_enc,
         notes_enc,
         status: 'received',
+        is_joint: payment.is_joint || false,
+        joint_group_id: payment.is_joint ? payment.joint_group_id || null : null,
       } as any).select().single();
       if (error) throw error;
       return data as unknown as DbPayment;
