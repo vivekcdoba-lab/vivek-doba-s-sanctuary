@@ -187,3 +187,15 @@ const SeekerPayments = () => {
 };
 
 export default SeekerPayments;
+
+function FeeStructureReadOnlyCard({ seekerId }: { seekerId?: string }) {
+  const { data } = useFeeStructure(seekerId);
+  if (!seekerId || !data) return null;
+  return (
+    <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
+      <h2 className="text-sm font-semibold text-foreground mb-3">Fee Structure / फीस संरचना</h2>
+      <FeeStructureForm seekerId={seekerId} readOnly />
+    </div>
+  );
+}
+
