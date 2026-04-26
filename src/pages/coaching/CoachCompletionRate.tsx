@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useCoachingLang } from '@/components/CoachingLayout';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { differenceInDays, parseISO, format, subMonths } from 'date-fns';
 import { PieChart as PieChartIcon, Loader2, AlertTriangle, TrendingUp, Users, Target } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +32,7 @@ export default function CoachCompletionRate() {
   const { lang } = useCoachingLang();
   const t = (key: keyof typeof L) => L[key][lang];
   const { data: assignments = [], isLoading } = useDbAssignments();
-  const { data: seekers = [] } = useSeekerProfiles();
+  const { data: seekers = [] } = useScopedSeekers();
 
   const today = new Date();
 

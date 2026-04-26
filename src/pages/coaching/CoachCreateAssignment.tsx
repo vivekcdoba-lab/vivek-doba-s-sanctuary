@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useCoachingLang } from '@/components/CoachingLayout';
 import { useCreateAssignment } from '@/hooks/useDbAssignments';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,7 +74,7 @@ type AssignMode = 'individual' | 'all' | 'course';
 export default function CoachCreateAssignment() {
   const { lang } = useCoachingLang();
   const t = (key: keyof typeof L) => L[key][lang];
-  const { data: seekers = [] } = useSeekerProfiles();
+  const { data: seekers = [] } = useScopedSeekers();
   const { data: courses = [] } = useDbCourses();
   const createAssignment = useCreateAssignment();
 
@@ -114,6 +114,11 @@ export default function CoachCreateAssignment() {
     if (!form.title.trim() || !form.due_date || targets.length === 0) {
       toast.error('Please fill all required fields and select at least one seeker');
       return;
+    }
+    // Confirm bulk operations
+    if (targets.length > 10) {
+      const ok = window.confirm(`This will create ${targets.length} assignments — one for each seeker. Continue?`);
+      if (!ok) return;
     }
     setIsCreating(true);
     try {
@@ -272,7 +277,15 @@ export default function CoachCreateAssignment() {
 
             {assignMode === 'all' && (
               <div className="bg-muted/50 rounded-lg p-3">
-                <p className="text-sm text-foreground">This will create an assignment for <strong>{seekers.length} seekers</strong></p>
+                <p className="text-sm text-foreground">
+                  This will create an assignment for <strong>{seekers.length} seeker{seekers.length !== 1 ? 's' : ''}</strong>
+                  <span className="text-xs text-muted-foreground"> (only seekers visible to you).</span>
+                </p>
+                {seekers.length === 0 && (
+                  <p className="text-xs text-warning-amber mt-2">
+                    You have no seekers assigned. Ask an admin to assign seekers via Admin → Coach ↔ Seeker.
+                  </p>
+                )}
               </div>
             )}
 

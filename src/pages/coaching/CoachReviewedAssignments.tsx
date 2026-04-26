@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useCoachingLang } from '@/components/CoachingLayout';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { format, parseISO } from 'date-fns';
 import { CheckCircle, Loader2, Search, Download, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ export default function CoachReviewedAssignments() {
   const { lang } = useCoachingLang();
   const t = (key: keyof typeof L) => L[key][lang];
   const { data: assignments = [], isLoading } = useDbAssignments();
-  const { data: seekers = [] } = useSeekerProfiles();
+  const { data: seekers = [] } = useScopedSeekers();
 
   const [search, setSearch] = useState('');
   const [seekerFilter, setSeekerFilter] = useState('');

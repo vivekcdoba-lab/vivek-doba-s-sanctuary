@@ -1077,6 +1077,55 @@ export type Database = {
           },
         ]
       }
+      coach_seekers: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          coach_id: string
+          id: string
+          is_primary: boolean
+          seeker_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          coach_id: string
+          id?: string
+          is_primary?: boolean
+          seeker_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          coach_id?: string
+          id?: string
+          is_primary?: boolean
+          seeker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_seekers_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_seekers_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_seekers_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_weekly_challenges: {
         Row: {
           challenge_description: string | null
@@ -4750,6 +4799,10 @@ export type Database = {
       hash_for_lookup: { Args: { _value: string }; Returns: string }
       hash_token: { Args: { _token: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_assigned_coach: {
+        Args: { _seeker_profile_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_coach: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       rotate_encryption_keys: {

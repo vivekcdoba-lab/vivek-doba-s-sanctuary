@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -7,7 +7,7 @@ import { Search, Eye, Mail, MapPin, Phone, Building2, Calendar } from 'lucide-re
 import { format } from 'date-fns';
 
 export default function CoachSeekersSearch() {
-  const { data: seekers = [], isLoading } = useSeekerProfiles();
+  const { data: seekers = [], isLoading } = useScopedSeekers();
   const [search, setSearch] = useState('');
   const [cityFilter, setCityFilter] = useState('all');
   const [genderFilter, setGenderFilter] = useState('all');
