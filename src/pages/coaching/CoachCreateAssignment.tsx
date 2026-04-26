@@ -277,7 +277,15 @@ export default function CoachCreateAssignment() {
 
             {assignMode === 'all' && (
               <div className="bg-muted/50 rounded-lg p-3">
-                <p className="text-sm text-foreground">This will create an assignment for <strong>{seekers.length} seekers</strong></p>
+                <p className="text-sm text-foreground">
+                  This will create an assignment for <strong>{seekers.length} seeker{seekers.length !== 1 ? 's' : ''}</strong>
+                  <span className="text-xs text-muted-foreground"> (only seekers visible to you).</span>
+                </p>
+                {seekers.length === 0 && (
+                  <p className="text-xs text-warning-amber mt-2">
+                    You have no seekers assigned. Ask an admin to assign seekers via Admin → Coach ↔ Seeker.
+                  </p>
+                )}
               </div>
             )}
 
