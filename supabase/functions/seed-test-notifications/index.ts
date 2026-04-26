@@ -11,7 +11,7 @@ const RECIPIENTS = [
   'crwanare@gmail.com',
 ];
 
-const FROM = 'VDTS Testing <noreply@vivekdoba.com>';
+const FROM = 'VDTS Testing <info@vivekdoba.com>';
 
 function wrap(title: string, body: string) {
   return `<!DOCTYPE html><html><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#FFF8F0;padding:24px;color:#1a1a1a">
