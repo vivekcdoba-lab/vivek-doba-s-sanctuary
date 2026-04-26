@@ -1,176 +1,112 @@
-# 🌅 5-Month CEO Transformation Seed (Jan 1 – May 31, 2026)
+# 🔍 Seed Audit — Chandrakant (`crwanare@gmail.com`) × Coach Vivek
 
-**Seeker**: Chandrakant Wanare (`crwanare@gmail.com` · `0c0ada4d…270efa`)
-**Coach (verifier)**: Coach Vivek Doba (`coachviveklgt@gmail.com` · `d1bbd4c2…3bdc b1`)
-**Persona**: CEO of a startup, 6-month BHAG → enter **Fortune Global 500**
-
-Coach link ✅, 21 coach-tagged sessions ✅, 148 worksheets ✅ already exist. This plan **adds** the missing pillar content + coach review trail and fills gaps — nothing is deleted.
+Audit performed against the live DB. **Nothing changed yet** — just findings.
 
 ---
 
-## 1️⃣ MY JOURNEY → Daily Practice (top-up only)
+## ❌ Critical / Functional gaps (will break UI)
 
-Existing: 148 worksheets, 169 assignments. Will **add**:
+### 1. **Notifications saved to wrong column → bells stay empty**
+- I inserted 47 seeker + 40 coach notifications using **`profiles.id`** as `notifications.user_id`.
+- The table expects **`auth.users.id`** (the `profiles.user_id` column). NotificationBell queries by `auth.uid()`, so **0 notifications** show in either bell.
+- Coach `auth_user_id`: `8abd1692-550a-4f9b-95b1-c434ef395187` — currently has 0 rows.
+- **Fix**: re-key all 87 notifications to `profiles.user_id`. Same fix needed for the earlier 33 mirrored notifications from the previous batch.
 
-| Table | What | Volume |
-|---|---|---|
-| `daily_worksheets` | Backfill 3 missing days (target 151 days = full 5 months) with CEO-themed sankalp + gratitude + reflections | +3 |
-| `daily_lgt_checkins` | Daily Dharma/Artha/Kama/Moksha 1-10 self-rating, with realistic "Down weeks 10-12" dip | 151 |
-| `time_sheets` | Weekly CEO time-block log (deep work / team / family / sadhana) | 22 weeks |
-| `daily_logs` | Daily CEO reflection — "biggest decision", "energy level", "win of the day" | 151 |
-| `japa_log` | Morning mantra count (108 → 1008 progressing) | 151 |
-| `streaks` | Reset/refresh current streak counters | 1 row |
+### 2. **`session_topics` is empty (0 rows)**
+- Plan called for tagging every session with a pillar (Dharma/Artha/Kama/Moksha + Vishnu Protocol).
+- Coach views that filter by topic will show nothing.
+- **Fix**: insert 21 rows into `session_topics` mapping each session to its pillar topic.
+
+### 3. **3 missing daily worksheets** (148 of 151 days)
+- Gaps: need to identify which 3 dates are missing in Jan–May.
+- Breaks the "151-day streak" badge logic and dashboard heatmap.
+- **Fix**: backfill the 3 missing `daily_worksheets` rows.
 
 ---
 
-## 2️⃣ MY JOURNEY → Assessments (+ coach verification)
+## ⚠️ Data consistency conflicts
 
-Will **add** monthly cadence (5 instances each) and coach feedback for every one:
+### 4. **Sessions during the dip weeks all show `attendance='present'`**
+- Mar 9 – Mar 29 has 3 sessions, all marked present.
+- But worksheets in the same window: 8 of 19 unsubmitted (matches the dip narrative).
+- Engagement story is contradictory: seeker "missed" worksheets but "attended" every session.
+- **Fix**: mark 1 of the 3 dip-week sessions `attendance='missed'` (or `late`) and lower its `engagement_score` to 4–5.
 
-| Assessment | Existing | Add | Coach feedback |
+### 5. **Assessment cadence under target**
+| Assessment | Target (monthly) | Actual | Gap |
 |---|---|---|---|
-| `wheel_of_life_assessments` | 3 | +2 (monthly) | ✅ via `coach_assessment_feedback` |
-| `lgt_assessments` | 3 | +2 (monthly) | ✅ |
-| `purusharthas_assessments` | 0 | +5 (monthly) | ✅ |
-| `firo_b_assessments` | check & add 1 baseline + 1 mid + 1 final | +3 | ✅ |
-| `mooch_assessments` | +3 (Jan / Mar / May) | +3 | ✅ |
-| `happiness_assessments` | +3 | +3 | ✅ |
-| `personal_swot_assessments` | +2 (Jan baseline, May final) | +2 | ✅ |
-| `seeker_assessments` (generic Dharma/Kama/Moksha narratives) | +5 monthly | +5 | ✅ |
-| `assessment_actions` | 30-Day Balance Challenge per assessment | ~25 | — |
+| LGT | 5 | 3 | +2 |
+| Wheel of Life | 5 | 3 | +2 |
+| MOOCH | 3 | 2 | +1 |
+| Happiness | 3 | 2 | +1 |
+- Coach feedback exists for the rows that were inserted, but missing assessments mean missing feedback rows too.
+- **Fix**: insert the missing instances on monthly cadence + matching `coach_assessment_feedback`.
 
-Each `coach_assessment_feedback` row will include a CEO-tailored note (e.g. *"Artha rising → reinforce delegation; Kama dropped → schedule family Sankalp"*).
+### 6. **Artha (Business) module — 4 sub-tables empty**
+| Table | Rows | Expected |
+|---|---|---|
+| `cashflow_records` | 0 | weekly Jan–May (~22) |
+| `department_health` | 0 | 8 depts × 5 months (40) |
+| `team_members` | 0 | 12 leaders |
+| `rnd_projects` | 0 | 4 R&D bets |
+- These power the Artha dashboard tabs — currently empty cards for the seeker.
+- **Fix**: seed all four with realistic CEO data tied to the existing `business_id = 5392623d…`.
 
----
-
-## 3️⃣ MY JOURNEY → Sessions (verification + extra detail)
-
-21 sessions exist. Will **enrich** them (no new sessions) so the verification loop is complete:
-
-- `session_notes`: insert coach-authored summary, breakthroughs, next-week assignments for all 21
-- `session_topics`: tag each with pillar (Dharma/Artha/Kama/Moksha rotation, plus 4 Vishnu Protocol sessions on Fortune-500 roadmap)
-- `session_signatures`: insert coach + seeker e-sign for all 21 (status = approved/completed)
-- `session_audit_log`: trail of submitted → reviewed → approved
-- `client_feedback`: post-session 1–5 ratings from seeker
-- `sessions.status` → `completed`, `attendance='present'`, `engagement_score` 7–9 (dip to 5–6 in weeks 10–12 to match worksheet "Down" trend)
+### 7. **`clients` and `daily_financial_log` not touched**
+- Plan included 8 enterprise clients in funnel and 151 daily revenue/burn entries.
+- **Fix**: confirm the column shape, then seed both (or drop from scope if you prefer leaner data).
 
 ---
 
-## 4️⃣ MY JOURNEY → Assignments (+ coach scoring)
+## 🟡 Schema / quality issues
 
-169 assignments exist. Will:
+### 8. **One `assignments.category` is NULL**
+- Distinct categories: `[Artha, daily_practice, Dharma, Kama, Moksha, NULL]`.
+- The NULL group will sit uncategorised in coach review filters.
+- **Fix**: backfill the NULL category based on title (or set to `daily_practice`).
 
-- Ensure 100% have `status='completed'` for weeks 1-9 & 13-22, and `status='missed'` for weeks 10-12 (matching narrative)
-- Add `score` (1–10) and `feedback` text from coach on every completed one (~155 rows)
-- Insert ~12 new strategic CEO assignments: *"Draft Fortune-500 5-year financial model"*, *"Identify 3 strategic acquisitions"*, *"Define cultural OS"*, *"30-day investor pitch sprint"*, etc.
-- `submissions` table: link submission artifacts + reviewer marks where applicable
+### 9. **`client_feedback` table doesn't exist**
+- The original plan promised post-session 1–5 ratings via `client_feedback`. The table simply isn't in the schema.
+- **Fix options**: (a) drop from scope, (b) create the table via migration, or (c) store ratings in `session_notes.rating_jsonb` if such a field exists.
 
----
+### 10. **`punishments` / `rewards` etc. on `sessions` never populated**
+- The `validate_seeker_session_update` trigger references several rich columns (`major_win`, `client_good_things`, `next_week_assignments`, `pending_assignments_review`, `targets`, `therapy_given`, `stories_used`) — all NULL on our 21 sessions.
+- Cosmetic, but the SeekerDetailPage session drawer will show empty sections.
+- **Fix**: populate at least `major_win`, `next_week_assignments`, `stories_used` (Ramayana/Mahabharata story IDs) on each session.
 
-## 5️⃣ PURUSHAARTH → DHARMA (Purpose)
-
-Insert into `seeker_assessments` (type='dharma_*') + `assessment_actions`:
-
-- **Mission statement**: *"Build a conscious-capitalism enterprise that uplifts 1M lives by 2031"*
-- **Ikigai map**: Passion (technology), Mission (mass uplift), Vocation (CEO craft), Profession (deep-tech)
-- **Core values** (5): Satya, Seva, Sankalp, Shraddha, Saatvik growth
-- **Daily practices**: 5am sadhana, scripture reading 20 min, weekly satsang
-- **Dharma journal entries**: 22 weekly reflections on alignment between values & decisions
-
----
-
-## 6️⃣ PURUSHAARTH → ARTHA (Business)
-
-Create the full Artha module dataset:
-
-| Table | Content |
-|---|---|
-| `business_profiles` | Startup name, industry=Deep-tech SaaS, team_size growing 25→180, revenue_range step-up |
-| `business_mission_vision` | Vision: "Fortune Global 500 by 2032"; Mission + Purpose |
-| `business_values` | 6 prioritized values with emojis |
-| `business_swot_items` | 5 S + 5 W + 5 O + 5 T (Fortune-500 lens) |
-| `business_competitors` | 4 global competitors with threat-level + strategic notes |
-| `accounting_records` | Monthly P&L stubs Jan→May |
-| `cashflow_records` | Weekly inflow/outflow with runway extension story |
-| `daily_financial_log` | 151 daily revenue/burn entries |
-| `marketing_strategy` | Campaigns: brand authority, thought leadership, AR strategy |
-| `sales_strategy` | Pipeline goals, ACV, enterprise motion |
-| `branding_strategy` | Brand pillars aligned to Fortune-500 narrative |
-| `department_health` | 8 departments scored monthly (engg, sales, marketing, ops, finance, HR, R&D, CX) |
-| `team_members` | 12 key leaders with roles & reporting |
-| `rnd_projects` | 4 R&D bets (AI moat, IP filing, infra, edge) |
-| `clients` | 8 enterprise client logos in funnel |
+### 11. **Assessments can hit the 3-per-day rate limit on backfill**
+- The `check_single_assessment_rate_limit` trigger blocks the 4th assessment in one calendar day per seeker per table.
+- When we insert the missing LGT/WoL/MOOCH/Happiness rows we must space them across distinct dates (we already do this — flagging for awareness).
 
 ---
 
-## 7️⃣ PURUSHAARTH → KAMA (Relationships)
-
-- `seeker_assessments` (type='kama_*'): family scorecard, social network audit, romance/partner reflection
-- `assignments` (Kama-tagged): *"Weekly date night"*, *"Sunday family ritual"*, *"Mentor 1 founder/month"*
-- `daily_logs` extended: relationship quality 1-10, "act of service done today"
-- Goals: 4 quarterly relationship goals tracked across 5 months
-- Dharma↔Kama balance reflection in 22 weekly worksheets
-
----
-
-## 8️⃣ PURUSHAARTH → MOKSHA (Liberation)
-
-- `seeker_assessments` (type='moksha_*'): consciousness self-rating, attachment audit, ego-watch entries
-- `japa_log` already covered in §1
-- Meditation goals: 21-min → 60-min progression across 5 months (in `assignments` + `daily_worksheets.meditation_minutes`)
-- 22 weekly **Moksha Journal** entries via `seeker_assessments` (type='moksha_journal')
-- `assessment_actions` for "Detachment Sprint" 30-day challenge
+## ✅ What's healthy
+- 21 sessions all linked to coach ✓ (previous fix held)
+- 158/181 assignments completed + scored, 23 missed = matches Up→Down→Up narrative ✓
+- `coach_seekers` link present ✓
+- 18 coach assessment feedback rows ✓
+- All session_signatures: 21 coach + 21 seeker = 42 ✓
+- Worksheet/check-in date alignment: 0 worksheets without a matching LGT check-in ✓
+- `seeker_assessments` Dharma/Kama/Moksha narrative entries: 5 each ✓
 
 ---
 
-## 9️⃣ Coach Verification Layer (cross-cutting)
+## 🚦 Proposed fix order (single execution)
 
-Every artifact above will have a verification trail:
+1. **Re-key 87 notifications** to `profiles.user_id` (also re-key the earlier 33 from the previous batch)
+2. **Insert 21 `session_topics`** (Dharma/Artha/Kama/Moksha + Vishnu Protocol rotation)
+3. **Backfill 3 missing daily worksheets**
+4. **Mark 1 dip-week session as missed/late** + lower engagement_score
+5. **Insert missing assessments** (LGT +2, WoL +2, MOOCH +1, Happiness +1) + `coach_assessment_feedback` for each
+6. **Seed Artha sub-tables**: `cashflow_records` (22), `department_health` (40), `team_members` (12), `rnd_projects` (4)
+7. **Seed `clients`** (8) + `daily_financial_log` (151) — *or skip if scope is tight*
+8. **Backfill NULL `assignments.category`**
+9. **Decide on `client_feedback`** — create table OR drop from scope
+10. **Populate session narrative columns** (`major_win`, `next_week_assignments`, `stories_used`) on all 21 sessions
+11. **Final SELECT report** confirming counts table-by-table
 
-| Artifact | Verifier mechanism |
-|---|---|
-| Assessments | `coach_assessment_feedback` row (note + status='reviewed') |
-| Assignments | `assignments.score` + `assignments.feedback` set, `status='completed'` |
-| Sessions | `session_signatures` (coach + seeker) + `session_notes.reviewed_by` + `session_audit_log` |
-| Worksheets | `worksheet_notifications` "reviewed" + coach comment via `session_comments` (linked via daily worksheet ref) |
-| Business module | `coach_seekers` already linked; coach notes inserted into `business_swot_items.action_plan` |
-| Dharma/Kama/Moksha | `coach_assessment_feedback` per monthly entry |
-
----
-
-## 🔟 Notifications & Points
-
-- `notifications`: ~40 events to seeker (assessment ready, assignment graded, session approved, badge earned, monthly report)
-- Mirror to coach + admin (~80 rows) — bell continuity per prior fix
-- `points_ledger`: log Sampoorna points for every completed worksheet/assessment/session (≈ 4,500 points across 5 months)
-- `seeker_badges`: award lifecycle badges (First Worksheet, 30-Day Streak, LGT Mastery, Artha Champion, Kama Anchor, Moksha Initiate, Fortune-500 Visionary)
+Estimated additional inserts/updates: **~330 rows** across **~12 tables**, all idempotent.
 
 ---
 
-## 📐 Data integrity guardrails (built into the seed)
-
-1. All inserts use `ON CONFLICT … DO NOTHING` where unique keys exist
-2. Down-trend weeks 10–12 (Mar 9 – Mar 29) consistently reflected across worksheets, sessions, assignments, check-ins
-3. Coach `coach_id` populated on every coach-related row
-4. All `seeker_id` rows belong only to Chandrakant — no cross-contamination
-5. Existing 148 worksheets / 21 sessions / 169 assignments are **enriched**, not replaced
-
----
-
-## 🚦 Execution order (after approval)
-
-1. Top-up daily practice tables (worksheets, check-ins, time-sheets, japa, daily_logs)
-2. Insert assessments (5 types × monthly cadence) + `assessment_actions`
-3. Enrich sessions with notes/signatures/audit/feedback
-4. Score & feedback all assignments + insert 12 strategic ones
-5. Build full Artha business module (15 tables)
-6. Insert Dharma / Kama / Moksha narrative content
-7. Insert `coach_assessment_feedback` for every assessment
-8. Award points + badges + notifications (3-way mirror)
-9. Verify counts with a final SELECT report
-
-Estimated insert volume: **~1,800 rows** across **~30 tables**, all idempotent.
-
----
-
-**Approve to switch to default mode and execute steps 1 → 9 in order.** I'll post a final count-report once done.
+**Approve to switch to default mode and apply fixes #1 → #11 in order. Or reply with which numbers to skip.**
