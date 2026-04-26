@@ -43,6 +43,7 @@ const adminNav: NavGroup[] = [
       { icon: BookOpen, label: 'All Programs', path: '/courses' },
       { icon: UserPlus, label: 'Create Program', path: '/admin/create-program' },
       { icon: FileText, label: 'Edit Programs', path: '/admin/edit-programs' },
+      { icon: Crown, label: 'Program Coaches', path: '/admin/program-coaches' },
       { icon: BarChart3, label: 'Program Analytics', path: '/admin/program-analytics' },
     ],
   },

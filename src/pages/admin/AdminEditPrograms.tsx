@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useDbCourses, useUpdateCourse } from '@/hooks/useDbCourses';
-import { Edit, Save, X, Search, Clock, Star, Users, Loader2 } from 'lucide-react';
+import { useAllProgramTrainers } from '@/hooks/useProgramTrainers';
+import { Edit, Save, X, Search, Clock, Star, Users, Loader2, Crown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -17,7 +19,9 @@ const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
 
 const AdminEditPrograms = () => {
   const { data: courses = [], isLoading } = useDbCourses();
+  const { data: allTrainers = [] } = useAllProgramTrainers();
   const updateCourse = useUpdateCourse();
+  const coachCount = (id: string) => allTrainers.filter(t => t.program_id === id).length;
   const [search, setSearch] = useState('');
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', tagline: '', description: '', duration: '', format: '', tier: '', price: '', max_participants: '', event_date: '', location: '', location_type: '' });
@@ -91,8 +95,10 @@ const AdminEditPrograms = () => {
                   {course.duration && <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full"><Clock className="w-3 h-3" />{course.duration}</span>}
                   {course.format && <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full"><Star className="w-3 h-3" />{course.format}</span>}
                   <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full"><Users className="w-3 h-3" />Max {course.max_participants}</span>
+                  <span className="flex items-center gap-1 text-xs text-[#FF6B00] bg-[#FF6B00]/10 px-2 py-0.5 rounded-full"><Crown className="w-3 h-3" />{coachCount(course.id)} coach{coachCount(course.id) === 1 ? '' : 'es'}</span>
                 </div>
                 <div className="flex gap-2 justify-end">
+                  <Button size="sm" variant="outline" asChild><Link to={`/admin/program-coaches?program=${course.id}`}><Crown className="w-3.5 h-3.5 mr-1" /> Coaches</Link></Button>
                   <Button size="sm" variant="outline" onClick={() => openEdit(course.id)}><Edit className="w-3.5 h-3.5 mr-1" /> Edit</Button>
                   <Button size="sm" variant="destructive" onClick={() => handleDeactivate(course.id, course.name)}>Deactivate</Button>
                 </div>

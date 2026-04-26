@@ -49,6 +49,7 @@ import AdminUserAnalytics from "./pages/admin/AdminUserAnalytics";
 import AdminSearchUsers from "./pages/admin/AdminSearchUsers";
 import AdminCreateProgram from "./pages/admin/AdminCreateProgram";
 import AdminEditPrograms from "./pages/admin/AdminEditPrograms";
+import AdminProgramCoaches from "./pages/admin/AdminProgramCoaches";
 import AdminProgramAnalytics from "./pages/admin/AdminProgramAnalytics";
 import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import AdminNewEnrollment from "./pages/admin/AdminNewEnrollment";
@@ -303,6 +304,7 @@ const App = () => (
             <Route path="/admin/search-users" element={<AdminSearchUsers />} />
             <Route path="/admin/create-program" element={<AdminCreateProgram />} />
             <Route path="/admin/edit-programs" element={<AdminEditPrograms />} />
+            <Route path="/admin/program-coaches" element={<AdminProgramCoaches />} />
             <Route path="/admin/program-analytics" element={<AdminProgramAnalytics />} />
             <Route path="/admin/enrollments" element={<AdminEnrollments />} />
             <Route path="/admin/new-enrollment" element={<AdminNewEnrollment />} />

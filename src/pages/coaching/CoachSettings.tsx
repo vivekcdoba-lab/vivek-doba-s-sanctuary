@@ -2,11 +2,20 @@ import { useAuthStore } from '@/store/authStore';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Settings, User, Bell, Globe, Moon, Sun, Phone, Mail, Shield } from 'lucide-react';
+import { Settings, User, Bell, Globe, Moon, Sun, Phone, Mail, Shield, BookOpen } from 'lucide-react';
 import { useState } from 'react';
+import { useTrainerPrograms } from '@/hooks/useProgramTrainers';
+
+const ROLE_LABEL: Record<string, string> = { lead: 'Lead', co_coach: 'Co-coach', assistant: 'Assistant' };
+const ROLE_COLOR: Record<string, string> = {
+  lead: 'bg-[#FF6B00] text-white',
+  co_coach: 'bg-amber-100 text-amber-900',
+  assistant: 'bg-slate-100 text-slate-800',
+};
 
 export default function CoachSettings() {
   const { profile, darkMode, toggleDarkMode } = useAuthStore();
+  const { data: myPrograms = [] } = useTrainerPrograms(profile?.id);
   const [notifications, setNotifications] = useState({
     worksheetReminder: true,
     sessionAlert: true,
@@ -44,6 +53,25 @@ export default function CoachSettings() {
             <Badge className="bg-[#FF6B00] text-white">{profile?.role || 'coach'}</Badge>
           </div>
         </div>
+      </Card>
+
+      <Card className="p-5">
+        <h3 className="font-medium text-foreground flex items-center gap-2 mb-4"><BookOpen className="w-4 h-4" /> My Programs</h3>
+        {myPrograms.length === 0 ? (
+          <p className="text-sm text-muted-foreground">You are not assigned to any programs yet. Ask an admin to assign you on the Program Coaches page.</p>
+        ) : (
+          <div className="space-y-2">
+            {myPrograms.map(p => (
+              <div key={p.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{p.program?.name || '—'}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{p.program?.tier}</p>
+                </div>
+                <Badge className={`${ROLE_COLOR[p.role] || ''} border-0`}>{ROLE_LABEL[p.role] || p.role}</Badge>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
 
       <Card className="p-5">
