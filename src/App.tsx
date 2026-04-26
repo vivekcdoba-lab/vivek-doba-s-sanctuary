@@ -293,6 +293,7 @@ const App = () => (
             <Route path="/admin/seekers" element={<Navigate to="/seekers" replace />} />
             {/* Admin placeholder routes */}
             <Route path="/admin/coaches" element={<AdminCoaches />} />
+            <Route path="/admin/linked-profiles" element={<AdminLinkedProfiles />} />
             <Route path="/admin/documents" element={<AdminDocuments />} />
             <Route path="/admin/admins" element={<AdminAdmins />} />
             <Route path="/admin/add-user" element={<AdminAddUser />} />
