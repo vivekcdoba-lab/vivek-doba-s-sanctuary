@@ -271,6 +271,38 @@ const SeekerProfile = () => {
         )}
       </div>
 
+      {/* Linked With (admin-managed) */}
+      {linkedPartners.length > 0 && (
+        <div className="bg-card rounded-xl p-4 border border-border shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Users className="w-4 h-4 text-primary" /> Linked With
+            </h3>
+            <span className="text-[10px] text-muted-foreground italic">Managed by admin</span>
+          </div>
+          <div className="space-y-2">
+            {linkedPartners.map(p => {
+              const label = p.relationship === 'custom'
+                ? p.relationship_label || 'Custom'
+                : RELATIONSHIP_LABELS[p.relationship];
+              return (
+                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
+                  <span className="text-2xl">{RELATIONSHIP_EMOJIS[p.relationship]}</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">{p.seeker?.full_name || '—'}</p>
+                    <p className="text-[10px] text-muted-foreground">{p.seeker?.email}</p>
+                  </div>
+                  <Badge variant="outline" className="border-primary/30 text-primary">{label}</Badge>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            💡 Payments marked as <strong>Joint</strong> will appear in your payment history and your linked partner's history.
+          </p>
+        </div>
+      )}
+
       {/* Professional */}
       <div className="bg-card rounded-xl p-4 border border-border shadow-sm space-y-3">
         <h3 className="text-sm font-semibold text-foreground border-b border-border pb-2">Professional Info</h3>
