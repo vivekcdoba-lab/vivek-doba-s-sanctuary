@@ -145,16 +145,19 @@ async function validateSessionOnInit(userId: string, accessToken: string, userEm
       }
     );
 
-    const data = await response.json();
-
-    if (!response.ok || !data?.active) {
-      // Don't sign out on network errors, only on definitive rejection
-      if (response.status === 401 || data?.reason === 'invalid_token' || data?.active === false) {
-        await supabase.auth.signOut();
-        clearAllAuthStorage();
-        useAuthStore.getState().setAuth(null, null);
+    // 5xx = edge runtime transient error → allow through, don't sign out
+    if (response.status >= 500) {
+      console.warn('Heartbeat 5xx — allowing session through');
+    } else {
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.active) {
+        if (response.status === 401 || data?.reason === 'invalid_token' || data?.active === false) {
+          await supabase.auth.signOut();
+          clearAllAuthStorage();
+          useAuthStore.getState().setAuth(null, null);
+          return;
+        }
       }
-      return;
     }
   } catch {
     // Network issue — allow through
@@ -203,6 +206,11 @@ if (_skipInitValidation) {
       clearAllAuthStorage();
       useAuthStore.getState().setAuth(null, null);
     }
+    _initialized = true;
+  }).catch(() => {
+    // e.g. "Invalid Refresh Token: Refresh Token Not Found" — clear & continue
+    clearAllAuthStorage();
+    useAuthStore.getState().setAuth(null, null);
     _initialized = true;
   });
 }

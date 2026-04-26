@@ -56,7 +56,10 @@ export function useSessionHeartbeat() {
         return;
       }
 
-      const data = await response.json();
+      // 5xx = transient edge runtime error → ignore this tick
+      if (response.status >= 500) return;
+
+      const data = await response.json().catch(() => null);
       if (data && !data.active) {
         await logout();
         toast.error(data.reason === 'forced'
