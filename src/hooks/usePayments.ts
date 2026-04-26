@@ -15,6 +15,8 @@ export interface DbPayment {
   transaction_id: string | null;
   status: string;
   notes: string | null;
+  is_joint: boolean;
+  joint_group_id: string | null;
   created_at: string;
 }
 
