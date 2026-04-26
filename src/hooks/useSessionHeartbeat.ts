@@ -30,29 +30,53 @@ export function useSessionHeartbeat() {
     // Skip on auth pages
     if (window.location.pathname === '/login' || window.location.pathname === '/reset-password') return;
     try {
-      // Get fresh access token — if missing/expired, silently clear (no toast spam)
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
+      // Helper: get a fresh access token, refreshing if expiring within 60s
+      const getFreshToken = async (forceRefresh = false): Promise<string | null> => {
+        if (forceRefresh) {
+          const { data } = await supabase.auth.refreshSession();
+          return data?.session?.access_token || null;
+        }
+        const { data: sessionData } = await supabase.auth.getSession();
+        const session = sessionData?.session;
+        if (!session?.access_token) return null;
+        const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
+        if (expiresAt && expiresAt - Date.now() < 60_000) {
+          const { data } = await supabase.auth.refreshSession();
+          return data?.session?.access_token || session.access_token;
+        }
+        return session.access_token;
+      };
+
+      const callHeartbeat = async (token: string) =>
+        fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/session-heartbeat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ action: 'heartbeat', session_id: sessionId }),
+        });
+
+      let accessToken = await getFreshToken();
       if (!accessToken) {
         await forceLogout('Session expired. Please log in again.', true);
         return;
       }
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/session-heartbeat`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify({ action: 'heartbeat', session_id: sessionId }),
+      let response = await callHeartbeat(accessToken);
+
+      // One-shot retry on 401 (token may have just rotated)
+      if (response.status === 401) {
+        if (window.location.pathname === '/reset-password') return;
+        const refreshed = await getFreshToken(true);
+        if (refreshed) {
+          response = await callHeartbeat(refreshed);
         }
-      );
+      }
 
       if (response.status === 401) {
-        // On /reset-password the token is intentionally rotated — stay silent, don't redirect
+        // Still 401 after refresh attempt — really expired
         if (window.location.pathname === '/reset-password') return;
         await forceLogout('Session expired. Please log in again.', true);
         return;
