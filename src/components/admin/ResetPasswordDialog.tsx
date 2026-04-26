@@ -56,10 +56,21 @@ export const ResetPasswordDialog = ({ user, open, onOpenChange }: Props) => {
       toast.error(errMsg);
       return;
     }
-    if ((data as any)?.email_sent) {
-      toast.success(`Password reset for ${user.full_name}. Email notification sent.`);
+    const d = data as any;
+    // Toast 1: password update result
+    toast.success(`✅ Password updated for ${user.full_name}`);
+    // Toast 2: email delivery result (separate so admin actually sees it)
+    if (d?.email_sent) {
+      const sender = d?.email_sender_used || '';
+      const note = sender.includes('resend.dev')
+        ? ` (sent from temporary address — please verify your domain in Resend)`
+        : '';
+      toast.success(`✉️ Security notice email sent${note}`, { duration: 8000 });
     } else {
-      toast.success(`Password reset for ${user.full_name}. (Email not sent: ${(data as any)?.email_error || 'unknown'})`);
+      toast.warning(`⚠️ Email NOT delivered: ${d?.email_error || 'unknown reason'}`, {
+        duration: 15000,
+        description: 'Please contact the user out-of-band with their new password.',
+      });
     }
     reset();
     onOpenChange(false);
