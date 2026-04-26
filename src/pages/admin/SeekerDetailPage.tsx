@@ -383,6 +383,43 @@ const SeekerDetailPage = () => {
             )}
           </div>
 
+          {/* Linked Profile */}
+          <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" /> Linked Profile
+              </h3>
+              {!linkedPartner && (
+                <Button size="sm" variant="outline" onClick={() => setLinkDialogOpen(true)} className="gap-1">
+                  <Link2 className="w-3.5 h-3.5" /> Link Seeker
+                </Button>
+              )}
+            </div>
+            {linkedPartner ? (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+                <span className="text-3xl">{RELATIONSHIP_EMOJIS[linkedPartner.relationship]}</span>
+                <div className="flex-1">
+                  <Link to={`/seekers/${linkedPartner.seeker_id}`} className="text-sm font-semibold text-primary hover:underline">
+                    {linkedPartner.seeker?.full_name || '—'}
+                  </Link>
+                  <p className="text-xs text-muted-foreground">{linkedPartner.seeker?.email}</p>
+                </div>
+                <Badge variant="outline" className="border-primary/30 text-primary">
+                  {linkedPartner.relationship === 'custom'
+                    ? linkedPartner.relationship_label || 'Custom'
+                    : RELATIONSHIP_LABELS[linkedPartner.relationship]}
+                </Badge>
+                <Button size="sm" variant="ghost" onClick={handleUnlink} disabled={unlinkSeekers.isPending}>
+                  <Unlink className="w-4 h-4 mr-1" /> Unlink
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-3">
+                Not linked to any other seeker. Use "Link Seeker" to connect this seeker with a spouse, parent, sibling, or other relation.
+              </p>
+            )}
+          </div>
+
           {/* Next Session */}
           <div className="bg-card rounded-xl p-5 shadow-sm border-2 border-primary/20">
             <h3 className="font-semibold text-foreground mb-2">Next Session</h3>
