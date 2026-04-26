@@ -207,5 +207,10 @@ if (_skipInitValidation) {
       useAuthStore.getState().setAuth(null, null);
     }
     _initialized = true;
+  }).catch(() => {
+    // e.g. "Invalid Refresh Token: Refresh Token Not Found" — clear & continue
+    clearAllAuthStorage();
+    useAuthStore.getState().setAuth(null, null);
+    _initialized = true;
   });
 }
