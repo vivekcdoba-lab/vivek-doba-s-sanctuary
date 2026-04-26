@@ -1,17 +1,18 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-
-const RECIPIENTS = [
-  'vivekcdoba@gmail.com',
-  'coachviveklgt@gmail.com',
-  'crwanare@gmail.com',
-];
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const FROM = 'VDTS Testing <info@vivekdoba.com>';
+
+// Pull the 3 test recipients from profiles by their well-known emails.
+const RECIPIENT_EMAILS = ['vivekcdoba@gmail.com', 'coachviveklgt@gmail.com', 'crwanare@gmail.com'];
 
 function wrap(title: string, body: string) {
   return `<!DOCTYPE html><html><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#FFF8F0;padding:24px;color:#1a1a1a">
@@ -32,10 +33,9 @@ function buildMails(): Mail[] {
 
   mails.push({
     subject: 'Welcome to LGT PLATINUM™ (Jan 1, 2026)',
-    html: wrap('🙏 Welcome, Seeker', `<p>Your enrollment in <b>LGT PLATINUM™</b> is confirmed effective <b>1 January 2026</b>.</p><p>Coach: Vivek Doba<br/>Program duration: 5 months · 21 weekly sessions<br/>Total fee: ₹50,000 + GST</p>`),
+    html: wrap('🙏 Welcome, Seeker', `<p>Your enrollment in <b>LGT PLATINUM™</b> is confirmed effective <b>1 January 2026</b>.</p><p>Coach: Vivek Doba<br/>Program duration: 5 months · 21 weekly sessions<br/>Total fee: ₹50,000 + GST (₹59,000 incl.)</p>`),
   });
 
-  // 5 monthly payments
   const months = ['January', 'February', 'March', 'April', 'May'];
   months.forEach((m, i) => {
     mails.push({
@@ -44,7 +44,6 @@ function buildMails(): Mail[] {
     });
   });
 
-  // 6 badges
   const badges = [
     ['First Worksheet', '📝', 'You submitted your very first daily worksheet.'],
     ['7-Day Streak', '🔥', 'Seven consecutive days of daily practice.'],
@@ -60,15 +59,15 @@ function buildMails(): Mail[] {
     });
   });
 
-  // 21 weekly session reminders
+  // LGT pillars are Dharma / Artha / Kama (Moksha is the outcome).
+  const pillars = ['Dharma', 'Artha', 'Kama'];
   for (let w = 1; w <= 21; w++) {
     mails.push({
       subject: `Session Reminder — Week ${w} (Saturday 10:00 AM)`,
-      html: wrap(`📅 Week ${w} Coaching Session`, `<p>Reminder: your weekly LGT session is scheduled for <b>Saturday at 10:00 AM IST</b>.</p><p>Pillar focus: <b>${['Dharma', 'Artha', 'Kama', 'Moksha'][(w - 1) % 4]}</b></p><p>Please complete your worksheet and arrive 5 min early.</p>`),
+      html: wrap(`📅 Week ${w} Coaching Session`, `<p>Reminder: your weekly LGT session is scheduled for <b>Saturday at 10:00 AM IST</b>.</p><p>Pillar focus: <b>${pillars[(w - 1) % 3]}</b></p><p>Please complete your worksheet and arrive 5 min early.</p>`),
     });
   }
 
-  // 21 weekly progress summaries
   const pattern = ['↑', '↑', '↑', '→', '→', '→', '↑', '↑', '↑', '↓', '↓', '↓', '→', '→', '→', '↑', '↑', '↑', '↑', '↑', '↑'];
   for (let w = 1; w <= 21; w++) {
     mails.push({
@@ -77,7 +76,6 @@ function buildMails(): Mail[] {
     });
   }
 
-  // Missed worksheet alerts (down weeks)
   [10, 11, 12].forEach(w => {
     mails.push({
       subject: `Coach Alert — Missed Worksheets Week ${w}`,
@@ -88,42 +86,85 @@ function buildMails(): Mail[] {
   return mails.map(m => ({ ...m, subject: `Testing — ${m.subject}` }));
 }
 
+async function sendOne(to: string[], subject: string, html: string): Promise<{ ok: boolean; id?: string; err?: string }> {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: FROM, to, subject, html }),
+    });
+    const text = await res.text();
+    if (res.ok) {
+      try { return { ok: true, id: JSON.parse(text)?.id }; } catch { return { ok: true }; }
+    }
+    if (res.status === 429 || res.status >= 500) {
+      await new Promise(r => setTimeout(r, 800 * attempt));
+      if (attempt < 3) continue;
+    }
+    return { ok: false, err: `${res.status}: ${text.slice(0, 200)}` };
+  }
+  return { ok: false, err: 'retries exhausted' };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
     if (!RESEND_API_KEY) throw new Error('RESEND_API_KEY missing');
 
+    const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
+
+    let seed_run_id: string | undefined;
+    try {
+      const body = await req.json();
+      seed_run_id = body?.seed_run_id;
+    } catch { /* no body */ }
+    seed_run_id = seed_run_id || `run-${new Date().toISOString().slice(0, 10)}`;
+
+    // Pull recipients from profiles
+    const { data: profiles, error: pErr } = await supabase
+      .from('profiles')
+      .select('email')
+      .in('email', RECIPIENT_EMAILS);
+    if (pErr) throw pErr;
+    const recipients = (profiles || []).map(p => p.email).filter(Boolean) as string[];
+    if (recipients.length === 0) throw new Error('No recipients resolved from profiles');
+
+    // Idempotency: skip already-sent (run_id, subject) pairs
+    const { data: alreadySent } = await supabase
+      .from('email_log')
+      .select('subject')
+      .eq('seed_run_id', seed_run_id)
+      .eq('status', 'sent');
+    const sentSet = new Set((alreadySent || []).map((r: any) => r.subject));
+
     const mails = buildMails();
-    let sent = 0;
-    let failed = 0;
+    let sent = 0, failed = 0, skipped = 0;
     const errors: string[] = [];
 
     for (const m of mails) {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: FROM,
-          to: RECIPIENTS,
-          subject: m.subject,
-          html: m.html,
-        }),
+      if (sentSet.has(m.subject)) { skipped++; continue; }
+      const r = await sendOne(recipients, m.subject, m.html);
+      await supabase.from('email_log').insert({
+        seed_run_id,
+        recipients,
+        subject: m.subject,
+        status: r.ok ? 'sent' : 'failed',
+        resend_message_id: r.id ?? null,
+        error_message: r.err ?? null,
       });
-      const body = await res.text();
-      if (res.ok) sent++; else { failed++; errors.push(`${res.status}: ${body.slice(0, 200)}`); }
-      await new Promise(r => setTimeout(r, 600)); // throttle
+      if (r.ok) sent++; else { failed++; if (r.err) errors.push(r.err); }
+      await new Promise(r => setTimeout(r, 600));
     }
 
     return new Response(JSON.stringify({
       success: true,
+      seed_run_id,
       total: mails.length,
       sent,
       failed,
-      recipients: RECIPIENTS,
+      skipped,
+      recipients,
       sample_errors: errors.slice(0, 5),
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (e) {

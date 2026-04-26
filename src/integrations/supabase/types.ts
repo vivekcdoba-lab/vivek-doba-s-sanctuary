@@ -1890,6 +1890,39 @@ export type Database = {
         }
         Relationships: []
       }
+      email_log: {
+        Row: {
+          error_message: string | null
+          id: string
+          recipients: string[]
+          resend_message_id: string | null
+          seed_run_id: string | null
+          sent_at: string
+          status: string
+          subject: string
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          recipients: string[]
+          resend_message_id?: string | null
+          seed_run_id?: string | null
+          sent_at?: string
+          status: string
+          subject: string
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          recipients?: string[]
+          resend_message_id?: string | null
+          seed_run_id?: string | null
+          sent_at?: string
+          status?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       encryption_keys: {
         Row: {
           algorithm: string
