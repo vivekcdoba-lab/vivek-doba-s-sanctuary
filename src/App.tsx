@@ -49,6 +49,7 @@ import AdminUserAnalytics from "./pages/admin/AdminUserAnalytics";
 import AdminSearchUsers from "./pages/admin/AdminSearchUsers";
 import AdminCreateProgram from "./pages/admin/AdminCreateProgram";
 import AdminEditPrograms from "./pages/admin/AdminEditPrograms";
+import AdminProgramCoaches from "./pages/admin/AdminProgramCoaches";
 import AdminProgramAnalytics from "./pages/admin/AdminProgramAnalytics";
 import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import AdminNewEnrollment from "./pages/admin/AdminNewEnrollment";
