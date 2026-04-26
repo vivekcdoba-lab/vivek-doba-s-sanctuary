@@ -766,6 +766,62 @@ const SeekerDetailPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Link Seeker Dialog */}
+      <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="w-5 h-5 text-primary" /> Link {seeker?.full_name || 'this seeker'} to another profile
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Partner Seeker *</Label>
+              <Select value={linkForm.partner_seeker_id} onValueChange={v => setLinkForm(p => ({ ...p, partner_seeker_id: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select partner seeker" /></SelectTrigger>
+                <SelectContent>
+                  {allSeekers.filter(s => s.id !== id).map(s => (
+                    <SelectItem key={s.id} value={s.id}>{s.full_name} <span className="text-muted-foreground text-xs">({s.email})</span></SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground mt-1">If a seeker is already linked, the link attempt will fail — unlink them first.</p>
+            </div>
+            <div>
+              <Label>Relationship *</Label>
+              <Select value={linkForm.relationship} onValueChange={v => setLinkForm(p => ({ ...p, relationship: v as any }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spouse">💑 Spouse (Husband / Wife)</SelectItem>
+                  <SelectItem value="parent">👨‍👧 Parent → Child</SelectItem>
+                  <SelectItem value="sibling">👫 Siblings</SelectItem>
+                  <SelectItem value="custom">🤝 Custom</SelectItem>
+                </SelectContent>
+              </Select>
+              {linkForm.relationship === 'parent' && (
+                <p className="text-xs text-muted-foreground mt-1">{seeker?.full_name || 'This seeker'} will be treated as the parent.</p>
+              )}
+            </div>
+            {linkForm.relationship === 'custom' && (
+              <div>
+                <Label>Custom Relationship Label *</Label>
+                <Input
+                  placeholder="e.g. Business Partner, Co-Founder"
+                  value={linkForm.relationship_label}
+                  onChange={e => setLinkForm(p => ({ ...p, relationship_label: e.target.value }))}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setLinkDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleLinkSubmit} disabled={linkSeekers.isPending}>
+              {linkSeekers.isPending ? 'Linking…' : 'Link Profiles'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
