@@ -124,7 +124,7 @@ const SeekerSessionDetail = () => {
         setCourseName(course?.name || '');
       }
 
-      const { data: sigs } = await supabase.from('session_signatures').select('*').eq('session_id', id!);
+      const { data: sigs } = await supabase.rpc('get_session_signatures', { _session_id: id! });
       setSignatures(sigs || []);
     } catch (err) {
       toast.error('Failed to load session');
