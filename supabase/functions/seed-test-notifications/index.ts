@@ -7,9 +7,11 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
 const RECIPIENTS = [
   'vivekcdoba@gmail.com',
+  'coachviveklgt@gmail.com',
+  'crwanare@gmail.com',
 ];
 
-const FROM = 'VDTS Testing <onboarding@resend.dev>';
+const FROM = 'VDTS Testing <noreply@vivekdoba.com>';
 
 function wrap(title: string, body: string) {
   return `<!DOCTYPE html><html><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#FFF8F0;padding:24px;color:#1a1a1a">
