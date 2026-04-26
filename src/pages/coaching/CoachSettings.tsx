@@ -2,11 +2,20 @@ import { useAuthStore } from '@/store/authStore';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Settings, User, Bell, Globe, Moon, Sun, Phone, Mail, Shield } from 'lucide-react';
+import { Settings, User, Bell, Globe, Moon, Sun, Phone, Mail, Shield, BookOpen } from 'lucide-react';
 import { useState } from 'react';
+import { useTrainerPrograms } from '@/hooks/useProgramTrainers';
+
+const ROLE_LABEL: Record<string, string> = { lead: 'Lead', co_coach: 'Co-coach', assistant: 'Assistant' };
+const ROLE_COLOR: Record<string, string> = {
+  lead: 'bg-[#FF6B00] text-white',
+  co_coach: 'bg-amber-100 text-amber-900',
+  assistant: 'bg-slate-100 text-slate-800',
+};
 
 export default function CoachSettings() {
   const { profile, darkMode, toggleDarkMode } = useAuthStore();
+  const { data: myPrograms = [] } = useTrainerPrograms(profile?.id);
   const [notifications, setNotifications] = useState({
     worksheetReminder: true,
     sessionAlert: true,
