@@ -85,6 +85,9 @@ const SeekerPayments = () => {
     <div className="space-y-6 pb-20">
       <h1 className="text-xl font-bold text-foreground">My Payments</h1>
 
+      {/* Fee structure — read-only (admin-managed) */}
+      <FeeStructureReadOnlyCard seekerId={profile?.id} />
+
       <div className="grid grid-cols-2 gap-3">
         {stats.map(s => (
           <div key={s.label} className={`bg-card rounded-xl p-3 shadow-sm border-l-4 ${s.border}`}>
