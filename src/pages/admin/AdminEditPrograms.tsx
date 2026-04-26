@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useDbCourses, useUpdateCourse } from '@/hooks/useDbCourses';
-import { Edit, Save, X, Search, Clock, Star, Users, Loader2 } from 'lucide-react';
+import { useAllProgramTrainers } from '@/hooks/useProgramTrainers';
+import { Edit, Save, X, Search, Clock, Star, Users, Loader2, Crown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
