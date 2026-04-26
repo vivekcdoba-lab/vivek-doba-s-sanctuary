@@ -1,92 +1,121 @@
-## Root Cause
+## Goal
 
-On `/coaching/schedule` (and every other coaching page), the seeker dropdown is empty for non-admin coaches. The `profiles` table SELECT policy is:
+Let admins assign **multiple coaches** to each program with roles (`lead`, `co_coach`, `assistant`), and have the system **auto-link** coaches to any seeker enrolled in those programs — so coaches automatically see the right seekers in the schedule, session creation, and assignment flows.
 
-```
-(user_id = auth.uid()) OR is_admin(auth.uid())
-```
-
-So a coach who isn't an admin cannot read any seeker profile → `useSeekerProfiles()` returns `[]` → New Session dropdown is empty.
-
-There is also **no coach↔seeker assignment table** in the database today, so we cannot scope what a non-admin coach sees.
+Reuses the existing dormant `program_trainers` table (`program_id`, `trainer_id`, `role`, `display_order`).
 
 ---
 
-## Plan
+## 1. Database migration
 
-### 1. Database — new `coach_seekers` assignment table
+**Activate `program_trainers`:**
+- Enable RLS. Policies:
+  - Admins: full CRUD (`is_admin(auth.uid())`).
+  - Coaches: SELECT rows where `trainer_id` is their own profile (so they can see which programs they're on).
+- Add `UNIQUE (program_id, trainer_id)` to prevent duplicates.
+- Constrain `role` to `('lead','co_coach','assistant')` with default `'co_coach'`.
 
-Migration creates:
+**Auto-link trigger — `enrollments` → `coach_seekers`:**
+- New trigger `auto_link_coaches_on_enrollment` on `INSERT` to `enrollments`:
+  - For each row in `program_trainers` matching `NEW.course_id`, upsert a `coach_seekers` row (`coach_id = trainer_id`, `seeker_id = NEW.seeker_id`, `is_primary = (role = 'lead')`, `assigned_by = NULL`) — `ON CONFLICT (coach_id, seeker_id) DO NOTHING`.
+- New trigger `auto_link_seekers_on_program_trainer_insert` on `INSERT` to `program_trainers`:
+  - For each existing enrollment in that `program_id`, upsert into `coach_seekers` the same way. This back-fills assignments when a new coach is added to an existing program.
+- **No auto-unlink** on enrollment deletion or trainer removal — admins keep manual control via `/admin/coach-seekers` (preserves the "Only Add and Enhance" memory rule).
 
-- `coach_seekers (id, coach_id uuid → profiles.id, seeker_id uuid → profiles.id, assigned_by uuid, assigned_at timestamptz, is_primary boolean default true, unique(coach_id, seeker_id))`
-- Helper SECURITY DEFINER function `is_coach_of(_coach_user_id uuid, _seeker_profile_id uuid) returns boolean` — looks up via `profiles.user_id → profiles.id → coach_seekers`.
-- New RLS policy on `profiles`: **Coaches can view their assigned seekers** — `EXISTS (SELECT 1 FROM coach_seekers cs JOIN profiles cp ON cp.id = cs.coach_id WHERE cp.user_id = auth.uid() AND cs.seeker_id = profiles.id)`.
-- RLS on `coach_seekers`: admins full CRUD; coaches SELECT their own rows (via `cp.user_id = auth.uid()`).
-- New RLS on `assignments`: coaches can INSERT/SELECT/UPDATE rows for seekers they are assigned to (admins keep full access).
-- New RLS on `sessions`: coaches can INSERT/SELECT/UPDATE rows where `coach_id` belongs to them OR `seeker_id` is in their `coach_seekers`.
+**Backfill migration step:** one-time `INSERT … SELECT … ON CONFLICT DO NOTHING` to populate `coach_seekers` from the cross-product of existing `enrollments` × `program_trainers`.
 
-### 2. Hooks
+---
 
-- New `src/hooks/useCoachSeekers.ts`:
-  - `useCoachSeekers(coachProfileId)` — list assigned seekers for a coach (admins → all active seekers, coaches → only assigned).
-  - `useAssignSeekerToCoach()`, `useUnassignSeekerFromCoach()`, `useReassignSeeker()` mutations (admin-only at UI level; RLS enforces).
-- New `src/hooks/useScopedSeekers.ts` — single hook used by all coaching pages: returns all active seekers if `profile.role === 'admin' || is_also_coach`-with-admin OR returns assigned seekers otherwise. Centralizes the role check.
+## 2. Hooks
 
-### 3. Coaching UI fixes (read-side)
+New `src/hooks/useProgramTrainers.ts`:
+- `useProgramTrainers(programId?)` → list trainers for a program (with profile join: name, avatar, role).
+- `useTrainerPrograms(trainerProfileId?)` → list programs a coach is on (used on coach profile).
+- `useAssignTrainerToProgram()` mutation `{ program_id, trainer_id, role }`.
+- `useUpdateTrainerRole()` mutation `{ id, role, display_order? }`.
+- `useRemoveTrainerFromProgram()` mutation `{ id }`.
+- All invalidate `['program-trainers']`, `['trainer-programs']`, and `['coach-seekers']` (since the back-fill trigger may have added rows).
 
-- `src/pages/coaching/CoachSchedule.tsx`: replace `useSeekerProfiles()` with `useScopedSeekers()`. Show empty-state with helpful message ("No seekers assigned to you. Ask an admin to assign seekers.") if list is empty for a non-admin coach.
-- Same swap in: `CoachCreateAssignment.tsx` (so "All Seekers" bulk option only targets seekers the coach owns; admins target everyone), `CoachAllSeekers.tsx`, `CoachPendingSubmissions.tsx`, `CoachReviewedAssignments.tsx`, `CoachPastSessions.tsx`, `CoachSeekersOntrack.tsx`, `CoachBusinesses.tsx`, `CoachSwotReviews.tsx`, `CoachArthaProgress.tsx`, `CoachCompletionRate.tsx`, `CoachDeptHealth.tsx`, `CoachBusinessNotes.tsx`, `CoachProgressReport.tsx`, `CoachGenerateReports.tsx` — every coaching page that currently uses `useSeekerProfiles()`.
+---
 
-### 4. Admin assignment UI (write-side)
+## 3. Admin UI
 
-- New page `/admin/coach-seekers` (`src/pages/admin/AdminCoachSeekers.tsx`):
-  - Two-pane view: left = list of coaches (including admins with `is_also_coach`), right = their assigned seekers with **Add seeker**, **Reassign to another coach**, **Unassign** controls.
-  - Bulk "Assign multiple seekers to coach X" multi-select.
-  - Search + filter by city/program.
-- Add link in `AdminLayout.tsx` sidebar under the Coaches section.
-- On the existing `SeekerDetailPage.tsx` (admin Seeker 360), add a "Primary Coach" card that shows current assignment and allows admin to change it inline.
+**New page `/admin/program-coaches`** (`src/pages/admin/AdminProgramCoaches.tsx`):
+- Two-pane layout matching `/admin/coach-seekers` style for consistency.
+- Left: list of programs (from `useDbCourses`) with badge showing `# coaches assigned`.
+- Right: selected program's trainers table — coach name, role dropdown (`lead`/`co_coach`/`assistant`), display order, remove button. "Add Coach" combobox lists profiles where `role='coach' OR is_also_coach=true`. Toast on save: *"Added [name] as [role]. N enrolled seekers auto-linked."*
+- Sidebar link in `AdminLayout.tsx` under the Coaches section, next to "Coach Assignments".
 
-### 5. Bulk assignment verification
+**Existing program edit page** (`src/pages/admin/AdminEditPrograms.tsx`):
+- Add a small "Coaches" summary chip on each program card showing count + a "Manage" button that deep-links to `/admin/program-coaches?program=<id>`. No inline editing here — keeps the edit dialog focused on program details.
 
-- `CoachCreateAssignment.tsx` already supports `assignMode = 'all' | 'course' | 'individual'`. After step 3, scope "all" to the coach's assigned seekers (admins get everyone). The existing loop creating one row per seeker is preserved. Add a confirmation dialog when targets > 10 ("This will create N assignments — confirm?").
+---
 
-### 6. Memory updates
+## 4. Coach profile UI
 
-- New `mem://features/coach-seeker-assignments` describing the table, RLS scoping, and admin reassignment workflow.
-- Update `mem://auth/access-control-policies` to mention coach-scoped seeker visibility.
+The user picked **Coach profile page** as the home for assignment visibility (read-only for the coach):
+
+- On `src/pages/admin/AdminCoaches.tsx` (or the coach detail row, depending on existing structure — will inspect first), add a **"Programs"** column / expandable section showing the programs each coach is assigned to with their role badge.
+- On the coach's own settings page `src/pages/coaching/CoachSettings.tsx`, add a read-only **"My Programs"** card showing assigned programs + role, so the coach knows their scope.
+
+Admin write-side stays on `/admin/program-coaches` (clearer separation than burying it in coach edit forms).
+
+---
+
+## 5. Coaching schedule + session creation scoping
+
+`useScopedSeekers` already returns assigned seekers via `coach_seekers`. With the auto-link trigger in place, any seeker enrolled in one of the coach's programs will automatically appear — **no code change needed in the 16 coaching pages already migrated**.
+
+Verify the dropdown in:
+- `src/pages/coaching/CoachSchedule.tsx` → New Session
+- `src/pages/coaching/CoachCreateAssignment.tsx` → bulk + individual
+
+Both already use `useScopedSeekers`, so they pick this up for free.
+
+**One enhancement** in `CoachSchedule.tsx`: add an optional **"Filter by program"** chip row above the seeker dropdown, populated from `useTrainerPrograms()` for the current coach. Selecting a program narrows the seeker dropdown to enrollees in that program. Admins see all programs.
+
+---
+
+## 6. Memory updates
+
+- Update `mem://features/program-structure` — note that programs now have a multi-coach assignment model with roles.
+- New `mem://features/coach-program-assignments` documenting the `program_trainers` activation, role enum, auto-link trigger, and admin UI location.
 - Update `mem://index.md` to reference the new memory.
 
-### 7. Dry-run + smoke test (Playwright)
+---
 
-New test file `e2e/coach-seeker-assignment.spec.ts` covering:
+## 7. Dry-run + smoke test (Playwright)
 
-1. **Admin assigns seeker** → log in as admin (`vivek@gmail.com`), open `/admin/coach-seekers`, assign `test01@` to a non-admin coach. Assert toast + row appears.
-2. **Coach sees only assigned** → log in as that coach, open `/coaching/schedule` → click **New Session** → assert seeker dropdown contains exactly the assigned seeker(s) and no others.
-3. **Coach creates session** → fill form, save → assert it renders on calendar; refetch via DB read query confirms `coach_id` matches.
-4. **Bulk assignment** → open `/coaching/create-assignment`, choose "All Seekers", create → assert success toast and `assignments` row count increased by N for that coach's assigned seekers only.
-5. **Admin sees everyone** → log in as admin, open `/coaching/schedule` New Session → assert dropdown shows all active seekers.
-6. **Reassignment** → admin moves a seeker from Coach A to Coach B; Coach A no longer sees them, Coach B does.
+New file `e2e/coach-program-assignment.spec.ts`:
 
-Run via `bunx playwright test e2e/coach-seeker-assignment.spec.ts` and report pass/fail.
+1. **Admin assigns lead coach to program** — login as `vivek@gmail.com`, open `/admin/program-coaches`, select TATHASTU, add coach "test-coach@" as `lead`. Assert toast mentions auto-linked seekers count.
+2. **Auto-link verification** — DB read query: `SELECT COUNT(*) FROM coach_seekers WHERE coach_id = <test-coach profile id>` matches enrolled seekers in TATHASTU.
+3. **Coach sees enrolled seekers** — login as test-coach, open `/coaching/schedule` → New Session → assert seeker dropdown contains exactly TATHASTU's enrollees.
+4. **New enrollment auto-links** — admin enrolls a fresh seeker in TATHASTU via `/admin/new-enrollment`; re-login as coach, refresh schedule, assert the new seeker now appears.
+5. **Adding co-coach back-fills** — admin adds a second coach as `co_coach` to TATHASTU; that coach now sees the same enrollees on first login.
+6. **Admin scope unchanged** — login as admin, dropdown still shows all active seekers.
+7. **Program filter** — coach selects a different program in the schedule filter; seeker list narrows correctly.
+
+Run via `bunx playwright test e2e/coach-program-assignment.spec.ts`.
 
 ---
 
-## Files Affected
+## Files affected
 
 **New**
-- `supabase/migrations/<ts>_coach_seekers.sql`
-- `src/hooks/useCoachSeekers.ts`
-- `src/hooks/useScopedSeekers.ts`
-- `src/pages/admin/AdminCoachSeekers.tsx`
-- `e2e/coach-seeker-assignment.spec.ts`
-- `mem://features/coach-seeker-assignments`
+- `supabase/migrations/<ts>_program_trainers_activation.sql`
+- `src/hooks/useProgramTrainers.ts`
+- `src/pages/admin/AdminProgramCoaches.tsx`
+- `e2e/coach-program-assignment.spec.ts`
+- `mem://features/coach-program-assignments`
 
 **Edited**
 - `src/App.tsx` (route)
 - `src/components/AdminLayout.tsx` (nav link)
-- `src/pages/admin/SeekerDetailPage.tsx` (Primary Coach card)
-- `src/pages/coaching/CoachSchedule.tsx` + ~13 other coaching pages (swap to `useScopedSeekers`)
-- `src/pages/coaching/CoachCreateAssignment.tsx` (scoped bulk + confirmation)
-- `mem://auth/access-control-policies`, `mem://index.md`
+- `src/pages/admin/AdminEditPrograms.tsx` (coach count chip + deep link)
+- `src/pages/admin/AdminCoaches.tsx` (programs column)
+- `src/pages/coaching/CoachSettings.tsx` (My Programs read-only card)
+- `src/pages/coaching/CoachSchedule.tsx` (program filter chips)
+- `mem://features/program-structure`, `mem://index.md`
 
-**Preservation**: No tables/columns/pages removed. `useSeekerProfiles` retained (still used by admin pages).
+**Preservation**: No tables, columns, or pages removed. `coach_seekers` manual assignments still work alongside the auto-link.
