@@ -22,6 +22,15 @@ import { useDbSessions } from '@/hooks/useDbSessions';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { SeekerSignaturesTab } from '@/components/SeekerSignaturesTab';
+import { useAuthStore } from '@/store/authStore';
+import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import {
+  useSeekerLinkGroup, useLinkSeekers, useUnlinkSeekers,
+  RELATIONSHIP_EMOJIS, RELATIONSHIP_LABELS,
+  type SeekerLinkRow,
+} from '@/hooks/useSeekerLinks';
+import { Badge } from '@/components/ui/badge';
+import { Link2, Unlink, Users } from 'lucide-react';
 
 const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
 const formatDate = (d: string) => { if (!d) return '—'; try { return format(new Date(d), 'dd-MMMM-yyyy'); } catch { return d; } };
@@ -60,6 +69,60 @@ const SeekerDetailPage = () => {
   const { data: sessions = [] } = useDbSessions(id);
   const { data: assignments = [] } = useDbAssignments(id);
   const { data: courses = [] } = useDbCourses();
+
+  // Linked profile state
+  const { profile: adminProfile } = useAuthStore();
+  const { data: allSeekers = [] } = useSeekerProfiles();
+  const { data: linkGroup = [], refetch: refetchLink } = useSeekerLinkGroup(id);
+  const linkSeekers = useLinkSeekers();
+  const unlinkSeekers = useUnlinkSeekers();
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkForm, setLinkForm] = useState<{
+    partner_seeker_id: string;
+    relationship: SeekerLinkRow['relationship'];
+    relationship_label: string;
+  }>({ partner_seeker_id: '', relationship: 'spouse', relationship_label: '' });
+
+  const linkedPartner = linkGroup.find(r => r.seeker_id !== id);
+  const linkGroupId = linkGroup[0]?.group_id;
+
+  const handleLinkSubmit = async () => {
+    if (!id || !linkForm.partner_seeker_id) {
+      toast.error('Select a partner seeker');
+      return;
+    }
+    if (linkForm.relationship === 'custom' && !linkForm.relationship_label.trim()) {
+      toast.error('Custom label required');
+      return;
+    }
+    try {
+      await linkSeekers.mutateAsync({
+        primary_seeker_id: id,
+        partner_seeker_id: linkForm.partner_seeker_id,
+        relationship: linkForm.relationship,
+        relationship_label: linkForm.relationship === 'custom' ? linkForm.relationship_label : undefined,
+        linked_by: adminProfile?.id || '',
+      });
+      toast.success('✅ Profiles linked');
+      setLinkDialogOpen(false);
+      setLinkForm({ partner_seeker_id: '', relationship: 'spouse', relationship_label: '' });
+      refetchLink();
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to link');
+    }
+  };
+
+  const handleUnlink = async () => {
+    if (!linkGroupId) return;
+    if (!confirm('Unlink these profiles? Existing joint payments will remain visible only to the original payer.')) return;
+    try {
+      await unlinkSeekers.mutateAsync(linkGroupId);
+      toast.success('✅ Unlinked');
+      refetchLink();
+    } catch {
+      toast.error('Failed to unlink');
+    }
+  };
 
   // Profile state
   const [seeker, setSeeker] = useState<any>(null);
@@ -317,6 +380,43 @@ const SeekerDetailPage = () => {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">No badges earned yet. Award one to motivate this seeker! 🌟</p>
+            )}
+          </div>
+
+          {/* Linked Profile */}
+          <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" /> Linked Profile
+              </h3>
+              {!linkedPartner && (
+                <Button size="sm" variant="outline" onClick={() => setLinkDialogOpen(true)} className="gap-1">
+                  <Link2 className="w-3.5 h-3.5" /> Link Seeker
+                </Button>
+              )}
+            </div>
+            {linkedPartner ? (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+                <span className="text-3xl">{RELATIONSHIP_EMOJIS[linkedPartner.relationship]}</span>
+                <div className="flex-1">
+                  <Link to={`/seekers/${linkedPartner.seeker_id}`} className="text-sm font-semibold text-primary hover:underline">
+                    {linkedPartner.seeker?.full_name || '—'}
+                  </Link>
+                  <p className="text-xs text-muted-foreground">{linkedPartner.seeker?.email}</p>
+                </div>
+                <Badge variant="outline" className="border-primary/30 text-primary">
+                  {linkedPartner.relationship === 'custom'
+                    ? linkedPartner.relationship_label || 'Custom'
+                    : RELATIONSHIP_LABELS[linkedPartner.relationship]}
+                </Badge>
+                <Button size="sm" variant="ghost" onClick={handleUnlink} disabled={unlinkSeekers.isPending}>
+                  <Unlink className="w-4 h-4 mr-1" /> Unlink
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-3">
+                Not linked to any other seeker. Use "Link Seeker" to connect this seeker with a spouse, parent, sibling, or other relation.
+              </p>
             )}
           </div>
 
@@ -663,6 +763,62 @@ const SeekerDetailPage = () => {
             )}
             <div><Label>Notes (optional)</Label><Textarea value={badgeNotes} onChange={e => setBadgeNotes(e.target.value)} placeholder="Why is this badge being awarded?" /></div>
             <Button onClick={handleAwardBadge} className="w-full" disabled={badgeAwarding}>{badgeAwarding ? 'Awarding...' : '🎖️ Award Badge'}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Link Seeker Dialog */}
+      <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="w-5 h-5 text-primary" /> Link {seeker?.full_name || 'this seeker'} to another profile
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Partner Seeker *</Label>
+              <Select value={linkForm.partner_seeker_id} onValueChange={v => setLinkForm(p => ({ ...p, partner_seeker_id: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select partner seeker" /></SelectTrigger>
+                <SelectContent>
+                  {allSeekers.filter(s => s.id !== id).map(s => (
+                    <SelectItem key={s.id} value={s.id}>{s.full_name} <span className="text-muted-foreground text-xs">({s.email})</span></SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground mt-1">If a seeker is already linked, the link attempt will fail — unlink them first.</p>
+            </div>
+            <div>
+              <Label>Relationship *</Label>
+              <Select value={linkForm.relationship} onValueChange={v => setLinkForm(p => ({ ...p, relationship: v as any }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spouse">💑 Spouse (Husband / Wife)</SelectItem>
+                  <SelectItem value="parent">👨‍👧 Parent → Child</SelectItem>
+                  <SelectItem value="sibling">👫 Siblings</SelectItem>
+                  <SelectItem value="custom">🤝 Custom</SelectItem>
+                </SelectContent>
+              </Select>
+              {linkForm.relationship === 'parent' && (
+                <p className="text-xs text-muted-foreground mt-1">{seeker?.full_name || 'This seeker'} will be treated as the parent.</p>
+              )}
+            </div>
+            {linkForm.relationship === 'custom' && (
+              <div>
+                <Label>Custom Relationship Label *</Label>
+                <Input
+                  placeholder="e.g. Business Partner, Co-Founder"
+                  value={linkForm.relationship_label}
+                  onChange={e => setLinkForm(p => ({ ...p, relationship_label: e.target.value }))}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setLinkDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleLinkSubmit} disabled={linkSeekers.isPending}>
+              {linkSeekers.isPending ? 'Linking…' : 'Link Profiles'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -26,6 +26,8 @@ interface InvoiceModalProps {
     method: string;
     transactionId?: string;
     emiInfo?: string;
+    isJoint?: boolean;
+    jointWith?: string | null;
   };
 }
 
@@ -78,7 +80,14 @@ const InvoiceModal = ({ open, onClose, invoice }: InvoiceModalProps) => {
                 <p><span className="text-gray-500">Invoice #:</span> <span className="font-semibold">{invoice.invoiceNumber}</span></p>
                 <p><span className="text-gray-500">Invoice Date:</span> {invoice.date}</p>
                 {invoice.dueDate && <p><span className="text-gray-500">Due Date:</span> {invoice.dueDate}</p>}
-                <div className="mt-1">{statusBadge(invoice.status)}</div>
+                <div className="mt-1 flex items-center gap-2">
+                  {statusBadge(invoice.status)}
+                  {invoice.isJoint && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+                      🤝 JOINT{invoice.jointWith ? ` with ${invoice.jointWith}` : ''}
+                    </span>
+                  )}
+                </div>
               </div>
               <div>
                 <p><span className="text-gray-500">Payment Method:</span> {invoice.method.replace('_', ' ').toUpperCase()}</p>
