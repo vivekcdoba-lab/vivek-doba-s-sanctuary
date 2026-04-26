@@ -41,6 +41,7 @@ import SessionTemplatesPage from "./pages/admin/SessionTemplatesPage";
 import SwotPage from "./pages/admin/SwotPage";
 import ActiveSessionsPage from "./pages/admin/ActiveSessionsPage";
 import AdminCoaches from "./pages/admin/AdminCoaches";
+import AdminLinkedProfiles from "./pages/admin/AdminLinkedProfiles";
 import AdminAdmins from "./pages/admin/AdminAdmins";
 import AdminAddUser from "./pages/admin/AdminAddUser";
 import AdminUserAnalytics from "./pages/admin/AdminUserAnalytics";
