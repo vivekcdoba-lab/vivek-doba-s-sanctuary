@@ -107,7 +107,14 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [appId] = useState(`VDTS-APP-${Math.floor(1000 + Math.random() * 9000)}`);
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ program: true, A: true });
+  // When admin is editing an existing application (applicationId passed), expand every section so
+  // previously saved answers are visible immediately. Otherwise keep the friendly progressive flow.
+  const isEditingExisting = !!(adminMode && applicationId);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
+    isEditingExisting
+      ? { program: true, A: true, B: true, C: true, D: true, E: true, F: true, G: true, H: true, I: true, J: true, K: true, L: true, M: true }
+      : { program: true, A: true }
+  );
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [missingFields, setMissingFields] = useState<Set<string>>(new Set());
   const programRef = useRef<HTMLDivElement>(null);
