@@ -170,11 +170,21 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
 
       // Mode 1: Admin filling for a specific seeker → write to lgt_applications
       if (applicationId || seekerId) {
+        // Bump version: read current, increment, then upsert
+        let nextVersion = 1;
+        const { data: existingApp } = await supabase
+          .from('lgt_applications')
+          .select('id, version')
+          .eq(applicationId ? 'id' : 'seeker_id', (applicationId || seekerId)!)
+          .maybeSingle();
+        if (existingApp?.version) nextVersion = (existingApp.version as number) + 1;
+
         const payload: any = {
           form_data: formData,
           status: 'submitted',
           filled_by_role: 'admin',
           submitted_at: new Date().toISOString(),
+          version: nextVersion,
           invite_token: null,
           invite_token_expires_at: null,
         };
@@ -190,7 +200,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
             .upsert({ seeker_id: seekerId, ...payload }, { onConflict: 'seeker_id' });
           if (error) throw error;
         }
-        toast({ title: '✅ LGT application saved for seeker' });
+        toast({ title: nextVersion > 1 ? `✅ LGT application updated (v${nextVersion})` : '✅ LGT application saved for seeker' });
         onAdminSaved?.();
         return;
       }
