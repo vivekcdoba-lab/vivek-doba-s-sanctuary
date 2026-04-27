@@ -42,7 +42,7 @@ const SeekerLgtForm = () => {
       if (error) {
         setResult({ valid: false, reason: 'invalid_token' });
       } else {
-        setResult((data as TokenResult) || { valid: false, reason: 'invalid_token' });
+        setResult((data as unknown as TokenResult) || { valid: false, reason: 'invalid_token' });
       }
       setLoading(false);
     })();
