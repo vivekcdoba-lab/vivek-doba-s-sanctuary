@@ -119,26 +119,21 @@ const SeekerLgtForm = () => {
         onTokenSubmitted={() => {
           // Capture & email PDF report (publicMode — no auth required)
           setReportData({ ...initial });
-          setTimeout(async () => {
+          (async () => {
             if (sentRef.current || !result.seeker_id) return;
             sentRef.current = true;
             try {
-              const { base64, filename } = await generateLgtReportPdf({
-                filename: `LGT-Report-${(p.full_name || 'Seeker').replace(/\s+/g, '_')}.pdf`,
-              });
-              await supabase.functions.invoke('send-lgt-report', {
-                body: {
-                  seekerId: result.seeker_id,
-                  pdfBase64: base64,
-                  filename,
-                  publicMode: true,
-                  inviteToken: token,
-                },
+              await captureAndEmailLgtReport({
+                seekerId: result.seeker_id,
+                seekerName: p.full_name,
+                publicMode: true,
+                inviteToken: token,
+                delayMs: 800,
               });
             } catch (e) {
               console.error('LGT report email failed', e);
             }
-          }, 800);
+          })();
         }}
       />
       {reportData && (
