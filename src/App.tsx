@@ -34,6 +34,7 @@ import CalendarPage from "./pages/admin/CalendarPage";
 import DailyTrackingPage from "./pages/admin/DailyTrackingPage";
 import GrowthMatrixPage from "./pages/admin/GrowthMatrixPage";
 import ApplicationsPage from "./pages/admin/ApplicationsPage";
+import AdminDetailedIntake from "./pages/admin/AdminDetailedIntake";
 import CoachDayView from "./pages/admin/CoachDayView";
 import WorksheetAnalyticsPage from "./pages/admin/WorksheetAnalyticsPage";
 import SessionCertification from "./pages/admin/SessionCertification";
