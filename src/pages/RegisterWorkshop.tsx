@@ -120,7 +120,7 @@ const RegisterWorkshop = () => {
           <div className="text-5xl mb-4">🎯</div>
           <h2 className="text-2xl font-bold text-foreground mb-2">Registration Submitted!</h2>
           <p className="text-muted-foreground mb-2">Workshop: {selected?.name}</p>
-          <p className="text-muted-foreground text-sm mb-6">Investment: ₹{selected?.price.toLocaleString('en-IN')}</p>
+          <p className="text-muted-foreground text-sm mb-6">Our team will share investment details with you shortly.</p>
           <div className="text-left text-sm text-muted-foreground space-y-1 mb-6">
             <p className="font-semibold text-foreground">What happens next:</p>
             <p>1. Our team will confirm availability and date</p>
