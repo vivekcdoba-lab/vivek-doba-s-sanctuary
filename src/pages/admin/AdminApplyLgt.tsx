@@ -28,10 +28,17 @@ interface AppRow {
   invite_email_sent_at: string | null;
 }
 
+interface LegacySubmission {
+  email: string;
+  form_data: any;
+  created_at: string;
+}
+
 const AdminApplyLgt = () => {
   const { toast } = useToast();
   const [seekers, setSeekers] = useState<SeekerRow[]>([]);
   const [apps, setApps] = useState<Record<string, AppRow>>({});
+  const [legacyByEmail, setLegacyByEmail] = useState<Record<string, LegacySubmission>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -42,7 +49,7 @@ const AdminApplyLgt = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [{ data: seekerData, error: e1 }, { data: appData, error: e2 }] = await Promise.all([
+      const [{ data: seekerData, error: e1 }, { data: appData, error: e2 }, { data: legacyData }] = await Promise.all([
         supabase
           .from('profiles')
           .select('id, full_name, email, phone, city, state, country, dob, company, occupation, created_at')
@@ -51,6 +58,11 @@ const AdminApplyLgt = () => {
         supabase
           .from('lgt_applications')
           .select('id, seeker_id, status, invite_token, invited_at, invite_email_sent_at'),
+        supabase
+          .from('submissions')
+          .select('email, form_data, created_at')
+          .eq('form_type', 'lgt_application')
+          .order('created_at', { ascending: false }),
       ]);
       if (e1) throw e1;
       if (e2) throw e2;
@@ -58,6 +70,13 @@ const AdminApplyLgt = () => {
       const map: Record<string, AppRow> = {};
       ((appData as AppRow[]) || []).forEach(a => { map[a.seeker_id] = a; });
       setApps(map);
+      const lmap: Record<string, LegacySubmission> = {};
+      ((legacyData as LegacySubmission[]) || []).forEach(l => {
+        if (!l.email) return;
+        const k = l.email.trim().toLowerCase();
+        if (!lmap[k]) lmap[k] = l; // keep most recent (data already sorted desc)
+      });
+      setLegacyByEmail(lmap);
     } catch (err: any) {
       toast({ title: 'Failed to load seekers', description: err.message, variant: 'destructive' });
     } finally {
