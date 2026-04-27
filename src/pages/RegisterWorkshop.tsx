@@ -365,7 +365,7 @@ const RegisterWorkshop = () => {
             </div>
           )}
           <div className="space-y-3 mt-4">
-            <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={form.consent1} onChange={e => set('consent1', e.target.checked)} className="mt-1 rounded" /><span className="text-sm">I confirm my registration and commit to attending the full workshop. I understand the investment of ₹{selected?.price.toLocaleString('en-IN') || '—'}. 🙏 *</span></label>
+            <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={form.consent1} onChange={e => set('consent1', e.target.checked)} className="mt-1 rounded" /><span className="text-sm">I confirm my registration and commit to attending the full workshop. 🙏 *</span></label>
             <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={form.consent2} onChange={e => set('consent2', e.target.checked)} className="mt-1 rounded" /><span className="text-sm text-muted-foreground">I consent to receiving updates via WhatsApp and Email from VDTS.</span></label>
           </div>
           <button onClick={handleSubmit} disabled={loading} className="w-full mt-6 py-3.5 rounded-xl text-white font-semibold transition-opacity hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #FF9933, #FFD700)' }}>
