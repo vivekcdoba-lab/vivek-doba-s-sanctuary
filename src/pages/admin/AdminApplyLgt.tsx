@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Search, Mail, UserCheck, Copy, Check, X } from 'lucide-react';
+import { ArrowLeft, Loader2, Search, Mail, UserCheck, Copy, Check, X, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ApplyLGT from '../ApplyLGT';
 import LgtReport from '@/components/lgt/LgtReport';
-import { generateLgtReportPdf } from '@/lib/lgtPdfExport';
+import { captureAndEmailLgtReport } from '@/lib/lgtReportEmail';
 
 interface SeekerRow {
   id: string;
@@ -28,6 +28,10 @@ interface AppRow {
   invite_token: string | null;
   invited_at: string | null;
   invite_email_sent_at: string | null;
+  submitted_at: string | null;
+  form_data: Record<string, any> | null;
+  version: number | null;
+  last_emailed_at: string | null;
 }
 
 interface LegacySubmission {
@@ -46,8 +50,9 @@ const AdminApplyLgt = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showSubmitted, setShowSubmitted] = useState(false);
   const [sendingTo, setSendingTo] = useState<string | null>(null);
+  const [emailingReportFor, setEmailingReportFor] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
-  // Hidden report render state (for capture-and-email after admin save)
+  // Hidden report render state (used after admin save AND when admin clicks "Email Report")
   const [reportTarget, setReportTarget] = useState<{ seeker: SeekerRow; data: Record<string, any> } | null>(null);
   const reportSentRef = useRef(false);
 
@@ -62,7 +67,7 @@ const AdminApplyLgt = () => {
           .order('full_name', { ascending: true }),
         supabase
           .from('lgt_applications')
-          .select('id, seeker_id, status, invite_token, invited_at, invite_email_sent_at'),
+          .select('id, seeker_id, status, invite_token, invited_at, invite_email_sent_at, submitted_at, form_data, version, last_emailed_at'),
         supabase
           .from('submissions')
           .select('email, form_data, created_at')
@@ -141,23 +146,55 @@ const AdminApplyLgt = () => {
     setTimeout(() => setCopiedToken(null), 2000);
   };
 
+  // Build merged form-data for a seeker (current app + legacy + profile defaults)
+  const buildInitial = (s: SeekerRow): Record<string, any> => {
+    const legacy = legacyByEmail[(s.email || '').trim().toLowerCase()];
+    const app = apps[s.id];
+    return {
+      ...((legacy as any)?.form_data || {}),
+      ...((app as any)?.form_data || {}),
+      fullName: s.full_name || '',
+      email: s.email || '',
+      mobile: (s.phone || '').replace(/^\+\d+/, ''),
+      mobileCode: '+91',
+      city: s.city || '',
+      state: s.state || '',
+      country: s.country || 'India',
+      dob: s.dob || '',
+      company: s.company || '',
+      designation: s.occupation || '',
+    };
+  };
+
+  // Email a fresh PDF report for a submitted seeker (from the list row, no edit needed)
+  const handleEmailReport = async (s: SeekerRow) => {
+    setEmailingReportFor(s.id);
+    const data = buildInitial(s);
+    setReportTarget({ seeker: s, data });
+    try {
+      const result = await captureAndEmailLgtReport({
+        seekerId: s.id,
+        seekerName: s.full_name,
+        applicationId: apps[s.id]?.id,
+        delayMs: 700,
+      });
+      if (!result.success) {
+        toast({ title: 'Report email failed', description: result.error, variant: 'destructive' });
+      } else {
+        toast({ title: `📧 Report emailed to ${result.recipients?.length || 0} recipient(s)` });
+      }
+      await loadData();
+    } catch (err: any) {
+      toast({ title: 'Report email failed', description: err?.message, variant: 'destructive' });
+    } finally {
+      setReportTarget(null);
+      setEmailingReportFor(null);
+    }
+  };
+
   // ===== Filling form for selected seeker =====
   if (selected) {
-    const legacy = legacyByEmail[(selected.email || '').trim().toLowerCase()];
-    const initial: Record<string, any> = {
-      ...((legacy as any)?.form_data || {}),
-      ...((selectedApp as any)?.form_data || {}),
-      fullName: selected.full_name || '',
-      email: selected.email || '',
-      mobile: (selected.phone || '').replace(/^\+\d+/, ''),
-      mobileCode: '+91',
-      city: selected.city || '',
-      state: selected.state || '',
-      country: selected.country || 'India',
-      dob: selected.dob || '',
-      company: selected.company || '',
-      designation: selected.occupation || '',
-    };
+    const initial = buildInitial(selected);
     return (
       <div className="-m-6">
         <div className="px-4 sm:px-6 pt-4 flex items-center justify-between">
@@ -177,24 +214,24 @@ const AdminApplyLgt = () => {
           applicationId={selectedApp?.id}
           initialData={initial}
           onAdminSaved={() => {
-            // Capture & email a beautiful PDF report to admin + seeker
+            // Capture & email a fresh PDF report to admin + seeker (auto on every save)
             const merged = { ...initial };
             setReportTarget({ seeker: selected, data: merged });
-            // The hidden <LgtReport> below will mount; capture after a short delay
-            setTimeout(async () => {
+            (async () => {
               if (reportSentRef.current) return;
               reportSentRef.current = true;
               try {
-                const { base64, filename } = await generateLgtReportPdf({
-                  filename: `LGT-Report-${(selected.full_name || 'Seeker').replace(/\s+/g, '_')}.pdf`,
+                const result = await captureAndEmailLgtReport({
+                  seekerId: selected.id,
+                  seekerName: selected.full_name,
+                  applicationId: selectedApp?.id,
+                  delayMs: 700,
                 });
-                const { data, error } = await supabase.functions.invoke('send-lgt-report', {
-                  body: { seekerId: selected.id, pdfBase64: base64, filename },
-                });
-                if (error) throw error;
-                const r = data as any;
-                if (r?.warning) toast({ title: '⚠️ ' + r.warning });
-                else toast({ title: `📧 Report emailed to ${r?.recipients?.length || 0} recipient(s)` });
+                if (!result.success) {
+                  toast({ title: 'Report email failed', description: result.error, variant: 'destructive' });
+                } else {
+                  toast({ title: `📧 Updated report emailed to ${result.recipients?.length || 0} recipient(s)` });
+                }
               } catch (err: any) {
                 toast({ title: 'Report email failed', description: err?.message, variant: 'destructive' });
               } finally {
@@ -203,7 +240,7 @@ const AdminApplyLgt = () => {
                 setSelectedId(null);
                 loadData();
               }
-            }, 600);
+            })();
           }}
         />
         {/* Hidden offscreen report for PDF capture */}
@@ -317,6 +354,14 @@ const AdminApplyLgt = () => {
                         {filledAt && (
                           <div className="text-[10px] text-muted-foreground mt-1">
                             {submitted ? 'Filled' : 'Invited'} {new Date(filledAt).toLocaleDateString('en-IN')}
+                            {submittedNew && app?.version && app.version > 1 && (
+                              <span className="ml-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold">v{app.version}</span>
+                            )}
+                          </div>
+                        )}
+                        {submittedNew && app?.last_emailed_at && (
+                          <div className="text-[10px] text-muted-foreground/80">
+                            📧 Emailed {new Date(app.last_emailed_at).toLocaleDateString('en-IN')}
                           </div>
                         )}
                       </td>
@@ -359,12 +404,28 @@ const AdminApplyLgt = () => {
                             </>
                           )}
                           {submitted && (
-                            <button
-                              onClick={() => setSelectedId(s.id)}
-                              className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-muted font-medium"
-                            >
-                              View / Edit
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleEmailReport(s)}
+                                disabled={emailingReportFor === s.id || !s.email}
+                                title={!s.email ? 'Seeker has no email' : 'Generate fresh PDF report and email to seeker + admins'}
+                                className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 font-medium disabled:opacity-50"
+                              >
+                                {emailingReportFor === s.id ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <FileText className="w-3 h-3" />
+                                )}
+                                {emailingReportFor === s.id ? 'Sending…' : 'Email Report'}
+                              </button>
+                              <button
+                                onClick={() => setSelectedId(s.id)}
+                                className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-muted font-medium"
+                                title="Edit data — auto re-emails updated PDF report on save"
+                              >
+                                View / Edit
+                              </button>
+                            </>
                           )}
                         </div>
                       </td>
@@ -378,8 +439,21 @@ const AdminApplyLgt = () => {
       </div>
 
       <div className="text-xs text-muted-foreground bg-muted/40 rounded-lg p-3 border border-border">
-        💡 <strong>How it works:</strong> "Fill in person" opens the LGT form pre-filled with the seeker's profile data — for face-to-face intake. "Email invite" sends the seeker a personal one-time link valid for 14 days so they can complete it themselves at vivekdoba.com/lgt-form/&lt;token&gt;.
+        💡 <strong>How it works:</strong> "Fill in person" opens the LGT form pre-filled with the seeker's profile data — for face-to-face intake. "Email invite" sends the seeker a personal one-time link valid for 14 days. Once submitted, click <strong>Email Report</strong> to send a beautifully formatted PDF to the seeker + admins. Any subsequent edit auto-emails an updated report.
       </div>
+
+      {/* Hidden offscreen report for PDF capture (used by Email Report button) */}
+      {reportTarget && (
+        <div style={{ position: 'fixed', left: '-10000px', top: 0, width: '900px', background: '#fff' }}>
+          <LgtReport
+            seekerName={reportTarget.seeker.full_name}
+            seekerEmail={reportTarget.seeker.email}
+            submittedAt={new Date().toISOString()}
+            filledByRole="admin"
+            data={reportTarget.data}
+          />
+        </div>
+      )}
     </div>
   );
 };
