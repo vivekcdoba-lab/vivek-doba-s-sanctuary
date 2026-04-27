@@ -763,7 +763,8 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
           </Field>
         </Section>
 
-        {/* Section J: Payment & Consent */}
+        {/* Section J: Payment & Consent (public only) */}
+        {!adminMode && (
         <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <h3 className="font-semibold text-foreground mb-4">Payment & Consent</h3>
           {selected && <p className="text-sm bg-muted p-3 rounded-lg mb-4">Selected: <strong>{selected.name}</strong> — ₹{selected.price.toLocaleString('en-IN')}</p>}
@@ -806,6 +807,17 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
             {loading ? '⏳ Submitting your sacred application...' : '👑 Submit My Application'}
           </button>
         </div>
+        )}
+
+        {adminMode && (
+          <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
+            <h3 className="font-semibold text-foreground mb-2">Save Detailed Intake</h3>
+            <p className="text-sm text-muted-foreground mb-4">All fields are saved into the submission record. Consents and payment will be collected after approval.</p>
+            <button onClick={handleAdminSave} disabled={loading} className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:opacity-90 disabled:opacity-50">
+              {loading ? '⏳ Saving…' : '💾 Save Detailed Intake'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
