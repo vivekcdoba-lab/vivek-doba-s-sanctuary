@@ -74,10 +74,9 @@ serve(async (req) => {
       });
     }
 
-    // Store OTP with 15 min expiry (encrypted; plaintext kept temporarily for back-compat)
+    // Store OTP with 15 min expiry (encrypted only)
     const { error: storeError } = await supabase.from("otp_codes").upsert({
       identifier: email || phone,
-      otp_code: otp,
       code_enc,
       expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
       attempts: 0,
