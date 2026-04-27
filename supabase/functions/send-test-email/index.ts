@@ -52,7 +52,6 @@ Deno.serve(async (req) => {
       const messageId = crypto.randomUUID();
       const payload = {
         message_id: messageId,
-        run_id: `test-${Date.now()}`,
         to: r.email,
         from: FROM,
         sender_domain: SENDER_DOMAIN,
