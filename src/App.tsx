@@ -287,6 +287,7 @@ const App = () => (
             <Route path="/daily-tracking" element={<DailyTrackingPage />} />
             <Route path="/growth-matrix" element={<GrowthMatrixPage />} />
             <Route path="/applications" element={<ApplicationsPage />} />
+            <Route path="/applications/:id/detailed-intake" element={<AdminDetailedIntake />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/worksheet-analytics" element={<WorksheetAnalyticsPage />} />
             <Route path="/sessions/:id/certify" element={<SessionCertification />} />
