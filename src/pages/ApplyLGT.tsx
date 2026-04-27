@@ -94,9 +94,15 @@ interface ApplyLGTProps {
   submissionId?: string;
   initialData?: Record<string, any>;
   onAdminSaved?: () => void;
+  // New: admin filling for a specific seeker (writes to lgt_applications)
+  applicationId?: string;
+  seekerId?: string;
+  // New: seeker submitting via emailed token (uses public RPC)
+  tokenMode?: { token: string; seekerName?: string };
+  onTokenSubmitted?: () => void;
 }
 
-const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }: ApplyLGTProps = {}) => {
+const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, applicationId, seekerId, tokenMode, onTokenSubmitted }: ApplyLGTProps = {}) => {
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
