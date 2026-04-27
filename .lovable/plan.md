@@ -1,125 +1,41 @@
-## Goal
+## Problem
 
-Enhance the admin-only `/admin/apply-lgt` page so the admin can:
+The admin chooser at `/admin/apply-lgt` shows seekers like Aashlesha, Ajit, Smita, Snehal as "Not started" even though they already submitted the LGT form months ago via the old public `/apply-lgt` page.
 
-1. **Pick an approved seeker** (from a dropdown) who has NOT yet filled the LGT detailed application.
-2. **Auto-populate** the form with that seeker's known profile data (name, email, phone, city, state, country, dob, company, occupation).
-3. Optionally **email the seeker a personal link** so the seeker can complete the form themselves (instead of the admin filling it in person).
-4. The seeker opens the link, signs in (or uses a token), fills the form, and submits — same form, just opened from their own account.
+**Root cause:** Those legacy submissions live in the `submissions` table (`form_type = 'lgt_application'`) and were never linked to a `seeker_id`. The new chooser only queries the `lgt_applications` table, so it has no idea those seekers already filled the form.
 
-## Database changes
+Verified in DB:
+- `aashleshaent@gmail.com`, `ajit.gadewar@rediffmail.com`, `smitabhopale@gmail.com`, `snehalsawant@ss-greentech.com` all have `submissions.form_type = 'lgt_application'` rows matching their profile email.
+- `crwanare@gmail.com` (Chandrakant) genuinely has no LGT submission yet — correctly shown.
+- All 4 already have profiles (matched by email).
 
-### New table: `lgt_applications`
+## Fix (two parts)
 
-The existing `submissions` table is keyed by anonymous public intake (no seeker_id). We need a tracked, seeker-linked LGT application record.
+### 1. Backfill — link existing legacy submissions to seeker profiles
 
-```sql
-CREATE TABLE public.lgt_applications (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  seeker_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  status text NOT NULL DEFAULT 'pending', -- pending | submitted
-  form_data jsonb,
-  invite_token text UNIQUE,                -- secure random token (nullable)
-  invite_token_expires_at timestamptz,     -- 14-day expiry
-  invited_by uuid REFERENCES auth.users(id),
-  invited_at timestamptz,
-  invite_email_sent_at timestamptz,
-  filled_by_role text,                     -- 'admin' | 'seeker'
-  submitted_at timestamptz,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now(),
-  UNIQUE (seeker_id)                       -- one application per seeker
-);
+One-time data migration: for every `submissions` row where `form_type = 'lgt_application'` AND email matches a `profiles.role = 'seeker'` row AND no `lgt_applications` row exists yet for that seeker → insert a `lgt_applications` row with:
+- `seeker_id` = matched profile id
+- `status` = `'submitted'`
+- `form_data` = the original `submissions.form_data`
+- `filled_by_role` = `'seeker'` (legacy public submission)
+- `submitted_at` = `submissions.created_at`
 
-ALTER TABLE public.lgt_applications ENABLE ROW LEVEL SECURITY;
-```
+Email match is case-insensitive. If a seeker has multiple legacy submissions, keep the most recent one. Result: the 4 known seekers + any other historical matches get marked as "Submitted" and disappear from the default chooser view (and appear when "Show seekers who already submitted" is checked).
 
-### RLS policies
-- **Admins**: SELECT/INSERT/UPDATE all rows (`is_admin(auth.uid())`).
-- **Seekers**: SELECT/UPDATE only rows where `seeker_id = (their profile id)` AND `status = 'pending'`.
-- **Public token access**: handled via SECURITY DEFINER RPC `get_lgt_application_by_token(_token text)` and `submit_lgt_application_by_token(_token text, _form_data jsonb)` so an unauthenticated email link works without exposing the table.
+### 2. Forward-proof — also detect legacy email matches at query time
 
-### Indexes
-- `lgt_applications_seeker_id_idx`, `lgt_applications_invite_token_idx`, `lgt_applications_status_idx`.
+In `AdminApplyLgt.tsx`, after loading profiles + `lgt_applications`, also load all `submissions` where `form_type = 'lgt_application'`. Build an email→submission map. For each seeker without an `lgt_applications` row but with a matching legacy submission, treat them as "Submitted (legacy)" in the UI:
+- Status badge: green "Submitted (legacy)" with the original submission date.
+- Hidden by default; visible under "Show seekers who already submitted".
+- "View / Edit" opens the form pre-filled from the legacy `form_data`, and on save creates a fresh `lgt_applications` row (so future loads use the structured table).
 
-## Frontend changes
-
-### 1. New admin landing component for `/admin/apply-lgt`
-
-`src/pages/admin/AdminApplyLgt.tsx` (new)
-
-Default view (no seeker selected) shows a small chooser panel:
-
-```
-┌─ LGT Application — Admin Entry ───────────────────────────┐
-│  Select an approved seeker who has NOT filled this form:   │
-│  [ Searchable dropdown of approved seekers ▾ ]             │
-│                                                            │
-│  — OR —                                                    │
-│                                                            │
-│  ✉️  Email the form link to the seeker instead             │
-└────────────────────────────────────────────────────────────┘
-```
-
-- Dropdown source: `profiles` where `role = 'seeker'` AND profile.id NOT IN (SELECT seeker_id FROM lgt_applications WHERE status = 'submitted'). Search by name/email.
-- On selection: render existing `<ApplyLGT adminMode initialData={…} />` with profile data pre-mapped into form fields (`fullName`, `email`, `mobile`, `mobileCode`, `city`, `state`, `country`, `dob`, `company`, `designation` → occupation).
-- "Save Intake" button persists to `lgt_applications` (upsert by seeker_id) instead of `submissions`. Add a small wrapper hook so existing `ApplyLGT` form continues to work — extend `ApplyLGTProps` to optionally accept `seekerId` and `applicationId`, and branch save logic.
-- "Send invite email" button: generates a secure `invite_token` (server-side via edge function), sets 14-day expiry, calls Resend (already configured) with a templated email containing `https://vivekdoba.com/lgt-form/{token}`. Updates `invited_at` and `invite_email_sent_at`.
-
-### 2. New public token page
-
-`src/pages/SeekerLgtForm.tsx` (new) — route `/lgt-form/:token`
-
-- Calls SECURITY DEFINER RPC `get_lgt_application_by_token` (no auth required).
-- If valid + not expired + status != 'submitted': renders `<ApplyLGT />` in seeker mode with prefilled data and a banner "Welcome, {name} — Vivek Sir invited you to complete this form." Submit calls `submit_lgt_application_by_token`.
-- If invalid/expired/already-submitted: shows friendly error + WhatsApp/back-to-home links.
-
-### 3. Extend `ApplyLGT` props
-
-Add optional fields to `ApplyLGTProps`:
-- `applicationId?: string` (lgt_applications row id)
-- `seekerId?: string`
-- `tokenMode?: { token: string }` (for public submit)
-- `onSubmittedByToken?: () => void`
-
-Branch in `handleAdminSave` / `handleSubmit`: if `applicationId` is present → upsert `lgt_applications` row. If `tokenMode` is present → call `submit_lgt_application_by_token` RPC. Otherwise keep existing `submissions` insert (preserves legacy public flow at the redirected `/apply-lgt` → `/login`, which is now disconnected anyway).
-
-### 4. Routing (`src/App.tsx`)
-
-- Replace current `/admin/apply-lgt` → `<ApplyLGT />` with `<AdminApplyLgt />`.
-- Add public route: `<Route path="/lgt-form/:token" element={<SeekerLgtForm />} />`.
-
-## Edge function
-
-`supabase/functions/send-lgt-invite/index.ts` (new) — admin-only, JWT-validated:
-- Input: `{ seekerId: string }`.
-- Generates `crypto.randomUUID()` token, expiry = now + 14 days.
-- Upserts `lgt_applications` row (status `pending`).
-- Sends Resend email (templated, brand colors, with dynamic seeker name + program intro + CTA button → `https://vivekdoba.com/lgt-form/{token}`).
-- Returns `{ success, token, expiresAt, sentAt }`.
-
-## Result
-
-- `/admin/apply-lgt` — admin chooser → either fill form in-person OR send invite email.
-- Approved seekers without an existing application appear in the dropdown.
-- Once submitted (by admin or seeker), the seeker disappears from the dropdown.
-- Email link `/lgt-form/{token}` works without login; expires after 14 days; one-time submit.
+This protects against any legacy rows the backfill might miss (e.g. email casing differences or future cleanup).
 
 ## Files
 
-**Created**
-- `supabase/migrations/<timestamp>_lgt_applications.sql`
-- `supabase/functions/send-lgt-invite/index.ts`
-- `src/pages/admin/AdminApplyLgt.tsx`
-- `src/pages/SeekerLgtForm.tsx`
+**Migration (new)** — backfill `lgt_applications` from `submissions` where `form_type = 'lgt_application'`.
 
 **Modified**
-- `src/App.tsx` (route swap + new public route)
-- `src/pages/ApplyLGT.tsx` (extend props + branch save logic)
-- `src/components/AdminLayout.tsx` (sidebar label tweak — keep entry, no change required)
+- `src/pages/admin/AdminApplyLgt.tsx` — load legacy submissions, merge into status calculation, show "Submitted (legacy)" badge, prefill form from legacy `form_data` on view/edit.
 
-No existing data is altered. Existing `submissions` flow remains intact for legacy submissions.
-
-## Open question
-
-Right now "approved seeker" = any profile with `role = 'seeker'`. The codebase doesn't have a separate `approved` flag on profiles — once a registration is approved (`approve-application` edge function), the user becomes a real seeker profile. So **"approved seeker"** = any active `profiles.role = 'seeker'` row. Confirm this is what you mean. If you'd like a stricter filter (e.g. only seekers with at least one paid enrollment), say so and I'll narrow the dropdown source.
+No schema changes. No edge function changes. The 5 seekers you listed will behave correctly: Chandrakant stays in the "Not started" list, the other 4 move into "Show seekers who already submitted".
