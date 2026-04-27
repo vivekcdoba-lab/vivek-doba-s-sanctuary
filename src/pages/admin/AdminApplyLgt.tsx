@@ -176,11 +176,48 @@ const AdminApplyLgt = () => {
           seekerId={selected.id}
           applicationId={selectedApp?.id}
           initialData={initial}
-          onAdminSaved={() => { setSelectedId(null); loadData(); }}
+          onAdminSaved={() => {
+            // Capture & email a beautiful PDF report to admin + seeker
+            const merged = { ...initial };
+            setReportTarget({ seeker: selected, data: merged });
+            // The hidden <LgtReport> below will mount; capture after a short delay
+            setTimeout(async () => {
+              if (reportSentRef.current) return;
+              reportSentRef.current = true;
+              try {
+                const { base64, filename } = await generateLgtReportPdf({
+                  filename: `LGT-Report-${(selected.full_name || 'Seeker').replace(/\s+/g, '_')}.pdf`,
+                });
+                const { data, error } = await supabase.functions.invoke('send-lgt-report', {
+                  body: { seekerId: selected.id, pdfBase64: base64, filename },
+                });
+                if (error) throw error;
+                const r = data as any;
+                if (r?.warning) toast({ title: '⚠️ ' + r.warning });
+                else toast({ title: `📧 Report emailed to ${r?.recipients?.length || 0} recipient(s)` });
+              } catch (err: any) {
+                toast({ title: 'Report email failed', description: err?.message, variant: 'destructive' });
+              } finally {
+                reportSentRef.current = false;
+                setReportTarget(null);
+                setSelectedId(null);
+                loadData();
+              }
+            }, 600);
+          }}
         />
-      </div>
-    );
-  }
+        {/* Hidden offscreen report for PDF capture */}
+        {reportTarget && (
+          <div style={{ position: 'fixed', left: '-10000px', top: 0, width: '900px', background: '#fff' }}>
+            <LgtReport
+              seekerName={reportTarget.seeker.full_name}
+              seekerEmail={reportTarget.seeker.email}
+              submittedAt={new Date().toISOString()}
+              filledByRole="admin"
+              data={reportTarget.data}
+            />
+          </div>
+        )}
 
   // ===== Chooser screen =====
   return (
