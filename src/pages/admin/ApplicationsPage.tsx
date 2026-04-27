@@ -238,6 +238,11 @@ const ApplicationsPage = () => {
                       <span className="font-semibold text-foreground">{sub.full_name}</span>
                       {typeBadge(sub.form_type)}
                       {statusBadge(sub.status)}
+                      {fd.source === 'tell_us_about_yourself' && (
+                        <span className="px-2.5 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#FCE7F3', color: '#9D174D' }}>
+                          🌱 New Seeker — Pending Review
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {fd.city || '—'} · {fd.profession || fd.designation || '—'}
