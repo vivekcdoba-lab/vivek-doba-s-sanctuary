@@ -86,11 +86,16 @@ const AdminApplyLgt = () => {
 
   useEffect(() => { loadData(); }, []);
 
+  const hasLegacy = (s: SeekerRow) => {
+    const k = (s.email || '').trim().toLowerCase();
+    return !!(k && legacyByEmail[k]);
+  };
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return seekers.filter(s => {
       const app = apps[s.id];
-      const submitted = app?.status === 'submitted';
+      const submitted = app?.status === 'submitted' || hasLegacy(s);
       if (!showSubmitted && submitted) return false;
       if (!q) return true;
       return (
@@ -99,7 +104,7 @@ const AdminApplyLgt = () => {
         (s.phone || '').toLowerCase().includes(q)
       );
     });
-  }, [seekers, apps, search, showSubmitted]);
+  }, [seekers, apps, legacyByEmail, search, showSubmitted]);
 
   const selected = selectedId ? seekers.find(s => s.id === selectedId) : null;
   const selectedApp = selectedId ? apps[selectedId] : null;
