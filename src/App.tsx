@@ -9,6 +9,8 @@ import RegisterPage from "./pages/RegisterPage";
 import BookAppointment from "./pages/BookAppointment";
 import RegisterWorkshop from "./pages/RegisterWorkshop";
 import ApplyLGT from "./pages/ApplyLGT";
+import SeekerLgtForm from "./pages/SeekerLgtForm";
+import AdminApplyLgt from "./pages/admin/AdminApplyLgt";
 import TellUsAboutYourself from "./pages/TellUsAboutYourself";
 import AuthGuard from "./components/AuthGuard";
 import AdminLayout from "./components/AdminLayout";
