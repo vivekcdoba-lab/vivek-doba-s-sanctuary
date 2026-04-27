@@ -254,6 +254,8 @@ const App = () => (
           <Route path="/register-workshop" element={<RegisterWorkshop />} />
           {/* Legacy public route — now admin-only */}
           <Route path="/apply-lgt" element={<Navigate to="/login" replace />} />
+          {/* Public seeker invite link — token-gated */}
+          <Route path="/lgt-form/:token" element={<SeekerLgtForm />} />
           <Route path="/get-started" element={<TellUsAboutYourself />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/help" element={<HelpPage />} />
