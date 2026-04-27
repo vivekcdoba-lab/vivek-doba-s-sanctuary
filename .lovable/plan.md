@@ -1,88 +1,72 @@
-# Test the new intake flow end-to-end
+# Hide Training Program Prices from Non-Admins
 
-Goal: verify the full path we shipped today works — from a public seeker filling the short form on the home page, all the way to an admin filling the detailed intake and approving the seeker.
+## Audit results
 
-## What we're testing
+Prices currently appear in these places:
 
-```text
-Home (/) → "Tell Us About Yourself" (/get-started)
-     → submissions row created (form_type=lgt_application, source=tell_us_about_yourself)
-     → Admin Applications page shows row with 🌱 New Seeker badge
-     → Admin clicks "📋 Fill Detailed Intake"
-     → /applications/:id/detailed-intake (long 18-section form, prefilled)
-     → Save merges into submissions.form_data, sets detailed_intake_completed_at
-     → Row now shows ✓ "Detailed info captured" + "Edit Detailed Intake"
-     → Admin Approves → approve-application creates auth user + profile
-     → Seeker can log in
-```
+**Admin-only (KEEP — already protected by `AuthGuard requiredRole="admin"`)**
+- `src/pages/admin/CoursesPage.tsx` — program cards + edit form
+- `src/pages/admin/AdminEditPrograms.tsx` — program cards + edit form
+- `src/pages/admin/AdminCreateProgram.tsx` — create wizard preview/review
+- `src/pages/admin/Dashboard.tsx` — revenue, recent program list
+- `src/pages/admin/AdminProgramAnalytics.tsx`, `AdminNewEnrollment.tsx`, `AdminAddLead.tsx`, `AdminRecordPayment.tsx`, `PaymentsPage.tsx`, `SeekerDetailPage.tsx`, `CoachDayView.tsx` — all under admin guard
 
-## Test cases
+**Coach pages** — no program-price exposure found. (Personal/financial figures don't appear on coach routes.) ✅ Nothing to change.
 
-### 1. Public short intake (`/get-started`)
-- Open home, click the "Get Started" / "Tell Us About Yourself" CTA card → lands on `/get-started`.
-- Submit valid data → success screen ("Thank you, {firstName}!").
-- Verify row in `submissions` (DB read): `form_type=lgt_application`, `status=pending`, `form_data.source='tell_us_about_yourself'`, `form_data.intent` populated.
-- Best-effort `send-notification` invocation does not block submit on failure.
-- Validation: empty name / bad email / bad phone / empty intent / missing consent each block submit with toast.
-- Duplicate guard: submit with an email already in `profiles` → toast "account already exists, please log in".
-- Same with an existing phone.
+**Seeker pages** — `SeekerPayments.tsx` shows the seeker's *own* invoice/payment amounts. This is the seeker's personal financial record, not a program price list, so it stays.
 
-### 2. Admin Applications dashboard (`/applications`)
-- Login as admin, open Applications.
-- New short-intake row appears with the 🌱 "New Seeker — Pending Review" badge.
-- "📋 Fill Detailed Intake" button visible on that row.
-- Approve / Reject / Request Info buttons still work as before (regression).
+**Public / mixed-audience pages (FIX — these leak program prices to seekers, coaches, and unauthenticated visitors)**
 
-### 3. Admin Detailed Intake (`/applications/:id/detailed-intake`)
-- Click "Fill Detailed Intake" → long form opens, scrolled to top.
-- Header shows admin-mode framing; payment/consent section hidden.
-- Pre-filled fields: Full Name, Email, Phone (split into code + number), City — pulled from the short submission.
-- All 18 sections expand/collapse correctly; sliders, multi-selects, and char counters work.
-- Sticky "💾 Save Detailed Intake" bar visible on scroll.
-- Save with partial data → success toast, redirect back to `/applications`.
-- DB check: `submissions.form_data` now contains the merged detailed keys + original `source` + `intent` + `detailed_intake_completed_at` ISO timestamp; `full_name` updated if changed.
+1. `src/pages/Index.tsx` (line 114) — homepage badge "Starting ₹5,000".
+2. `src/pages/ApplyLGT.tsx` — public LGT intake form
+   - Line 367: header subtitle "Investment: ₹2,50,000 - ₹10,00,000…"
+   - Line 402: program tile shows `₹{p.price}`
+   - Line 430: course mini-card shows `₹{c.price}`
+   - Lines 770, 773, 774: payment-pref step shows full price + EMI breakdown
+3. `src/pages/BookAppointment.tsx` (line 255) — course mini-card "duration · format · ₹price"
+4. `src/pages/RegisterWorkshop.tsx` — public workshop registration
+   - Line 123: "Investment: ₹{price}"
+   - Line 161: workshop tile price
+   - Line 209: course mini-card price
+   - Line 369: consent checkbox text "I understand the investment of ₹…"
 
-### 4. Re-edit flow
-- Re-open the same row → button now reads "✏️ Edit Detailed Intake" with green "✓ Detailed info captured" badge.
-- Form re-opens fully prefilled with the merged data (not just the short-intake fields).
-- Edit one field, Save → DB shows updated value; `source` still preserved; `detailed_intake_completed_at` refreshed.
+## Approach
 
-### 5. Approval → seeker creation
-- From Applications, click Approve on the now-detailed row.
-- `approve-application` edge function runs → new auth user + `profiles` row exist.
-- Verify a curated subset of detailed fields landed on `profiles` (dob, gender, city, state, pincode, company, designation, industry, etc.) — only those with matching profile columns.
-- Status becomes `approved`. Seeker receives credentials email (best-effort).
-- Try logging in with the new credentials → routed to seeker dashboard, must-change-password gate fires.
+Since these pages are reached by anyone (no role guard), the simplest, safest fix is to **remove price rendering from the JSX on these public pages entirely**. The price data still flows in form state for admins/internal use, but it's not displayed.
 
-### 6. Public `/apply-lgt` (regression)
-- The public long form still works for old links (SEO pages, Login page).
-- Submitting it creates a `submissions` row (no `tell_us_about_yourself` source) and admin sees it without the "New Seeker" badge.
-- No payment/admin save bar shown — original public flow unchanged.
+Rationale (vs. role-conditional rendering):
+- These four pages are public/unauthenticated entry points — there's usually no `profile` available to gate on.
+- A plain `{isAdmin && …}` would just hide the chunk for everyone in practice, so removing the markup is cleaner.
+- Admins who need to see prices use the admin Programs/Courses pages, which already show them.
 
-### 7. Edge / negative
-- Open `/applications/<bad-uuid>/detailed-intake` → toast "Submission not found", redirect to `/applications`.
-- Non-admin user hitting `/applications/:id/detailed-intake` → blocked by `AuthGuard`, redirected per role.
-- Admin save while offline / RLS error → error toast, no partial DB write.
+For admin-internal pages where coaches might land: none currently expose program prices, so no extra guards needed.
 
-## How I'll execute the test
+## Changes
 
-1. Read live state via `supabase--read_query` against `submissions` to baseline.
-2. Use the browser tool to drive the flow on the preview URL:
-   - Submit `/get-started` as a fresh test seeker.
-   - Log in as admin (`vivek@gmail.com` test account from memory).
-   - Walk through Applications → Fill Detailed Intake → Save.
-   - Re-open, edit, save again.
-   - Approve and confirm `profiles` row.
-3. After each write, query `submissions` / `profiles` to confirm shape.
-4. Tail `approve-application` and `send-notification` edge function logs for the run.
-5. Capture a short pass/fail checklist + any defects (screenshots for UI bugs).
+1. **`src/pages/Index.tsx`** — remove the "Starting ₹5,000" badge (line ~114). Replace with a neutral label like "Open for Registration" or drop the badge entirely.
 
-## Deliverable
+2. **`src/pages/ApplyLGT.tsx`**
+   - Line 367: replace investment range subtitle with "⚡ Limited seats. By application only."
+   - Line 402: remove `₹{p.price.toLocaleString…}` line from program tile.
+   - Line 430: drop `· ₹{c.price…}` from the course mini-card meta (keep duration · format).
+   - Lines 770–774: in the payment-preference step, replace amount-bearing labels with: "Selected: **{name}**", "Full Payment — Best Value", "EMI (6 instalments)". Final amount will be confirmed by admin during enrolment.
 
-A single QA report covering all 7 test cases with: pass/fail, exact DB row shape after key steps, any bugs found, and recommended fixes (no code changes made unless you approve a follow-up).
+3. **`src/pages/BookAppointment.tsx`** (line 255) — drop `· ₹{c.price…}` from the meta line.
 
-## Notes / constraints
+4. **`src/pages/RegisterWorkshop.tsx`**
+   - Line 123: remove the "Investment: ₹…" subtitle.
+   - Line 161: remove price from workshop tile.
+   - Line 209: drop `· ₹{c.price…}` from course mini-card.
+   - Line 369: rephrase consent to "I confirm my registration and commit to attending the full workshop. 🙏 *" (drop the price clause).
 
-- I'll create a brand-new test email/phone for the seeker so it doesn't collide with existing profiles.
-- I'll clean up (delete the test submission + auth user) at the end if you want — let me know.
-- Approve the plan and I'll run the full test pass and report back.
+## Out of scope (no changes)
+
+- Admin Dashboard, Programs, Edit Programs, Create Program, Payments, Analytics — admin guard already restricts access; these legitimately show pricing.
+- Seeker Payments page — shows the seeker's own invoices, not a program catalogue.
+- Coach pages — already have no program-price exposure.
+
+## Technical notes
+
+- No DB / RLS changes needed — `courses.price` stays readable; we're only changing client-side rendering.
+- `formatINR`, `COURSES`, and price fields remain in form state where used for downstream admin handling.
+- Preservation policy respected: no features, pages, components, or tables removed — only price *display* hidden on public pages.

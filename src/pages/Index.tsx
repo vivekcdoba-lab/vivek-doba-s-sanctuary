@@ -111,7 +111,7 @@ const Index = () => (
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-3xl">🎯</span>
-              <span className="px-3 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: '#FFF3CD', color: '#B8860B' }}>Starting ₹5,000</span>
+              <span className="px-3 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: '#FFF3CD', color: '#B8860B' }}>Open for Registration</span>
             </div>
             <h3 className="text-xl font-bold text-foreground mb-2">Register for a One-Day Workshop</h3>
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed">

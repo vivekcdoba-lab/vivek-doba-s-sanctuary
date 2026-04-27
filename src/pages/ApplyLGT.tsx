@@ -364,7 +364,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
           <Link to="/" className="inline-flex items-center gap-1 text-white/80 hover:text-white text-sm mb-4"><ArrowLeft className="w-4 h-4" /> Back to Home</Link>
           <h1 className="text-2xl sm:text-3xl font-bold">👑 Apply for Life's Golden Triangle</h1>
           <p className="text-white/80 mt-2 text-sm">A 180-day sacred journey of Personal Mastery, Professional Excellence, and Spiritual Wellbeing.</p>
-          <p className="text-white/60 mt-1 text-xs">⚡ Limited seats. Investment: ₹2,50,000 - ₹10,00,000 based on program tier.</p>
+          <p className="text-white/60 mt-1 text-xs">⚡ Limited seats. By application only.</p>
         </div>
       </div>
       )}
@@ -399,7 +399,6 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
                     <p className="text-xs text-muted-foreground mt-1">{p.duration} | {p.sessions} Sessions | {p.format}</p>
                   </div>
                   <div className="text-right flex-shrink-0 ml-4">
-                    <p className="font-bold text-foreground">₹{p.price.toLocaleString('en-IN')}</p>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${p.invitation ? 'bg-purple-100 text-purple-700' : 'bg-primary/10 text-primary'}`}>{p.invitation ? '👑 By Invitation Only' : p.tier}</span>
                     {f.programId === p.id && <Check className="w-5 h-5 text-primary mt-1 ml-auto" />}
                   </div>
@@ -427,7 +426,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
                     <input type="checkbox" checked={f.interestedCourses.includes(c.id)} onChange={() => toggleCourse(c.id)} className="mt-0.5 rounded accent-primary" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">{c.name}</p>
-                      <p className="text-xs text-muted-foreground">{c.duration} · {c.format} · ₹{c.price.toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-muted-foreground">{c.duration} · {c.format}</p>
                     </div>
                   </label>
                 ))}
@@ -767,11 +766,11 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
         {!adminMode && (
         <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <h3 className="font-semibold text-foreground mb-4">Payment & Consent</h3>
-          {selected && <p className="text-sm bg-muted p-3 rounded-lg mb-4">Selected: <strong>{selected.name}</strong> — ₹{selected.price.toLocaleString('en-IN')}</p>}
+          {selected && <p className="text-sm bg-muted p-3 rounded-lg mb-4">Selected: <strong>{selected.name}</strong></p>}
           <Field label="Payment Preference" required>
             <div className="space-y-2 mt-1">
-              <label className="flex items-center gap-2 text-sm"><input type="radio" name="pay" checked={f.paymentPref === 'full'} onChange={() => set('paymentPref', 'full')} />Full Payment (₹{selected?.price.toLocaleString('en-IN') || '—'}) — Best Value</label>
-              <label className="flex items-center gap-2 text-sm"><input type="radio" name="pay" checked={f.paymentPref === 'emi'} onChange={() => set('paymentPref', 'emi')} />EMI (6 instalments of ₹{selected ? (selected.price / 6).toLocaleString('en-IN', { maximumFractionDigits: 0 }) : '—'})</label>
+              <label className="flex items-center gap-2 text-sm"><input type="radio" name="pay" checked={f.paymentPref === 'full'} onChange={() => set('paymentPref', 'full')} />Full Payment — Best Value</label>
+              <label className="flex items-center gap-2 text-sm"><input type="radio" name="pay" checked={f.paymentPref === 'emi'} onChange={() => set('paymentPref', 'emi')} />EMI (6 instalments)</label>
               <label className="flex items-center gap-2 text-sm"><input type="radio" name="pay" checked={f.paymentPref === 'custom'} onChange={() => set('paymentPref', 'custom')} />Custom Plan — Discuss with Vivek Sir</label>
             </div>
           </Field>

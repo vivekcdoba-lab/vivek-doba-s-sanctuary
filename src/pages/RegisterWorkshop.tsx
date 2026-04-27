@@ -120,7 +120,7 @@ const RegisterWorkshop = () => {
           <div className="text-5xl mb-4">🎯</div>
           <h2 className="text-2xl font-bold text-foreground mb-2">Registration Submitted!</h2>
           <p className="text-muted-foreground mb-2">Workshop: {selected?.name}</p>
-          <p className="text-muted-foreground text-sm mb-6">Investment: ₹{selected?.price.toLocaleString('en-IN')}</p>
+          <p className="text-muted-foreground text-sm mb-6">Our team will share investment details with you shortly.</p>
           <div className="text-left text-sm text-muted-foreground space-y-1 mb-6">
             <p className="font-semibold text-foreground">What happens next:</p>
             <p>1. Our team will confirm availability and date</p>
@@ -158,7 +158,6 @@ const RegisterWorkshop = () => {
                     <p className="text-xs text-muted-foreground mt-1">{w.duration} | Max: {w.max} participants</p>
                   </div>
                   <div className="text-right flex-shrink-0 ml-4">
-                    <p className="font-bold text-foreground">₹{w.price.toLocaleString('en-IN')}</p>
                     {w.premium && <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">Premium ✦</span>}
                     {form.workshopId === w.id && <Check className="w-5 h-5 text-primary mt-1 ml-auto" />}
                   </div>
@@ -206,7 +205,7 @@ const RegisterWorkshop = () => {
                     <input type="checkbox" checked={form.interestedCourses.includes(c.id)} onChange={() => toggleCourse(c.id)} className="mt-0.5 rounded accent-primary" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">{c.name}</p>
-                      <p className="text-xs text-muted-foreground">{c.duration} · {c.format} · ₹{c.price.toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-muted-foreground">{c.duration} · {c.format}</p>
                     </div>
                   </label>
                 ))}
@@ -366,7 +365,7 @@ const RegisterWorkshop = () => {
             </div>
           )}
           <div className="space-y-3 mt-4">
-            <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={form.consent1} onChange={e => set('consent1', e.target.checked)} className="mt-1 rounded" /><span className="text-sm">I confirm my registration and commit to attending the full workshop. I understand the investment of ₹{selected?.price.toLocaleString('en-IN') || '—'}. 🙏 *</span></label>
+            <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={form.consent1} onChange={e => set('consent1', e.target.checked)} className="mt-1 rounded" /><span className="text-sm">I confirm my registration and commit to attending the full workshop. 🙏 *</span></label>
             <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={form.consent2} onChange={e => set('consent2', e.target.checked)} className="mt-1 rounded" /><span className="text-sm text-muted-foreground">I consent to receiving updates via WhatsApp and Email from VDTS.</span></label>
           </div>
           <button onClick={handleSubmit} disabled={loading} className="w-full mt-6 py-3.5 rounded-xl text-white font-semibold transition-opacity hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #FF9933, #FFD700)' }}>
