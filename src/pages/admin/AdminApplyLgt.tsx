@@ -67,7 +67,7 @@ const AdminApplyLgt = () => {
           .order('full_name', { ascending: true }),
         supabase
           .from('lgt_applications')
-          .select('id, seeker_id, status, invite_token, invited_at, invite_email_sent_at'),
+          .select('id, seeker_id, status, invite_token, invited_at, invite_email_sent_at, submitted_at, form_data, version, last_emailed_at'),
         supabase
           .from('submissions')
           .select('email, form_data, created_at')
