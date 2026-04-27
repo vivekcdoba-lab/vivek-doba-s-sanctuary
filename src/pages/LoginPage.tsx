@@ -290,9 +290,6 @@ const LoginPage = () => {
             >
               {resetting ? 'Sending...' : 'Forgot Password?'}
             </button>
-            <p className="text-sm text-muted-foreground">
-              New seeker? <Link to="/register" className="text-primary hover:underline font-medium">Create Account →</Link>
-            </p>
           </div>
 
           {/* WhatsApp + Journey */}
