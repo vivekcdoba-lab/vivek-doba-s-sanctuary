@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Loader2, Search, Mail, UserCheck, Copy, Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ApplyLGT from '../ApplyLGT';
+import LgtReport from '@/components/lgt/LgtReport';
+import { generateLgtReportPdf } from '@/lib/lgtPdfExport';
 
 interface SeekerRow {
   id: string;
@@ -45,6 +47,9 @@ const AdminApplyLgt = () => {
   const [showSubmitted, setShowSubmitted] = useState(false);
   const [sendingTo, setSendingTo] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  // Hidden report render state (for capture-and-email after admin save)
+  const [reportTarget, setReportTarget] = useState<{ seeker: SeekerRow; data: Record<string, any> } | null>(null);
+  const reportSentRef = useRef(false);
 
   const loadData = async () => {
     setLoading(true);
