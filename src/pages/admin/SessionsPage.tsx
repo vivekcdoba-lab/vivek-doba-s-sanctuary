@@ -131,7 +131,6 @@ const SessionsPage = () => {
       session_notes: liveNotes || null,
       engagement_score: postData.engagement,
       seeker_mood: postData.mood,
-      coach_private_notes: postData.privateNotes || null,
       stories_used: postData.stories.length ? postData.stories : null,
       client_good_things: postData.clientGoodThings.filter(Boolean),
       client_growth_json: postData.clientGrowth,
