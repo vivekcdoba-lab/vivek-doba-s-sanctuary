@@ -315,6 +315,24 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
     setLoading(true);
     try {
       const formData = { ...f, programName: selected?.name };
+
+      // Token mode: seeker submitting via emailed link → use SECURITY DEFINER RPC
+      if (tokenMode?.token) {
+        const { data, error } = await supabase.rpc('submit_lgt_application_by_token', {
+          _token: tokenMode.token,
+          _form_data: formData as any,
+        });
+        if (error) throw error;
+        const result = data as any;
+        if (!result?.success) {
+          throw new Error(result?.reason || 'Submission failed');
+        }
+        setSubmitted(true);
+        onTokenSubmitted?.();
+        return;
+      }
+
+      // Default: legacy public submission flow
       const { error } = await supabase.from('submissions').insert({
         form_type: 'lgt_application',
         full_name: f.fullName,
@@ -335,10 +353,9 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
         },
       });
       setSubmitted(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast({ title: 'Submission saved! Email notification may be delayed.', variant: 'default' });
-      setSubmitted(true);
+      toast({ title: 'Submission failed', description: err?.message || 'Please try again', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
