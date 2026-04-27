@@ -62,14 +62,14 @@ serve(async (req) => {
       });
     }
 
-    // Prefer encrypted code if present; fall back to plaintext column for back-compat
-    let storedCode: string | null = data.otp_code ?? null;
+    // Decrypt stored OTP (encrypted-only)
+    let storedCode: string | null = null;
     if (data.code_enc) {
       try {
         const { data: dec, error: decErr } = await supabase.rpc("decrypt_field" as any, { _payload: data.code_enc });
         if (!decErr && dec) storedCode = dec as string;
       } catch (e) {
-        console.error("OTP decrypt failed, falling back to plaintext:", e);
+        console.error("OTP decrypt failed:", e);
       }
     }
 
