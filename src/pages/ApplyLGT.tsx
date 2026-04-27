@@ -89,7 +89,14 @@ const PhoneWithCode = ({ codeValue, onCodeChange, phoneValue, onPhoneChange }: {
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.com$/i.test(email);
 
-const ApplyLGT = () => {
+interface ApplyLGTProps {
+  adminMode?: boolean;
+  submissionId?: string;
+  initialData?: Record<string, any>;
+  onAdminSaved?: () => void;
+}
+
+const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }: ApplyLGTProps = {}) => {
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
