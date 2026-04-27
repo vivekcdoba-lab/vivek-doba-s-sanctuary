@@ -2498,10 +2498,12 @@ export type Database = {
           invite_token_expires_at: string | null
           invited_at: string | null
           invited_by: string | null
+          last_emailed_at: string | null
           seeker_id: string
           status: string
           submitted_at: string | null
           updated_at: string
+          version: number
         }
         Insert: {
           created_at?: string
@@ -2513,10 +2515,12 @@ export type Database = {
           invite_token_expires_at?: string | null
           invited_at?: string | null
           invited_by?: string | null
+          last_emailed_at?: string | null
           seeker_id: string
           status?: string
           submitted_at?: string | null
           updated_at?: string
+          version?: number
         }
         Update: {
           created_at?: string
@@ -2528,10 +2532,12 @@ export type Database = {
           invite_token_expires_at?: string | null
           invited_at?: string | null
           invited_by?: string | null
+          last_emailed_at?: string | null
           seeker_id?: string
           status?: string
           submitted_at?: string | null
           updated_at?: string
+          version?: number
         }
         Relationships: [
           {
