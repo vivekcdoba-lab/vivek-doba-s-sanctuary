@@ -28,10 +28,17 @@ interface AppRow {
   invite_email_sent_at: string | null;
 }
 
+interface LegacySubmission {
+  email: string;
+  form_data: any;
+  created_at: string;
+}
+
 const AdminApplyLgt = () => {
   const { toast } = useToast();
   const [seekers, setSeekers] = useState<SeekerRow[]>([]);
   const [apps, setApps] = useState<Record<string, AppRow>>({});
+  const [legacyByEmail, setLegacyByEmail] = useState<Record<string, LegacySubmission>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -42,7 +49,7 @@ const AdminApplyLgt = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [{ data: seekerData, error: e1 }, { data: appData, error: e2 }] = await Promise.all([
+      const [{ data: seekerData, error: e1 }, { data: appData, error: e2 }, { data: legacyData }] = await Promise.all([
         supabase
           .from('profiles')
           .select('id, full_name, email, phone, city, state, country, dob, company, occupation, created_at')
@@ -51,6 +58,11 @@ const AdminApplyLgt = () => {
         supabase
           .from('lgt_applications')
           .select('id, seeker_id, status, invite_token, invited_at, invite_email_sent_at'),
+        supabase
+          .from('submissions')
+          .select('email, form_data, created_at')
+          .eq('form_type', 'lgt_application')
+          .order('created_at', { ascending: false }),
       ]);
       if (e1) throw e1;
       if (e2) throw e2;
@@ -58,6 +70,13 @@ const AdminApplyLgt = () => {
       const map: Record<string, AppRow> = {};
       ((appData as AppRow[]) || []).forEach(a => { map[a.seeker_id] = a; });
       setApps(map);
+      const lmap: Record<string, LegacySubmission> = {};
+      ((legacyData as LegacySubmission[]) || []).forEach(l => {
+        if (!l.email) return;
+        const k = l.email.trim().toLowerCase();
+        if (!lmap[k]) lmap[k] = l; // keep most recent (data already sorted desc)
+      });
+      setLegacyByEmail(lmap);
     } catch (err: any) {
       toast({ title: 'Failed to load seekers', description: err.message, variant: 'destructive' });
     } finally {
@@ -67,11 +86,16 @@ const AdminApplyLgt = () => {
 
   useEffect(() => { loadData(); }, []);
 
+  const hasLegacy = (s: SeekerRow) => {
+    const k = (s.email || '').trim().toLowerCase();
+    return !!(k && legacyByEmail[k]);
+  };
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return seekers.filter(s => {
       const app = apps[s.id];
-      const submitted = app?.status === 'submitted';
+      const submitted = app?.status === 'submitted' || hasLegacy(s);
       if (!showSubmitted && submitted) return false;
       if (!q) return true;
       return (
@@ -80,7 +104,7 @@ const AdminApplyLgt = () => {
         (s.phone || '').toLowerCase().includes(q)
       );
     });
-  }, [seekers, apps, search, showSubmitted]);
+  }, [seekers, apps, legacyByEmail, search, showSubmitted]);
 
   const selected = selectedId ? seekers.find(s => s.id === selectedId) : null;
   const selectedApp = selectedId ? apps[selectedId] : null;
@@ -114,7 +138,9 @@ const AdminApplyLgt = () => {
 
   // ===== Filling form for selected seeker =====
   if (selected) {
+    const legacy = legacyByEmail[(selected.email || '').trim().toLowerCase()];
     const initial: Record<string, any> = {
+      ...((legacy as any)?.form_data || {}),
       ...((selectedApp as any)?.form_data || {}),
       fullName: selected.full_name || '',
       email: selected.email || '',
@@ -210,8 +236,12 @@ const AdminApplyLgt = () => {
               <tbody>
                 {filtered.map(s => {
                   const app = apps[s.id];
-                  const submitted = app?.status === 'submitted';
+                  const legacy = legacyByEmail[(s.email || '').trim().toLowerCase()];
+                  const submittedNew = app?.status === 'submitted';
+                  const submittedLegacy = !submittedNew && !!legacy;
+                  const submitted = submittedNew || submittedLegacy;
                   const invitedAt = app?.invite_email_sent_at || app?.invited_at;
+                  const filledAt = submittedNew ? invitedAt : (submittedLegacy ? legacy?.created_at : invitedAt);
                   const hasActiveToken = !!app?.invite_token;
                   return (
                     <tr key={s.id} className="border-b border-border/60 hover:bg-muted/30">
@@ -222,9 +252,13 @@ const AdminApplyLgt = () => {
                       <td className="px-3 py-3 text-muted-foreground hidden md:table-cell">{s.email || '—'}</td>
                       <td className="px-3 py-3 text-muted-foreground hidden lg:table-cell">{s.phone || '—'}</td>
                       <td className="px-3 py-3">
-                        {submitted ? (
+                        {submittedNew ? (
                           <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-800">
                             <Check className="w-3 h-3" /> Submitted
+                          </span>
+                        ) : submittedLegacy ? (
+                          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" title="Submitted via the old public form">
+                            <Check className="w-3 h-3" /> Submitted (legacy)
                           </span>
                         ) : hasActiveToken ? (
                           <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
@@ -235,9 +269,9 @@ const AdminApplyLgt = () => {
                             <X className="w-3 h-3" /> Not started
                           </span>
                         )}
-                        {invitedAt && (
+                        {filledAt && (
                           <div className="text-[10px] text-muted-foreground mt-1">
-                            {submitted ? 'Filled' : 'Invited'} {new Date(invitedAt).toLocaleDateString('en-IN')}
+                            {submitted ? 'Filled' : 'Invited'} {new Date(filledAt).toLocaleDateString('en-IN')}
                           </div>
                         )}
                       </td>
