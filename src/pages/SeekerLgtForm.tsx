@@ -4,7 +4,7 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import ApplyLGT from './ApplyLGT';
 import LgtReport from '@/components/lgt/LgtReport';
-import { generateLgtReportPdf } from '@/lib/lgtPdfExport';
+import { captureAndEmailLgtReport } from '@/lib/lgtReportEmail';
 
 interface TokenResult {
   valid: boolean;
