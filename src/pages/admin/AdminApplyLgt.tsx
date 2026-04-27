@@ -138,7 +138,9 @@ const AdminApplyLgt = () => {
 
   // ===== Filling form for selected seeker =====
   if (selected) {
+    const legacy = legacyByEmail[(selected.email || '').trim().toLowerCase()];
     const initial: Record<string, any> = {
+      ...((legacy as any)?.form_data || {}),
       ...((selectedApp as any)?.form_data || {}),
       fullName: selected.full_name || '',
       email: selected.email || '',
