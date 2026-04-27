@@ -1,69 +1,88 @@
-# Move the detailed LGT form into the admin panel
+# Test the new intake flow end-to-end
 
-## Where the long form is right now
+Goal: verify the full path we shipped today works — from a public seeker filling the short form on the home page, all the way to an admin filling the detailed intake and approving the seeker.
 
-The original `/apply-lgt` form **still exists** as a route and a file (`src/pages/ApplyLGT.tsx`, ~750 lines, 18 sections covering personal, business, health, relationships, mental, spiritual, wheel-of-life, goals, commitments, payment prefs). It is just no longer surfaced on the home page — Card 3 now goes to the short `/get-started` form (`TellUsAboutYourself`).
+## What we're testing
 
-A few SEO / login pages still link to `/apply-lgt` publicly:
-- `src/pages/seo/_SeoLayout.tsx`
-- `src/pages/seo/BusinessCoaching.tsx`
-- `src/pages/LoginPage.tsx`
+```text
+Home (/) → "Tell Us About Yourself" (/get-started)
+     → submissions row created (form_type=lgt_application, source=tell_us_about_yourself)
+     → Admin Applications page shows row with 🌱 New Seeker badge
+     → Admin clicks "📋 Fill Detailed Intake"
+     → /applications/:id/detailed-intake (long 18-section form, prefilled)
+     → Save merges into submissions.form_data, sets detailed_intake_completed_at
+     → Row now shows ✓ "Detailed info captured" + "Edit Detailed Intake"
+     → Admin Approves → approve-application creates auth user + profile
+     → Seeker can log in
+```
 
-## What you're asking for
+## Test cases
 
-When a short intake comes in via "Tell Us About Yourself", the admin should be able to **fill in the full detailed profile from inside the admin panel** (not send the seeker back to a long public form). The admin captures the rich data during the qualification call.
+### 1. Public short intake (`/get-started`)
+- Open home, click the "Get Started" / "Tell Us About Yourself" CTA card → lands on `/get-started`.
+- Submit valid data → success screen ("Thank you, {firstName}!").
+- Verify row in `submissions` (DB read): `form_type=lgt_application`, `status=pending`, `form_data.source='tell_us_about_yourself'`, `form_data.intent` populated.
+- Best-effort `send-notification` invocation does not block submit on failure.
+- Validation: empty name / bad email / bad phone / empty intent / missing consent each block submit with toast.
+- Duplicate guard: submit with an email already in `profiles` → toast "account already exists, please log in".
+- Same with an existing phone.
 
-## Proposed solution
+### 2. Admin Applications dashboard (`/applications`)
+- Login as admin, open Applications.
+- New short-intake row appears with the 🌱 "New Seeker — Pending Review" badge.
+- "📋 Fill Detailed Intake" button visible on that row.
+- Approve / Reject / Request Info buttons still work as before (regression).
 
-### 1. New admin page: "Detailed Seeker Intake"
-- **Route**: `/applications/:submissionId/detailed-intake` (admin-only, under `AdminLayout`)
-- **Component**: `src/pages/admin/AdminDetailedIntake.tsx`
-- Reuses the same 18-section form structure as `ApplyLGT.tsx`, but:
-  - Pre-fills Full Name / Email / Mobile / City / Intent from the parent `submissions` row (the short intake).
-  - No "Apply" / payment language — framed as "Seeker Intake Form (Admin Filled)".
-  - Removes commitments + consent checkboxes (those will be collected from the seeker after approval, via DocuSign-style flow you already have).
-  - Save button writes the detailed answers back into the same `submissions.form_data` JSON, merging with existing keys, plus sets `form_data.detailed_intake_completed_at`.
-  - Allows partial save (Save Draft) and final Save (marks intake complete).
+### 3. Admin Detailed Intake (`/applications/:id/detailed-intake`)
+- Click "Fill Detailed Intake" → long form opens, scrolled to top.
+- Header shows admin-mode framing; payment/consent section hidden.
+- Pre-filled fields: Full Name, Email, Phone (split into code + number), City — pulled from the short submission.
+- All 18 sections expand/collapse correctly; sliders, multi-selects, and char counters work.
+- Sticky "💾 Save Detailed Intake" bar visible on scroll.
+- Save with partial data → success toast, redirect back to `/applications`.
+- DB check: `submissions.form_data` now contains the merged detailed keys + original `source` + `intent` + `detailed_intake_completed_at` ISO timestamp; `full_name` updated if changed.
 
-### 2. Refactor `ApplyLGT.tsx` into a reusable component
-- Extract the form body from `src/pages/ApplyLGT.tsx` into `src/components/intake/DetailedIntakeForm.tsx`.
-- Two thin wrappers consume it:
-  - `src/pages/ApplyLGT.tsx` — public route (kept for the SEO/Login links that still point to it; submits to `submissions` as today).
-  - `src/pages/admin/AdminDetailedIntake.tsx` — admin route, loads existing submission, prefills, saves back.
-- Keeps a single source of truth — no copy-paste maintenance.
+### 4. Re-edit flow
+- Re-open the same row → button now reads "✏️ Edit Detailed Intake" with green "✓ Detailed info captured" badge.
+- Form re-opens fully prefilled with the merged data (not just the short-intake fields).
+- Edit one field, Save → DB shows updated value; `source` still preserved; `detailed_intake_completed_at` refreshed.
 
-### 3. Hook from Applications dashboard
-In `src/pages/admin/ApplicationsPage.tsx`, on every short-intake row (where `form_data.source === 'tell_us_about_yourself'`), add a button:
-- **"📋 Fill Detailed Intake"** → navigates to `/applications/:id/detailed-intake`
-- If the submission already has detailed data, label becomes **"✏️ Edit Detailed Intake"** with a green "Detailed info captured" badge.
+### 5. Approval → seeker creation
+- From Applications, click Approve on the now-detailed row.
+- `approve-application` edge function runs → new auth user + `profiles` row exist.
+- Verify a curated subset of detailed fields landed on `profiles` (dob, gender, city, state, pincode, company, designation, industry, etc.) — only those with matching profile columns.
+- Status becomes `approved`. Seeker receives credentials email (best-effort).
+- Try logging in with the new credentials → routed to seeker dashboard, must-change-password gate fires.
 
-The existing Approve / Reject / Request Info actions stay unchanged. Admin typically: short intake comes in → call seeker → fill detailed intake → Approve (existing `approve-application` edge function creates the auth user + profile).
+### 6. Public `/apply-lgt` (regression)
+- The public long form still works for old links (SEO pages, Login page).
+- Submitting it creates a `submissions` row (no `tell_us_about_yourself` source) and admin sees it without the "New Seeker" badge.
+- No payment/admin save bar shown — original public flow unchanged.
 
-### 4. Where the detailed data lives
-- All answers are stored in `submissions.form_data` (JSONB) — **no schema migration needed**. The existing column already accepts arbitrary keys.
-- On approve, the existing `approve-application` edge function creates the seeker profile. We extend it (small change) to copy a curated subset of `form_data` keys into the new `profiles` row: `dob`, `gender`, `marital_status`, `blood_group`, `address1`, `state`, `pincode`, `company`, `designation`, `industry`, `emergency_contact_name`, `emergency_contact_phone`, etc. — only fields that already have matching columns on `profiles`. The rest stays on the submission record for reference.
+### 7. Edge / negative
+- Open `/applications/<bad-uuid>/detailed-intake` → toast "Submission not found", redirect to `/applications`.
+- Non-admin user hitting `/applications/:id/detailed-intake` → blocked by `AuthGuard`, redirected per role.
+- Admin save while offline / RLS error → error toast, no partial DB write.
 
-### 5. Minor cleanup
-- Add a sidebar entry under Admin → "Applications" so this is discoverable (it's already there as `/applications`).
-- Update the SEO/Login links from `/apply-lgt` → `/get-started` in a follow-up so the public surface is consistent. Old route stays functional during the transition.
+## How I'll execute the test
 
-## Files touched
+1. Read live state via `supabase--read_query` against `submissions` to baseline.
+2. Use the browser tool to drive the flow on the preview URL:
+   - Submit `/get-started` as a fresh test seeker.
+   - Log in as admin (`vivek@gmail.com` test account from memory).
+   - Walk through Applications → Fill Detailed Intake → Save.
+   - Re-open, edit, save again.
+   - Approve and confirm `profiles` row.
+3. After each write, query `submissions` / `profiles` to confirm shape.
+4. Tail `approve-application` and `send-notification` edge function logs for the run.
+5. Capture a short pass/fail checklist + any defects (screenshots for UI bugs).
 
-| File | Change |
-|---|---|
-| `src/components/intake/DetailedIntakeForm.tsx` | **New** — extracted form body, accepts `initialValues`, `mode: 'public' \| 'admin'`, `onSave` callback |
-| `src/pages/ApplyLGT.tsx` | Refactored to thin wrapper using `DetailedIntakeForm` |
-| `src/pages/admin/AdminDetailedIntake.tsx` | **New** — loads submission, renders `DetailedIntakeForm` in admin mode, saves to `submissions.form_data` |
-| `src/pages/admin/ApplicationsPage.tsx` | Add "Fill Detailed Intake" button + "Detailed info captured" badge |
-| `src/App.tsx` | Add `/applications/:id/detailed-intake` route inside admin layout |
-| `supabase/functions/approve-application/index.ts` | Extend to copy curated `form_data` fields onto the new profile (additive, safe) |
+## Deliverable
 
-## What does NOT change
-- No DB migration.
-- `submissions` table, `approve-application` flow, short `/get-started` form, RLS — all unchanged in shape.
-- Public `/apply-lgt` URL keeps working for any external links / bookmarks.
+A single QA report covering all 7 test cases with: pass/fail, exact DB row shape after key steps, any bugs found, and recommended fixes (no code changes made unless you approve a follow-up).
 
-## Result
-- Seekers fill a 60-second form on the home page.
-- Admin opens the intake in the admin panel, calls the seeker, and fills the rich 18-section profile right there.
-- On Approve, the seeker account is created with the full profile already populated — no second form for the seeker.
+## Notes / constraints
+
+- I'll create a brand-new test email/phone for the seeker so it doesn't collide with existing profiles.
+- I'll clean up (delete the test submission + auth user) at the end if you want — let me know.
+- Approve the plan and I'll run the full test pass and report back.
