@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import ApplyLGT from './ApplyLGT';
+import LgtReport from '@/components/lgt/LgtReport';
+import { generateLgtReportPdf } from '@/lib/lgtPdfExport';
 
 interface TokenResult {
   valid: boolean;
@@ -100,6 +102,9 @@ const SeekerLgtForm = () => {
     designation: (result.form_data as any)?.designation || p.occupation || '',
   };
 
+  const [reportData, setReportData] = useState<Record<string, any> | null>(null);
+  const sentRef = useRef(false);
+
   return (
     <div>
       <div
@@ -111,7 +116,42 @@ const SeekerLgtForm = () => {
       <ApplyLGT
         tokenMode={{ token: token!, seekerName: p.full_name }}
         initialData={initial}
+        onTokenSubmitted={() => {
+          // Capture & email PDF report (publicMode — no auth required)
+          setReportData({ ...initial });
+          setTimeout(async () => {
+            if (sentRef.current || !result.seeker_id) return;
+            sentRef.current = true;
+            try {
+              const { base64, filename } = await generateLgtReportPdf({
+                filename: `LGT-Report-${(p.full_name || 'Seeker').replace(/\s+/g, '_')}.pdf`,
+              });
+              await supabase.functions.invoke('send-lgt-report', {
+                body: {
+                  seekerId: result.seeker_id,
+                  pdfBase64: base64,
+                  filename,
+                  publicMode: true,
+                  inviteToken: token,
+                },
+              });
+            } catch (e) {
+              console.error('LGT report email failed', e);
+            }
+          }, 800);
+        }}
       />
+      {reportData && (
+        <div style={{ position: 'fixed', left: '-10000px', top: 0, width: '900px', background: '#fff' }}>
+          <LgtReport
+            seekerName={p.full_name}
+            seekerEmail={p.email}
+            submittedAt={new Date().toISOString()}
+            filledByRole="seeker"
+            data={reportData}
+          />
+        </div>
+      )}
     </div>
   );
 };

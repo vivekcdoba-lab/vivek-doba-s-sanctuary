@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Loader2, Search, Mail, UserCheck, Copy, Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ApplyLGT from '../ApplyLGT';
+import LgtReport from '@/components/lgt/LgtReport';
+import { generateLgtReportPdf } from '@/lib/lgtPdfExport';
 
 interface SeekerRow {
   id: string;
@@ -45,6 +47,9 @@ const AdminApplyLgt = () => {
   const [showSubmitted, setShowSubmitted] = useState(false);
   const [sendingTo, setSendingTo] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  // Hidden report render state (for capture-and-email after admin save)
+  const [reportTarget, setReportTarget] = useState<{ seeker: SeekerRow; data: Record<string, any> } | null>(null);
+  const reportSentRef = useRef(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -171,8 +176,48 @@ const AdminApplyLgt = () => {
           seekerId={selected.id}
           applicationId={selectedApp?.id}
           initialData={initial}
-          onAdminSaved={() => { setSelectedId(null); loadData(); }}
+          onAdminSaved={() => {
+            // Capture & email a beautiful PDF report to admin + seeker
+            const merged = { ...initial };
+            setReportTarget({ seeker: selected, data: merged });
+            // The hidden <LgtReport> below will mount; capture after a short delay
+            setTimeout(async () => {
+              if (reportSentRef.current) return;
+              reportSentRef.current = true;
+              try {
+                const { base64, filename } = await generateLgtReportPdf({
+                  filename: `LGT-Report-${(selected.full_name || 'Seeker').replace(/\s+/g, '_')}.pdf`,
+                });
+                const { data, error } = await supabase.functions.invoke('send-lgt-report', {
+                  body: { seekerId: selected.id, pdfBase64: base64, filename },
+                });
+                if (error) throw error;
+                const r = data as any;
+                if (r?.warning) toast({ title: '⚠️ ' + r.warning });
+                else toast({ title: `📧 Report emailed to ${r?.recipients?.length || 0} recipient(s)` });
+              } catch (err: any) {
+                toast({ title: 'Report email failed', description: err?.message, variant: 'destructive' });
+              } finally {
+                reportSentRef.current = false;
+                setReportTarget(null);
+                setSelectedId(null);
+                loadData();
+              }
+            }, 600);
+          }}
         />
+        {/* Hidden offscreen report for PDF capture */}
+        {reportTarget && (
+          <div style={{ position: 'fixed', left: '-10000px', top: 0, width: '900px', background: '#fff' }}>
+            <LgtReport
+              seekerName={reportTarget.seeker.full_name}
+              seekerEmail={reportTarget.seeker.email}
+              submittedAt={new Date().toISOString()}
+              filledByRole="admin"
+              data={reportTarget.data}
+            />
+          </div>
+        )}
       </div>
     );
   }
