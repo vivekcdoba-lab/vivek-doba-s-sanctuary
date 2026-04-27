@@ -340,7 +340,25 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
 
   return (
     <div className="min-h-screen bg-background">
+      {adminMode && (
+        <div className="bg-primary text-primary-foreground px-4 py-3 sticky top-0 z-30 shadow-md">
+          <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+            <div className="text-sm">
+              <span className="font-semibold">📋 Admin Mode — Detailed Seeker Intake</span>
+              <span className="text-primary-foreground/80 ml-2 hidden sm:inline">Fill in collected information; consents are not required here.</span>
+            </div>
+            <button
+              onClick={handleAdminSave}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-white text-primary text-sm font-bold hover:opacity-90 disabled:opacity-50 whitespace-nowrap"
+            >
+              {loading ? 'Saving…' : '💾 Save Intake'}
+            </button>
+          </div>
+        </div>
+      )}
       {/* Header */}
+      {!adminMode && (
       <div className="text-white py-8 px-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #FFD700, #7B1FA2)' }}>
         <div className="max-w-3xl mx-auto relative z-10">
           <Link to="/" className="inline-flex items-center gap-1 text-white/80 hover:text-white text-sm mb-4"><ArrowLeft className="w-4 h-4" /> Back to Home</Link>
@@ -349,7 +367,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
           <p className="text-white/60 mt-1 text-xs">⚡ Limited seats. Investment: ₹2,50,000 - ₹10,00,000 based on program tier.</p>
         </div>
       </div>
-
+      )}
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-4">
         {/* Program Selector */}
         <div
