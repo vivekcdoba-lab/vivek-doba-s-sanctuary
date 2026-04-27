@@ -158,7 +158,6 @@ const RegisterWorkshop = () => {
                     <p className="text-xs text-muted-foreground mt-1">{w.duration} | Max: {w.max} participants</p>
                   </div>
                   <div className="text-right flex-shrink-0 ml-4">
-                    <p className="font-bold text-foreground">₹{w.price.toLocaleString('en-IN')}</p>
                     {w.premium && <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">Premium ✦</span>}
                     {form.workshopId === w.id && <Check className="w-5 h-5 text-primary mt-1 ml-auto" />}
                   </div>
