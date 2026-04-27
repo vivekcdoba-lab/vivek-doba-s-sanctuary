@@ -766,11 +766,11 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
         {!adminMode && (
         <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <h3 className="font-semibold text-foreground mb-4">Payment & Consent</h3>
-          {selected && <p className="text-sm bg-muted p-3 rounded-lg mb-4">Selected: <strong>{selected.name}</strong> — ₹{selected.price.toLocaleString('en-IN')}</p>}
+          {selected && <p className="text-sm bg-muted p-3 rounded-lg mb-4">Selected: <strong>{selected.name}</strong></p>}
           <Field label="Payment Preference" required>
             <div className="space-y-2 mt-1">
-              <label className="flex items-center gap-2 text-sm"><input type="radio" name="pay" checked={f.paymentPref === 'full'} onChange={() => set('paymentPref', 'full')} />Full Payment (₹{selected?.price.toLocaleString('en-IN') || '—'}) — Best Value</label>
-              <label className="flex items-center gap-2 text-sm"><input type="radio" name="pay" checked={f.paymentPref === 'emi'} onChange={() => set('paymentPref', 'emi')} />EMI (6 instalments of ₹{selected ? (selected.price / 6).toLocaleString('en-IN', { maximumFractionDigits: 0 }) : '—'})</label>
+              <label className="flex items-center gap-2 text-sm"><input type="radio" name="pay" checked={f.paymentPref === 'full'} onChange={() => set('paymentPref', 'full')} />Full Payment — Best Value</label>
+              <label className="flex items-center gap-2 text-sm"><input type="radio" name="pay" checked={f.paymentPref === 'emi'} onChange={() => set('paymentPref', 'emi')} />EMI (6 instalments)</label>
               <label className="flex items-center gap-2 text-sm"><input type="radio" name="pay" checked={f.paymentPref === 'custom'} onChange={() => set('paymentPref', 'custom')} />Custom Plan — Discuss with Vivek Sir</label>
             </div>
           </Field>
