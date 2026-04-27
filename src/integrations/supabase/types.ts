@@ -3813,6 +3813,38 @@ export type Database = {
           },
         ]
       }
+      session_private_notes: {
+        Row: {
+          created_at: string
+          notes: string | null
+          session_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          notes?: string | null
+          session_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          notes?: string | null
+          session_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_private_notes_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_signatures: {
         Row: {
           content_hash: string | null
@@ -3942,7 +3974,6 @@ export type Database = {
           client_good_things: Json | null
           client_growth_json: Json | null
           coach_id: string | null
-          coach_private_notes: string | null
           course_id: string | null
           created_at: string
           date: string
@@ -3989,7 +4020,6 @@ export type Database = {
           client_good_things?: Json | null
           client_growth_json?: Json | null
           coach_id?: string | null
-          coach_private_notes?: string | null
           course_id?: string | null
           created_at?: string
           date: string
@@ -4036,7 +4066,6 @@ export type Database = {
           client_good_things?: Json | null
           client_growth_json?: Json | null
           coach_id?: string | null
-          coach_private_notes?: string | null
           course_id?: string | null
           created_at?: string
           date?: string
