@@ -1,62 +1,39 @@
-## Goal
+# Performance Investigation — App Feels Slow
 
-1. Send Chandrakant Wanare's LGT PDF report to `crwanare@gmail.com` (and admins) right now from `/admin/apply-lgt`.
-2. Make report regeneration + email automatic on every edit/update of LGT data, with the latest copy reflected in the seeker's profile.
+## Findings
 
-## Approach
+After inspecting the codebase, the slowness is almost entirely due to **all 233 routes/pages being eagerly imported in `src/App.tsx`** (510 lines, ~150 page components from `src/pages/admin`, `src/pages/seeker`, `src/pages/coaching`). Every page — including heavy ones using `recharts`, `html2canvas`, and `jspdf` — is loaded into the **initial JS bundle** before the app renders, even when the user only visits `/`.
 
-### Part 1 — One-click "Email Report" on `/admin/apply-lgt`
+### Specific bottlenecks
+1. **No code-splitting**: 0 uses of `React.lazy()` in `App.tsx`. ~233 static imports.
+2. **Heavy libs in initial bundle**: `html2canvas` (~200KB), `jspdf` (~350KB), `recharts` (~400KB) loaded on first paint even though only used on a few pages (LGT report, assessment history, progress charts, session PDF).
+3. **PDF libraries imported eagerly** in `src/lib/lgtPdfExport.ts` and `src/lib/lgtReportEmail.ts` (used by LGT pages) — pulled in by anyone touching the admin LGT routes.
+4. Layouts, auth store, and heartbeat are fine — the main cost is the massive initial JS payload.
 
-For every row whose status is `submitted`, add a 📧 **Email Report** action button.
+## Plan
 
-Click handler:
-1. Fetch the `lgt_applications` row (form_data) for that seeker.
-2. Mount `<LgtReport />` off-screen with that data + seeker info.
-3. Run existing `lgtPdfExport.ts` to generate PDF base64.
-4. Call existing `send-lgt-report` edge function → emails seeker + all admins (Chandrakant gets it on `crwanare@gmail.com`).
-5. Toast "Report emailed".
+### 1. Convert all route components in `App.tsx` to `React.lazy()`
+- Wrap every `import X from "./pages/..."` for route components into `const X = lazy(() => import("./pages/..."))`.
+- Wrap `<Routes>` in a `<Suspense fallback={<LoadingSpinner />}>` boundary using a lightweight inline spinner (reuse existing `Loader2` from lucide).
+- Keep eagerly imported: `Index`, `LoginPage`, `AuthGuard`, `AdminLayout`, `SeekerLayout`, `CoachingLayout` (needed immediately for first paint and routing shell).
 
-Reuses 100% of existing report + PDF + email code. No DB or edge function changes.
+Expected impact: **initial bundle drops from ~3–4MB to ~400–600KB**, first load 3–5× faster, route changes load on-demand (~50–150KB each).
 
-### Part 2 — Auto-send on every edit + keep seeker profile in sync
+### 2. Lazy-load heavy PDF libraries inside helpers
+- In `src/lib/lgtPdfExport.ts`, `src/lib/lgtReportEmail.ts`, `src/lib/sessionPdfExport.ts`: change top-level `import jsPDF from "jspdf"` and `import html2canvas` to **dynamic `await import()`** inside the export functions.
+- Same for `LgtReport.tsx` if it imports them statically.
 
-**Trigger points** (every time LGT data is saved):
-- `/apply-lgt` (admin filling for a seeker)
-- `/seekers/lgt/:token` (seeker filling via invite link)
-- Any future edit of an already-submitted application from `/admin/apply-lgt` row → "Edit & Resend"
+Expected impact: removes ~550KB from any bundle that doesn't actually click "Generate PDF".
 
-**On every save:**
-1. Upsert the new `form_data` into `lgt_applications` (existing logic).
-2. Bump `submitted_at = now()` and increment a new `version` integer column to track revisions.
-3. Auto-render `<LgtReport />` off-screen → generate PDF → call `send-lgt-report`.
-4. Email subject becomes: `👑 LGT Report (Updated v{n}) — {seeker name}` so admins can see it's a revision.
-5. Toast confirms recipients.
+### 3. Verify
+- After changes, open the app, watch network tab — initial JS should be a single small chunk + per-route chunks loading on navigation.
+- Confirm LGT PDF generation still works end-to-end.
 
-**Profile reflection:**
-- The "LGT Application 👑" tab in `/admin/seekers/<id>` already reads from `lgt_applications` — it will automatically show the latest data after each edit, no extra wiring needed.
-- Add a small "Last updated: <date> · v{n}" badge on the tab and on the AdminApplyLgt row.
+## Files to edit
+- `src/App.tsx` — convert imports to `lazy()`, add `<Suspense>` wrapper.
+- `src/lib/lgtPdfExport.ts`
+- `src/lib/lgtReportEmail.ts`
+- `src/lib/sessionPdfExport.ts`
+- `src/components/lgt/LgtReport.tsx` (only if it imports html2canvas/jspdf statically)
 
-**Edit-existing flow on `/admin/apply-lgt`:**
-- Submitted rows get a second action: ✏️ **Edit** → opens `/apply-lgt?seekerId=…&edit=1` pre-filled with current `form_data`.
-- On save, runs the auto-send pipeline above.
-
-### Schema change (small)
-
-Add to `lgt_applications`:
-- `version int not null default 1`
-- `last_emailed_at timestamptz`
-
-Migration only — no data changes. Increment `version` on each re-submit via the upsert handler (client-side, simple `version + 1`).
-
-### Files to edit / create
-
-- `src/pages/admin/AdminApplyLgt.tsx` — add 📧 Email Report + ✏️ Edit buttons for submitted rows; show version + last-updated; shared `generateAndEmailReport(seekerId)` helper.
-- `src/pages/ApplyLGT.tsx` — support `?seekerId=…&edit=1` to load existing data; on save, increment version + auto-trigger email pipeline.
-- `src/pages/SeekerLgtForm.tsx` — already auto-emails after submit; just add version increment.
-- `src/pages/admin/SeekerDetailPage.tsx` (LGT tab) — show version + "Last emailed" timestamp.
-- `supabase/migrations/<new>.sql` — add `version`, `last_emailed_at` columns.
-- No edge function changes — `send-lgt-report` already supports admin-mode and emails seeker + all admins.
-
-## Immediate result for Chandrakant
-
-After Part 1 ships, you click 📧 next to Chandrakant's row → PDF report is emailed to `crwanare@gmail.com` plus all admins within seconds. Future edits auto-send updated reports without you clicking anything.
+No DB/schema changes. No feature changes. Pure performance optimization, fully aligned with the "Only Add and Enhance" preservation policy.
