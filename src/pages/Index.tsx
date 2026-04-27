@@ -133,18 +133,18 @@ const Index = () => (
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-3xl">👑</span>
-              <span className="px-3 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: '#FFF3CD', color: '#B8860B' }}>6-12 Month Transformation</span>
+              <span className="px-3 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: '#FFF3CD', color: '#B8860B' }}>Under 1 minute</span>
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Apply for Life's Golden Triangle — Premier Program</h3>
+            <h3 className="text-xl font-bold text-foreground mb-2">Tell Us About Yourself</h3>
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              The flagship coaching program for serious business owners and leaders. Personal Mastery × Professional Excellence × Spiritual Wellbeing. A life-changing 180-day journey.
+              Share a few details and we'll personally reach out to design the right path for you. No long forms, no payment now — just a friendly conversation to begin your transformation.
             </p>
             <Link
-              to="/apply-lgt"
+              to="/get-started"
               className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-white font-semibold transition-opacity hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #FFD700, #7B1FA2)' }}
             >
-              Apply Now <ChevronRight className="w-4 h-4" />
+              Get Started <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
