@@ -195,19 +195,6 @@ const AdminApplyLgt = () => {
   // ===== Filling form for selected seeker =====
   if (selected) {
     const initial = buildInitial(selected);
-      ...((legacy as any)?.form_data || {}),
-      ...((selectedApp as any)?.form_data || {}),
-      fullName: selected.full_name || '',
-      email: selected.email || '',
-      mobile: (selected.phone || '').replace(/^\+\d+/, ''),
-      mobileCode: '+91',
-      city: selected.city || '',
-      state: selected.state || '',
-      country: selected.country || 'India',
-      dob: selected.dob || '',
-      company: selected.company || '',
-      designation: selected.occupation || '',
-    };
     return (
       <div className="-m-6">
         <div className="px-4 sm:px-6 pt-4 flex items-center justify-between">
@@ -227,24 +214,24 @@ const AdminApplyLgt = () => {
           applicationId={selectedApp?.id}
           initialData={initial}
           onAdminSaved={() => {
-            // Capture & email a beautiful PDF report to admin + seeker
+            // Capture & email a fresh PDF report to admin + seeker (auto on every save)
             const merged = { ...initial };
             setReportTarget({ seeker: selected, data: merged });
-            // The hidden <LgtReport> below will mount; capture after a short delay
-            setTimeout(async () => {
+            (async () => {
               if (reportSentRef.current) return;
               reportSentRef.current = true;
               try {
-                const { base64, filename } = await generateLgtReportPdf({
-                  filename: `LGT-Report-${(selected.full_name || 'Seeker').replace(/\s+/g, '_')}.pdf`,
+                const result = await captureAndEmailLgtReport({
+                  seekerId: selected.id,
+                  seekerName: selected.full_name,
+                  applicationId: selectedApp?.id,
+                  delayMs: 700,
                 });
-                const { data, error } = await supabase.functions.invoke('send-lgt-report', {
-                  body: { seekerId: selected.id, pdfBase64: base64, filename },
-                });
-                if (error) throw error;
-                const r = data as any;
-                if (r?.warning) toast({ title: '⚠️ ' + r.warning });
-                else toast({ title: `📧 Report emailed to ${r?.recipients?.length || 0} recipient(s)` });
+                if (!result.success) {
+                  toast({ title: 'Report email failed', description: result.error, variant: 'destructive' });
+                } else {
+                  toast({ title: `📧 Updated report emailed to ${result.recipients?.length || 0} recipient(s)` });
+                }
               } catch (err: any) {
                 toast({ title: 'Report email failed', description: err?.message, variant: 'destructive' });
               } finally {
@@ -253,7 +240,7 @@ const AdminApplyLgt = () => {
                 setSelectedId(null);
                 loadData();
               }
-            }, 600);
+            })();
           }}
         />
         {/* Hidden offscreen report for PDF capture */}
