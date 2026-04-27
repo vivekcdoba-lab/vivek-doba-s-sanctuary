@@ -313,6 +313,7 @@ const App = () => (
             <Route path="/admin/program-analytics" element={<AdminProgramAnalytics />} />
             <Route path="/admin/enrollments" element={<AdminEnrollments />} />
             <Route path="/admin/new-enrollment" element={<AdminNewEnrollment />} />
+            <Route path="/admin/apply-lgt" element={<ApplyLGT />} />
             <Route path="/admin/batches" element={<AdminBatches />} />
             <Route path="/admin/enrollment-stats" element={<AdminEnrollmentStats />} />
             <Route path="/admin/add-lead" element={<AdminAddLead />} />
