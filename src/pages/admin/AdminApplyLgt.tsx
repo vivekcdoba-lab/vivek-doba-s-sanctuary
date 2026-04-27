@@ -439,8 +439,21 @@ const AdminApplyLgt = () => {
       </div>
 
       <div className="text-xs text-muted-foreground bg-muted/40 rounded-lg p-3 border border-border">
-        💡 <strong>How it works:</strong> "Fill in person" opens the LGT form pre-filled with the seeker's profile data — for face-to-face intake. "Email invite" sends the seeker a personal one-time link valid for 14 days so they can complete it themselves at vivekdoba.com/lgt-form/&lt;token&gt;.
+        💡 <strong>How it works:</strong> "Fill in person" opens the LGT form pre-filled with the seeker's profile data — for face-to-face intake. "Email invite" sends the seeker a personal one-time link valid for 14 days. Once submitted, click <strong>Email Report</strong> to send a beautifully formatted PDF to the seeker + admins. Any subsequent edit auto-emails an updated report.
       </div>
+
+      {/* Hidden offscreen report for PDF capture (used by Email Report button) */}
+      {reportTarget && (
+        <div style={{ position: 'fixed', left: '-10000px', top: 0, width: '900px', background: '#fff' }}>
+          <LgtReport
+            seekerName={reportTarget.seeker.full_name}
+            seekerEmail={reportTarget.seeker.email}
+            submittedAt={new Date().toISOString()}
+            filledByRole="admin"
+            data={reportTarget.data}
+          />
+        </div>
+      )}
     </div>
   );
 };
