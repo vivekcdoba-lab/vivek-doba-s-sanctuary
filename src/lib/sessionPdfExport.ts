@@ -1,4 +1,3 @@
-import jsPDF from 'jspdf';
 import { supabase } from '@/integrations/supabase/client';
 
 interface SessionPdfData {
@@ -46,6 +45,8 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 }
 
 export async function exportSessionPdf(data: SessionPdfData): Promise<void> {
+  // Dynamic import — keep jspdf out of the main bundle
+  const { default: jsPDF } = await import('jspdf');
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = 210;
   const margin = 20;

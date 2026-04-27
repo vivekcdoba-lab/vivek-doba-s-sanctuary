@@ -1,8 +1,9 @@
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-
 /**
  * Captures the LGT report DOM (id="lgt-report-print") and produces an A4 PDF.
+ *
+ * Heavy deps (jspdf, html2canvas) are loaded dynamically so they are NOT in
+ * the initial app bundle — they only download when a user actually generates
+ * a PDF.
  *
  * Returns:
  *   - blob: the PDF Blob (for download)
@@ -17,6 +18,12 @@ export async function generateLgtReportPdf(opts: {
 
   const node = document.getElementById(elementId);
   if (!node) throw new Error(`LGT report element #${elementId} not found in DOM`);
+
+  // Dynamic imports — keep these out of the main bundle
+  const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+    import('jspdf'),
+    import('html2canvas'),
+  ]);
 
   // Render the DOM node at 2x for crisp output
   const canvas = await html2canvas(node, {
