@@ -9,6 +9,7 @@ import RegisterPage from "./pages/RegisterPage";
 import BookAppointment from "./pages/BookAppointment";
 import RegisterWorkshop from "./pages/RegisterWorkshop";
 import ApplyLGT from "./pages/ApplyLGT";
+import TellUsAboutYourself from "./pages/TellUsAboutYourself";
 import AuthGuard from "./components/AuthGuard";
 import AdminLayout from "./components/AdminLayout";
 import SeekerLayout from "./components/SeekerLayout";
@@ -249,6 +250,7 @@ const App = () => (
           <Route path="/book-appointment" element={<BookAppointment />} />
           <Route path="/register-workshop" element={<RegisterWorkshop />} />
           <Route path="/apply-lgt" element={<ApplyLGT />} />
+          <Route path="/get-started" element={<TellUsAboutYourself />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/terms" element={<TermsPage />} />
