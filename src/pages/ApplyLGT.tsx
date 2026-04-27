@@ -106,7 +106,8 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
   const [missingFields, setMissingFields] = useState<Set<string>>(new Set());
   const programRef = useRef<HTMLDivElement>(null);
 
-  const [f, setF] = useState<Record<string, any>>({
+  const [f, setF] = useState<Record<string, any>>(() => {
+    const defaults: Record<string, any> = {
     programId: '', fullName: '', preferredName: '', dob: '', gender: '', maritalStatus: '', children: 0,
     childrenAges: '', bloodGroup: '', aadhaar: '', mobile: '', mobileCode: '+91', whatsapp: '', sameWhatsapp: true, email: '',
     altPhone: '', prefComm: ['whatsapp', 'email'], address1: '', address2: '', city: '', state: '', stateOther: '', pincode: '',
@@ -141,6 +142,8 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
     paymentPref: 'full', paymentMethod: '', gstRequired: 'no', gstCompany: '', gstNumber: '',
     interestedCourses: [] as string[],
     consent1: false, consent2: false, consent3: false, consent4: false,
+    };
+    return initialData ? { ...defaults, ...initialData } : defaults;
   });
 
   const set = (k: string, v: any) => { setF(p => ({ ...p, [k]: v })); setMissingFields(p => { const n = new Set(p); n.delete(k); return n; }); };
