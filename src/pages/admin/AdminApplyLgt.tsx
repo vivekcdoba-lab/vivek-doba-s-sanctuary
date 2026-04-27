@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Search, Mail, UserCheck, Copy, Check, X } from 'lucide-react';
+import { ArrowLeft, Loader2, Search, Mail, UserCheck, Copy, Check, X, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ApplyLGT from '../ApplyLGT';
 import LgtReport from '@/components/lgt/LgtReport';
-import { generateLgtReportPdf } from '@/lib/lgtPdfExport';
+import { captureAndEmailLgtReport } from '@/lib/lgtReportEmail';
 
 interface SeekerRow {
   id: string;
@@ -28,6 +28,10 @@ interface AppRow {
   invite_token: string | null;
   invited_at: string | null;
   invite_email_sent_at: string | null;
+  submitted_at: string | null;
+  form_data: Record<string, any> | null;
+  version: number | null;
+  last_emailed_at: string | null;
 }
 
 interface LegacySubmission {
@@ -46,8 +50,9 @@ const AdminApplyLgt = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showSubmitted, setShowSubmitted] = useState(false);
   const [sendingTo, setSendingTo] = useState<string | null>(null);
+  const [emailingReportFor, setEmailingReportFor] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
-  // Hidden report render state (for capture-and-email after admin save)
+  // Hidden report render state (used after admin save AND when admin clicks "Email Report")
   const [reportTarget, setReportTarget] = useState<{ seeker: SeekerRow; data: Record<string, any> } | null>(null);
   const reportSentRef = useRef(false);
 
