@@ -2726,7 +2726,6 @@ export type Database = {
           id: string
           identifier: string
           is_used: boolean
-          otp_code: string
         }
         Insert: {
           attempts?: number
@@ -2736,7 +2735,6 @@ export type Database = {
           id?: string
           identifier: string
           is_used?: boolean
-          otp_code: string
         }
         Update: {
           attempts?: number
@@ -2746,7 +2744,6 @@ export type Database = {
           id?: string
           identifier?: string
           is_used?: boolean
-          otp_code?: string
         }
         Relationships: []
       }
