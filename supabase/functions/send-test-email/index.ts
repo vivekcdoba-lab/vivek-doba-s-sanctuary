@@ -50,6 +50,30 @@ Deno.serve(async (req) => {
 
     for (const r of RECIPIENTS) {
       const messageId = crypto.randomUUID();
+
+      // Get or create an unsubscribe token for this recipient
+      let unsubToken: string | null = null;
+      const { data: existing } = await supabase
+        .from('email_unsubscribe_tokens')
+        .select('token')
+        .eq('email', r.email)
+        .maybeSingle();
+      if (existing?.token) {
+        unsubToken = existing.token;
+      } else {
+        const newToken = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
+        const { data: inserted, error: insErr } = await supabase
+          .from('email_unsubscribe_tokens')
+          .insert({ email: r.email, token: newToken })
+          .select('token')
+          .single();
+        if (insErr) {
+          enqueued.push({ to: r.email, msg_id: null, error: `token: ${insErr.message}` });
+          continue;
+        }
+        unsubToken = inserted.token;
+      }
+
       const payload = {
         message_id: messageId,
         to: r.email,
@@ -61,6 +85,7 @@ Deno.serve(async (req) => {
         purpose: 'transactional',
         label: 'test_email',
         idempotency_key: messageId,
+        unsubscribe_token: unsubToken,
         queued_at: new Date().toISOString(),
       };
 
