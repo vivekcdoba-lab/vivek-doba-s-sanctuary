@@ -399,7 +399,6 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
                     <p className="text-xs text-muted-foreground mt-1">{p.duration} | {p.sessions} Sessions | {p.format}</p>
                   </div>
                   <div className="text-right flex-shrink-0 ml-4">
-                    <p className="font-bold text-foreground">₹{p.price.toLocaleString('en-IN')}</p>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${p.invitation ? 'bg-purple-100 text-purple-700' : 'bg-primary/10 text-primary'}`}>{p.invitation ? '👑 By Invitation Only' : p.tier}</span>
                     {f.programId === p.id && <Check className="w-5 h-5 text-primary mt-1 ml-auto" />}
                   </div>
