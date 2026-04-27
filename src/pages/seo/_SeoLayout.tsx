@@ -104,7 +104,7 @@ export const SeoHero = ({ eyebrow, title, subtitle }: { eyebrow: string; title: 
 
 export const SeoCTA = () => (
   <section className="max-w-5xl mx-auto px-4 py-12">
-    <div className="grid sm:grid-cols-3 gap-4">
+    <div className="grid sm:grid-cols-2 gap-4">
       <Link
         to="/book-appointment"
         className="flex items-center justify-center gap-2 py-4 rounded-xl text-white font-semibold transition-opacity hover:opacity-90"
@@ -118,13 +118,6 @@ export const SeoCTA = () => (
         style={{ background: "linear-gradient(135deg, #FF9933, #FFD700)" }}
       >
         Join a Workshop <ChevronRight className="w-4 h-4" />
-      </Link>
-      <Link
-        to="/apply-lgt"
-        className="flex items-center justify-center gap-2 py-4 rounded-xl text-white font-semibold transition-opacity hover:opacity-90"
-        style={{ background: "linear-gradient(135deg, #FFD700, #7B1FA2)" }}
-      >
-        Apply for LGT Program <ChevronRight className="w-4 h-4" />
       </Link>
     </div>
   </section>

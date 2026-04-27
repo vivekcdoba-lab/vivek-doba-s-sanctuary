@@ -74,7 +74,7 @@ const BusinessCoaching = () => {
           <h2 className="text-2xl font-bold text-foreground mb-3">Get Started</h2>
           <p>
             The premier 6–12 month{" "}
-            <Link to="/apply-lgt" className="text-primary hover:underline">Life's Golden Triangle program</Link> is our flagship
+            <span className="font-semibold text-primary">Life's Golden Triangle program</span> is our flagship
             engagement for serious founders. Or book a free discovery call to find the right entry point for your business.
           </p>
           <Link
