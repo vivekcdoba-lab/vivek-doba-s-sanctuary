@@ -330,16 +330,6 @@ const LoginPage = () => {
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </Link>
-              <Link to="/apply-lgt" className="flex items-center justify-between w-full p-3 rounded-xl border border-border hover:border-primary/40 hover:shadow-md transition-all group bg-card">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">👑</span>
-                  <div className="text-left">
-                    <p className="text-sm font-semibold text-foreground">Apply for LGT Program</p>
-                    <p className="text-xs text-muted-foreground">6-12 month premier transformation</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              </Link>
             </div>
             <Link to="/" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
               ← Back to Home
