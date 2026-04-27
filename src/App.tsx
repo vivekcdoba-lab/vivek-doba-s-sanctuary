@@ -250,7 +250,8 @@ const App = () => (
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/book-appointment" element={<BookAppointment />} />
           <Route path="/register-workshop" element={<RegisterWorkshop />} />
-          <Route path="/apply-lgt" element={<ApplyLGT />} />
+          {/* Legacy public route — now admin-only */}
+          <Route path="/apply-lgt" element={<Navigate to="/login" replace />} />
           <Route path="/get-started" element={<TellUsAboutYourself />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/help" element={<HelpPage />} />
