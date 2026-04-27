@@ -427,6 +427,19 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
           </div>
         </div>
       )}
+      {isEditingExisting && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800 px-4 py-3">
+          <div className="max-w-3xl mx-auto flex items-start gap-2 text-sm text-amber-900 dark:text-amber-100">
+            <span className="text-lg leading-none">📂</span>
+            <div>
+              <div className="font-semibold">Editing existing application</div>
+              <div className="text-amber-800/80 dark:text-amber-200/80 text-xs mt-0.5">
+                Previously submitted answers are loaded below. All sections are expanded so you can review or update any field. Saving will increment the version and auto-email an updated PDF report to the seeker and admins.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       {!adminMode && (
       <div className="text-white py-8 px-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #FFD700, #7B1FA2)' }}>
