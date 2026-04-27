@@ -146,10 +146,55 @@ const AdminApplyLgt = () => {
     setTimeout(() => setCopiedToken(null), 2000);
   };
 
+  // Build merged form-data for a seeker (current app + legacy + profile defaults)
+  const buildInitial = (s: SeekerRow): Record<string, any> => {
+    const legacy = legacyByEmail[(s.email || '').trim().toLowerCase()];
+    const app = apps[s.id];
+    return {
+      ...((legacy as any)?.form_data || {}),
+      ...((app as any)?.form_data || {}),
+      fullName: s.full_name || '',
+      email: s.email || '',
+      mobile: (s.phone || '').replace(/^\+\d+/, ''),
+      mobileCode: '+91',
+      city: s.city || '',
+      state: s.state || '',
+      country: s.country || 'India',
+      dob: s.dob || '',
+      company: s.company || '',
+      designation: s.occupation || '',
+    };
+  };
+
+  // Email a fresh PDF report for a submitted seeker (from the list row, no edit needed)
+  const handleEmailReport = async (s: SeekerRow) => {
+    setEmailingReportFor(s.id);
+    const data = buildInitial(s);
+    setReportTarget({ seeker: s, data });
+    try {
+      const result = await captureAndEmailLgtReport({
+        seekerId: s.id,
+        seekerName: s.full_name,
+        applicationId: apps[s.id]?.id,
+        delayMs: 700,
+      });
+      if (!result.success) {
+        toast({ title: 'Report email failed', description: result.error, variant: 'destructive' });
+      } else {
+        toast({ title: `📧 Report emailed to ${result.recipients?.length || 0} recipient(s)` });
+      }
+      await loadData();
+    } catch (err: any) {
+      toast({ title: 'Report email failed', description: err?.message, variant: 'destructive' });
+    } finally {
+      setReportTarget(null);
+      setEmailingReportFor(null);
+    }
+  };
+
   // ===== Filling form for selected seeker =====
   if (selected) {
-    const legacy = legacyByEmail[(selected.email || '').trim().toLowerCase()];
-    const initial: Record<string, any> = {
+    const initial = buildInitial(selected);
       ...((legacy as any)?.form_data || {}),
       ...((selectedApp as any)?.form_data || {}),
       fullName: selected.full_name || '',
