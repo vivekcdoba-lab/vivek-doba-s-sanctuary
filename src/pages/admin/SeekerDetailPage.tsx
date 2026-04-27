@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Phone, MessageSquare, Mail, Edit, Archive, Calendar, ClipboardList, TrendingUp,
   CreditCard, Flame, ArrowLeft, UserCheck, CalendarCheck, Eye, ChevronDown, ChevronUp,
-  Lock, Star, Flag, Printer, X, Target, Heart, BookOpen, Sparkles, AlertTriangle, Award, Plus, Gift, Loader2
+  Lock, Star, Flag, Printer, X, Target, Heart, BookOpen, Sparkles, AlertTriangle, Award, Plus, Gift, Loader2, Download, Send, FileText
 } from 'lucide-react';
+import LgtReport from '@/components/lgt/LgtReport';
+import { generateLgtReportPdf, downloadBlob } from '@/lib/lgtPdfExport';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -196,6 +198,106 @@ const SeekerDetailPage = () => {
         if (data) setWorksheetDays(data.map(d => ({ date: d.worksheet_date, completion: d.completion_rate_percent || 0, mood: d.morning_mood })));
       });
   }, [id]);
+
+  // ==== LGT Application data (for tab 8 — read-only nice visualization) ====
+  const [lgtApp, setLgtApp] = useState<{
+    id?: string;
+    seeker_id?: string;
+    status?: string;
+    submitted_at?: string | null;
+    filled_by_role?: string | null;
+    form_data?: Record<string, any>;
+    source: 'lgt_applications' | 'submissions' | 'none';
+  }>({ source: 'none' });
+  const [lgtLoading, setLgtLoading] = useState(false);
+  const [lgtSending, setLgtSending] = useState(false);
+
+  useEffect(() => {
+    if (!id || !seeker) return;
+    setLgtLoading(true);
+    (async () => {
+      // Prefer the modern lgt_applications row
+      const { data: app } = await supabase
+        .from('lgt_applications')
+        .select('id, seeker_id, status, submitted_at, filled_by_role, form_data')
+        .eq('seeker_id', id)
+        .maybeSingle();
+      if (app && app.status === 'submitted' && app.form_data) {
+        setLgtApp({
+          id: app.id,
+          seeker_id: app.seeker_id,
+          status: app.status,
+          submitted_at: app.submitted_at,
+          filled_by_role: app.filled_by_role,
+          form_data: (app.form_data as Record<string, any>) || {},
+          source: 'lgt_applications',
+        });
+        setLgtLoading(false);
+        return;
+      }
+      // Fallback: legacy submissions row matched by email
+      if (seeker?.email) {
+        const { data: sub } = await supabase
+          .from('submissions')
+          .select('id, form_data, created_at')
+          .eq('form_type', 'lgt_application')
+          .ilike('email', seeker.email)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (sub && sub.form_data) {
+          setLgtApp({
+            submitted_at: sub.created_at,
+            filled_by_role: 'seeker',
+            form_data: (sub.form_data as Record<string, any>) || {},
+            source: 'submissions',
+          });
+        } else {
+          setLgtApp({ source: 'none' });
+        }
+      } else {
+        setLgtApp({ source: 'none' });
+      }
+      setLgtLoading(false);
+    })();
+  }, [id, seeker]);
+
+  const handleDownloadLgtPdf = async () => {
+    try {
+      const { blob, filename } = await generateLgtReportPdf({
+        filename: `LGT-Report-${(seeker?.full_name || 'Seeker').replace(/\s+/g, '_')}.pdf`,
+      });
+      downloadBlob(blob, filename);
+      toast.success('📄 LGT report downloaded');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to generate PDF');
+    }
+  };
+
+  const handleEmailLgtReport = async () => {
+    if (!id) return;
+    setLgtSending(true);
+    try {
+      const { base64, filename } = await generateLgtReportPdf({
+        filename: `LGT-Report-${(seeker?.full_name || 'Seeker').replace(/\s+/g, '_')}.pdf`,
+      });
+      const { data, error } = await supabase.functions.invoke('send-lgt-report', {
+        body: { seekerId: id, pdfBase64: base64, filename },
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (result?.warning) {
+        toast.warning(result.warning);
+      } else {
+        toast.success(`📧 Report emailed to ${result?.recipients?.length || 0} recipient(s)`);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to email report');
+    } finally {
+      setLgtSending(false);
+    }
+  };
+
 
   const handleAwardBadge = async () => {
     if (!id) return;
