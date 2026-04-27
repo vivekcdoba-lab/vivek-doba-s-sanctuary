@@ -51,10 +51,13 @@ export default function CoachingSessionNotes() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sessions")
-        .select("*, profiles!sessions_seeker_id_fkey(full_name)")
+        .select("*, profiles!sessions_seeker_id_fkey(full_name), session_private_notes(notes)")
         .order("date", { ascending: false });
       if (error) throw error;
-      return data || [];
+      return (data || []).map((s: any) => ({
+        ...s,
+        coach_private_notes: s.session_private_notes?.notes ?? null,
+      }));
     },
   });
 

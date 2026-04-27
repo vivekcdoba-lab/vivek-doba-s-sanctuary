@@ -131,7 +131,6 @@ const SessionsPage = () => {
       session_notes: liveNotes || null,
       engagement_score: postData.engagement,
       seeker_mood: postData.mood,
-      coach_private_notes: postData.privateNotes || null,
       stories_used: postData.stories.length ? postData.stories : null,
       client_good_things: postData.clientGoodThings.filter(Boolean),
       client_growth_json: postData.clientGrowth,
@@ -144,6 +143,15 @@ const SessionsPage = () => {
       rewards: postData.rewards || null,
       targets: postData.targets || null,
     });
+    // Save coach's private notes into the coach/admin-only table (not visible to seekers)
+    if (postData.privateNotes) {
+      supabase
+        .from('session_private_notes')
+        .upsert({ session_id: sessionId, notes: postData.privateNotes }, { onConflict: 'session_id' })
+        .then(({ error }) => {
+          if (error) console.warn('Failed to save private notes', error);
+        });
+    }
     setLiveSession(null);
     toast.success('✅ Session submitted to seeker!');
     resetPostData();
