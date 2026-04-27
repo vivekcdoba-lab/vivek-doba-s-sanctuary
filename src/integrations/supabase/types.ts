@@ -2487,6 +2487,62 @@ export type Database = {
           },
         ]
       }
+      lgt_applications: {
+        Row: {
+          created_at: string
+          filled_by_role: string | null
+          form_data: Json | null
+          id: string
+          invite_email_sent_at: string | null
+          invite_token: string | null
+          invite_token_expires_at: string | null
+          invited_at: string | null
+          invited_by: string | null
+          seeker_id: string
+          status: string
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          filled_by_role?: string | null
+          form_data?: Json | null
+          id?: string
+          invite_email_sent_at?: string | null
+          invite_token?: string | null
+          invite_token_expires_at?: string | null
+          invited_at?: string | null
+          invited_by?: string | null
+          seeker_id: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          filled_by_role?: string | null
+          form_data?: Json | null
+          id?: string
+          invite_email_sent_at?: string | null
+          invite_token?: string | null
+          invite_token_expires_at?: string | null
+          invited_at?: string | null
+          invited_by?: string | null
+          seeker_id?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lgt_applications_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lgt_assessments: {
         Row: {
           artha_score: number
@@ -4960,6 +5016,7 @@ export type Database = {
           worksheet_count: number
         }[]
       }
+      get_lgt_application_by_token: { Args: { _token: string }; Returns: Json }
       get_seeker_link_group: { Args: { _seeker_id: string }; Returns: string }
       get_session_signatures: {
         Args: { _session_id: string }
@@ -5003,6 +5060,10 @@ export type Database = {
       }
       rotate_encryption_keys: {
         Args: { _trigger_source?: string }
+        Returns: Json
+      }
+      submit_lgt_application_by_token: {
+        Args: { _form_data: Json; _token: string }
         Returns: Json
       }
     }

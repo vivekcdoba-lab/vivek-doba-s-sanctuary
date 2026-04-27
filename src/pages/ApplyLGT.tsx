@@ -94,9 +94,15 @@ interface ApplyLGTProps {
   submissionId?: string;
   initialData?: Record<string, any>;
   onAdminSaved?: () => void;
+  // New: admin filling for a specific seeker (writes to lgt_applications)
+  applicationId?: string;
+  seekerId?: string;
+  // New: seeker submitting via emailed token (uses public RPC)
+  tokenMode?: { token: string; seekerName?: string };
+  onTokenSubmitted?: () => void;
 }
 
-const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }: ApplyLGTProps = {}) => {
+const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, applicationId, seekerId, tokenMode, onTokenSubmitted }: ApplyLGTProps = {}) => {
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -158,35 +164,65 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
   const emailError = f.email.length > 0 && !isValidEmail(f.email) ? 'Email must include @ and end with .com' : '';
 
   const handleAdminSave = async () => {
-    if (!submissionId) return;
     setLoading(true);
     try {
-      // Merge with existing form_data on the row to preserve original short-intake keys
-      const { data: existing } = await supabase
-        .from('submissions')
-        .select('form_data')
-        .eq('id', submissionId)
-        .maybeSingle();
-      const prev = (existing?.form_data as Record<string, any>) || {};
-      const merged = {
-        ...prev,
-        ...f,
-        programName: selected?.name,
-        detailed_intake_completed_at: new Date().toISOString(),
-      };
-      const { error } = await supabase
-        .from('submissions')
-        .update({
-          full_name: f.fullName || prev.full_name,
-          email: f.email || prev.email,
-          mobile: f.mobile || prev.mobile,
-          country_code: f.mobileCode || prev.country_code,
-          form_data: merged as any,
-        })
-        .eq('id', submissionId);
-      if (error) throw error;
-      toast({ title: '✅ Detailed intake saved' });
-      onAdminSaved?.();
+      const formData = { ...f, programName: selected?.name };
+
+      // Mode 1: Admin filling for a specific seeker → write to lgt_applications
+      if (applicationId || seekerId) {
+        const payload: any = {
+          form_data: formData,
+          status: 'submitted',
+          filled_by_role: 'admin',
+          submitted_at: new Date().toISOString(),
+          invite_token: null,
+          invite_token_expires_at: null,
+        };
+        if (applicationId) {
+          const { error } = await supabase
+            .from('lgt_applications')
+            .update(payload)
+            .eq('id', applicationId);
+          if (error) throw error;
+        } else if (seekerId) {
+          const { error } = await supabase
+            .from('lgt_applications')
+            .upsert({ seeker_id: seekerId, ...payload }, { onConflict: 'seeker_id' });
+          if (error) throw error;
+        }
+        toast({ title: '✅ LGT application saved for seeker' });
+        onAdminSaved?.();
+        return;
+      }
+
+      // Mode 2: Legacy admin detailed-intake on submissions row
+      if (submissionId) {
+        const { data: existing } = await supabase
+          .from('submissions')
+          .select('form_data')
+          .eq('id', submissionId)
+          .maybeSingle();
+        const prev = (existing?.form_data as Record<string, any>) || {};
+        const merged = {
+          ...prev,
+          ...f,
+          programName: selected?.name,
+          detailed_intake_completed_at: new Date().toISOString(),
+        };
+        const { error } = await supabase
+          .from('submissions')
+          .update({
+            full_name: f.fullName || prev.full_name,
+            email: f.email || prev.email,
+            mobile: f.mobile || prev.mobile,
+            country_code: f.mobileCode || prev.country_code,
+            form_data: merged as any,
+          })
+          .eq('id', submissionId);
+        if (error) throw error;
+        toast({ title: '✅ Detailed intake saved' });
+        onAdminSaved?.();
+      }
     } catch (err: any) {
       console.error(err);
       toast({ title: 'Save failed', description: err.message, variant: 'destructive' });
@@ -279,6 +315,24 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
     setLoading(true);
     try {
       const formData = { ...f, programName: selected?.name };
+
+      // Token mode: seeker submitting via emailed link → use SECURITY DEFINER RPC
+      if (tokenMode?.token) {
+        const { data, error } = await supabase.rpc('submit_lgt_application_by_token', {
+          _token: tokenMode.token,
+          _form_data: formData as any,
+        });
+        if (error) throw error;
+        const result = data as any;
+        if (!result?.success) {
+          throw new Error(result?.reason || 'Submission failed');
+        }
+        setSubmitted(true);
+        onTokenSubmitted?.();
+        return;
+      }
+
+      // Default: legacy public submission flow
       const { error } = await supabase.from('submissions').insert({
         form_type: 'lgt_application',
         full_name: f.fullName,
@@ -299,10 +353,9 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
         },
       });
       setSubmitted(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast({ title: 'Submission saved! Email notification may be delayed.', variant: 'default' });
-      setSubmitted(true);
+      toast({ title: 'Submission failed', description: err?.message || 'Please try again', variant: 'destructive' });
     } finally {
       setLoading(false);
     }

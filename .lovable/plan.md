@@ -1,59 +1,125 @@
 ## Goal
 
-Discontinue public access to `/apply-lgt`. Keep the page (preservation policy) but make it accessible **only to admins**, repositioned inside the Admin section so admins can fill in seeker details in person.
+Enhance the admin-only `/admin/apply-lgt` page so the admin can:
 
-## Changes
+1. **Pick an approved seeker** (from a dropdown) who has NOT yet filled the LGT detailed application.
+2. **Auto-populate** the form with that seeker's known profile data (name, email, phone, city, state, country, dob, company, occupation).
+3. Optionally **email the seeker a personal link** so the seeker can complete the form themselves (instead of the admin filling it in person).
+4. The seeker opens the link, signs in (or uses a token), fills the form, and submits — same form, just opened from their own account.
 
-### 1. Move route under Admin (protected)
+## Database changes
 
-`src/App.tsx`
-- Remove the public route: `<Route path="/apply-lgt" element={<ApplyLGT />} />`
-- Add an admin-protected route at a new admin path:
-  ```
-  <Route path="/admin/apply-lgt" element={<AuthGuard requiredRole="admin"><AdminLayout /></AuthGuard>}>
-    <Route index element={<ApplyLGT />} />
-  </Route>
-  ```
-  (Following the same wrapping pattern used by other admin pages.)
-- Keep the `ApplyLGT` import and component file untouched (preservation).
+### New table: `lgt_applications`
 
-### 2. Admin sidebar entry
+The existing `submissions` table is keyed by anonymous public intake (no seeker_id). We need a tracked, seeker-linked LGT application record.
 
-`src/components/AdminLayout.tsx`
-- Inside the `ENROLLMENTS` group (line 51-58), add a new item right after "New Enrollment":
-  ```
-  { icon: ClipboardList, label: 'LGT Application (In-Person)', path: '/admin/apply-lgt' },
-  ```
+```sql
+CREATE TABLE public.lgt_applications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  seeker_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  status text NOT NULL DEFAULT 'pending', -- pending | submitted
+  form_data jsonb,
+  invite_token text UNIQUE,                -- secure random token (nullable)
+  invite_token_expires_at timestamptz,     -- 14-day expiry
+  invited_by uuid REFERENCES auth.users(id),
+  invited_at timestamptz,
+  invite_email_sent_at timestamptz,
+  filled_by_role text,                     -- 'admin' | 'seeker'
+  submitted_at timestamptz,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  UNIQUE (seeker_id)                       -- one application per seeker
+);
 
-### 3. Remove public-facing links
+ALTER TABLE public.lgt_applications ENABLE ROW LEVEL SECURITY;
+```
 
-- `src/pages/seo/_SeoLayout.tsx` (line 121-129, `SeoCTA`): Remove the "Apply for LGT Program" CTA card. Restructure the remaining grid from `sm:grid-cols-3` to `sm:grid-cols-2` so the two surviving CTAs (Discovery Call, Workshop) stay balanced.
-- `src/pages/seo/BusinessCoaching.tsx` (line 77): Replace the `<Link to="/apply-lgt">…</Link>` with plain text `Life's Golden Triangle program` (keep wording intact, drop the link).
-- `src/pages/LoginPage.tsx` (line 333-340): Remove the entire "Apply for LGT Program" public action card from the login page.
+### RLS policies
+- **Admins**: SELECT/INSERT/UPDATE all rows (`is_admin(auth.uid())`).
+- **Seekers**: SELECT/UPDATE only rows where `seeker_id = (their profile id)` AND `status = 'pending'`.
+- **Public token access**: handled via SECURITY DEFINER RPC `get_lgt_application_by_token(_token text)` and `submit_lgt_application_by_token(_token text, _form_data jsonb)` so an unauthenticated email link works without exposing the table.
 
-### 4. SEO / sitemap cleanup
+### Indexes
+- `lgt_applications_seeker_id_idx`, `lgt_applications_invite_token_idx`, `lgt_applications_status_idx`.
 
-- `public/sitemap.xml` (line 21): Remove the `<url><loc>https://vivekdoba.com/apply-lgt</loc>…</url>` entry so search engines stop indexing it.
+## Frontend changes
 
-### 5. Preserve existing admin entry point
+### 1. New admin landing component for `/admin/apply-lgt`
 
-`src/pages/admin/AdminDetailedIntake.tsx` already imports and renders `<ApplyLGT adminMode />` — left unchanged. The new sidebar link is an additional in-person fill flow (without a pre-existing submissionId), so admins get both:
-- `/admin/detailed-intake/:id` — edit an existing submission
-- `/admin/apply-lgt` — start a fresh in-person intake
+`src/pages/admin/AdminApplyLgt.tsx` (new)
+
+Default view (no seeker selected) shows a small chooser panel:
+
+```
+┌─ LGT Application — Admin Entry ───────────────────────────┐
+│  Select an approved seeker who has NOT filled this form:   │
+│  [ Searchable dropdown of approved seekers ▾ ]             │
+│                                                            │
+│  — OR —                                                    │
+│                                                            │
+│  ✉️  Email the form link to the seeker instead             │
+└────────────────────────────────────────────────────────────┘
+```
+
+- Dropdown source: `profiles` where `role = 'seeker'` AND profile.id NOT IN (SELECT seeker_id FROM lgt_applications WHERE status = 'submitted'). Search by name/email.
+- On selection: render existing `<ApplyLGT adminMode initialData={…} />` with profile data pre-mapped into form fields (`fullName`, `email`, `mobile`, `mobileCode`, `city`, `state`, `country`, `dob`, `company`, `designation` → occupation).
+- "Save Intake" button persists to `lgt_applications` (upsert by seeker_id) instead of `submissions`. Add a small wrapper hook so existing `ApplyLGT` form continues to work — extend `ApplyLGTProps` to optionally accept `seekerId` and `applicationId`, and branch save logic.
+- "Send invite email" button: generates a secure `invite_token` (server-side via edge function), sets 14-day expiry, calls Resend (already configured) with a templated email containing `https://vivekdoba.com/lgt-form/{token}`. Updates `invited_at` and `invite_email_sent_at`.
+
+### 2. New public token page
+
+`src/pages/SeekerLgtForm.tsx` (new) — route `/lgt-form/:token`
+
+- Calls SECURITY DEFINER RPC `get_lgt_application_by_token` (no auth required).
+- If valid + not expired + status != 'submitted': renders `<ApplyLGT />` in seeker mode with prefilled data and a banner "Welcome, {name} — Vivek Sir invited you to complete this form." Submit calls `submit_lgt_application_by_token`.
+- If invalid/expired/already-submitted: shows friendly error + WhatsApp/back-to-home links.
+
+### 3. Extend `ApplyLGT` props
+
+Add optional fields to `ApplyLGTProps`:
+- `applicationId?: string` (lgt_applications row id)
+- `seekerId?: string`
+- `tokenMode?: { token: string }` (for public submit)
+- `onSubmittedByToken?: () => void`
+
+Branch in `handleAdminSave` / `handleSubmit`: if `applicationId` is present → upsert `lgt_applications` row. If `tokenMode` is present → call `submit_lgt_application_by_token` RPC. Otherwise keep existing `submissions` insert (preserves legacy public flow at the redirected `/apply-lgt` → `/login`, which is now disconnected anyway).
+
+### 4. Routing (`src/App.tsx`)
+
+- Replace current `/admin/apply-lgt` → `<ApplyLGT />` with `<AdminApplyLgt />`.
+- Add public route: `<Route path="/lgt-form/:token" element={<SeekerLgtForm />} />`.
+
+## Edge function
+
+`supabase/functions/send-lgt-invite/index.ts` (new) — admin-only, JWT-validated:
+- Input: `{ seekerId: string }`.
+- Generates `crypto.randomUUID()` token, expiry = now + 14 days.
+- Upserts `lgt_applications` row (status `pending`).
+- Sends Resend email (templated, brand colors, with dynamic seeker name + program intro + CTA button → `https://vivekdoba.com/lgt-form/{token}`).
+- Returns `{ success, token, expiresAt, sentAt }`.
 
 ## Result
 
-- Public users hitting `/apply-lgt` directly → redirected to `/login` (no longer a defined route, falls to NotFound; if you'd like, we can add a redirect to `/login` instead — let me know).
-- Homepage, SEO pages, login page, and sitemap no longer surface the LGT application form publicly.
-- Admin sidebar → ENROLLMENTS → "LGT Application (In-Person)" opens the form for admin-driven entry.
+- `/admin/apply-lgt` — admin chooser → either fill form in-person OR send invite email.
+- Approved seekers without an existing application appear in the dropdown.
+- Once submitted (by admin or seeker), the seeker disappears from the dropdown.
+- Email link `/lgt-form/{token}` works without login; expires after 14 days; one-time submit.
 
-## Files touched
+## Files
 
-- `src/App.tsx` (route move)
-- `src/components/AdminLayout.tsx` (sidebar item)
-- `src/pages/seo/_SeoLayout.tsx` (CTA removal)
-- `src/pages/seo/BusinessCoaching.tsx` (delink)
-- `src/pages/LoginPage.tsx` (card removal)
-- `public/sitemap.xml` (URL removal)
+**Created**
+- `supabase/migrations/<timestamp>_lgt_applications.sql`
+- `supabase/functions/send-lgt-invite/index.ts`
+- `src/pages/admin/AdminApplyLgt.tsx`
+- `src/pages/SeekerLgtForm.tsx`
 
-No DB changes. No existing components/pages deleted.
+**Modified**
+- `src/App.tsx` (route swap + new public route)
+- `src/pages/ApplyLGT.tsx` (extend props + branch save logic)
+- `src/components/AdminLayout.tsx` (sidebar label tweak — keep entry, no change required)
+
+No existing data is altered. Existing `submissions` flow remains intact for legacy submissions.
+
+## Open question
+
+Right now "approved seeker" = any profile with `role = 'seeker'`. The codebase doesn't have a separate `approved` flag on profiles — once a registration is approved (`approve-application` edge function), the user becomes a real seeker profile. So **"approved seeker"** = any active `profiles.role = 'seeker'` row. Confirm this is what you mean. If you'd like a stricter filter (e.g. only seekers with at least one paid enrollment), say so and I'll narrow the dropdown source.

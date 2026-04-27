@@ -9,6 +9,8 @@ import RegisterPage from "./pages/RegisterPage";
 import BookAppointment from "./pages/BookAppointment";
 import RegisterWorkshop from "./pages/RegisterWorkshop";
 import ApplyLGT from "./pages/ApplyLGT";
+import SeekerLgtForm from "./pages/SeekerLgtForm";
+import AdminApplyLgt from "./pages/admin/AdminApplyLgt";
 import TellUsAboutYourself from "./pages/TellUsAboutYourself";
 import AuthGuard from "./components/AuthGuard";
 import AdminLayout from "./components/AdminLayout";
@@ -252,6 +254,8 @@ const App = () => (
           <Route path="/register-workshop" element={<RegisterWorkshop />} />
           {/* Legacy public route — now admin-only */}
           <Route path="/apply-lgt" element={<Navigate to="/login" replace />} />
+          {/* Public seeker invite link — token-gated */}
+          <Route path="/lgt-form/:token" element={<SeekerLgtForm />} />
           <Route path="/get-started" element={<TellUsAboutYourself />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/help" element={<HelpPage />} />
@@ -313,7 +317,7 @@ const App = () => (
             <Route path="/admin/program-analytics" element={<AdminProgramAnalytics />} />
             <Route path="/admin/enrollments" element={<AdminEnrollments />} />
             <Route path="/admin/new-enrollment" element={<AdminNewEnrollment />} />
-            <Route path="/admin/apply-lgt" element={<ApplyLGT />} />
+            <Route path="/admin/apply-lgt" element={<AdminApplyLgt />} />
             <Route path="/admin/batches" element={<AdminBatches />} />
             <Route path="/admin/enrollment-stats" element={<AdminEnrollmentStats />} />
             <Route path="/admin/add-lead" element={<AdminAddLead />} />
