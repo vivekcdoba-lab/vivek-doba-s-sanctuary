@@ -234,8 +234,12 @@ const AdminApplyLgt = () => {
               <tbody>
                 {filtered.map(s => {
                   const app = apps[s.id];
-                  const submitted = app?.status === 'submitted';
+                  const legacy = legacyByEmail[(s.email || '').trim().toLowerCase()];
+                  const submittedNew = app?.status === 'submitted';
+                  const submittedLegacy = !submittedNew && !!legacy;
+                  const submitted = submittedNew || submittedLegacy;
                   const invitedAt = app?.invite_email_sent_at || app?.invited_at;
+                  const filledAt = submittedNew ? invitedAt : (submittedLegacy ? legacy?.created_at : invitedAt);
                   const hasActiveToken = !!app?.invite_token;
                   return (
                     <tr key={s.id} className="border-b border-border/60 hover:bg-muted/30">
@@ -246,9 +250,13 @@ const AdminApplyLgt = () => {
                       <td className="px-3 py-3 text-muted-foreground hidden md:table-cell">{s.email || '—'}</td>
                       <td className="px-3 py-3 text-muted-foreground hidden lg:table-cell">{s.phone || '—'}</td>
                       <td className="px-3 py-3">
-                        {submitted ? (
+                        {submittedNew ? (
                           <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-800">
                             <Check className="w-3 h-3" /> Submitted
+                          </span>
+                        ) : submittedLegacy ? (
+                          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" title="Submitted via the old public form">
+                            <Check className="w-3 h-3" /> Submitted (legacy)
                           </span>
                         ) : hasActiveToken ? (
                           <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
@@ -259,9 +267,9 @@ const AdminApplyLgt = () => {
                             <X className="w-3 h-3" /> Not started
                           </span>
                         )}
-                        {invitedAt && (
+                        {filledAt && (
                           <div className="text-[10px] text-muted-foreground mt-1">
-                            {submitted ? 'Filled' : 'Invited'} {new Date(invitedAt).toLocaleDateString('en-IN')}
+                            {submitted ? 'Filled' : 'Invited'} {new Date(filledAt).toLocaleDateString('en-IN')}
                           </div>
                         )}
                       </td>
