@@ -218,6 +218,9 @@ const AdminApplyLgt = () => {
             />
           </div>
         )}
+      </div>
+    );
+  }
 
   // ===== Chooser screen =====
   return (
