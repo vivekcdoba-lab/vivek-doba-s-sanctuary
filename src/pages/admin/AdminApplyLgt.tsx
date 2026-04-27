@@ -404,12 +404,28 @@ const AdminApplyLgt = () => {
                             </>
                           )}
                           {submitted && (
-                            <button
-                              onClick={() => setSelectedId(s.id)}
-                              className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-muted font-medium"
-                            >
-                              View / Edit
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleEmailReport(s)}
+                                disabled={emailingReportFor === s.id || !s.email}
+                                title={!s.email ? 'Seeker has no email' : 'Generate fresh PDF report and email to seeker + admins'}
+                                className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 font-medium disabled:opacity-50"
+                              >
+                                {emailingReportFor === s.id ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <FileText className="w-3 h-3" />
+                                )}
+                                {emailingReportFor === s.id ? 'Sending…' : 'Email Report'}
+                              </button>
+                              <button
+                                onClick={() => setSelectedId(s.id)}
+                                className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-muted font-medium"
+                                title="Edit data — auto re-emails updated PDF report on save"
+                              >
+                                View / Edit
+                              </button>
+                            </>
                           )}
                         </div>
                       </td>
