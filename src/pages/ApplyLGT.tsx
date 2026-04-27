@@ -426,7 +426,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }
                     <input type="checkbox" checked={f.interestedCourses.includes(c.id)} onChange={() => toggleCourse(c.id)} className="mt-0.5 rounded accent-primary" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">{c.name}</p>
-                      <p className="text-xs text-muted-foreground">{c.duration} · {c.format} · ₹{c.price.toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-muted-foreground">{c.duration} · {c.format}</p>
                     </div>
                   </label>
                 ))}
