@@ -34,6 +34,7 @@ import CalendarPage from "./pages/admin/CalendarPage";
 import DailyTrackingPage from "./pages/admin/DailyTrackingPage";
 import GrowthMatrixPage from "./pages/admin/GrowthMatrixPage";
 import ApplicationsPage from "./pages/admin/ApplicationsPage";
+import AdminDetailedIntake from "./pages/admin/AdminDetailedIntake";
 import CoachDayView from "./pages/admin/CoachDayView";
 import WorksheetAnalyticsPage from "./pages/admin/WorksheetAnalyticsPage";
 import SessionCertification from "./pages/admin/SessionCertification";
@@ -286,6 +287,7 @@ const App = () => (
             <Route path="/daily-tracking" element={<DailyTrackingPage />} />
             <Route path="/growth-matrix" element={<GrowthMatrixPage />} />
             <Route path="/applications" element={<ApplicationsPage />} />
+            <Route path="/applications/:id/detailed-intake" element={<AdminDetailedIntake />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/worksheet-analytics" element={<WorksheetAnalyticsPage />} />
             <Route path="/sessions/:id/certify" element={<SessionCertification />} />

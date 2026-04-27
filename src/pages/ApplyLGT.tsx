@@ -89,7 +89,14 @@ const PhoneWithCode = ({ codeValue, onCodeChange, phoneValue, onPhoneChange }: {
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.com$/i.test(email);
 
-const ApplyLGT = () => {
+interface ApplyLGTProps {
+  adminMode?: boolean;
+  submissionId?: string;
+  initialData?: Record<string, any>;
+  onAdminSaved?: () => void;
+}
+
+const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved }: ApplyLGTProps = {}) => {
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -99,7 +106,8 @@ const ApplyLGT = () => {
   const [missingFields, setMissingFields] = useState<Set<string>>(new Set());
   const programRef = useRef<HTMLDivElement>(null);
 
-  const [f, setF] = useState<Record<string, any>>({
+  const [f, setF] = useState<Record<string, any>>(() => {
+    const defaults: Record<string, any> = {
     programId: '', fullName: '', preferredName: '', dob: '', gender: '', maritalStatus: '', children: 0,
     childrenAges: '', bloodGroup: '', aadhaar: '', mobile: '', mobileCode: '+91', whatsapp: '', sameWhatsapp: true, email: '',
     altPhone: '', prefComm: ['whatsapp', 'email'], address1: '', address2: '', city: '', state: '', stateOther: '', pincode: '',
@@ -134,6 +142,8 @@ const ApplyLGT = () => {
     paymentPref: 'full', paymentMethod: '', gstRequired: 'no', gstCompany: '', gstNumber: '',
     interestedCourses: [] as string[],
     consent1: false, consent2: false, consent3: false, consent4: false,
+    };
+    return initialData ? { ...defaults, ...initialData } : defaults;
   });
 
   const set = (k: string, v: any) => { setF(p => ({ ...p, [k]: v })); setMissingFields(p => { const n = new Set(p); n.delete(k); return n; }); };
@@ -146,6 +156,44 @@ const ApplyLGT = () => {
   const toggleCourse = (id: string) => toggleArr('interestedCourses', id);
 
   const emailError = f.email.length > 0 && !isValidEmail(f.email) ? 'Email must include @ and end with .com' : '';
+
+  const handleAdminSave = async () => {
+    if (!submissionId) return;
+    setLoading(true);
+    try {
+      // Merge with existing form_data on the row to preserve original short-intake keys
+      const { data: existing } = await supabase
+        .from('submissions')
+        .select('form_data')
+        .eq('id', submissionId)
+        .maybeSingle();
+      const prev = (existing?.form_data as Record<string, any>) || {};
+      const merged = {
+        ...prev,
+        ...f,
+        programName: selected?.name,
+        detailed_intake_completed_at: new Date().toISOString(),
+      };
+      const { error } = await supabase
+        .from('submissions')
+        .update({
+          full_name: f.fullName || prev.full_name,
+          email: f.email || prev.email,
+          mobile: f.mobile || prev.mobile,
+          country_code: f.mobileCode || prev.country_code,
+          form_data: merged as any,
+        })
+        .eq('id', submissionId);
+      if (error) throw error;
+      toast({ title: '✅ Detailed intake saved' });
+      onAdminSaved?.();
+    } catch (err: any) {
+      console.error(err);
+      toast({ title: 'Save failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async () => {
     const missing = new Set<string>();
@@ -292,7 +340,25 @@ const ApplyLGT = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {adminMode && (
+        <div className="bg-primary text-primary-foreground px-4 py-3 sticky top-0 z-30 shadow-md">
+          <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+            <div className="text-sm">
+              <span className="font-semibold">📋 Admin Mode — Detailed Seeker Intake</span>
+              <span className="text-primary-foreground/80 ml-2 hidden sm:inline">Fill in collected information; consents are not required here.</span>
+            </div>
+            <button
+              onClick={handleAdminSave}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-white text-primary text-sm font-bold hover:opacity-90 disabled:opacity-50 whitespace-nowrap"
+            >
+              {loading ? 'Saving…' : '💾 Save Intake'}
+            </button>
+          </div>
+        </div>
+      )}
       {/* Header */}
+      {!adminMode && (
       <div className="text-white py-8 px-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #FFD700, #7B1FA2)' }}>
         <div className="max-w-3xl mx-auto relative z-10">
           <Link to="/" className="inline-flex items-center gap-1 text-white/80 hover:text-white text-sm mb-4"><ArrowLeft className="w-4 h-4" /> Back to Home</Link>
@@ -301,7 +367,7 @@ const ApplyLGT = () => {
           <p className="text-white/60 mt-1 text-xs">⚡ Limited seats. Investment: ₹2,50,000 - ₹10,00,000 based on program tier.</p>
         </div>
       </div>
-
+      )}
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-4">
         {/* Program Selector */}
         <div
@@ -697,7 +763,8 @@ const ApplyLGT = () => {
           </Field>
         </Section>
 
-        {/* Section J: Payment & Consent */}
+        {/* Section J: Payment & Consent (public only) */}
+        {!adminMode && (
         <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <h3 className="font-semibold text-foreground mb-4">Payment & Consent</h3>
           {selected && <p className="text-sm bg-muted p-3 rounded-lg mb-4">Selected: <strong>{selected.name}</strong> — ₹{selected.price.toLocaleString('en-IN')}</p>}
@@ -740,6 +807,17 @@ const ApplyLGT = () => {
             {loading ? '⏳ Submitting your sacred application...' : '👑 Submit My Application'}
           </button>
         </div>
+        )}
+
+        {adminMode && (
+          <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
+            <h3 className="font-semibold text-foreground mb-2">Save Detailed Intake</h3>
+            <p className="text-sm text-muted-foreground mb-4">All fields are saved into the submission record. Consents and payment will be collected after approval.</p>
+            <button onClick={handleAdminSave} disabled={loading} className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:opacity-90 disabled:opacity-50">
+              {loading ? '⏳ Saving…' : '💾 Save Detailed Intake'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

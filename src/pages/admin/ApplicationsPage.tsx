@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Phone, MessageSquare, Mail, Check, X, RefreshCw, ChevronDown, ChevronUp, Loader2, Send, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Phone, MessageSquare, Mail, Check, X, RefreshCw, ChevronDown, ChevronUp, Loader2, Send, Trash2, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -262,6 +263,20 @@ const ApplicationsPage = () => {
               <div className="px-4 pb-3 flex flex-wrap justify-end gap-2 -mt-1">
                 {(sub.status === 'pending' || sub.status === 'info_requested') && (
                   <>
+                    <Link
+                      to={`/applications/${sub.id}/detailed-intake`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium text-primary border border-primary/40 bg-primary/5 hover:bg-primary/10 transition-colors"
+                      title="Open detailed intake form to capture full seeker information"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      {fd.detailed_intake_completed_at ? 'Edit Detailed Intake' : 'Fill Detailed Intake'}
+                    </Link>
+                    {fd.detailed_intake_completed_at && (
+                      <span className="px-2 py-1 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        ✓ Detailed info captured
+                      </span>
+                    )}
                     <button
                       onClick={(e) => { e.stopPropagation(); handleQuickApprove(sub.id, sub.full_name); }}
                       disabled={actionLoading}

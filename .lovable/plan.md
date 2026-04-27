@@ -1,62 +1,69 @@
-# Replace `/apply-lgt` with simplified intake flow
+# Move the detailed LGT form into the admin panel
 
-## Goal
-Swap the long LGT application form on the homepage for a short, frictionless intake form. Submissions still flow into the existing admin **Incoming Applications** dashboard, where the admin manually qualifies, finalizes pricing offline, and approves to auto-create the seeker account (existing pipeline — no changes needed).
+## Where the long form is right now
 
-## What stays the same (already built — reuse)
-- `submissions` table — already stores intake records with `form_type`, `status='pending'`, `form_data`.
-- Admin page `/applications` (`ApplicationsPage.tsx`) — already lists, filters, approves, rejects, requests info.
-- Edge function `approve-application` — on approve, creates auth user + seeker profile + sends credentials.
-- `send-notification` edge function — already emails admin on new submission and emails applicant on status change.
+The original `/apply-lgt` form **still exists** as a route and a file (`src/pages/ApplyLGT.tsx`, ~750 lines, 18 sections covering personal, business, health, relationships, mental, spiritual, wheel-of-life, goals, commitments, payment prefs). It is just no longer surfaced on the home page — Card 3 now goes to the short `/get-started` form (`TellUsAboutYourself`).
 
-## What changes
+A few SEO / login pages still link to `/apply-lgt` publicly:
+- `src/pages/seo/_SeoLayout.tsx`
+- `src/pages/seo/BusinessCoaching.tsx`
+- `src/pages/LoginPage.tsx`
 
-### 1. New page: `src/pages/TellUsAboutYourself.tsx` (route `/get-started`)
-A single-screen form with these fields only:
-- **Full Name** (required)
-- **Email** (required, validated)
-- **Phone** with country code (required, uses existing `PhoneInput` + `validatePhone`/`toE164`)
-- **City / Location** (optional)
-- **Short intent** — textarea, "What brings you here?" (1–2 lines, max 500 chars, required)
-- **Consent** checkbox — "I agree to be contacted by the VDTS team"
+## What you're asking for
 
-On submit:
-- Duplicate check via existing `check_profile_duplicate` RPC (prevents resubmission with an existing seeker email/phone).
-- Insert into `submissions` with:
-  - `form_type: 'lgt_application'` (so it appears under the existing "👑 LGT Applications" filter — no admin UI changes needed)
-  - `status: 'pending'`
-  - `full_name`, `email`, `mobile`, `country_code`
-  - `form_data: { city, intent, source: 'tell_us_about_yourself' }`
-- Invoke `send-notification` with `type: 'new_submission'` so admin gets email alert.
-- Show success screen: "Thank you — Vivek Sir's team will reach out within 48 hours."
+When a short intake comes in via "Tell Us About Yourself", the admin should be able to **fill in the full detailed profile from inside the admin panel** (not send the seeker back to a long public form). The admin captures the rich data during the qualification call.
 
-### 2. Home page (`src/pages/Index.tsx`)
-- Update Card 3 ("Apply for Life's Golden Triangle"):
-  - Title → **"Tell Us About Yourself"**
-  - Description → short, low-friction copy ("Share a few details. We'll personally reach out to design the right path for you. Takes under a minute.")
-  - CTA button → **"Get Started"** linking to `/get-started`
-- Keep the gold→purple gradient and 👑 emoji as-is.
+## Proposed solution
 
-### 3. Routing (`src/App.tsx`)
-- Add `<Route path="/get-started" element={<TellUsAboutYourself />} />`.
-- **Keep** `/apply-lgt` route intact for now (other pages — `LoginPage`, `BusinessCoaching`, `_SeoLayout` — still link to it). Old long form remains accessible at the URL but is no longer surfaced on the homepage. We can deprecate those secondary links in a follow-up.
+### 1. New admin page: "Detailed Seeker Intake"
+- **Route**: `/applications/:submissionId/detailed-intake` (admin-only, under `AdminLayout`)
+- **Component**: `src/pages/admin/AdminDetailedIntake.tsx`
+- Reuses the same 18-section form structure as `ApplyLGT.tsx`, but:
+  - Pre-fills Full Name / Email / Mobile / City / Intent from the parent `submissions` row (the short intake).
+  - No "Apply" / payment language — framed as "Seeker Intake Form (Admin Filled)".
+  - Removes commitments + consent checkboxes (those will be collected from the seeker after approval, via DocuSign-style flow you already have).
+  - Save button writes the detailed answers back into the same `submissions.form_data` JSON, merging with existing keys, plus sets `form_data.detailed_intake_completed_at`.
+  - Allows partial save (Save Draft) and final Save (marks intake complete).
 
-### 4. Admin clarity (small enhancement, optional)
-In `ApplicationsPage.tsx`, when a submission has `form_data.source === 'tell_us_about_yourself'`, show a small badge **"New Seeker — Pending Review"** next to the existing status pill so the admin can quickly tell short-form intakes apart from full LGT applications. No filter changes.
+### 2. Refactor `ApplyLGT.tsx` into a reusable component
+- Extract the form body from `src/pages/ApplyLGT.tsx` into `src/components/intake/DetailedIntakeForm.tsx`.
+- Two thin wrappers consume it:
+  - `src/pages/ApplyLGT.tsx` — public route (kept for the SEO/Login links that still point to it; submits to `submissions` as today).
+  - `src/pages/admin/AdminDetailedIntake.tsx` — admin route, loads existing submission, prefills, saves back.
+- Keeps a single source of truth — no copy-paste maintenance.
 
-## Approval flow (unchanged, confirms requirements)
-1. Admin sees new entry under `/applications` with status **⏳ Pending Review**.
-2. Admin contacts seeker (live/async), discusses Individual vs Couple, payment offline.
-3. Admin can fill in additional profile data later via the existing seeker detail page (after approval).
-4. Admin clicks **Approve** → `approve-application` edge function:
-   - Creates Supabase auth user with a generated temp password.
-   - Creates `profiles` row with `role='seeker'`, `must_change_password=true`.
-   - `send-notification` emails the seeker with login credentials and onboarding instructions.
+### 3. Hook from Applications dashboard
+In `src/pages/admin/ApplicationsPage.tsx`, on every short-intake row (where `form_data.source === 'tell_us_about_yourself'`), add a button:
+- **"📋 Fill Detailed Intake"** → navigates to `/applications/:id/detailed-intake`
+- If the submission already has detailed data, label becomes **"✏️ Edit Detailed Intake"** with a green "Detailed info captured" badge.
+
+The existing Approve / Reject / Request Info actions stay unchanged. Admin typically: short intake comes in → call seeker → fill detailed intake → Approve (existing `approve-application` edge function creates the auth user + profile).
+
+### 4. Where the detailed data lives
+- All answers are stored in `submissions.form_data` (JSONB) — **no schema migration needed**. The existing column already accepts arbitrary keys.
+- On approve, the existing `approve-application` edge function creates the seeker profile. We extend it (small change) to copy a curated subset of `form_data` keys into the new `profiles` row: `dob`, `gender`, `marital_status`, `blood_group`, `address1`, `state`, `pincode`, `company`, `designation`, `industry`, `emergency_contact_name`, `emergency_contact_phone`, etc. — only fields that already have matching columns on `profiles`. The rest stays on the submission record for reference.
+
+### 5. Minor cleanup
+- Add a sidebar entry under Admin → "Applications" so this is discoverable (it's already there as `/applications`).
+- Update the SEO/Login links from `/apply-lgt` → `/get-started` in a follow-up so the public surface is consistent. Old route stays functional during the transition.
 
 ## Files touched
-- `src/pages/TellUsAboutYourself.tsx` (new)
-- `src/pages/Index.tsx` (Card 3 copy + link)
-- `src/App.tsx` (add route)
-- `src/pages/admin/ApplicationsPage.tsx` (small badge for `source === 'tell_us_about_yourself'`)
 
-No DB migration, no edge function changes, no payment integration.
+| File | Change |
+|---|---|
+| `src/components/intake/DetailedIntakeForm.tsx` | **New** — extracted form body, accepts `initialValues`, `mode: 'public' \| 'admin'`, `onSave` callback |
+| `src/pages/ApplyLGT.tsx` | Refactored to thin wrapper using `DetailedIntakeForm` |
+| `src/pages/admin/AdminDetailedIntake.tsx` | **New** — loads submission, renders `DetailedIntakeForm` in admin mode, saves to `submissions.form_data` |
+| `src/pages/admin/ApplicationsPage.tsx` | Add "Fill Detailed Intake" button + "Detailed info captured" badge |
+| `src/App.tsx` | Add `/applications/:id/detailed-intake` route inside admin layout |
+| `supabase/functions/approve-application/index.ts` | Extend to copy curated `form_data` fields onto the new profile (additive, safe) |
+
+## What does NOT change
+- No DB migration.
+- `submissions` table, `approve-application` flow, short `/get-started` form, RLS — all unchanged in shape.
+- Public `/apply-lgt` URL keeps working for any external links / bookmarks.
+
+## Result
+- Seekers fill a 60-second form on the home page.
+- Admin opens the intake in the admin panel, calls the seeker, and fills the rich 18-section profile right there.
+- On Approve, the seeker account is created with the full profile already populated — no second form for the seeker.
