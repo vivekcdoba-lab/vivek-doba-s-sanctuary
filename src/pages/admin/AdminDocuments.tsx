@@ -69,7 +69,7 @@ const AdminDocuments = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Document Library</h1>
+          <h1 className="text-2xl font-bold text-foreground">Agreement Document Library</h1>
           <p className="text-sm text-muted-foreground">Upload PDFs to send to seekers for digital signature</p>
         </div>
         <Button onClick={() => setOpen(true)}><Plus className="w-4 h-4 mr-2" /> Upload Document</Button>
