@@ -182,18 +182,34 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
                     ))}
                   </div>
                 ) : (row as any).type === 'mode' ? (
-                  <div className="flex gap-3 flex-wrap text-xs">
-                    {(['Bank', 'UPI', 'Cheque', 'Cash'] as const).map(opt => (
-                      <label key={opt} className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="radio"
-                          checked={f.modeOfPayment === opt}
-                          onChange={() => set('modeOfPayment', opt)}
-                          disabled={readOnly}
-                        />
-                        {opt}
-                      </label>
-                    ))}
+                  <div className="flex gap-4 flex-wrap text-xs">
+                    {([
+                      { en: 'Bank', hi: 'बैंक' },
+                      { en: 'UPI', hi: 'यूपीआई' },
+                      { en: 'Cheque', hi: 'चेक' },
+                      { en: 'Cash', hi: 'नकद' },
+                    ] as const).map(opt => {
+                      const current: string[] = Array.isArray(f.modeOfPayment)
+                        ? f.modeOfPayment
+                        : f.modeOfPayment ? [f.modeOfPayment as unknown as string] : [];
+                      const checked = current.includes(opt.en);
+                      return (
+                        <label key={opt.en} className="flex items-center gap-1.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {
+                              const next = checked
+                                ? current.filter(v => v !== opt.en)
+                                : [...current, opt.en];
+                              set('modeOfPayment', next as any);
+                            }}
+                            disabled={readOnly}
+                          />
+                          <span>{opt.en} / {opt.hi}</span>
+                        </label>
+                      );
+                    })}
                   </div>
                 ) : (row as any).type === 'textarea' ? (
                   <Textarea

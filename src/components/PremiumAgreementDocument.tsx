@@ -262,7 +262,7 @@ export default function PremiumAgreementDocument({
               {fee.paymentPlan === "installments" && (
                 <Row label="Installment schedule / किस्त अनुसूची" value={fee.installmentSchedule || "—"} />
               )}
-              <Row label="Mode of payment / भुगतान का तरीका" value={fee.modeOfPayment || "—"} />
+              <Row label="Mode of payment / भुगतान का तरीका" value={Array.isArray(fee.modeOfPayment) ? (fee.modeOfPayment.length ? fee.modeOfPayment.join(', ') : "—") : (fee.modeOfPayment || "—")} />
               <Row label="Amount paid today / आज भुगतान की गई राशि" value={formatINR(fee.amountPaidToday)} />
               <Row label="Balance due / बकाया" value={formatINR(fee.balanceDue)} />
             </tbody>
