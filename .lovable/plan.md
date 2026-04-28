@@ -1,51 +1,23 @@
-## Two fixes
+# Fix: "Save Fee Structure" foreign key error
 
-### 1. Fix `agreements_type_check` constraint error
+## Problem
+Saving a Fee Structure (or Premium Agreement) on Admin → Seeker → Documents fails with:
+> insert or update on table "agreements" violates foreign key constraint "agreements_client_id_fkey"
 
-**Root cause:** The DB constraint currently only allows `type IN ('coaching', 'goal')`, but the code already inserts `'fee_structure'` and the new `'premium_agreement'`. Saving the Premium Agreement throws this error.
+The `agreements.client_id` column has a foreign key pointing to the legacy `clients` table, but the admin Seeker Documents flow passes the seeker's **profile id** (from `profiles`). That id doesn't exist in `clients`, so the insert is rejected.
 
-**Migration** — drop and recreate the constraint to include all current valid types:
+The `agreements` table is currently empty, so we can safely re-point the FK without data migration.
 
-```sql
-ALTER TABLE public.agreements DROP CONSTRAINT IF EXISTS agreements_type_check;
-ALTER TABLE public.agreements ADD CONSTRAINT agreements_type_check
-  CHECK (type IN ('coaching', 'goal', 'fee_structure', 'premium_agreement'));
-```
+## Fix
+Change the foreign key on `agreements.client_id` to reference `profiles(id)` instead of `clients(id)`. This matches what the Fee Structure / Premium Agreement code already passes (the seeker's profile id) and aligns with the rest of the seeker-centric admin module.
 
-No code changes needed — `PremiumAgreementPage.tsx` already inserts with `type: "premium_agreement"`.
+## Technical Details
+- Run a migration that:
+  - Drops `agreements_client_id_fkey`
+  - Re-adds it as `FOREIGN KEY (client_id) REFERENCES public.profiles(id) ON DELETE CASCADE`
+- No code changes needed in `useFeeStructure.ts` — it already passes `seekerId` (a profile id).
+- No data backfill required (table is empty).
+- Existing `agreements_type_check` (allowing `coaching`, `goal`, `fee_structure`, `premium_agreement`) is untouched.
 
----
-
-### 2. Mode of Payment → multi-select checkboxes (bilingual)
-
-**Current:** Single radio (Bank / UPI / Cheque / Cash). Stored as a single string on `modeOfPayment`.
-
-**New:** Multiple checkboxes — coach can tick more than one (e.g. UPI + Bank). Each option labelled bilingually (EN / HI).
-
-**Bilingual labels:**
-| EN | HI |
-|---|---|
-| Bank | बैंक |
-| UPI | यूपीआई |
-| Cheque | चेक |
-| Cash | नकद |
-
-**Files to change:**
-
-- **`src/hooks/useFeeStructure.ts`** — change `modeOfPayment` type from union string to `string[]`; default `[]`. Backwards-compat: when reading, if existing value is a string, wrap into `[value]` so old fee structures still display.
-
-- **`src/components/FeeStructureForm.tsx`** (lines 184–197) — replace radio inputs with `Checkbox` from `@/components/ui/checkbox`. Toggle adds/removes the option from the array. Display label as `Bank / बैंक` etc.
-
-- **`src/components/PremiumAgreementDocument.tsx`** (line 265) — render `fee.modeOfPayment` as comma-joined list (handle both string and array for legacy data): `Array.isArray(fee.modeOfPayment) ? fee.modeOfPayment.join(', ') : fee.modeOfPayment || '—'`.
-
-- **`src/pages/admin/AdminRecordPayment.tsx`** is unaffected (its `method` is a separate per-payment field, single-select — out of scope).
-
----
-
-### Validation
-
-After applying:
-- Saving Premium Agreement no longer throws constraint error.
-- Fee Structure form shows 4 bilingual checkboxes; multiple can be ticked.
-- Premium Agreement PDF Page 6 shows selected modes joined by commas.
-- Existing fee structures with single-string `modeOfPayment` still render correctly (backwards-compat fallback).
+## Verification
+After the migration, saving Fee Structure / Premium Agreement from the Admin Seeker Documents tab will succeed and the row will load back via the existing query (`client_id = seekerId`, `type = 'fee_structure'`).
