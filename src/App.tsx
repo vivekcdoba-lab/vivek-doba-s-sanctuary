@@ -280,6 +280,12 @@ const RouteFallback = () => (
   </div>
 );
 
+// Main bundle loaded successfully — clear the one-shot reload guard so a
+// future stale-chunk error can also recover.
+if (typeof window !== "undefined") {
+  try { sessionStorage.removeItem(CHUNK_RELOAD_KEY); } catch {}
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
