@@ -190,7 +190,14 @@ Deno.serve(async (req) => {
       let email_sent = false;
       let email_error: string | undefined;
       if (RESEND_API_KEY && seeker.email) {
-        const b64 = btoa(String.fromCharCode(...new Uint8Array(signedBytes)));
+        // Chunked base64 encoding to avoid "Maximum call stack size exceeded"
+        const bytes = new Uint8Array(signedBytes);
+        let binary = "";
+        const CHUNK = 8192;
+        for (let i = 0; i < bytes.length; i += CHUNK) {
+          binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + CHUNK)));
+        }
+        const b64 = btoa(binary);
         try {
           const resp = await fetch("https://api.resend.com/emails", {
             method: "POST",
