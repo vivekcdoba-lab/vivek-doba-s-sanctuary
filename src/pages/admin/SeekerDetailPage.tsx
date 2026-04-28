@@ -828,11 +828,31 @@ const SeekerDetailPage = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold text-foreground">Fee Structure / फीस संरचना</h3>
-                <p className="text-xs text-muted-foreground mt-1">Onboarding fee details. Auto-attached as the second-to-last page of the Coaching Agreement.</p>
+                <p className="text-xs text-muted-foreground mt-1">Onboarding fee details. Auto-attached as page 6 (B1.2) of the Premium Coaching Agreement.</p>
               </div>
             </div>
             <FeeStructureForm seekerId={seeker.id} />
           </div>
+
+          <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  📜 Premium Coaching Agreement
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Full 12-page bilingual agreement. Auto-fills client details (B1.1), fee structure (B1.2), and captures digital signatures (B1.3).
+                </p>
+              </div>
+              <a
+                href={`/coaching/premium-agreement/${seeker.id}`}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#8B0000] text-white text-sm font-medium hover:bg-[#6B0000] transition-colors whitespace-nowrap"
+              >
+                Open Agreement →
+              </a>
+            </div>
+          </div>
+
           <SeekerSignaturesTab seekerId={seeker.id} />
         </div>
       )}
