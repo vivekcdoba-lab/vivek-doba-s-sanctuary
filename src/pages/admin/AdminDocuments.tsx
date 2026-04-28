@@ -34,16 +34,33 @@ const AdminDocuments = () => {
     if (!title.trim() || !file) return;
     setUploading(true);
     try {
-      const path = `library/${Date.now()}-${file.name.replace(/[^a-z0-9.]/gi, "_")}`;
+      // Determine next version: same title + category → bump latest version by 1
+      const { data: prior } = await supabase
+        .from("documents")
+        .select("version")
+        .eq("title", title.trim())
+        .eq("category", category)
+        .order("version", { ascending: false })
+        .limit(1);
+      const nextVersion = (prior?.[0]?.version ?? 0) + 1;
+
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      const safeName = file.name.replace(/[^a-z0-9.]/gi, "_");
+      const path = `library/${today}/v${nextVersion}-${Date.now()}-${safeName}`;
       const { error: upErr } = await supabase.storage.from("documents").upload(path, file, { contentType: "application/pdf" });
       if (upErr) throw upErr;
       const { data: { user } } = await supabase.auth.getUser();
       const { data: prof } = await supabase.from("profiles").select("id").eq("user_id", user!.id).single();
       const { error: insErr } = await supabase.from("documents").insert({
-        title: title.trim(), description: description.trim() || null, category, storage_path: path, uploaded_by: prof?.id,
+        title: title.trim(),
+        description: description.trim() || null,
+        category,
+        storage_path: path,
+        uploaded_by: prof?.id,
+        version: nextVersion,
       });
       if (insErr) throw insErr;
-      toast({ title: "Document uploaded" });
+      toast({ title: `Document uploaded (v${nextVersion})`, description: `Saved on ${today}` });
       setOpen(false); setTitle(""); setDescription(""); setFile(null);
       load();
     } catch (e: any) {
@@ -85,7 +102,9 @@ const AdminDocuments = () => {
                 <Badge variant={d.is_active ? "default" : "secondary"}>{d.is_active ? "Active" : "Inactive"}</Badge>
               </div>
               <h3 className="font-semibold mt-3 text-foreground">{d.title}</h3>
-              <p className="text-xs text-muted-foreground capitalize">{d.category} · v{d.version}</p>
+              <p className="text-xs text-muted-foreground capitalize">
+                {d.category} · v{d.version} · Uploaded {new Date(d.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </p>
               {d.description && <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{d.description}</p>}
               <div className="flex gap-2 mt-4">
                 <Button size="sm" variant="outline" onClick={() => download(d.storage_path)}><Download className="w-3 h-3" /></Button>
