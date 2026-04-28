@@ -214,6 +214,7 @@ const SeekerRelationshipTracker = lazyWithReload(() => import("./pages/seeker/Se
 const CoachingDashboard = lazyWithReload(() => import("./pages/coaching/CoachingDashboard"));
 const ClientIntakePage = lazyWithReload(() => import("./pages/coaching/ClientIntakePage"));
 const AgreementsPage = lazyWithReload(() => import("./pages/coaching/AgreementsPage"));
+const PremiumAgreementPage = lazyWithReload(() => import("./pages/coaching/PremiumAgreementPage"));
 const FiroBPage = lazyWithReload(() => import("./pages/coaching/FiroBPage"));
 const CoachingSessionNotes = lazyWithReload(() => import("./pages/coaching/CoachingSessionNotes"));
 const CoachingPlanner = lazyWithReload(() => import("./pages/coaching/CoachingPlanner"));
