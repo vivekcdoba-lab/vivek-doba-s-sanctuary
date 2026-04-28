@@ -1,8 +1,15 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Plus, Users, Clock, Star, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useDbCourses, useCreateCourse, useUpdateCourse } from '@/hooks/useDbCourses';
+import { useAllDbCourses, useCreateCourse, useUpdateCourse } from '@/hooks/useDbCourses';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
+import {
+  LIFECYCLE_STATUSES,
+  LIFECYCLE_LABELS,
+  LIFECYCLE_BADGE_CLASSES,
+  isActiveFlagFor,
+  type LifecycleStatus,
+} from '@/lib/programLifecycle';
 
 const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
 const TIERS = ['standard', 'premium', 'platinum', 'chakravartin'];
@@ -13,31 +20,60 @@ const GRADIENT_PRESETS = [
   ['#E0E0E0', '#FAFAFA'], ['#FFD700', '#7B1FA2'], ['#E91E63', '#9C27B0'], ['#3F51B5', '#2196F3'],
 ];
 
+const emptyForm = {
+  name: '', tagline: '', duration: '', format: 'Workshop', tier: 'standard',
+  price: '', max_participants: '', gradient_index: 0, event_date: '',
+  location: '', location_type: 'in_person',
+  lifecycle_status: 'active' as LifecycleStatus,
+};
+
 const CoursesPage = () => {
-  const { data: courses = [], isLoading } = useDbCourses();
+  const { data: courses = [], isLoading } = useAllDbCourses();
   const { data: seekers = [] } = useSeekerProfiles();
   const createCourse = useCreateCourse();
   const updateCourse = useUpdateCourse();
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', tagline: '', duration: '', format: 'Workshop', tier: 'standard', price: '', max_participants: '', gradient_index: 0, event_date: '', location: '', location_type: 'in_person' });
+  const [tab, setTab] = useState<LifecycleStatus>('active');
+  const [form, setForm] = useState(emptyForm);
 
-  const resetForm = () => { setForm({ name: '', tagline: '', duration: '', format: 'Workshop', tier: 'standard', price: '', max_participants: '', gradient_index: 0, event_date: '', location: '', location_type: 'in_person' }); setEditId(null); };
+  const counts = useMemo(() => {
+    const c: Record<LifecycleStatus, number> = { active: 0, upcoming: 0, completed: 0, deactivated: 0 };
+    courses.forEach(x => { c[(x.lifecycle_status || 'active') as LifecycleStatus]++; });
+    return c;
+  }, [courses]);
+
+  const resetForm = () => { setForm(emptyForm); setEditId(null); };
   const openAdd = () => { resetForm(); setShowModal(true); };
   const openEdit = (id: string) => {
     const c = courses.find(x => x.id === id);
     if (!c) return;
     const gc = c.gradient_colors as any;
     const gi = GRADIENT_PRESETS.findIndex(g => gc && g[0] === gc[0] && g[1] === gc[1]);
-    setForm({ name: c.name, tagline: c.tagline || '', duration: c.duration || '', format: c.format || 'Workshop', tier: c.tier, price: String(c.price), max_participants: String(c.max_participants), gradient_index: gi >= 0 ? gi : 0, event_date: c.event_date || '', location: c.location || '', location_type: c.location_type || 'in_person' });
+    setForm({
+      name: c.name, tagline: c.tagline || '', duration: c.duration || '',
+      format: c.format || 'Workshop', tier: c.tier, price: String(c.price),
+      max_participants: String(c.max_participants), gradient_index: gi >= 0 ? gi : 0,
+      event_date: c.event_date || '', location: c.location || '',
+      location_type: c.location_type || 'in_person',
+      lifecycle_status: (c.lifecycle_status || 'active') as LifecycleStatus,
+    });
     setEditId(id); setShowModal(true);
   };
 
   const handleSave = async () => {
     if (!form.name || !form.duration || !form.price || !form.max_participants) { toast.error('Please fill all required fields'); return; }
-    const data = { name: form.name, tagline: form.tagline, duration: form.duration, format: form.format, tier: form.tier, price: Number(form.price), max_participants: Number(form.max_participants), gradient_colors: GRADIENT_PRESETS[form.gradient_index], is_active: true, event_date: form.event_date || null, location: form.location || null, location_type: form.location_type };
+    const data = {
+      name: form.name, tagline: form.tagline, duration: form.duration, format: form.format,
+      tier: form.tier, price: Number(form.price), max_participants: Number(form.max_participants),
+      gradient_colors: GRADIENT_PRESETS[form.gradient_index],
+      is_active: isActiveFlagFor(form.lifecycle_status),
+      lifecycle_status: form.lifecycle_status,
+      event_date: form.event_date || null, location: form.location || null,
+      location_type: form.location_type,
+    };
     try {
-      if (editId) { await updateCourse.mutateAsync({ id: editId, ...data }); toast.success(`"${form.name}" updated`); }
+      if (editId) { await updateCourse.mutateAsync({ id: editId, ...data } as any); toast.success(`"${form.name}" updated`); }
       else { await createCourse.mutateAsync(data as any); toast.success(`"${form.name}" added`); }
       setShowModal(false); resetForm();
     } catch (err: any) { toast.error(err.message || 'Failed to save'); }
@@ -48,16 +84,37 @@ const CoursesPage = () => {
 
   if (isLoading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
+  const filtered = courses.filter(c => (c.lifecycle_status || 'active') === tab);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-foreground">Training Programs</h1><p className="text-sm text-muted-foreground">{courses.length} programs offered</p></div>
+        <div><h1 className="text-2xl font-bold text-foreground">Training Programs</h1><p className="text-sm text-muted-foreground">{courses.length} programs total</p></div>
         <button onClick={openAdd} className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 hover:opacity-90"><Plus className="w-4 h-4" /> Add Course</button>
       </div>
-      {courses.length > 0 ? (
+
+      {/* Lifecycle status tabs */}
+      <div className="flex flex-wrap gap-2">
+        {LIFECYCLE_STATUSES.map(s => (
+          <button
+            key={s}
+            onClick={() => setTab(s)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+              tab === s
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-card text-muted-foreground border-border hover:bg-muted'
+            }`}
+          >
+            {LIFECYCLE_LABELS[s]} <span className="ml-1 opacity-70">({counts[s]})</span>
+          </button>
+        ))}
+      </div>
+
+      {filtered.length > 0 ? (
         <div className="grid md:grid-cols-2 gap-5 stagger-children">
-          {courses.map((course) => {
+          {filtered.map((course) => {
             const gc = course.gradient_colors as any;
+            const status = (course.lifecycle_status || 'active') as LifecycleStatus;
             return (
               <div key={course.id} className="bg-card rounded-2xl shadow-md border border-border overflow-hidden card-hover">
                 <div className="h-24 relative" style={{ background: gc ? `linear-gradient(135deg, ${gc[0]}, ${gc[1]})` : 'hsl(var(--primary))' }}>
@@ -67,7 +124,12 @@ const CoursesPage = () => {
                   </div>
                 </div>
                 <div className="p-5">
-                  <h3 className="text-lg font-bold text-foreground mb-1">{course.name}</h3>
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="text-lg font-bold text-foreground">{course.name}</h3>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${LIFECYCLE_BADGE_CLASSES[status]}`}>
+                      {LIFECYCLE_LABELS[status]}
+                    </span>
+                  </div>
                   <p className="text-sm text-muted-foreground mb-4">{course.tagline}</p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {course.duration && <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full"><Clock className="w-3 h-3" /> {course.duration}</span>}
@@ -83,13 +145,14 @@ const CoursesPage = () => {
           })}
         </div>
       ) : (
-        <div className="text-center py-16"><span className="text-5xl block mb-3">📚</span><p className="text-muted-foreground">No courses yet. Add your first program!</p></div>
+        <div className="text-center py-16"><span className="text-5xl block mb-3">📚</span><p className="text-muted-foreground">No {LIFECYCLE_LABELS[tab].toLowerCase()} programs.</p></div>
       )}
+
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowModal(false)}>
           <div className="bg-card rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto border border-border" onClick={e => e.stopPropagation()}>
             <div className="h-16 rounded-t-2xl relative" style={{ background: `linear-gradient(135deg, ${GRADIENT_PRESETS[form.gradient_index][0]}, ${GRADIENT_PRESETS[form.gradient_index][1]})` }}>
-              <button onClick={() => setShowModal(false)} className="absolute top-3 right-3 text-white/80 hover:text-white"><X className="w-5 h-5" /></button>
+              <button onClick={() => setShowModal(false)} className="absolute top-3 right-3 text-primary-foreground/80 hover:text-primary-foreground"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
               <h2 className="text-xl font-bold text-foreground">{editId ? 'Edit Course' : 'Add New Course'}</h2>
@@ -104,6 +167,20 @@ const CoursesPage = () => {
                 <div><label className="block text-sm font-medium text-foreground mb-1">Max Participants *</label><input className={inputCls} type="number" value={form.max_participants} onChange={e => set('max_participants', e.target.value)} /></div>
               </div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Tier</label><div className="flex flex-wrap gap-2">{TIERS.map(t => (<button key={t} onClick={() => set('tier', t)} className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize ${form.tier === t ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground'}`}>{t}</button>))}</div></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Lifecycle Status</label>
+                <div className="flex flex-wrap gap-2">
+                  {LIFECYCLE_STATUSES.map(s => (
+                    <button
+                      key={s}
+                      onClick={() => set('lifecycle_status', s)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium ${form.lifecycle_status === s ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground'}`}
+                    >
+                      {LIFECYCLE_LABELS[s]}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Deactivated programs are hidden from seekers.</p>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-sm font-medium text-foreground mb-1">Event Date</label><input className={inputCls} type="date" value={form.event_date} onChange={e => set('event_date', e.target.value)} /></div>
                 <div><label className="block text-sm font-medium text-foreground mb-1">Location</label><input className={inputCls} value={form.location} onChange={e => set('location', e.target.value.slice(0, 60))} placeholder="e.g., Mumbai, Andheri West" maxLength={60} /></div>
