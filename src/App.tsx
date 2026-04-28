@@ -214,6 +214,7 @@ const SeekerRelationshipTracker = lazyWithReload(() => import("./pages/seeker/Se
 const CoachingDashboard = lazyWithReload(() => import("./pages/coaching/CoachingDashboard"));
 const ClientIntakePage = lazyWithReload(() => import("./pages/coaching/ClientIntakePage"));
 const AgreementsPage = lazyWithReload(() => import("./pages/coaching/AgreementsPage"));
+const PremiumAgreementPage = lazyWithReload(() => import("./pages/coaching/PremiumAgreementPage"));
 const FiroBPage = lazyWithReload(() => import("./pages/coaching/FiroBPage"));
 const CoachingSessionNotes = lazyWithReload(() => import("./pages/coaching/CoachingSessionNotes"));
 const CoachingPlanner = lazyWithReload(() => import("./pages/coaching/CoachingPlanner"));
@@ -503,6 +504,7 @@ const App = () => (
               <Route path="/coaching" element={<CoachingDashboard />} />
               <Route path="/coaching/intake" element={<ClientIntakePage />} />
               <Route path="/coaching/agreements" element={<AgreementsPage />} />
+              <Route path="/coaching/premium-agreement/:seekerId" element={<PremiumAgreementPage />} />
               <Route path="/coaching/firo-b" element={<FiroBPage />} />
               <Route path="/coaching/sessions" element={<CoachingSessionNotes />} />
               <Route path="/coaching/planner" element={<CoachingPlanner />} />

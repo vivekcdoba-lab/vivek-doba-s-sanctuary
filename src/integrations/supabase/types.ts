@@ -79,6 +79,56 @@ export type Database = {
           },
         ]
       }
+      agreement_signatures: {
+        Row: {
+          agreement_id: string
+          content_hash: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          signed_at: string
+          signer_id: string
+          signer_role: string
+          storage_path: string | null
+          typed_name: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          agreement_id: string
+          content_hash: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          signed_at?: string
+          signer_id: string
+          signer_role: string
+          storage_path?: string | null
+          typed_name?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          agreement_id?: string
+          content_hash?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          signed_at?: string
+          signer_id?: string
+          signer_role?: string
+          storage_path?: string | null
+          typed_name?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_signatures_agreement_id_fkey"
+            columns: ["agreement_id"]
+            isOneToOne: false
+            referencedRelation: "agreements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agreements: {
         Row: {
           client_id: string
