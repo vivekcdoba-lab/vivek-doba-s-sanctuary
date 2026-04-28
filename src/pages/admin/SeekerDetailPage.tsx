@@ -845,7 +845,7 @@ const SeekerDetailPage = () => {
                 </p>
               </div>
               <a
-                href={`/coaching/premium-agreement/${seeker.id}`}
+                href={`/seekers/${seeker.id}/premium-agreement`}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#8B0000] text-white text-sm font-medium hover:bg-[#6B0000] transition-colors whitespace-nowrap"
               >
                 Open Agreement →
