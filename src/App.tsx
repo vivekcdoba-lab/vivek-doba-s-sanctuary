@@ -1,9 +1,39 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+
+// Auto-recover from stale chunk errors after a deploy. When code-splitting
+// is enabled, every publish produces new hashed chunk filenames; users with
+// the previous index.html cached will request chunks that no longer exist.
+// On that specific failure we reload once so the browser picks up the fresh
+// index.html and its new chunk hashes.
+const CHUNK_RELOAD_KEY = "vdts:chunk-reload";
+function lazyWithReload<T extends ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+) {
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch (err: any) {
+      const msg = String(err?.message || err);
+      const isChunkErr =
+        msg.includes("Failed to fetch dynamically imported module") ||
+        msg.includes("Importing a module script failed") ||
+        msg.includes("error loading dynamically imported module") ||
+        msg.includes("Unable to preload CSS");
+      if (isChunkErr && typeof window !== "undefined" && !sessionStorage.getItem(CHUNK_RELOAD_KEY)) {
+        sessionStorage.setItem(CHUNK_RELOAD_KEY, "1");
+        window.location.reload();
+        // Never resolve so React doesn't try to render before reload completes
+        return new Promise<{ default: T }>(() => {});
+      }
+      throw err;
+    }
+  });
+}
 
 // Eagerly loaded — needed for first paint and routing shell
 import Index from "./pages/Index";
