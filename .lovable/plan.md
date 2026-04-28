@@ -1,74 +1,156 @@
-# Fix: "Failed to fetch dynamically imported module"
+# Premium Coaching Agreement — Implementation Plan
 
-## What's happening
+Convert the uploaded `Coaching_Agreement_Premium.pdf` into a system-generated, data-driven 12-page agreement document inside VDTS. It will auto-pull data from existing tables (no duplicate entry) and produce an exact-looking PDF.
 
-When we shipped code-splitting, every page became a separately hashed JS file (e.g. `Dashboard-BoI3dEFX.js`). Each new publish generates **new hashes**. If a user has the app open (or their browser cached the old `index.html`) when you publish, their browser still asks for the **old chunk filename** — which no longer exists on the server. Result: a hard error and a blank/broken screen.
+---
 
-This is expected behavior with code-splitting + any deploy, and the standard fix is a one-time auto-reload when this specific error is detected.
+## What gets auto-filled (your 3 requirements)
 
-## Plan
+### B1.1 — Page 4 (Client Block)
+Pull from `profiles` table (where `id = seeker_id`):
 
-### 1. Wrap every `lazy(() => import(...))` with a retry-then-reload helper
+| Field on PDF | Source |
+|---|---|
+| Client Name / नाम | `profiles.full_name` |
+| Start Date / प्रारंभ तिथि | `agreements.fields_json.startDate` (Fee Structure) — fallback: enrollment start |
+| Phone / फ़ोन | `profiles.phone` |
+| Email / ईमेल | `profiles.email` |
 
-Add a small helper `lazyWithReload()` in `src/App.tsx` that:
-- Tries the dynamic `import()` once.
-- On failure (network/missing chunk), checks `sessionStorage` for a "already retried" flag.
-- If not retried yet: sets the flag and calls `window.location.reload()` — the browser fetches the fresh `index.html` with the new chunk hashes, and the user lands back on the same page seamlessly.
-- If already retried (rare — server actually broken): rethrows so the existing `ErrorBoundary` shows the friendly error UI.
+### B1.2 — Page 6 (Payments & Fees)
+Pull entire block from existing **Fee Structure** record (`agreements` table where `type = 'fee_structure'` and `client_id = seekerId`) — already maintained at *Seekers → Documents → Fee Structure*:
 
-Replace all ~150 `lazy(() => import("..."))` calls with `lazyWithReload(() => import("..."))`. Pure mechanical change, zero behavior change for normal users.
+| PDF Row | Field from `useFeeStructure` |
+|---|---|
+| Fee per session | `feePerSession` |
+| Number of sessions | `numSessions` |
+| Coaching duration | `coachingDuration` |
+| Hand-holding support | `handHoldingSupport` |
+| Total program duration | `totalProgramDuration` |
+| Start date | `startDate` |
+| End date | `endDate` |
+| Total fees (excl GST) | `totalFeesExclGst` |
+| GST @ 18% | `gstAmount` |
+| **Total Investment** | `totalInvestment` |
+| Payment plan | `paymentPlan` (Full / Installments) |
+| Installment schedule | `installmentSchedule` |
+| Mode of payment | `modeOfPayment` |
+| Amount paid today | `amountPaidToday` |
+| Balance due | `balanceDue` |
 
-### 2. Add `<link rel="modulepreload">` cache-busting via Vite's built-in behavior (no config needed)
+If no Fee Structure exists yet, a banner prompts the coach to fill it first (link button to the existing Fee Structure form). **No data duplication.**
 
-Vite already emits hashed filenames and an updated `index.html` on every build, so once step 1 is in place, the recovery is automatic.
+### B1.3 — Page 11 (Signatures)
+Reuse the existing `DigitalSignature` component (already used for sessions). Two signature blocks:
 
-### 3. Optional: surface a tiny toast on reload
+| Block | Signer | Stored in |
+|---|---|---|
+| Participant / प्रतिभागी | Seeker | `session_signatures`-style record, scoped to agreement (or a new `agreement_signatures` mirror table) |
+| Coach / कोच | Vivek Doba (or assigned coach) | same |
 
-After the auto-reload, show a one-time toast: "Updated to the latest version." (Read flag from `sessionStorage`, then clear.) Skipping unless you want it.
+Each signature captures: drawn-or-typed signature image (private `signatures` storage bucket), SHA-256 hash of agreement content, IP, user agent, timestamp, typed full name. Identical pattern to the current session-signature flow — verified columns: `signer_id`, `signer_role`, `storage_path`, `typed_name`, `content_hash`, `signed_at`.
 
-## Technical details
+---
 
-```ts
-// src/App.tsx
-const RELOAD_KEY = "vdts:chunk-reload";
+## How it will be used (UX flow)
 
-function lazyWithReload<T extends React.ComponentType<any>>(
-  factory: () => Promise<{ default: T }>
-) {
-  return lazy(async () => {
-    try {
-      return await factory();
-    } catch (err: any) {
-      const msg = String(err?.message || err);
-      const isChunkErr =
-        msg.includes("Failed to fetch dynamically imported module") ||
-        msg.includes("Importing a module script failed") ||
-        msg.includes("error loading dynamically imported module");
-      if (isChunkErr && !sessionStorage.getItem(RELOAD_KEY)) {
-        sessionStorage.setItem(RELOAD_KEY, "1");
-        window.location.reload();
-        // Return a never-resolving promise so React doesn't render before reload
-        return new Promise(() => {}) as any;
-      }
-      throw err;
-    }
-  });
-}
+```text
+Admin/Coach → Seekers → [pick seeker] → Documents tab
+                                          │
+                                          ├─ Fee Structure         (existing, source of B1.2)
+                                          ├─ Coaching Agreement    (existing simple form — kept)
+                                          └─ Premium Agreement ⭐  (NEW — full 12-page document)
+                                                  │
+                                                  ├─ "Preview"  → renders bilingual 12-page document
+                                                  │                with all auto-filled data
+                                                  ├─ "Send for Signature" → seeker gets it on
+                                                  │      Seeker → My Documents → Premium Agreement
+                                                  ├─ Seeker signs (DigitalSignature)
+                                                  ├─ Coach counter-signs
+                                                  └─ "Download PDF" (exact look of uploaded sample)
 ```
 
-Then bulk-replace `lazy(() =>` → `lazyWithReload(() =>` across `src/App.tsx`.
+Status badges on the agreement card: `Draft → Awaiting Seeker Signature → Awaiting Coach Signature → Fully Signed`.
 
-## Files to edit
+---
 
-- `src/App.tsx` — add helper, swap all `lazy()` calls.
+## Pages of the rendered document (matches uploaded PDF)
 
-## Out of scope / not needed
+1. Cover — "Strategic Coaching Partnership" (static, bilingual)
+2. Quick Summary Snapshot (static)
+3. Note from Vivek + "Our Promise to You" (static)
+4. **B1.1 Client Details — auto-filled**
+5. "What This Partnership Delivers" (static)
+6. **B1.2 Payments & Fees — auto-filled from Fee Structure**
+7. "How We Work Together" (static)
+8. "Your Responsibilities" (static)
+9. Working Principles & Policies — Payments/Refunds (static)
+10. Working Principles & Policies — Attendance/Disputes (static)
+11. **B1.3 "Before You Sign" + Signature Block — interactive**
+12. Closing page + contact (static)
 
-- No DB changes.
-- No `vite.config.ts` changes.
-- No Service Worker (none currently configured for chunk caching).
-- No feature changes — fully aligned with "Only Add and Enhance".
+All static text is stored in one bilingual content file (`src/content/premiumAgreement.ts`) so legal edits are one-line changes.
 
-## Result
+---
 
-After this change, any user who has the old version open during a publish will, on their next navigation, get a single silent reload and land on the new version instead of seeing a broken page.
+## Technical Plan
+
+### New files
+- `src/pages/coaching/PremiumAgreementPage.tsx` — preview + actions (admin/coach view)
+- `src/pages/seeker/SeekerPremiumAgreement.tsx` — seeker signing view
+- `src/components/PremiumAgreementDocument.tsx` — the 12-page renderable DOM (id `premium-agreement-print`), uses tailwind print classes + `print:break-after-page` between sections
+- `src/content/premiumAgreement.ts` — bilingual static text (EN + HI from the uploaded PDF)
+- `src/lib/premiumAgreementPdfExport.ts` — clones the lgtPdfExport pattern (dynamic `jspdf` + `html2canvas`, A4, multi-page slicing)
+
+### Reused, no changes
+- `useFeeStructure` hook (B1.2 source)
+- `DigitalSignature` component (B1.3)
+- `profiles` table query (B1.1)
+- `signatures` storage bucket
+- Sidebar route registration in `App.tsx` (lazy-loaded)
+
+### DB (one tiny migration)
+Add a row type to existing `agreements` table — **no new table needed**:
+```
+type = 'premium_agreement'
+fields_json = {
+  generated_at,
+  seeker_signature_id,   -- FK to session_signatures-style row
+  coach_signature_id,
+  content_hash,          -- SHA-256 of frozen document JSON
+  status: 'draft'|'awaiting_seeker'|'awaiting_coach'|'signed'
+}
+```
+Signatures themselves go into a small new table `agreement_signatures` (mirrors `session_signatures` 1:1 — `agreement_id`, `signer_id`, `signer_role`, `storage_path`, `typed_name`, `content_hash`, `signed_at`, `ip`, `user_agent`) with RLS:
+- Seeker: read/insert own
+- Coach/Admin: read/insert for assigned seekers (uses existing `is_admin` / `is_assigned_coach` SECURITY DEFINER funcs)
+
+### PDF Export
+- Same dynamic-import pattern as `lgtPdfExport.ts` (no bundle bloat)
+- Each `<section data-page="N">` rendered separately to keep crisp text and force one PDF page per agreement page (12 pages out)
+- File naming: `Coaching-Agreement-{SeekerName}-{YYYY-MM-DD}.pdf`
+
+### i18n
+- Document is bilingual side-by-side (English + Hindi/Marathi optional) — matches the uploaded sample exactly
+- Uses existing `useCoachingLang()` only for UI chrome (buttons), document body itself is always bilingual
+
+---
+
+## Visual Preview Promise
+
+After approval and implementation, I will:
+1. Generate a sample PDF for an existing test seeker
+2. Convert each page to image
+3. Show you all 12 pages inline so you can verify it matches the uploaded design before going live
+
+---
+
+## Out of scope (not touched)
+- Existing simple "Coaching Agreement" form on `/coaching/agreements` — left as-is per Preservation Policy
+- Existing Goal Commitment Form — untouched
+- Existing Fee Structure form — untouched (we only *read* from it)
+
+---
+
+## Open question (please confirm before I build)
+
+The current agreement uses **English + Hindi** (as in the uploaded PDF). Should the Premium Agreement also support a **Marathi** variant (as VDTS does elsewhere), or keep it English + Hindi only matching the source document?
