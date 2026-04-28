@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
+import { prependClientPages } from "../_shared/buildClientPages.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,7 +58,15 @@ Deno.serve(async (req) => {
     }
 
     const { data: doc } = await admin.from("documents").select("title, storage_path").eq("id", reqRow.document_id).single();
-    const { data: seeker } = await admin.from("profiles").select("full_name, email").eq("id", reqRow.seeker_id).single();
+    const { data: seeker } = await admin.from("profiles").select("full_name, email, phone").eq("id", reqRow.seeker_id).single();
+    const { data: feeRow } = await admin
+      .from("agreements")
+      .select("fields_json")
+      .eq("client_id", reqRow.seeker_id)
+      .eq("type", "fee_structure")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     // Load source PDF (or create a blank one if no source)
     let pdfDoc: PDFDocument;
@@ -75,6 +84,21 @@ Deno.serve(async (req) => {
       }
     } else {
       pdfDoc = await PDFDocument.create();
+    }
+
+    // Prepend B1.1 (Client Details) + B1.2 (Payments & Fees) so the signed PDF
+    // archived and emailed back includes the seeker's data, not just the blank template.
+    try {
+      await prependClientPages(pdfDoc, {
+        seeker: {
+          full_name: seeker?.full_name ?? full_name ?? null,
+          email: seeker?.email ?? null,
+          phone: (seeker as any)?.phone ?? null,
+        },
+        fee: (feeRow?.fields_json as any) ?? null,
+      });
+    } catch (e) {
+      console.error("prepend_client_pages_failed", e);
     }
 
     // Append signature page
