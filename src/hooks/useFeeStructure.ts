@@ -14,7 +14,7 @@ export interface FeeStructureFields {
   totalInvestment: number | '';
   paymentPlan: 'full' | 'installments' | '';
   installmentSchedule: string;
-  modeOfPayment: 'Bank' | 'UPI' | 'Cheque' | 'Cash' | '';
+  modeOfPayment: string[];
   amountPaidToday: number | '';
   balanceDue: number | '';
 }
@@ -32,7 +32,7 @@ export const defaultFeeStructure: FeeStructureFields = {
   totalInvestment: '',
   paymentPlan: '',
   installmentSchedule: '',
-  modeOfPayment: '',
+  modeOfPayment: [],
   amountPaidToday: '',
   balanceDue: '',
 };
