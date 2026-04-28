@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
     // Email signed PDF to seeker + notify coach/admins
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (RESEND_API_KEY && seeker?.email) {
-      const b64 = btoa(String.fromCharCode(...new Uint8Array(signedBytes)));
+      const b64 = bytesToBase64(new Uint8Array(signedBytes));
       try {
         const resp = await fetch("https://api.resend.com/emails", {
           method: "POST",
