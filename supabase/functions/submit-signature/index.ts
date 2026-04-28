@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
+import { prependClientPages } from "../_shared/buildClientPages.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,7 +58,15 @@ Deno.serve(async (req) => {
     }
 
     const { data: doc } = await admin.from("documents").select("title, storage_path").eq("id", reqRow.document_id).single();
-    const { data: seeker } = await admin.from("profiles").select("full_name, email").eq("id", reqRow.seeker_id).single();
+    const { data: seeker } = await admin.from("profiles").select("full_name, email, phone").eq("id", reqRow.seeker_id).single();
+    const { data: feeRow } = await admin
+      .from("agreements")
+      .select("fields_json")
+      .eq("client_id", reqRow.seeker_id)
+      .eq("type", "fee_structure")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     // Load source PDF (or create a blank one if no source)
     let pdfDoc: PDFDocument;
