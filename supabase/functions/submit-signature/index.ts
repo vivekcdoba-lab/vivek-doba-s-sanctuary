@@ -11,6 +11,18 @@ async function sha256(s: string) {
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+// Chunked base64 encoding — avoids "Maximum call stack size exceeded"
+// when spreading large Uint8Arrays into String.fromCharCode(...).
+function bytesToBase64(bytes: Uint8Array): string {
+  const CHUNK = 0x8000; // 32 KB chunks
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    const slice = bytes.subarray(i, i + CHUNK);
+    binary += String.fromCharCode.apply(null, slice as unknown as number[]);
+  }
+  return btoa(binary);
+}
+
 function makeVerificationId() {
   const bytes = new Uint8Array(6);
   crypto.getRandomValues(bytes);
