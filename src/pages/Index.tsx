@@ -91,7 +91,7 @@ const Index = () => (
               <span className="text-3xl">📞</span>
               <span className="px-3 py-1 rounded-full text-xs font-bold text-white bg-emerald-500">FREE</span>
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Book a 45-Minute Discovery Call</h3>
+            <h3 className="text-xl font-bold text-foreground mb-2">Book a 45-Minute Free Discovery Call</h3>
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
               Not sure which program is right for you? Book a personal discovery call with Vivek Sir. Understand your goals, explore possibilities, and get clarity on your transformation path.
             </p>
