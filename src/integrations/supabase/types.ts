@@ -1233,6 +1233,7 @@ export type Database = {
           gradient_colors: Json | null
           id: string
           is_active: boolean | null
+          lifecycle_status: string
           location: string | null
           location_type: string | null
           max_participants: number | null
@@ -1251,6 +1252,7 @@ export type Database = {
           gradient_colors?: Json | null
           id?: string
           is_active?: boolean | null
+          lifecycle_status?: string
           location?: string | null
           location_type?: string | null
           max_participants?: number | null
@@ -1269,6 +1271,7 @@ export type Database = {
           gradient_colors?: Json | null
           id?: string
           is_active?: boolean | null
+          lifecycle_status?: string
           location?: string | null
           location_type?: string | null
           max_participants?: number | null

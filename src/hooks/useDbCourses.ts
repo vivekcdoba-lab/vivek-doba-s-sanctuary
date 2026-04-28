@@ -16,6 +16,7 @@ export interface DbCourse {
   event_date: string | null;
   location: string | null;
   location_type: string | null;
+  lifecycle_status: 'active' | 'upcoming' | 'completed' | 'deactivated';
 }
 
 export function useDbCourses() {
@@ -26,6 +27,20 @@ export function useDbCourses() {
         .from('courses')
         .select('*')
         .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return (data || []) as DbCourse[];
+    },
+  });
+}
+
+export function useAllDbCourses() {
+  return useQuery({
+    queryKey: ['db-courses', 'all'],
+    queryFn: async (): Promise<DbCourse[]> => {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
         .order('name');
       if (error) throw error;
       return (data || []) as DbCourse[];
