@@ -504,6 +504,7 @@ const App = () => (
               <Route path="/coaching" element={<CoachingDashboard />} />
               <Route path="/coaching/intake" element={<ClientIntakePage />} />
               <Route path="/coaching/agreements" element={<AgreementsPage />} />
+              <Route path="/coaching/premium-agreement/:seekerId" element={<PremiumAgreementPage />} />
               <Route path="/coaching/firo-b" element={<FiroBPage />} />
               <Route path="/coaching/sessions" element={<CoachingSessionNotes />} />
               <Route path="/coaching/planner" element={<CoachingPlanner />} />
