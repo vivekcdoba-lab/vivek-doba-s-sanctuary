@@ -1,39 +1,74 @@
-# Performance Investigation — App Feels Slow
+# Fix: "Failed to fetch dynamically imported module"
 
-## Findings
+## What's happening
 
-After inspecting the codebase, the slowness is almost entirely due to **all 233 routes/pages being eagerly imported in `src/App.tsx`** (510 lines, ~150 page components from `src/pages/admin`, `src/pages/seeker`, `src/pages/coaching`). Every page — including heavy ones using `recharts`, `html2canvas`, and `jspdf` — is loaded into the **initial JS bundle** before the app renders, even when the user only visits `/`.
+When we shipped code-splitting, every page became a separately hashed JS file (e.g. `Dashboard-BoI3dEFX.js`). Each new publish generates **new hashes**. If a user has the app open (or their browser cached the old `index.html`) when you publish, their browser still asks for the **old chunk filename** — which no longer exists on the server. Result: a hard error and a blank/broken screen.
 
-### Specific bottlenecks
-1. **No code-splitting**: 0 uses of `React.lazy()` in `App.tsx`. ~233 static imports.
-2. **Heavy libs in initial bundle**: `html2canvas` (~200KB), `jspdf` (~350KB), `recharts` (~400KB) loaded on first paint even though only used on a few pages (LGT report, assessment history, progress charts, session PDF).
-3. **PDF libraries imported eagerly** in `src/lib/lgtPdfExport.ts` and `src/lib/lgtReportEmail.ts` (used by LGT pages) — pulled in by anyone touching the admin LGT routes.
-4. Layouts, auth store, and heartbeat are fine — the main cost is the massive initial JS payload.
+This is expected behavior with code-splitting + any deploy, and the standard fix is a one-time auto-reload when this specific error is detected.
 
 ## Plan
 
-### 1. Convert all route components in `App.tsx` to `React.lazy()`
-- Wrap every `import X from "./pages/..."` for route components into `const X = lazy(() => import("./pages/..."))`.
-- Wrap `<Routes>` in a `<Suspense fallback={<LoadingSpinner />}>` boundary using a lightweight inline spinner (reuse existing `Loader2` from lucide).
-- Keep eagerly imported: `Index`, `LoginPage`, `AuthGuard`, `AdminLayout`, `SeekerLayout`, `CoachingLayout` (needed immediately for first paint and routing shell).
+### 1. Wrap every `lazy(() => import(...))` with a retry-then-reload helper
 
-Expected impact: **initial bundle drops from ~3–4MB to ~400–600KB**, first load 3–5× faster, route changes load on-demand (~50–150KB each).
+Add a small helper `lazyWithReload()` in `src/App.tsx` that:
+- Tries the dynamic `import()` once.
+- On failure (network/missing chunk), checks `sessionStorage` for a "already retried" flag.
+- If not retried yet: sets the flag and calls `window.location.reload()` — the browser fetches the fresh `index.html` with the new chunk hashes, and the user lands back on the same page seamlessly.
+- If already retried (rare — server actually broken): rethrows so the existing `ErrorBoundary` shows the friendly error UI.
 
-### 2. Lazy-load heavy PDF libraries inside helpers
-- In `src/lib/lgtPdfExport.ts`, `src/lib/lgtReportEmail.ts`, `src/lib/sessionPdfExport.ts`: change top-level `import jsPDF from "jspdf"` and `import html2canvas` to **dynamic `await import()`** inside the export functions.
-- Same for `LgtReport.tsx` if it imports them statically.
+Replace all ~150 `lazy(() => import("..."))` calls with `lazyWithReload(() => import("..."))`. Pure mechanical change, zero behavior change for normal users.
 
-Expected impact: removes ~550KB from any bundle that doesn't actually click "Generate PDF".
+### 2. Add `<link rel="modulepreload">` cache-busting via Vite's built-in behavior (no config needed)
 
-### 3. Verify
-- After changes, open the app, watch network tab — initial JS should be a single small chunk + per-route chunks loading on navigation.
-- Confirm LGT PDF generation still works end-to-end.
+Vite already emits hashed filenames and an updated `index.html` on every build, so once step 1 is in place, the recovery is automatic.
+
+### 3. Optional: surface a tiny toast on reload
+
+After the auto-reload, show a one-time toast: "Updated to the latest version." (Read flag from `sessionStorage`, then clear.) Skipping unless you want it.
+
+## Technical details
+
+```ts
+// src/App.tsx
+const RELOAD_KEY = "vdts:chunk-reload";
+
+function lazyWithReload<T extends React.ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+) {
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch (err: any) {
+      const msg = String(err?.message || err);
+      const isChunkErr =
+        msg.includes("Failed to fetch dynamically imported module") ||
+        msg.includes("Importing a module script failed") ||
+        msg.includes("error loading dynamically imported module");
+      if (isChunkErr && !sessionStorage.getItem(RELOAD_KEY)) {
+        sessionStorage.setItem(RELOAD_KEY, "1");
+        window.location.reload();
+        // Return a never-resolving promise so React doesn't render before reload
+        return new Promise(() => {}) as any;
+      }
+      throw err;
+    }
+  });
+}
+```
+
+Then bulk-replace `lazy(() =>` → `lazyWithReload(() =>` across `src/App.tsx`.
 
 ## Files to edit
-- `src/App.tsx` — convert imports to `lazy()`, add `<Suspense>` wrapper.
-- `src/lib/lgtPdfExport.ts`
-- `src/lib/lgtReportEmail.ts`
-- `src/lib/sessionPdfExport.ts`
-- `src/components/lgt/LgtReport.tsx` (only if it imports html2canvas/jspdf statically)
 
-No DB/schema changes. No feature changes. Pure performance optimization, fully aligned with the "Only Add and Enhance" preservation policy.
+- `src/App.tsx` — add helper, swap all `lazy()` calls.
+
+## Out of scope / not needed
+
+- No DB changes.
+- No `vite.config.ts` changes.
+- No Service Worker (none currently configured for chunk caching).
+- No feature changes — fully aligned with "Only Add and Enhance".
+
+## Result
+
+After this change, any user who has the old version open during a publish will, on their next navigation, get a single silent reload and land on the new version instead of seeing a broken page.
