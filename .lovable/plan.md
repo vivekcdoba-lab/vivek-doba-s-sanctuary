@@ -1,23 +1,48 @@
-# Fix: "Save Fee Structure" foreign key error
+## Add Lifecycle Status to Training Programs
 
-## Problem
-Saving a Fee Structure (or Premium Agreement) on Admin → Seeker → Documents fails with:
-> insert or update on table "agreements" violates foreign key constraint "agreements_client_id_fkey"
+Add a manual lifecycle status (Active / Upcoming / Completed / Deactivated) to every program, with status tabs on the Training Programs listing and a status selector inside the Edit Program form.
 
-The `agreements.client_id` column has a foreign key pointing to the legacy `clients` table, but the admin Seeker Documents flow passes the seeker's **profile id** (from `profiles`). That id doesn't exist in `clients`, so the insert is rejected.
+### Database (migration)
 
-The `agreements` table is currently empty, so we can safely re-point the FK without data migration.
+Add a `lifecycle_status` column to `public.courses`:
 
-## Fix
-Change the foreign key on `agreements.client_id` to reference `profiles(id)` instead of `clients(id)`. This matches what the Fee Structure / Premium Agreement code already passes (the seeker's profile id) and aligns with the rest of the seeker-centric admin module.
+- Type: `text`, NOT NULL, default `'active'`
+- Allowed values (CHECK): `'active'`, `'upcoming'`, `'completed'`, `'deactivated'`
+- Backfill: existing rows where `is_active = false` → `'deactivated'`; all others → `'active'`
+- Keep `is_active` (Preservation Policy). When status is set to `deactivated`, also set `is_active = false`; for the other three, set `is_active = true`. This keeps existing queries working.
 
-## Technical Details
-- Run a migration that:
-  - Drops `agreements_client_id_fkey`
-  - Re-adds it as `FOREIGN KEY (client_id) REFERENCES public.profiles(id) ON DELETE CASCADE`
-- No code changes needed in `useFeeStructure.ts` — it already passes `seekerId` (a profile id).
-- No data backfill required (table is empty).
-- Existing `agreements_type_check` (allowing `coaching`, `goal`, `fee_structure`, `premium_agreement`) is untouched.
+### Data hook (`src/hooks/useDbCourses.ts`)
 
-## Verification
-After the migration, saving Fee Structure / Premium Agreement from the Admin Seeker Documents tab will succeed and the row will load back via the existing query (`client_id = seekerId`, `type = 'fee_structure'`).
+- Add `lifecycle_status` to the `DbCourse` interface.
+- Change `useDbCourses()` to drop the `.eq('is_active', true)` filter so all programs (including Completed/Deactivated) are returned. Existing seeker-facing pages that need only active programs will be updated to filter by `lifecycle_status` (see below).
+- Add an optional `useDbCoursesActiveOnly()` helper that filters `lifecycle_status in ('active','upcoming')` for seeker-facing surfaces, so nothing breaks.
+
+### Training Programs listing — `src/pages/admin/CoursesPage.tsx`
+
+- Add 4 status tabs above the grid: **Active**, **Upcoming**, **Completed**, **Deactivated** (with counts).
+- Filter the grid by the selected tab.
+- Show a colored status badge on each card (green/blue/gray/red).
+- In the Add/Edit modal, add a **Lifecycle Status** selector (defaults to `active` on add).
+- Save handler writes `lifecycle_status` and the matching `is_active` flag.
+
+### Edit Programs page — `src/pages/admin/AdminEditPrograms.tsx`
+
+- Same 4 status tabs at top with counts.
+- Card shows a status badge.
+- Edit dialog gets a **Lifecycle Status** dropdown (Active / Upcoming / Completed / Deactivated).
+- Existing "Deactivate" button stays (Preservation Policy) — it now sets `lifecycle_status = 'deactivated'` and `is_active = false`.
+
+### Safety check
+
+After changing `useDbCourses()` to return all programs, audit the few seeker-facing usages (course discovery, enrollment) and switch them to the active-only helper so Completed/Deactivated programs don't appear to seekers.
+
+### Status colors
+
+```text
+active       → green   (emerald)
+upcoming     → blue
+completed    → gray
+deactivated  → red / muted
+```
+
+No changes to `program_trainers`, `enrollments`, or any other table.
