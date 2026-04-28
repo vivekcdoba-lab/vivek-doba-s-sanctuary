@@ -86,6 +86,21 @@ Deno.serve(async (req) => {
       pdfDoc = await PDFDocument.create();
     }
 
+    // Prepend B1.1 (Client Details) + B1.2 (Payments & Fees) so the signed PDF
+    // archived and emailed back includes the seeker's data, not just the blank template.
+    try {
+      await prependClientPages(pdfDoc, {
+        seeker: {
+          full_name: seeker?.full_name ?? full_name ?? null,
+          email: seeker?.email ?? null,
+          phone: (seeker as any)?.phone ?? null,
+        },
+        fee: (feeRow?.fields_json as any) ?? null,
+      });
+    } catch (e) {
+      console.error("prepend_client_pages_failed", e);
+    }
+
     // Append signature page
     const helv = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const helvBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
