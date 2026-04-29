@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Search, Eye, Play } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ResourcePreviewModal } from '@/components/ResourcePreviewModal';
+import { VisibilityEditor } from '@/components/admin/VisibilityEditor';
 
 const AdminVideos = () => {
   const queryClient = useQueryClient();
@@ -67,13 +68,14 @@ const AdminVideos = () => {
                   <TableHead>Duration</TableHead>
                   <TableHead>Views</TableHead>
                   <TableHead>Language</TableHead>
+                  <TableHead>Access</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No video content found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No video content found</TableCell></TableRow>
                 ) : filtered.map(v => (
                   <TableRow key={v.id}>
                     <TableCell className="font-medium max-w-[200px] truncate">{v.title}</TableCell>
@@ -81,6 +83,7 @@ const AdminVideos = () => {
                     <TableCell>{v.duration_minutes ? `${v.duration_minutes}m` : '—'}</TableCell>
                     <TableCell><span className="inline-flex items-center gap-1"><Eye className="w-3 h-3" />{v.view_count}</span></TableCell>
                     <TableCell>{v.language}</TableCell>
+                    <TableCell><VisibilityEditor contentId={v.id} value={(v as any).visibility} /></TableCell>
                     <TableCell><Badge variant={v.is_active ? 'default' : 'secondary'}>{v.is_active ? 'Active' : 'Inactive'}</Badge></TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">

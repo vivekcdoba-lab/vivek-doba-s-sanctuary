@@ -2493,6 +2493,7 @@ export type Database = {
           updated_at: string
           url: string
           view_count: number
+          visibility: string
         }
         Insert: {
           category?: string | null
@@ -2511,6 +2512,7 @@ export type Database = {
           updated_at?: string
           url: string
           view_count?: number
+          visibility?: string
         }
         Update: {
           category?: string | null
@@ -2529,6 +2531,7 @@ export type Database = {
           updated_at?: string
           url?: string
           view_count?: number
+          visibility?: string
         }
         Relationships: [
           {

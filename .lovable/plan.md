@@ -1,71 +1,97 @@
 ## Goal
 
-Complete the email migration started earlier. Move the **remaining 5 edge functions** off direct Resend (`api.resend.com/emails` with `info@vivekdoba.com`) and onto the shared `sendEmail()` helper that enqueues to `transactional_emails` via the verified `notify.vivekdoba.com` sender. This eliminates the "domain not verified" failures.
+Add **per-resource access control** to all learning content (videos, audios, PDFs/resources) so each item can be restricted to a specific audience, and disable downloads for everyone (view/listen/read only).
 
-## Functions to migrate
+---
 
-1. `submit-signature` — sends signed-PDF email to seeker + notification to admins/coaches
-2. `sign-document-inline` — sends signed-PDF email to seeker (in-person flow)
-3. `daily-session-report` — sends daily admin digest
-4. `send-lgt-invite` — sends LGT application invite link
-5. `seed-test-notifications` — sends bulk test emails (dry-run seed)
+## 1. Access Levels
 
-## Changes
+Add a single `visibility` field on each `learning_content` row with these options:
 
-### Common pattern for all 5
-- Add `import { sendEmail } from "../_shared/send-email.ts";`
-- Remove `RESEND_API_KEY` env reads and `fetch("https://api.resend.com/emails", …)` calls.
-- Replace each call with `await sendEmail(supabaseAdmin, { to, subject, html, label })`.
-- Check `result.ok`; log `result.error` on failure (never throw — keep the function's main flow successful).
+| Value | Who can see it |
+|---|---|
+| `admin_only` | Only admins (any level). Useful for drafts / internal references. |
+| `admin_coach` | Admins + Coaches (incl. admins flagged `is_also_coach`). Hidden from seekers. |
+| `all` | Full access — admins, coaches, and all enrolled seekers. |
 
-### Attachment handling (signature functions)
+Default for new uploads: `all` (matches today's behavior so nothing breaks).
 
-The Lovable queue does not support attachments. The signed PDF is already uploaded to the private `signatures` bucket. For `submit-signature` and `sign-document-inline`:
-- After upload, generate a 7-day signed URL: `admin.storage.from("signatures").createSignedUrl(signedPath, 60*60*24*7)`.
-- Embed a "Download your signed copy" button in the email HTML pointing at that URL.
-- Drop the base64 attachment encoding (saves CPU + memory in the function).
+Reasoning for picking these three: they map cleanly onto the three roles already in the app (`admin`, `coach`, `seeker`) and mirror the existing pattern used for documents/announcements. A more granular per-course/per-tier ACL was considered but rejected — it adds UI complexity the user didn't ask for, and `course_id` + `tier` columns already exist on `learning_content` if you ever need finer scoping later.
 
-### Per-function specifics
+---
 
-**`submit-signature`** (lines 172-226)
-- Two emails: (a) seeker thank-you with signed-URL download link, label `"signature_signed_seeker"`; (b) admin/coach notice, label `"signature_signed_admin"`.
-- Keep the existing in-app `notifications` insert.
+## 2. Database changes (migration)
 
-**`sign-document-inline`** (lines 178, 222-261)
-- One email per signed doc → seeker, with signed-URL download link, label `"signature_signed_inline"`.
-- Track success in `email_sent` / `email_error` exactly as today (now driven by `result.ok`).
+1. Add column:
+   ```sql
+   ALTER TABLE public.learning_content
+     ADD COLUMN visibility text NOT NULL DEFAULT 'all'
+     CHECK (visibility IN ('admin_only','admin_coach','all'));
+   ```
+2. Replace the existing seeker-side SELECT policy `Anyone can view active learning content` with a visibility-aware policy:
+   - Admins: see everything (already covered by the existing "Admins manage all" policy, keep it).
+   - Coaches (`is_coach(auth.uid())`): see `admin_coach` + `all` rows that are active.
+   - Authenticated seekers: see only `all` rows that are active.
+3. Index: `CREATE INDEX idx_learning_content_visibility ON public.learning_content(visibility);`
 
-**`daily-session-report`** (lines 8, 134-170)
-- Replace the Resend block with `sendEmail(supabaseAdmin, { to: "info@vivekdoba.com", subject, html, label: "daily_session_report" })`.
-- Drop `app_settings.email_from` lookup and the `RESEND_FROM` env override — sender is now fixed to the verified Lovable address.
-- Return `{ success: true, queue_id, report: r, cleaned: deletedCount }`.
+No data migration needed — every existing row defaults to `all`.
 
-**`send-lgt-invite`** (lines 27, 153-188)
-- Replace Resend block with `sendEmail(admin, { to: seeker.email, subject, html, label: "lgt_invite" })`.
-- If enqueue fails, return `{ success: true, token, link, warning: result.error }` — token row is already saved, so the admin can resend.
+---
 
-**`seed-test-notifications`** (lines 8, 89-107, 145-156)
-- Rewrite `sendOne()` to loop over each recipient and call `sendEmail()` per address (queue helper takes a single `to`). Aggregate per-recipient ok/err.
-- Use label `"seed_test"`. Remove `RESEND_API_KEY` check from the main handler.
-- Persist each enqueue result into `email_log` as today (`status`, `resend_message_id` becomes `queue_id`/`message_id`, `error_message`).
+## 3. Admin UI
 
-## Out of scope
+**`AdminUploadResource.tsx`** — add a "Who can access this?" Select with the 3 options (with short helper text under each), defaulting to `all`. Persist as `visibility` on insert.
 
-- No DB schema changes (queue/RPC and `email_unsubscribe_tokens` already exist and are used by the 10 already-migrated functions).
-- No frontend changes.
-- `RESEND_API_KEY` secret stays in place — it's still referenced by the queue worker (`process-email-queue`) and as a fallback elsewhere.
+**`AdminVideos.tsx`, `AdminAudios.tsx`, `ResourcesPage.tsx` (PDF list)** — add:
+- A new **Access** column showing a colored badge (`Admin only` / `Admin + Coach` / `Everyone`).
+- A small inline dropdown (or edit button → dialog) so admins can change visibility on existing rows without re-uploading.
 
-## Files to edit
+**`AdminCategories.tsx`** — no change.
 
-- `supabase/functions/submit-signature/index.ts`
-- `supabase/functions/sign-document-inline/index.ts`
-- `supabase/functions/daily-session-report/index.ts`
-- `supabase/functions/send-lgt-invite/index.ts`
-- `supabase/functions/seed-test-notifications/index.ts`
+---
 
-## Verification after deploy
+## 4. Seeker / Coach UI
 
-1. Check `pgmq` `transactional_emails` queue picks up new messages (already polled by `process-email-queue`).
-2. Trigger one signature signing in preview → confirm seeker receives email with download-link button (no attachment), admins receive notice.
-3. Manually invoke `daily-session-report` once → confirm digest arrives at `info@vivekdoba.com`.
-4. Re-run security/email scan — no remaining direct `api.resend.com` calls outside `process-email-queue`.
+`SeekerLearningVideos.tsx`, `SeekerLearningAudio.tsx`, `SeekerLearningPdfs.tsx` — no code change required for filtering (RLS handles it server-side), but verify that the existing query already filters `is_active = true` so hidden items truly disappear.
+
+---
+
+## 5. Disable downloads (view-only) — applies to everyone, including admins
+
+| Resource | Hardening |
+|---|---|
+| **Audio** (`<audio>` in `ResourcePreviewModal` + seeker audio page) | Add `controlsList="nodownload"` and `onContextMenu={e => e.preventDefault()}`. |
+| **Video** (`<video>` tag for non-YouTube/Vimeo) | Same: `controlsList="nodownload noremoteplayback"` + disable right-click. For YouTube/Vimeo iframes, add `&modestbranding=1` and they already prevent direct download. |
+| **PDF** (`<iframe>` preview) | Append `#toolbar=0&navpanes=0` to the PDF URL so the built-in PDF viewer hides its download/print buttons. Also disable right-click on the iframe wrapper. |
+| **"Open in new tab" button** in `ResourcePreviewModal` | Remove for `pdf` / `audio` / `video` types so seekers can't grab the signed URL — keep it only as a fallback for Google Drive links (which can't embed). |
+| **Signed URL TTL** | Lower `createSignedUrl` TTL from 600s to 300s — short-lived enough that copy/pasted links expire quickly. |
+
+Note: these are deterrents, not DRM. A determined user with browser dev tools can always capture media. We'll mention this caveat in the response.
+
+---
+
+## 6. Files to edit / create
+
+```text
+supabase/migrations/<new>.sql                       (visibility column + RLS rewrite)
+src/pages/admin/AdminUploadResource.tsx             (visibility field on form)
+src/pages/admin/AdminVideos.tsx                     (Access column + edit)
+src/pages/admin/AdminAudios.tsx                     (Access column + edit)
+src/pages/admin/ResourcesPage.tsx                   (Access column + edit for PDFs)
+src/components/ResourcePreviewModal.tsx             (no-download hardening, PDF toolbar off)
+src/pages/seeker/SeekerLearningVideos.tsx           (no-download attrs on inline player)
+src/pages/seeker/SeekerLearningAudio.tsx            (no-download attrs)
+src/pages/seeker/SeekerLearningPdfs.tsx             (PDF iframe toolbar off, no right-click)
+```
+
+No changes to `useScopedSeekers`, auth, or coach pages.
+
+---
+
+## 7. Out of scope
+
+- Watermarking video/audio with seeker name.
+- Per-seeker or per-course allowlists (existing `course_id`/`tier` columns are untouched).
+- Logging/auditing playback events.
+
+These can be added later if needed.

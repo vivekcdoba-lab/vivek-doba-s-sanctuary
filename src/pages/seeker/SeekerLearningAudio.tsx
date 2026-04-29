@@ -344,7 +344,7 @@ export default function SeekerLearningAudio() {
 
   return (
     <div className={`space-y-6 ${currentTrack ? 'pb-28' : ''}`}>
-      <audio ref={audioRef} preload="auto" />
+      <audio ref={audioRef} preload="auto" controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} />
       <BackToHome />
 
       {/* Header */}

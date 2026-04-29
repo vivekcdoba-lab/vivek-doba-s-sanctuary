@@ -204,11 +204,7 @@ export default function SeekerLearningPdfs() {
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => toggleBookmark(item.id, e)}>
               {prog?.is_bookmarked ? <BookmarkCheck className="h-4 w-4 text-[hsl(var(--gold-bright))]" /> : <Bookmark className="h-4 w-4" />}
             </Button>
-            {item.url && (
-              <a href={item.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
-                <Button variant="ghost" size="icon" className="h-8 w-8"><Download className="h-4 w-4" /></Button>
-              </a>
-            )}
+            {/* Download removed — view-only */}
           </div>
         </div>
       );
@@ -230,11 +226,7 @@ export default function SeekerLearningPdfs() {
           {/* Overlay actions */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
             <Button size="icon" className="h-9 w-9 rounded-full"><Eye className="h-4 w-4" /></Button>
-            {item.url && (
-              <a href={item.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
-                <Button size="icon" variant="secondary" className="h-9 w-9 rounded-full"><Download className="h-4 w-4" /></Button>
-              </a>
-            )}
+            {/* Download removed — view-only */}
           </div>
 
           {/* Badges */}
@@ -386,21 +378,17 @@ export default function SeekerLearningPdfs() {
                         ? <BookmarkCheck className="h-4 w-4 text-[hsl(var(--gold-bright))]" />
                         : <Bookmark className="h-4 w-4" />}
                     </Button>
-                    {viewingPdf.url && (
-                      <a href={viewingPdf.url} target="_blank" rel="noopener noreferrer">
-                        <Button variant="ghost" size="icon" className="h-8 w-8"><Download className="h-4 w-4" /></Button>
-                      </a>
-                    )}
+                    {/* Download intentionally disabled — view-only */}
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFullscreen(true)}>
                       <Maximize2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               </DialogHeader>
-              <div className="flex-1 min-h-0">
+              <div className="flex-1 min-h-0" onContextMenu={(e) => e.preventDefault()}>
                 {viewingPdf.url ? (
                   <iframe
-                    src={viewingPdf.url}
+                    src={`${viewingPdf.url}${viewingPdf.url.includes('#') ? '' : '#toolbar=0&navpanes=0'}`}
                     className="w-full h-full border-0"
                     title={viewingPdf.title}
                   />
@@ -421,21 +409,14 @@ export default function SeekerLearningPdfs() {
           <div className="flex items-center justify-between px-4 py-2 border-b bg-card">
             <h2 className="text-sm font-semibold text-foreground truncate">{viewingPdf.title}</h2>
             <div className="flex items-center gap-1">
-              {viewingPdf.url && (
-                <a href={viewingPdf.url} target="_blank" rel="noopener noreferrer">
-                  <Button variant="ghost" size="sm"><Download className="h-4 w-4 mr-1" /> Download</Button>
-                </a>
-              )}
-              <a href={viewingPdf.url} target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="sm"><ExternalLink className="h-4 w-4 mr-1" /> Open in Tab</Button>
-              </a>
+              {/* Download and Open-in-tab intentionally disabled — view-only */}
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFullscreen(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
-          <div className="flex-1">
-            <iframe src={viewingPdf.url} className="w-full h-full border-0" title={viewingPdf.title} />
+          <div className="flex-1" onContextMenu={(e) => e.preventDefault()}>
+            <iframe src={`${viewingPdf.url}${viewingPdf.url.includes('#') ? '' : '#toolbar=0&navpanes=0'}`} className="w-full h-full border-0" title={viewingPdf.title} />
           </div>
         </div>
       )}

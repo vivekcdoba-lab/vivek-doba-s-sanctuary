@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, FileUp, Laptop, Cloud, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { Upload, FileUp, Laptop, Cloud, Link as LinkIcon, Loader2, Lock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { VISIBILITY_OPTIONS, ContentVisibility } from '@/lib/contentVisibility';
 
 type Source = 'laptop' | 'drive' | 'url';
 
@@ -26,7 +27,7 @@ const AdminUploadResource = () => {
   const [source, setSource] = useState<Source>('laptop');
   const [uploading, setUploading] = useState(false);
   const [categoryMode, setCategoryMode] = useState<'select' | 'other'>('select');
-  const [form, setForm] = useState({ title: '', description: '', type: 'video', category: '', language: 'HI', url: '', duration_minutes: '' });
+  const [form, setForm] = useState({ title: '', description: '', type: 'video', category: '', language: 'HI', url: '', duration_minutes: '', visibility: 'all' as ContentVisibility });
 
   const { data: existingCategories = [] } = useQuery({
     queryKey: ['learning-content-categories'],
@@ -41,7 +42,7 @@ const AdminUploadResource = () => {
   const categoryOptions = Array.from(new Set([...DEFAULT_CATEGORIES, ...existingCategories])).sort();
 
   const reset = () => {
-    setForm({ title: '', description: '', type: 'video', category: '', language: 'HI', url: '', duration_minutes: '' });
+    setForm({ title: '', description: '', type: 'video', category: '', language: 'HI', url: '', duration_minutes: '', visibility: 'all' });
     setSource('laptop');
     setCategoryMode('select');
   };
@@ -64,7 +65,7 @@ const AdminUploadResource = () => {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('learning_content').insert({ title: form.title, description: form.description || null, type: form.type, category: form.category || null, language: form.language, url: form.url, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null } as any);
+      const { error } = await supabase.from('learning_content').insert({ title: form.title, description: form.description || null, type: form.type, category: form.category || null, language: form.language, url: form.url, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, visibility: form.visibility } as any);
       if (error) throw error;
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['learning-content'] }); queryClient.invalidateQueries({ queryKey: ['learning-content-categories'] }); toast({ title: '✅ Resource uploaded' }); reset(); },
@@ -127,6 +128,24 @@ const AdminUploadResource = () => {
                 )}
               </div>
               <div><Label>Duration (min)</Label><Input type="number" value={form.duration_minutes} onChange={e => setForm(p => ({ ...p, duration_minutes: e.target.value }))} /></div>
+            </div>
+
+            <div>
+              <Label className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" /> Who can access this? *</Label>
+              <Select value={form.visibility} onValueChange={(v: ContentVisibility) => setForm(p => ({ ...p, visibility: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {VISIBILITY_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{opt.label}</span>
+                        <span className="text-[11px] text-muted-foreground">{opt.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">Viewers can listen, watch or read — downloads are disabled for everyone.</p>
             </div>
 
             <div className="space-y-2">

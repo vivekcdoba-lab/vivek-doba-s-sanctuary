@@ -11,6 +11,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from 'sonner';
 import { Resource } from '@/types';
 import { ResourcePreviewModal } from '@/components/ResourcePreviewModal';
+import { VisibilityEditor } from '@/components/admin/VisibilityEditor';
+import { ContentVisibility } from '@/lib/contentVisibility';
 
 const typeIcon: Record<string, any> = { pdf: FileText, audio: Headphones, video: Video, worksheet: FileSpreadsheet };
 const typeColors: Record<string, string> = {
@@ -28,7 +30,7 @@ const langColors: Record<string, string> = {
   MIX: 'bg-muted text-muted-foreground',
 };
 
-type ExtResource = Resource & { url?: string; _source?: 'db'; _createdAt?: string };
+type ExtResource = Resource & { url?: string; _source?: 'db'; _createdAt?: string; visibility?: ContentVisibility };
 
 const sourceLabel = (url?: string): { label: string; icon: any } | null => {
   if (!url) return null;
@@ -130,6 +132,7 @@ const ResourcesPage = () => {
         view_count: 0,
         download_count: 0,
         url: r.url,
+        visibility: (r.visibility || 'all') as ContentVisibility,
         _source: 'db',
         _createdAt: r.created_at,
       } as ExtResource));
@@ -275,6 +278,12 @@ const ResourcesPage = () => {
                         </span>
                       )}
                     </div>
+                    {isDb && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Access</span>
+                        <VisibilityEditor contentId={r.id} value={r.visibility} />
+                      </div>
+                    )}
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <div className="flex gap-3">
                         <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {r.view_count}</span>
