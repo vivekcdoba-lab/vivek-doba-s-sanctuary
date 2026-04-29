@@ -426,6 +426,68 @@ const ApplicationsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Approve confirmation */}
+      <AlertDialog open={!!confirmApprove} onOpenChange={(open) => !open && !actionLoading && setConfirmApprove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve seeker application?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Approve <span className="font-semibold text-foreground">{confirmApprove?.name}</span> and create their seeker account? They will receive a welcome email with login details.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={actionLoading}
+              className="bg-emerald-600 hover:bg-emerald-700"
+              onClick={async () => {
+                if (!confirmApprove) return;
+                const target = confirmApprove;
+                setConfirmApprove(null);
+                await updateStatus(target.id, 'approved');
+              }}
+            >
+              {actionLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Approving…</> : 'Yes, approve'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!confirmDelete} onOpenChange={(open) => !open && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this application?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete application from <span className="font-semibold text-foreground">{confirmDelete?.name}</span>? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={performDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Approval progress overlay (non-blocking visual feedback) */}
+      {approvingName && (
+        <div className="fixed inset-0 z-[60] bg-background/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <Loader2 className="w-5 h-5 text-primary animate-spin" />
+              <div>
+                <p className="font-semibold text-foreground">Creating seeker account…</p>
+                <p className="text-xs text-muted-foreground">Approving {approvingName}</p>
+              </div>
+            </div>
+            <Progress value={approveProgress} className="h-2" />
+            <p className="text-xs text-muted-foreground text-right mt-2">{approveProgress}%</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
