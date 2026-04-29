@@ -391,10 +391,10 @@ export default function SeekerLearningVideos() {
             return (
               <>
                 {/* Embedded Player */}
-                <div className="aspect-video bg-black">
+                <div className="aspect-video bg-black" onContextMenu={(e) => e.preventDefault()}>
                   {vid.type === 'youtube' ? (
                     <iframe
-                      src={`https://www.youtube.com/embed/${vid.id}?autoplay=1&start=${prog?.last_position_seconds || 0}`}
+                      src={`https://www.youtube.com/embed/${vid.id}?autoplay=1&start=${prog?.last_position_seconds || 0}&modestbranding=1&rel=0`}
                       className="w-full h-full"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
@@ -407,7 +407,14 @@ export default function SeekerLearningVideos() {
                       allowFullScreen
                     />
                   ) : (
-                    <video src={activeItem.url} controls autoPlay className="w-full h-full" />
+                    <video
+                      src={activeItem.url}
+                      controls
+                      autoPlay
+                      className="w-full h-full"
+                      controlsList="nodownload noremoteplayback noplaybackrate"
+                      disablePictureInPicture
+                    />
                   )}
                 </div>
                 {/* Info */}
