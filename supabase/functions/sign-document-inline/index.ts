@@ -176,7 +176,6 @@ Deno.serve(async (req) => {
     }
 
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? null;
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const signed: any[] = [];
 
     for (const doc of docs) {
