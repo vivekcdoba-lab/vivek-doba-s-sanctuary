@@ -131,7 +131,8 @@ const ApplicationsPage = () => {
   const updateStatus = async (id: string, status: SubmissionStatus, notes?: string) => {
     setActionLoading(true);
     const sub = submissions.find(s => s.id === id);
-    if (!sub) return;
+    if (!sub) { setActionLoading(false); return; }
+    if (status === 'approved') { setApprovingName(sub.full_name); startProgress(); }
 
     // If approving, use the edge function to create auth user + profile
     if (status === 'approved') {
