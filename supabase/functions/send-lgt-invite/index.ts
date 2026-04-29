@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sendEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,7 +25,6 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
     // Validate caller is admin
     const userClient = createClient(SUPABASE_URL, ANON_KEY, {
@@ -150,45 +150,23 @@ Deno.serve(async (req) => {
   </table>
 </body></html>`;
 
-    if (!RESEND_API_KEY) {
-      // Token row is created; just warn that email wasn't dispatched
-      return new Response(
-        JSON.stringify({
-          success: true,
-          token,
-          link,
-          warning: "Email not sent: RESEND_API_KEY not configured",
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const emailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "Vivek Doba <noreply@vivekdoba.com>",
-        to: [seeker.email],
-        subject: "👑 Your Life's Golden Triangle Application — Personal Invitation",
-        html,
-      }),
+    const sendRes = await sendEmail(admin, {
+      to: seeker.email,
+      subject: "👑 Your Life's Golden Triangle Application — Personal Invitation",
+      html,
+      label: "lgt_invite",
     });
 
-    if (!emailRes.ok) {
-      const errText = await emailRes.text();
-      console.error("Resend error:", errText);
-      // Token still saved; return partial success
+    if (!sendRes.ok) {
+      console.error("LGT invite email enqueue failed:", sendRes.error);
       return new Response(
-        JSON.stringify({ success: true, token, link, warning: `Email send failed: ${errText}` }),
+        JSON.stringify({ success: true, token, link, warning: `Email send failed: ${sendRes.error}` }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
-      JSON.stringify({ success: true, token, link, sentTo: seeker.email }),
+      JSON.stringify({ success: true, token, link, sentTo: seeker.email, queue_id: sendRes.queue_id }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {

@@ -1,15 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { sendEmail } from '../_shared/send-email.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const FROM = 'VDTS Testing <info@vivekdoba.com>';
 
 // Pull the 3 test recipients from profiles by their well-known emails.
 const RECIPIENT_EMAILS = ['vivekcdoba@gmail.com', 'coachviveklgt@gmail.com', 'crwanare@gmail.com'];
@@ -86,32 +84,34 @@ function buildMails(): Mail[] {
   return mails.map(m => ({ ...m, subject: `Testing — ${m.subject}` }));
 }
 
-async function sendOne(to: string[], subject: string, html: string): Promise<{ ok: boolean; id?: string; err?: string }> {
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: FROM, to, subject, html }),
-    });
-    const text = await res.text();
-    if (res.ok) {
-      try { return { ok: true, id: JSON.parse(text)?.id }; } catch { return { ok: true }; }
+async function sendOne(
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+  to: string[],
+  subject: string,
+  html: string,
+): Promise<{ ok: boolean; id?: string; err?: string }> {
+  const errs: string[] = [];
+  let lastId: string | undefined;
+  let anyOk = false;
+  for (const addr of to) {
+    const r = await sendEmail(supabase, { to: addr, subject, html, label: 'seed_test' });
+    if (r.ok) {
+      anyOk = true;
+      lastId = r.message_id;
+    } else if (r.error) {
+      errs.push(`${addr}: ${r.error}`);
     }
-    if (res.status === 429 || res.status >= 500) {
-      await new Promise(r => setTimeout(r, 800 * attempt));
-      if (attempt < 3) continue;
-    }
-    return { ok: false, err: `${res.status}: ${text.slice(0, 200)}` };
   }
-  return { ok: false, err: 'retries exhausted' };
+  return anyOk
+    ? { ok: true, id: lastId, err: errs.length ? errs.join('; ') : undefined }
+    : { ok: false, err: errs.join('; ') || 'all recipients failed' };
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    if (!RESEND_API_KEY) throw new Error('RESEND_API_KEY missing');
-
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
     let seed_run_id: string | undefined;
@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
 
     for (const m of mails) {
       if (sentSet.has(m.subject)) { skipped++; continue; }
-      const r = await sendOne(recipients, m.subject, m.html);
+      const r = await sendOne(supabase, recipients, m.subject, m.html);
       await supabase.from('email_log').insert({
         seed_run_id,
         recipients,

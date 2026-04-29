@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
 import { appendClientPages } from "../_shared/buildClientPages.ts";
+import { sendEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -168,60 +169,49 @@ Deno.serve(async (req) => {
     });
     await admin.from("signature_requests").update({ status: "signed", signed_at: new Date().toISOString() }).eq("id", reqRow.id);
 
-    // Email signed PDF to seeker + notify coach/admins
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (RESEND_API_KEY && seeker?.email) {
-      const b64 = bytesToBase64(new Uint8Array(signedBytes));
-      try {
-        const resp = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${RESEND_API_KEY}`,
-          },
-          body: JSON.stringify({
-            from: "Vivek Doba <info@vivekdoba.com>",
-            to: [seeker.email],
-            subject: "Thank You for Signing the Agreement",
-            html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937">
-              <p>Dear ${seeker?.full_name ?? full_name},</p>
-              <p>Thank you for signing the agreement.</p>
-              <p>We appreciate your prompt response and look forward to working together. Please let me know if there is anything further required from my side.</p>
-              <p style="background:#FFF8F0;padding:12px;border-radius:8px;border-left:4px solid #FF6B00;font-size:14px">
-                <strong>Document:</strong> ${doc?.title}<br/>
-                <strong>Verification ID:</strong> ${verificationId}
-              </p>
-              <p>Best regards,<br/>VDTS</p>
-              <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-              <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions</p>
-            </div>`,
-            attachments: [{ filename: `${(doc?.title ?? "document").replace(/[^a-z0-9]/gi, "_")}-signed.pdf`, content: b64 }],
-          }),
-        });
-        if (!resp.ok) console.error("resend_failed seeker", resp.status, await resp.text().catch(() => ""));
-      } catch (e) { console.error("seeker email failed", e); }
+    // Email signed PDF link to seeker + notify coach/admins (via Lovable Emails queue)
+    if (seeker?.email) {
+      // 7-day signed URL to the uploaded signed PDF (queue does not support attachments)
+      const { data: signed } = await admin.storage
+        .from("signatures")
+        .createSignedUrl(signedPath, 60 * 60 * 24 * 7);
+      const downloadUrl = signed?.signedUrl ?? "";
+
+      const r1 = await sendEmail(admin, {
+        to: seeker.email,
+        subject: "Thank You for Signing the Agreement",
+        label: "signature_signed_seeker",
+        html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937">
+            <p>Dear ${seeker?.full_name ?? full_name},</p>
+            <p>Thank you for signing the agreement.</p>
+            <p>We appreciate your prompt response and look forward to working together. Please let me know if there is anything further required from my side.</p>
+            <p style="background:#FFF8F0;padding:12px;border-radius:8px;border-left:4px solid #FF6B00;font-size:14px">
+              <strong>Document:</strong> ${doc?.title}<br/>
+              <strong>Verification ID:</strong> ${verificationId}
+            </p>
+            ${downloadUrl ? `<p style="text-align:center;margin:24px 0">
+              <a href="${downloadUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">📄 Download your signed copy</a>
+            </p><p style="font-size:12px;color:#9ca3af;text-align:center">Link valid for 7 days.</p>` : ""}
+            <p>Best regards,<br/>VDTS</p>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+            <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions</p>
+          </div>`,
+      });
+      if (!r1.ok) console.error("seeker email failed", r1.error);
 
       // Notify admins + coaches
       const { data: admins } = await admin.from("profiles").select("email").or("role.eq.admin,role.eq.coach,is_also_coach.eq.true");
       const adminEmails = (admins ?? []).map((a: any) => a.email).filter(Boolean);
-      if (adminEmails.length) {
-        try {
-          const resp = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${RESEND_API_KEY}`,
-            },
-            body: JSON.stringify({
-              from: "VDTS Notifications <info@vivekdoba.com>",
-              to: adminEmails,
-              subject: `Signed: ${seeker?.full_name ?? "Seeker"} → ${doc?.title}`,
-              html: `<p>${seeker?.full_name} signed <strong>${doc?.title}</strong> at ${timestamp}.</p>
-                <p>Verification ID: <strong>${verificationId}</strong></p>`,
-            }),
-          });
-          if (!resp.ok) console.error("resend_failed admin", resp.status, await resp.text().catch(() => ""));
-        } catch (e) { console.error("admin email failed", e); }
+      for (const adminEmail of adminEmails) {
+        const r2 = await sendEmail(admin, {
+          to: adminEmail,
+          subject: `Signed: ${seeker?.full_name ?? "Seeker"} → ${doc?.title}`,
+          label: "signature_signed_admin",
+          html: `<p>${seeker?.full_name} signed <strong>${doc?.title}</strong> at ${timestamp}.</p>
+              <p>Verification ID: <strong>${verificationId}</strong></p>
+              ${downloadUrl ? `<p><a href="${downloadUrl}">Download signed PDF</a> (valid 7 days)</p>` : ""}`,
+        });
+        if (!r2.ok) console.error("admin email failed", adminEmail, r2.error);
       }
     }
 
