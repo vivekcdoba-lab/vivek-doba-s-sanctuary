@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { PDFDocument } from "https://esm.sh/pdf-lib@1.17.1";
-import { prependClientPages } from "../_shared/buildClientPages.ts";
+import { appendClientPages } from "../_shared/buildClientPages.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -64,8 +64,10 @@ Deno.serve(async (req) => {
         const buf = new Uint8Array(await file.arrayBuffer());
         const pdfDoc = await PDFDocument.load(buf, { ignoreEncryption: true });
 
-        // Inject B1.1 + B1.2 at the very front
-        await prependClientPages(pdfDoc, {
+        // Append B1.1 + B1.2 at the end of the original template (just before the
+        // signature page that submit-signature will add). The uploaded template's
+        // pages are not modified or re-ordered.
+        await appendClientPages(pdfDoc, {
           seeker: {
             full_name: seeker?.full_name ?? reqRow.signer_name ?? null,
             email: seeker?.email ?? null,

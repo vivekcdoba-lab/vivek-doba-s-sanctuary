@@ -125,7 +125,7 @@ function drawWrappedText(
   return cy;
 }
 
-export async function prependClientPages(
+export async function appendClientPages(
   pdfDoc: PDFDocument,
   opts: { seeker: SeekerInfo; fee: FeeFields | null },
 ): Promise<void> {
@@ -133,8 +133,8 @@ export async function prependClientPages(
   const helvBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const italic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
 
-  // ---------- B1.1 — Client Details ----------
-  const p1 = pdfDoc.insertPage(0, [595, 842]); // A4
+  // ---------- B1.1 — Client Details (appended at end of original template) ----------
+  const p1 = pdfDoc.addPage([595, 842]); // A4
   drawHeaderBand(p1, helvBold, "CLIENT DETAILS", "B1.1");
 
   let y = 770;
@@ -168,10 +168,10 @@ export async function prependClientPages(
     50, y - 18, 495, helv, 10, TEXT,
   );
 
-  drawFooter(p1, helv, "VIVEK DOBA BUSINESS SOLUTIONS", "1 | Page");
+  drawFooter(p1, helv, "VIVEK DOBA BUSINESS SOLUTIONS", "B1.1 — Client Details");
 
   // ---------- B1.2 — Payments & Fees ----------
-  const p2 = pdfDoc.insertPage(1, [595, 842]);
+  const p2 = pdfDoc.addPage([595, 842]);
   drawHeaderBand(p2, helvBold, "PAYMENTS & FEES", "B1.2");
 
   let y2 = 770;
@@ -242,5 +242,8 @@ export async function prependClientPages(
     });
   }
 
-  drawFooter(p2, helv, "VIVEK DOBA BUSINESS SOLUTIONS", "2 | Page");
+  drawFooter(p2, helv, "VIVEK DOBA BUSINESS SOLUTIONS", "B1.2 — Payments & Fees");
 }
+
+// Backwards-compatible alias (legacy callers). New code should use appendClientPages.
+export const prependClientPages = appendClientPages;
