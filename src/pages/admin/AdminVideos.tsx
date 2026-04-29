@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Search, Eye, Play } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ResourcePreviewModal } from '@/components/ResourcePreviewModal';
+import { VisibilityEditor } from '@/components/admin/VisibilityEditor';
 
 const AdminVideos = () => {
   const queryClient = useQueryClient();
