@@ -225,7 +225,10 @@ export default function AdminDailyReports() {
             {logs.map((row) => (
               <tr key={row.id} className="border-b border-border/50 hover:bg-muted/20">
                 <td className="p-3 text-xs text-muted-foreground">{new Date(row.created_at).toLocaleString()}</td>
-                <td className="p-3 text-xs font-mono text-muted-foreground">{row.seeker_id.slice(0, 8)}…</td>
+                <td className="p-3 text-xs">
+                  <div className="font-semibold text-foreground">{profiles[row.seeker_id]?.full_name || "Unknown seeker"}</div>
+                  <div className="text-[11px] text-muted-foreground">{profiles[row.seeker_id]?.email || `${row.seeker_id.slice(0, 8)}…`}</div>
+                </td>
                 <td className="p-3 text-xs">{row.sent_date}</td>
                 <td className="p-3">
                   <Badge
