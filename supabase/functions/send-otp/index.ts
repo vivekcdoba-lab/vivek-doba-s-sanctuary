@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendEmail } from "../_shared/send-email.ts";
 
 // OTP must be callable without auth (it's used during login flow)
 // Rate limiting is enforced via the otp_codes table upsert (one active OTP per identifier)
@@ -93,48 +94,30 @@ serve(async (req) => {
 
     const results: { email?: boolean; sms?: boolean } = {};
 
-    // Send Email OTP
+    // Send Email OTP via Lovable Emails queue
     if (type === "email" || type === "both") {
       try {
-        const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-        if (RESEND_API_KEY) {
-          // Resolve from-address from app_settings
-          let fromAddress = Deno.env.get("RESEND_FROM") || "VDTS <info@vivekdoba.com>";
-          try {
-            const { data: setting } = await supabase
-              .from("app_settings").select("value").eq("key", "email_from").maybeSingle();
-            if (setting?.value && typeof setting.value === "string") fromAddress = setting.value as string;
-          } catch (e) {
-            console.warn("app_settings lookup failed:", (e as Error).message);
-          }
-
-          const emailRes = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${RESEND_API_KEY}`,
-            },
-            body: JSON.stringify({
-              from: fromAddress,
-              to: [email],
-              subject: "OTP for Login request",
-              html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                  <h2 style="color: #B8860B;">VDTS - Verification Code</h2>
-                  <p>Dear ${full_name || "Seeker"},</p>
-                  <p>OTP for Signin request is <strong style="font-size: 24px; color: #B8860B;">${otp}</strong>.</p>
-                  <p>This OTP is valid for 15 minutes or 1 successful attempt whichever is earlier.</p>
-                  <p>Please do not share this One Time Password with anyone.</p>
-                  <p>If this request is not made by you, please contact us.</p>
-                  <br/>
-                  <p>Regards,</p>
-                  <p><strong>VDTS Team</strong></p>
-                </div>
-              `,
-            }),
-          });
-          results.email = emailRes.ok;
-        }
+        const html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #B8860B;">VDTS - Verification Code</h2>
+            <p>Dear ${full_name || "Seeker"},</p>
+            <p>OTP for Signin request is <strong style="font-size: 24px; color: #B8860B;">${otp}</strong>.</p>
+            <p>This OTP is valid for 15 minutes or 1 successful attempt whichever is earlier.</p>
+            <p>Please do not share this One Time Password with anyone.</p>
+            <p>If this request is not made by you, please contact us.</p>
+            <br/>
+            <p>Regards,</p>
+            <p><strong>VDTS Team</strong></p>
+          </div>
+        `;
+        const r = await sendEmail(supabase, {
+          to: email,
+          subject: "OTP for Login request",
+          html,
+          label: "otp",
+        });
+        results.email = r.ok;
+        if (!r.ok) console.error("Email OTP enqueue failed:", r.error);
       } catch (e) {
         console.error("Email OTP error:", e);
         results.email = false;
