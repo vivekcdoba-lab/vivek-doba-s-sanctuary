@@ -1,4 +1,14 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sendEmail } from "../_shared/send-email.ts";
+
+function b64ToBytes(b64: string): Uint8Array {
+  // Strip data URL prefix if present
+  const cleaned = b64.replace(/^data:application\/pdf;base64,/, "");
+  const bin = atob(cleaned);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +37,7 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    // RESEND_API_KEY no longer used — emails go through Lovable Emails queue
 
     const body = (await req.json().catch(() => ({}))) as ReqBody;
     const { seekerId, pdfBase64, filename, extraRecipients, publicMode, inviteToken } = body;
@@ -117,14 +127,37 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!RESEND_API_KEY) {
-      return new Response(JSON.stringify({
-        success: false, warning: "RESEND_API_KEY not configured", recipients,
-      }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
+
 
     const seekerName = seeker.full_name || "Seeker";
     const finalFilename = filename || `LGT-Report-${seekerName.replace(/\s+/g, "_")}.pdf`;
+
+    // Upload PDF to documents bucket and get a 30-day signed URL,
+    // since Lovable Emails queue does not support attachments.
+    let pdfUrl: string | null = null;
+    try {
+      const bytes = b64ToBytes(pdfBase64);
+      const path = `lgt-reports/${seekerId}-${Date.now()}.pdf`;
+      const { error: upErr } = await admin.storage
+        .from("documents")
+        .upload(path, bytes, { contentType: "application/pdf", upsert: true });
+      if (upErr) {
+        console.error("LGT report PDF upload failed:", upErr.message);
+        return new Response(JSON.stringify({ success: false, error: `upload: ${upErr.message}`, recipients }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: signed } = await admin.storage
+        .from("documents")
+        .createSignedUrl(path, 60 * 60 * 24 * 30);
+      pdfUrl = signed?.signedUrl ?? null;
+    } catch (e) {
+      console.error("LGT report storage error:", e);
+    }
+
+    const downloadButton = pdfUrl
+      ? `<div style="text-align:center;margin:20px 0"><a href="${pdfUrl}" style="display:inline-block;background:#FF6B00;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:600">📄 Download PDF Report</a></div><p style="font-size:11px;color:#9ca3af;text-align:center">Link valid for 30 days.</p>`
+      : `<p style="color:#9a6500">⚠️ Report file could not be attached. Please contact support.</p>`;
 
     const html = `
 <!DOCTYPE html>
@@ -141,8 +174,8 @@ Deno.serve(async (req) => {
           <p style="margin:0 0 12px;font-size:16px;">🙏 Namaste,</p>
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#374151;">
             The Life's Golden Triangle application for <strong>${escapeHtml(seekerName)}</strong> has been completed.
-            A formatted PDF report is attached for your records.
           </p>
+          ${downloadButton}
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#374151;">
             This report includes the seeker's personal, professional, health, relationship, mind &amp; emotional, spiritual, personality and goal data — visualised at a glance.
           </p>
@@ -158,33 +191,23 @@ Deno.serve(async (req) => {
   </table>
 </body></html>`;
 
-    const emailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "Vivek Doba <noreply@vivekdoba.com>",
-        to: recipients,
-        subject: `👑 LGT Report — ${seekerName}`,
-        html,
-        attachments: [
-          { filename: finalFilename, content: pdfBase64 },
-        ],
-      }),
-    });
+    const subject = `👑 LGT Report — ${seekerName}`;
+    const sends = await Promise.all(
+      recipients.map((to) =>
+        sendEmail(admin, { to, subject, html, label: "lgt_report" }),
+      ),
+    );
+    const okCount = sends.filter((r) => r.ok).length;
+    const errs = sends.filter((r) => !r.ok).map((r) => r.error);
 
-    if (!emailRes.ok) {
-      const errText = await emailRes.text();
-      console.error("Resend error:", errText);
+    if (okCount === 0) {
       return new Response(JSON.stringify({
-        success: false, error: errText, recipients,
+        success: false, error: errs.join("; "), recipients,
       }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     return new Response(JSON.stringify({
-      success: true, recipients, filename: finalFilename,
+      success: true, recipients, filename: finalFilename, sent: okCount, errors: errs,
     }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     console.error("send-lgt-report error:", err);

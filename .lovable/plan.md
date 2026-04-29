@@ -1,48 +1,103 @@
-# Country-Aware State Dropdown for All Entry Forms
+# Fix: Emails Failing — "notify.vivekdoba.com domain is not verified"
 
-## Goal
-When a non-India country is selected, replace the read-only "Default" state field with a real dropdown of states/provinces/regions for that country. India behavior stays unchanged (existing `INDIAN_STATES` list + Other free-text). Pincode/ZIP behavior stays unchanged (6-digit numeric for India, free-text for others).
+## What's actually wrong
 
-## Approach
-Use the lightweight `country-state-city` npm package (no API key, fully offline, ~1MB, includes ISO-3166-2 subdivisions for every country).
+The error in your screenshot is **not a code bug**. It's a domain configuration mismatch:
 
+- **Lovable Emails** is set up and **fully verified** for `notify.vivekdoba.com` (NS records delegated to `ns3.lovable.cloud` / `ns4.lovable.cloud`).
+- However, **most of our edge functions still send via Resend's API directly** (`api.resend.com/emails`) using `from: info@vivekdoba.com` or `noreply@vivekdoba.com`.
+- Because `notify.vivekdoba.com` is NS-delegated to Lovable, **Resend cannot verify any domain on `vivekdoba.com`** — so Resend rejects every send with `403 validation_error` and falls back to test mode (which only allows sending to `vivekcdoba@gmail.com`).
+- That's exactly the dual error in your screenshot: "Primary 403 not verified" + "Fallback 403 testing only".
+
+Only `send-test-email` uses the correct path (Lovable Emails queue via `enqueue_email`) — and that's the one that works.
+
+## The fix: migrate all senders to Lovable Emails
+
+Lovable Emails is already wired up (`process-email-queue` cron + `enqueue_email` RPC + `email_send_log`). We just need to route all the Resend `fetch()` calls through it instead, using the verified `notify.vivekdoba.com` sender.
+
+### Functions to migrate (15 total)
+
+Direct Resend → Lovable Emails queue (`enqueue_email` RPC, sender `VDTS <info@notify.vivekdoba.com>`):
+
+1. `admin-create-user` — welcome email with temp password
+2. `admin-reset-password` — password reset notification
+3. `super-admin-change-own-password` — password change confirmation
+4. `approve-application` — LGT approval email
+5. `send-otp` — OTP delivery (keep < 30s latency note)
+6. `send-notification` — generic notification dispatch
+7. `send-session-invite` — session invite email
+8. `send-lgt-invite` — LGT invitation
+9. `send-lgt-report` — LGT report PDF email
+10. `daily-session-report` — daily report digest
+11. `request-document-signature` — signature request email
+12. `resend-document-signature` — resend signature link
+13. `submit-signature` — signature confirmation + admin notification
+14. `sign-document-inline` — inline signing confirmation
+15. `seed-test-notifications` — test seeding (keep but switch sender)
+
+### Standard pattern applied to each function
+
+Replace this:
 ```ts
-import { State } from 'country-state-city';
-const states = State.getStatesOfCountry('US'); // [{ name: 'California', isoCode: 'CA', ... }, ...]
+await fetch("https://api.resend.com/emails", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${RESEND_API_KEY}`, ... },
+  body: JSON.stringify({ from: "Vivek Doba <info@vivekdoba.com>", to, subject, html }),
+});
 ```
 
-This avoids hand-maintaining state lists for 30+ countries.
+With this:
+```ts
+const messageId = crypto.randomUUID();
+// fetch/create unsubscribe token for `to`
+const { data, error } = await supabase.rpc('enqueue_email', {
+  queue_name: 'transactional_emails',
+  payload: {
+    message_id: messageId,
+    to, from: 'VDTS <info@notify.vivekdoba.com>',
+    sender_domain: 'notify.vivekdoba.com',
+    subject, html, text,
+    purpose: 'transactional',
+    label: '<function-specific-label>',
+    idempotency_key: messageId,
+    unsubscribe_token: token,
+    queued_at: new Date().toISOString(),
+  },
+});
+```
 
-## Changes
+### Shared helper
 
-### 1. Add dependency
-- `country-state-city` (small, MIT, widely used).
+To avoid 15 copies of the same boilerplate, I'll add `supabase/functions/_shared/send-email.ts` exporting one helper:
 
-### 2. Update `src/components/inputs/CountryStateInput.tsx`
-Replace the non-India branch (currently shows read-only "Default" + free-text ZIP) with:
-- A **State / Region dropdown** populated via `State.getStatesOfCountry(country)`.
-- An **"Other"** option at the bottom that reveals a free-text input (fallback for countries with sparse data, e.g. small island nations).
-- Keep the free-text Postal/ZIP field next to it.
+```ts
+export async function sendEmail(supabase, { to, subject, html, text, label })
+```
 
-If a country has zero states in the dataset (rare), automatically fall back to a single free-text "State / Region" input so the user is never blocked.
+It handles unsubscribe-token lookup/creation + `enqueue_email`. Each function becomes a one-liner.
 
-When the country changes:
-- If new country = `IN` → clear state (user picks from Indian list).
-- Else → clear state (user picks from new country's list); never auto-fill "Default" anymore.
+### What stays the same
 
-### 3. Backwards compatibility
-- Existing submissions stored as `state: "Default"` remain valid; we just stop writing that value going forward.
-- All four forms (`BookAppointment`, `RegisterWorkshop`, `TellUsAboutYourself`, `ApplyLGT`) already use `<CountryStateInput>` — **no changes needed in the form pages**. The component upgrade flows through automatically.
+- All function names, signatures, callers — no frontend change required
+- All RLS, auth checks, business logic
+- `send-test-email` (already correct — used as the reference pattern)
+- The `RESEND_API_KEY` secret stays in place as a fallback but is no longer used in the hot path
 
-### 4. Validation
-- For non-India: state is **optional** (some users may legitimately have no subdivision, or pick Other and leave blank). ZIP remains free-text.
-- Indian validation (6-digit pincode, required state when `required` flag is set) unchanged.
+### After deploy
 
-## Files To Edit
-- `src/components/inputs/CountryStateInput.tsx` — swap read-only state for dynamic dropdown.
-- `package.json` — add `country-state-city` dependency.
+Emails will be sent via Lovable's verified `notify.vivekdoba.com` sender, which means:
+- All recipients receive emails (no more "test mode" restriction)
+- Status visible in **Cloud → Emails** and `email_send_log` table
+- ~30s queue latency (cron runs every 30s) — acceptable for all current flows including OTP
 
-## Out of Scope
-- No DB changes (state is already a free text field inside `submissions.form_data` / `leads`).
-- No changes to the four form pages — the shared component does all the work.
-- India behavior, pincode rules, and the `INDIAN_STATES` list stay exactly as they are.
+## Out of scope
+
+- Removing the `RESEND_API_KEY` secret (kept as safety net)
+- Changing auth emails (signup/recovery) — Lovable handles those by default already
+- Verifying `vivekdoba.com` (root) on Resend — not needed since we're switching providers
+
+## Files changed
+
+- New: `supabase/functions/_shared/send-email.ts`
+- Edited: 15 edge function `index.ts` files listed above (replace Resend `fetch` blocks with helper call)
+- No frontend, no migration, no schema change

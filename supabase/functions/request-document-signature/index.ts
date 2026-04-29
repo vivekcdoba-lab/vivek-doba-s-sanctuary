@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sendEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -60,7 +61,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "No active documents" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    // RESEND_API_KEY no longer used — emails go through Lovable Emails queue
     const created: any[] = [];
 
     for (const doc of docs) {
@@ -95,37 +96,15 @@ Deno.serve(async (req) => {
           <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions</p>
         </div>`;
 
-      let email_sent = false;
-      let email_error: string | undefined;
-      if (RESEND_API_KEY) {
-        try {
-          const resp = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${RESEND_API_KEY}`,
-            },
-            body: JSON.stringify({
-              from: "Vivek Doba <info@vivekdoba.com>",
-              to: [seeker.email],
-              subject: "Request to Sign Agreement Document",
-              html,
-            }),
-          });
-          const j = await resp.json().catch(() => ({}));
-          if (!resp.ok) {
-            email_error = `${resp.status}: ${JSON.stringify(j)}`;
-            console.error("resend_failed", email_error);
-          } else {
-            email_sent = true;
-          }
-        } catch (e) {
-          email_error = String(e);
-          console.error("email send failed", e);
-        }
-      } else {
-        email_error = "RESEND_API_KEY not configured";
-      }
+      const r = await sendEmail(admin, {
+        to: seeker.email,
+        subject: "Request to Sign Agreement Document",
+        html,
+        label: "signature_request",
+      });
+      const email_sent = r.ok;
+      const email_error = r.ok ? undefined : r.error;
+      if (!r.ok) console.error("signature email enqueue failed", r.error);
       created.push({ request_id: req.id, document: doc.title, email_sent, email_error });
     }
 
