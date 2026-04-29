@@ -278,6 +278,12 @@ const ResourcesPage = () => {
                         </span>
                       )}
                     </div>
+                    {isDb && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Access</span>
+                        <VisibilityEditor contentId={r.id} value={r.visibility} />
+                      </div>
+                    )}
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <div className="flex gap-3">
                         <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {r.view_count}</span>
