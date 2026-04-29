@@ -27,7 +27,7 @@ const AdminUploadResource = () => {
   const [source, setSource] = useState<Source>('laptop');
   const [uploading, setUploading] = useState(false);
   const [categoryMode, setCategoryMode] = useState<'select' | 'other'>('select');
-  const [form, setForm] = useState({ title: '', description: '', type: 'video', category: '', language: 'HI', url: '', duration_minutes: '' });
+  const [form, setForm] = useState({ title: '', description: '', type: 'video', category: '', language: 'HI', url: '', duration_minutes: '', visibility: 'all' as ContentVisibility });
 
   const { data: existingCategories = [] } = useQuery({
     queryKey: ['learning-content-categories'],
