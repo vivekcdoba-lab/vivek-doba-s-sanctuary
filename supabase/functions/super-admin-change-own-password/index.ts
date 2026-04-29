@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { z } from 'https://esm.sh/zod@3.23.8';
+import { sendEmail } from '../_shared/send-email.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,7 +37,7 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    // RESEND_API_KEY no longer used — emails go through Lovable Emails queue
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) return json({ error: 'Missing authorization' }, 401);
@@ -124,61 +125,32 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Resolve from-address
-    let fromAddress = Deno.env.get('RESEND_FROM') || 'VDTS <info@vivekdoba.com>';
-    try {
-      const { data: setting } = await admin
-        .from('app_settings').select('value').eq('key', 'email_from').maybeSingle();
-      if (setting?.value && typeof setting.value === 'string') fromAddress = setting.value as string;
-    } catch (e) {
-      console.warn('app_settings lookup failed:', (e as Error).message);
-    }
-
-    // Emails
+    // Emails via Lovable Emails queue
     let emailed = 0;
     const email_errors: string[] = [];
-    if (RESEND_API_KEY) {
-      const safeName = escapeHtml(callerName);
-      const safeTime = escapeHtml(istTime);
-      for (const a of recipients) {
-        try {
-          const html = `
-            <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#222">
-              <h2 style="color:#800020;margin:0 0 16px">Security notice: Super Admin password was changed</h2>
-              <p>Hello ${escapeHtml(a.full_name || 'Admin')},</p>
-              <p>This is a security notice that the Super Admin <strong>${safeName}</strong> changed their account password on <strong>${safeTime} IST</strong>.</p>
-              <p>No action is required from you. This message is sent to all administrators for transparency and audit purposes.</p>
-              <p style="background:#FFF8F0;border-left:4px solid #FF6B00;padding:12px;margin:16px 0">
-                If you believe this change was unauthorized, contact support immediately at
-                <a href="mailto:vdtssolutions@gmail.com">vdtssolutions@gmail.com</a>.
-              </p>
-              <p style="color:#666;font-size:12px;margin-top:24px">— Vivek Doba Training Solutions</p>
-            </div>`;
-          const r = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${RESEND_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              from: fromAddress,
-              to: [a.email],
-              subject: 'Security notice: Super Admin password was changed',
-              html,
-            }),
-          });
-          if (r.ok) {
-            emailed++;
-          } else {
-            const txt = await r.text();
-            email_errors.push(`${a.email}: ${r.status} ${txt}`);
-          }
-        } catch (e) {
-          email_errors.push(`${a.email}: ${(e as Error).message}`);
-        }
-      }
-    } else {
-      email_errors.push('RESEND_API_KEY not configured');
+    const safeName = escapeHtml(callerName);
+    const safeTime = escapeHtml(istTime);
+    for (const a of recipients) {
+      const html = `
+        <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#222">
+          <h2 style="color:#800020;margin:0 0 16px">Security notice: Super Admin password was changed</h2>
+          <p>Hello ${escapeHtml(a.full_name || 'Admin')},</p>
+          <p>This is a security notice that the Super Admin <strong>${safeName}</strong> changed their account password on <strong>${safeTime} IST</strong>.</p>
+          <p>No action is required from you. This message is sent to all administrators for transparency and audit purposes.</p>
+          <p style="background:#FFF8F0;border-left:4px solid #FF6B00;padding:12px;margin:16px 0">
+            If you believe this change was unauthorized, contact support immediately at
+            <a href="mailto:vdtssolutions@gmail.com">vdtssolutions@gmail.com</a>.
+          </p>
+          <p style="color:#666;font-size:12px;margin-top:24px">— Vivek Doba Training Solutions</p>
+        </div>`;
+      const r = await sendEmail(admin, {
+        to: a.email!,
+        subject: 'Security notice: Super Admin password was changed',
+        html,
+        label: 'super_admin_password_change',
+      });
+      if (r.ok) emailed++;
+      else email_errors.push(`${a.email}: ${r.error}`);
     }
 
     return json({
