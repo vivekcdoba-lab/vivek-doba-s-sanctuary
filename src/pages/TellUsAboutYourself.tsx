@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import PhoneInput from '@/components/inputs/PhoneInput';
+import CountryStateInput from '@/components/inputs/CountryStateInput';
 import { validatePhone, toE164, DEFAULT_COUNTRY_CODE } from '@/lib/phoneValidation';
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -23,6 +24,9 @@ const TellUsAboutYourself = () => {
   const [phoneCode, setPhoneCode] = useState(DEFAULT_COUNTRY_CODE);
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
+  const [country, setCountry] = useState('IN');
+  const [stateVal, setStateVal] = useState('');
+  const [pincode, setPincode] = useState('');
   const [intent, setIntent] = useState('');
   const [consent, setConsent] = useState(false);
 
@@ -61,6 +65,9 @@ const TellUsAboutYourself = () => {
 
       const formData = {
         city: city.trim() || null,
+        country,
+        state: stateVal || null,
+        pincode: pincode || null,
         intent: intent.trim(),
         source: 'tell_us_about_yourself',
       };
@@ -189,6 +196,15 @@ const TellUsAboutYourself = () => {
                 className="mt-1.5"
               />
             </div>
+
+            <CountryStateInput
+              country={country}
+              state={stateVal}
+              pincode={pincode}
+              onCountryChange={setCountry}
+              onStateChange={setStateVal}
+              onPincodeChange={setPincode}
+            />
 
             <div>
               <Label htmlFor="intent">What brings you here? <span className="text-destructive">*</span></Label>
