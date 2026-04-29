@@ -112,8 +112,6 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    if (!RESEND_API_KEY) throw new Error('RESEND_API_KEY missing');
-
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
     let seed_run_id: string | undefined;
