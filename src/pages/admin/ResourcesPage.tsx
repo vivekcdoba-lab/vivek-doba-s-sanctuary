@@ -30,7 +30,7 @@ const langColors: Record<string, string> = {
   MIX: 'bg-muted text-muted-foreground',
 };
 
-type ExtResource = Resource & { url?: string; _source?: 'db'; _createdAt?: string };
+type ExtResource = Resource & { url?: string; _source?: 'db'; _createdAt?: string; visibility?: ContentVisibility };
 
 const sourceLabel = (url?: string): { label: string; icon: any } | null => {
   if (!url) return null;
