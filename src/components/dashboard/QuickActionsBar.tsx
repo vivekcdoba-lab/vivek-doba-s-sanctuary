@@ -5,7 +5,7 @@ const actions = [
   { label: 'Worksheet', icon: ScrollText, path: '/seeker/worksheet', gradient: 'gradient-saffron' },
   { label: 'Assessment', icon: BookOpen, path: '/seeker/assessments/history', gradient: 'gradient-sacred' },
   { label: 'Resources', icon: Library, path: '/seeker/learning/videos', gradient: 'gradient-growth' },
-  { label: 'Meditate', icon: Headphones, path: '/seeker/sacred-space', gradient: 'gradient-hero' },
+  { label: 'Daily Mindful', icon: Headphones, path: '/seeker/daily-mindfulness', gradient: 'gradient-hero' },
 ];
 
 const QuickActionsBar = () => (

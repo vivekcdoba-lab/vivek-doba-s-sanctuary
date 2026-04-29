@@ -20,7 +20,17 @@ const acceptForType = (t: string) => {
   return '*/*';
 };
 
-const DEFAULT_CATEGORIES = ['Course Materials', 'Worksheets', 'Meditation', 'Affirmations', 'Templates', 'Books'];
+const DEFAULT_CATEGORIES = [
+  'Daily Live Mindfulness Session',
+  'Daily Affirmations Recording',
+  'Guided Meditation Replay',
+  'Course Materials',
+  'Worksheets',
+  'Meditation',
+  'Affirmations',
+  'Templates',
+  'Books',
+];
 
 const AdminUploadResource = () => {
   const queryClient = useQueryClient();
