@@ -204,11 +204,7 @@ export default function SeekerLearningPdfs() {
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => toggleBookmark(item.id, e)}>
               {prog?.is_bookmarked ? <BookmarkCheck className="h-4 w-4 text-[hsl(var(--gold-bright))]" /> : <Bookmark className="h-4 w-4" />}
             </Button>
-            {item.url && (
-              <a href={item.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
-                <Button variant="ghost" size="icon" className="h-8 w-8"><Download className="h-4 w-4" /></Button>
-              </a>
-            )}
+            {/* Download removed — view-only */}
           </div>
         </div>
       );
