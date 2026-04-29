@@ -127,11 +127,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!RESEND_API_KEY) {
-      return new Response(JSON.stringify({
-        success: false, warning: "RESEND_API_KEY not configured", recipients,
-      }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
+
 
     const seekerName = seeker.full_name || "Seeker";
     const finalFilename = filename || `LGT-Report-${seekerName.replace(/\s+/g, "_")}.pdf`;
