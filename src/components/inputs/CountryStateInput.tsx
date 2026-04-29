@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { State } from "country-state-city";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import StatePincodeInput from "./StatePincodeInput";
@@ -36,6 +38,8 @@ export const COUNTRIES: { code: string; name: string }[] = [
   { code: "OTHER", name: "Other" },
 ];
 
+const STATE_OTHER = "Other";
+
 interface Props {
   country: string;
   state: string;
@@ -55,14 +59,34 @@ const CountryStateInput = ({
   onPincodeChange,
   required,
 }: Props) => {
-  const isIndia = (country || "IN") === "IN";
+  const selectedCountry = country || "IN";
+  const isIndia = selectedCountry === "IN";
+
+  // Load states for non-India countries (ISO-3166-2 subdivisions)
+  const countryStates = useMemo(() => {
+    if (isIndia || selectedCountry === "OTHER") return [];
+    try {
+      return State.getStatesOfCountry(selectedCountry) || [];
+    } catch {
+      return [];
+    }
+  }, [selectedCountry, isIndia]);
+
+  const stateNames = countryStates.map((s) => s.name);
+  const isCustomState = !!state && state !== "Default" && stateNames.length > 0 && !stateNames.includes(state);
+  const dropdownValue = isCustomState ? STATE_OTHER : state;
 
   const handleCountry = (v: string) => {
     onCountryChange(v);
-    if (v !== "IN") {
-      onStateChange("Default");
-    } else if (state === "Default") {
-      onStateChange("");
+    // Clear state on country change so user picks fresh from new list
+    onStateChange("");
+  };
+
+  const handleStateDropdown = (v: string) => {
+    if (v === STATE_OTHER) {
+      onStateChange(""); // clear so the free-text input appears empty for typing
+    } else {
+      onStateChange(v);
     }
   };
 
@@ -71,7 +95,7 @@ const CountryStateInput = ({
       <div className="space-y-1.5">
         <Label>Country {required && <span className="text-destructive">*</span>}</Label>
         <select
-          value={country || "IN"}
+          value={selectedCountry}
           onChange={(e) => handleCountry(e.target.value)}
           className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
@@ -93,7 +117,36 @@ const CountryStateInput = ({
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label>State / Region</Label>
-            <Input value="Default" readOnly className="bg-muted/40 cursor-not-allowed" />
+            {stateNames.length > 0 ? (
+              <>
+                <select
+                  value={dropdownValue || ""}
+                  onChange={(e) => handleStateDropdown(e.target.value)}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">Select state / region</option>
+                  {countryStates.map((s) => (
+                    <option key={s.isoCode} value={s.name}>{s.name}</option>
+                  ))}
+                  <option value={STATE_OTHER}>{STATE_OTHER}</option>
+                </select>
+                {(dropdownValue === STATE_OTHER || isCustomState) && (
+                  <Input
+                    value={isCustomState ? state : ""}
+                    onChange={(e) => onStateChange(e.target.value.slice(0, 80))}
+                    placeholder="Type state / region"
+                    className="mt-1.5"
+                    autoFocus
+                  />
+                )}
+              </>
+            ) : (
+              <Input
+                value={state === "Default" ? "" : state}
+                onChange={(e) => onStateChange(e.target.value.slice(0, 80))}
+                placeholder="State / Region"
+              />
+            )}
           </div>
           <div className="space-y-1.5">
             <Label>Postal / ZIP Code {required && <span className="text-destructive">*</span>}</Label>
