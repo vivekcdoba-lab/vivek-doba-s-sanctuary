@@ -1,8 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, MessageSquare, Mail, Check, X, RefreshCw, ChevronDown, ChevronUp, Loader2, Send, Trash2, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Progress } from '@/components/ui/progress';
 
 
 type FormType = 'discovery_call' | 'workshop' | 'lgt_application' | 'registration';
@@ -63,6 +74,28 @@ const ApplicationsPage = () => {
   const [actionType, setActionType] = useState<'reject' | 'info' | null>(null);
   const [actionNotes, setActionNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [confirmApprove, setConfirmApprove] = useState<{ id: string; name: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [approveProgress, setApproveProgress] = useState(0);
+  const [approvingName, setApprovingName] = useState<string | null>(null);
+  const progressTimerRef = useRef<number | null>(null);
+
+  const startProgress = () => {
+    setApproveProgress(8);
+    if (progressTimerRef.current) window.clearInterval(progressTimerRef.current);
+    progressTimerRef.current = window.setInterval(() => {
+      setApproveProgress(p => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
+    }, 250);
+  };
+
+  const stopProgress = () => {
+    if (progressTimerRef.current) {
+      window.clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
+    setApproveProgress(100);
+    window.setTimeout(() => { setApprovingName(null); setApproveProgress(0); }, 500);
+  };
 
   const fetchSubmissions = async () => {
     const { data, error } = await supabase
@@ -98,7 +131,8 @@ const ApplicationsPage = () => {
   const updateStatus = async (id: string, status: SubmissionStatus, notes?: string) => {
     setActionLoading(true);
     const sub = submissions.find(s => s.id === id);
-    if (!sub) return;
+    if (!sub) { setActionLoading(false); return; }
+    if (status === 'approved') { setApprovingName(sub.full_name); startProgress(); }
 
     // If approving, use the edge function to create auth user + profile
     if (status === 'approved') {
@@ -108,6 +142,7 @@ const ApplicationsPage = () => {
 
       if (fnError || !data?.success) {
         toast({ title: `Failed to approve: ${data?.error || fnError?.message || 'Unknown error'}`, variant: 'destructive' });
+        stopProgress();
         setActionLoading(false);
         return;
       }
@@ -154,12 +189,19 @@ const ApplicationsPage = () => {
     setActionType(null);
     setActionNotes('');
     setActionLoading(false);
+    if (status === 'approved') stopProgress();
     fetchSubmissions();
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Delete application from ${name}? This cannot be undone.`)) return;
+  const handleDelete = (id: string, name: string) => {
+    setConfirmDelete({ id, name });
+  };
+
+  const performDelete = async () => {
+    if (!confirmDelete) return;
+    const { id, name } = confirmDelete;
     const { error, count } = await supabase.from('submissions').delete({ count: 'exact' }).eq('id', id);
+    setConfirmDelete(null);
     if (error) {
       toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' });
       return;
@@ -172,9 +214,8 @@ const ApplicationsPage = () => {
     fetchSubmissions();
   };
 
-  const handleQuickApprove = async (id: string, name: string) => {
-    if (!window.confirm(`Approve ${name} and create their seeker account?`)) return;
-    await updateStatus(id, 'approved');
+  const handleQuickApprove = (id: string, name: string) => {
+    setConfirmApprove({ id, name });
   };
 
   if (loading) {
@@ -385,6 +426,68 @@ const ApplicationsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Approve confirmation */}
+      <AlertDialog open={!!confirmApprove} onOpenChange={(open) => !open && !actionLoading && setConfirmApprove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve seeker application?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Approve <span className="font-semibold text-foreground">{confirmApprove?.name}</span> and create their seeker account? They will receive a welcome email with login details.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={actionLoading}
+              className="bg-emerald-600 hover:bg-emerald-700"
+              onClick={async () => {
+                if (!confirmApprove) return;
+                const target = confirmApprove;
+                setConfirmApprove(null);
+                await updateStatus(target.id, 'approved');
+              }}
+            >
+              {actionLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Approving…</> : 'Yes, approve'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!confirmDelete} onOpenChange={(open) => !open && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this application?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete application from <span className="font-semibold text-foreground">{confirmDelete?.name}</span>? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={performDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Approval progress overlay (non-blocking visual feedback) */}
+      {approvingName && (
+        <div className="fixed inset-0 z-[60] bg-background/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <Loader2 className="w-5 h-5 text-primary animate-spin" />
+              <div>
+                <p className="font-semibold text-foreground">Creating seeker account…</p>
+                <p className="text-xs text-muted-foreground">Approving {approvingName}</p>
+              </div>
+            </div>
+            <Progress value={approveProgress} className="h-2" />
+            <p className="text-xs text-muted-foreground text-right mt-2">{approveProgress}%</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
