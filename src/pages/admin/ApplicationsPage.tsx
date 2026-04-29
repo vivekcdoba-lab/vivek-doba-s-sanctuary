@@ -74,6 +74,28 @@ const ApplicationsPage = () => {
   const [actionType, setActionType] = useState<'reject' | 'info' | null>(null);
   const [actionNotes, setActionNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [confirmApprove, setConfirmApprove] = useState<{ id: string; name: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [approveProgress, setApproveProgress] = useState(0);
+  const [approvingName, setApprovingName] = useState<string | null>(null);
+  const progressTimerRef = useRef<number | null>(null);
+
+  const startProgress = () => {
+    setApproveProgress(8);
+    if (progressTimerRef.current) window.clearInterval(progressTimerRef.current);
+    progressTimerRef.current = window.setInterval(() => {
+      setApproveProgress(p => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
+    }, 250);
+  };
+
+  const stopProgress = () => {
+    if (progressTimerRef.current) {
+      window.clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
+    setApproveProgress(100);
+    window.setTimeout(() => { setApprovingName(null); setApproveProgress(0); }, 500);
+  };
 
   const fetchSubmissions = async () => {
     const { data, error } = await supabase
