@@ -7,7 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Loader2, Send, Clock, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Mail, Loader2, Send, Clock, CheckCircle2, XCircle, AlertCircle, Calendar as CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface Settings {
   id: string;
@@ -39,16 +43,20 @@ export default function AdminDailyReports() {
   const [sending, setSending] = useState(false);
 
   const [profiles, setProfiles] = useState<Record<string, SeekerProfile>>({});
+  const [filterDate, setFilterDate] = useState<Date>(new Date());
 
-  const load = async () => {
+  const load = async (dateOverride?: Date) => {
     setLoading(true);
+    const targetDate = dateOverride ?? filterDate;
+    const dateStr = format(targetDate, "yyyy-MM-dd");
     const [{ data: s }, { data: l }] = await Promise.all([
       supabase.from("daily_report_settings").select("*").maybeSingle(),
       supabase
         .from("daily_progress_email_log")
         .select("id, seeker_id, sent_date, status, error, created_at")
+        .eq("sent_date", dateStr)
         .order("created_at", { ascending: false })
-        .limit(100),
+        .limit(500),
     ]);
     if (s) setSettings(s as Settings);
     const rows = (l as LogRow[]) || [];
@@ -72,8 +80,9 @@ export default function AdminDailyReports() {
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    load(filterDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterDate]);
 
   const save = async () => {
     if (!settings) return;
@@ -205,6 +214,37 @@ export default function AdminDailyReports() {
           <div className="text-xs text-muted-foreground flex items-center gap-1"><XCircle className="w-3 h-3 text-red-600" /> Failed</div>
           <div className="text-2xl font-bold text-foreground mt-1">{counts.failed}</div>
         </Card>
+      </div>
+
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Delivery log</h2>
+          <p className="text-xs text-muted-foreground">
+            Showing {logs.length} record{logs.length === 1 ? "" : "s"} for {format(filterDate, "PPP")}
+            {format(filterDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") ? " (today)" : ""}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className={cn("w-[220px] justify-start text-left font-normal")}>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {format(filterDate, "PPP")}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={filterDate}
+                onSelect={(d) => d && setFilterDate(d)}
+                disabled={(d) => d > new Date()}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          <Button variant="ghost" size="sm" onClick={() => setFilterDate(new Date())}>Today</Button>
+        </div>
       </div>
 
       <Card className="overflow-x-auto">
