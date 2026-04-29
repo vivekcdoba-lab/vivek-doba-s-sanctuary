@@ -42,7 +42,7 @@ const AdminUploadResource = () => {
   const categoryOptions = Array.from(new Set([...DEFAULT_CATEGORIES, ...existingCategories])).sort();
 
   const reset = () => {
-    setForm({ title: '', description: '', type: 'video', category: '', language: 'HI', url: '', duration_minutes: '' });
+    setForm({ title: '', description: '', type: 'video', category: '', language: 'HI', url: '', duration_minutes: '', visibility: 'all' });
     setSource('laptop');
     setCategoryMode('select');
   };
