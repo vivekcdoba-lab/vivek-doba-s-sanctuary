@@ -86,6 +86,39 @@ const SeekerDetailPage = () => {
     relationship_label: string;
   }>({ partner_seeker_id: '', relationship: 'spouse', relationship_label: '' });
 
+  // Signed agreement detection — gates the "Open Agreement" button so it only
+  // appears once a Premium Coaching Agreement has actually been signed, and
+  // points at the real signed PDF in the `signatures` bucket.
+  const [signedAgreementPath, setSignedAgreementPath] = useState<string | null>(null);
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('signature_requests')
+        .select('signed_at, documents(title, category), document_signatures(signed_pdf_path)')
+        .eq('seeker_id', id)
+        .eq('status', 'signed')
+        .order('signed_at', { ascending: false });
+      if (cancelled) return;
+      const match = (data ?? []).find((r: any) => {
+        const t = (r.documents?.title ?? '').toLowerCase();
+        const c = (r.documents?.category ?? '').toLowerCase();
+        return c === 'agreement' || t.includes('agreement');
+      });
+      const path = match?.document_signatures?.[0]?.signed_pdf_path ?? null;
+      setSignedAgreementPath(path);
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  const openSignedAgreement = async () => {
+    if (!signedAgreementPath) return;
+    const { data, error } = await supabase.storage.from('signatures').createSignedUrl(signedAgreementPath, 60);
+    if (error || !data?.signedUrl) { toast.error('Could not open signed agreement'); return; }
+    window.open(data.signedUrl, '_blank');
+  };
+
   const linkedPartner = linkGroup.find(r => r.seeker_id !== id);
   const linkGroupId = linkGroup[0]?.group_id;
 
@@ -841,15 +874,23 @@ const SeekerDetailPage = () => {
                   📜 Premium Coaching Agreement
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Full 12-page bilingual agreement. Auto-fills client details (B1.1), fee structure (B1.2), and captures digital signatures (B1.3).
+                  Full bilingual agreement. After the seeker signs, the final PDF (template + B1.1 Client Details + B1.2 Payments &amp; Fees + Signature Certificate) is available here.
                 </p>
+                {!signedAgreementPath && (
+                  <p className="text-xs text-muted-foreground italic mt-2">
+                    Will become available once the seeker signs the agreement.
+                  </p>
+                )}
               </div>
-              <a
-                href={`/seekers/${seeker.id}/premium-agreement`}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#8B0000] text-white text-sm font-medium hover:bg-[#6B0000] transition-colors whitespace-nowrap"
-              >
-                Open Agreement →
-              </a>
+              {signedAgreementPath && (
+                <button
+                  type="button"
+                  onClick={openSignedAgreement}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#8B0000] text-white text-sm font-medium hover:bg-[#6B0000] transition-colors whitespace-nowrap"
+                >
+                  Open Signed Agreement →
+                </button>
+              )}
             </div>
           </div>
 
