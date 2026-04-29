@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { sendEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -116,50 +117,16 @@ function buildCredentialsEmail(opts: {
 </body></html>`;
 }
 
-async function getFromAddress(adminClient: any): Promise<string> {
-  try {
-    const { data } = await adminClient.from('app_settings').select('value').eq('key', 'email_from').maybeSingle();
-    if (data?.value && typeof data.value === 'string') return data.value;
-  } catch (e) {
-    console.warn('[email] app_settings lookup failed', (e as Error).message);
-  }
-  return Deno.env.get('RESEND_FROM') || 'VDTS <info@vivekdoba.com>';
-}
-
-async function sendCredentialsEmail(opts: {
-  to: string; name: string; password: string; isTemp: boolean; loginUrl: string; from: string;
+async function sendCredentialsEmail(adminClient: any, opts: {
+  to: string; name: string; email: string; password: string; isTemp: boolean; loginUrl: string;
 }): Promise<{ ok: boolean; error?: string }> {
-  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-  if (!RESEND_API_KEY) {
-    console.error('[email] RESEND_API_KEY not configured');
-    return { ok: false, error: 'RESEND_API_KEY not configured' };
-  }
-  const from = opts.from;
-  try {
-    const html = buildCredentialsEmail(opts);
-    const subject = opts.isTemp
-      ? '✅ Application Approved — Your VDTS account (temporary password inside)'
-      : '✅ Application Approved — Welcome to VDTS';
-    console.log('[email] sending', { to: opts.to, from, subject, isTemp: opts.isTemp });
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ from, to: [opts.to], subject, html }),
-    });
-    const bodyText = await res.text();
-    if (!res.ok) {
-      console.error('[email] resend failed', res.status, bodyText.slice(0, 500));
-      return { ok: false, error: `Resend ${res.status}: ${bodyText.slice(0, 200)}` };
-    }
-    console.log('[email] resend ok', bodyText.slice(0, 200));
-    return { ok: true };
-  } catch (e) {
-    console.error('[email] exception', (e as Error).message);
-    return { ok: false, error: (e as Error).message };
-  }
+  const html = buildCredentialsEmail(opts);
+  const subject = opts.isTemp
+    ? '✅ Application Approved — Your VDTS account (temporary password inside)'
+    : '✅ Application Approved — Welcome to VDTS';
+  const r = await sendEmail(adminClient, { to: opts.to, subject, html, label: 'application_approved' });
+  if (!r.ok) console.error('[email] enqueue failed', r.error);
+  return r.ok ? { ok: true } : { ok: false, error: r.error };
 }
 
 Deno.serve(async (req) => {
@@ -353,20 +320,19 @@ Deno.serve(async (req) => {
       .update({ status: "approved", form_data: sanitizedFormData })
       .eq("id", submission_id);
 
-    // Send credentials / approval email DIRECTLY (no dependency on send-notification)
+    // Send credentials / approval email via Lovable Emails queue
     let emailSent = false;
     let emailError: string | null = null;
     if (credentialsForEmail) {
       const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || 'https://vivekdoba.com';
       const loginUrl = `${origin.replace(/\/$/, '')}/login`;
-      const fromAddress = await getFromAddress(supabaseAdmin);
-      const result = await sendCredentialsEmail({
+      const result = await sendCredentialsEmail(supabaseAdmin, {
         to: sub.email,
         name: sub.full_name,
+        email: sub.email,
         password: credentialsForEmail.password,
         isTemp: credentialsForEmail.isTemp,
         loginUrl,
-        from: fromAddress,
       });
       emailSent = result.ok;
       emailError = result.ok ? null : (result.error || 'unknown');
