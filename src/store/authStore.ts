@@ -77,7 +77,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   user: null,
   profile: null,
-  sessionId: localStorage.getItem('vdts_session_id'),
+  sessionId: getStoredSessionId(),
   darkMode: false,
   loading: true,
   setAuth: (user, profile) => set({
@@ -87,11 +87,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     loading: false,
   }),
   setSessionId: (id) => {
-    if (id) {
-      localStorage.setItem('vdts_session_id', id);
-    } else {
-      localStorage.removeItem('vdts_session_id');
-    }
+    writeSessionId(id);
     set({ sessionId: id });
   },
   logout: async () => {
