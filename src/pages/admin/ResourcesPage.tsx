@@ -11,6 +11,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from 'sonner';
 import { Resource } from '@/types';
 import { ResourcePreviewModal } from '@/components/ResourcePreviewModal';
+import { VisibilityEditor } from '@/components/admin/VisibilityEditor';
+import { ContentVisibility } from '@/lib/contentVisibility';
 
 const typeIcon: Record<string, any> = { pdf: FileText, audio: Headphones, video: Video, worksheet: FileSpreadsheet };
 const typeColors: Record<string, string> = {
