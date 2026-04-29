@@ -24,13 +24,51 @@ interface AuthState {
   toggleDarkMode: () => void;
 }
 
-function clearAllAuthStorage() {
-  Object.keys(localStorage).forEach(key => {
-    if (key.startsWith('sb-')) {
-      localStorage.removeItem(key);
+// Session id storage: mirrors the supabase auth storage selection
+// (sessionStorage by default, localStorage if "Remember me" was checked).
+const SESSION_ID_KEY = 'vdts_session_id';
+const REMEMBER_FLAG = 'vdts_remember_me';
+
+function sessionIdStore(): Storage {
+  try {
+    const remember = localStorage.getItem(REMEMBER_FLAG) === '1';
+    return remember ? localStorage : sessionStorage;
+  } catch {
+    return sessionStorage;
+  }
+}
+
+export function getStoredSessionId(): string | null {
+  try {
+    return sessionStorage.getItem(SESSION_ID_KEY) || localStorage.getItem(SESSION_ID_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeSessionId(id: string | null) {
+  try {
+    if (id) {
+      sessionIdStore().setItem(SESSION_ID_KEY, id);
+      // Clear the other storage to avoid stale ids
+      const other = sessionIdStore() === localStorage ? sessionStorage : localStorage;
+      other.removeItem(SESSION_ID_KEY);
+    } else {
+      localStorage.removeItem(SESSION_ID_KEY);
+      sessionStorage.removeItem(SESSION_ID_KEY);
     }
+  } catch { /* ignore */ }
+}
+
+function clearAllAuthStorage() {
+  [localStorage, sessionStorage].forEach((store) => {
+    try {
+      Object.keys(store).forEach((key) => {
+        if (key.startsWith('sb-')) store.removeItem(key);
+      });
+      store.removeItem(SESSION_ID_KEY);
+    } catch { /* ignore */ }
   });
-  localStorage.removeItem('vdts_session_id');
 }
 
 let _initialized = false;
