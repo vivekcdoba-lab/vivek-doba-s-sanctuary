@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
-import { prependClientPages } from "../_shared/buildClientPages.ts";
+import { appendClientPages } from "../_shared/buildClientPages.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -86,10 +86,11 @@ Deno.serve(async (req) => {
       pdfDoc = await PDFDocument.create();
     }
 
-    // Prepend B1.1 (Client Details) + B1.2 (Payments & Fees) so the signed PDF
-    // archived and emailed back includes the seeker's data, not just the blank template.
+    // Append B1.1 (Client Details) + B1.2 (Payments & Fees) AFTER the original
+    // template pages but BEFORE the signature certificate page added below.
+    // Final page order = [..original template.., B1.1, B1.2, Signature Certificate].
     try {
-      await prependClientPages(pdfDoc, {
+      await appendClientPages(pdfDoc, {
         seeker: {
           full_name: seeker?.full_name ?? full_name ?? null,
           email: seeker?.email ?? null,
@@ -98,7 +99,7 @@ Deno.serve(async (req) => {
         fee: (feeRow?.fields_json as any) ?? null,
       });
     } catch (e) {
-      console.error("prepend_client_pages_failed", e);
+      console.error("append_client_pages_failed", e);
     }
 
     // Append signature page
