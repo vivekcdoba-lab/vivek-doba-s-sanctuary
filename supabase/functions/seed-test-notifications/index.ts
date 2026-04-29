@@ -84,24 +84,28 @@ function buildMails(): Mail[] {
   return mails.map(m => ({ ...m, subject: `Testing — ${m.subject}` }));
 }
 
-async function sendOne(to: string[], subject: string, html: string): Promise<{ ok: boolean; id?: string; err?: string }> {
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: FROM, to, subject, html }),
-    });
-    const text = await res.text();
-    if (res.ok) {
-      try { return { ok: true, id: JSON.parse(text)?.id }; } catch { return { ok: true }; }
+async function sendOne(
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+  to: string[],
+  subject: string,
+  html: string,
+): Promise<{ ok: boolean; id?: string; err?: string }> {
+  const errs: string[] = [];
+  let lastId: string | undefined;
+  let anyOk = false;
+  for (const addr of to) {
+    const r = await sendEmail(supabase, { to: addr, subject, html, label: 'seed_test' });
+    if (r.ok) {
+      anyOk = true;
+      lastId = r.message_id;
+    } else if (r.error) {
+      errs.push(`${addr}: ${r.error}`);
     }
-    if (res.status === 429 || res.status >= 500) {
-      await new Promise(r => setTimeout(r, 800 * attempt));
-      if (attempt < 3) continue;
-    }
-    return { ok: false, err: `${res.status}: ${text.slice(0, 200)}` };
   }
-  return { ok: false, err: 'retries exhausted' };
+  return anyOk
+    ? { ok: true, id: lastId, err: errs.length ? errs.join('; ') : undefined }
+    : { ok: false, err: errs.join('; ') || 'all recipients failed' };
 }
 
 Deno.serve(async (req) => {
