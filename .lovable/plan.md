@@ -1,103 +1,71 @@
-# Fix: Emails Failing — "notify.vivekdoba.com domain is not verified"
+## Goal
 
-## What's actually wrong
+Complete the email migration started earlier. Move the **remaining 5 edge functions** off direct Resend (`api.resend.com/emails` with `info@vivekdoba.com`) and onto the shared `sendEmail()` helper that enqueues to `transactional_emails` via the verified `notify.vivekdoba.com` sender. This eliminates the "domain not verified" failures.
 
-The error in your screenshot is **not a code bug**. It's a domain configuration mismatch:
+## Functions to migrate
 
-- **Lovable Emails** is set up and **fully verified** for `notify.vivekdoba.com` (NS records delegated to `ns3.lovable.cloud` / `ns4.lovable.cloud`).
-- However, **most of our edge functions still send via Resend's API directly** (`api.resend.com/emails`) using `from: info@vivekdoba.com` or `noreply@vivekdoba.com`.
-- Because `notify.vivekdoba.com` is NS-delegated to Lovable, **Resend cannot verify any domain on `vivekdoba.com`** — so Resend rejects every send with `403 validation_error` and falls back to test mode (which only allows sending to `vivekcdoba@gmail.com`).
-- That's exactly the dual error in your screenshot: "Primary 403 not verified" + "Fallback 403 testing only".
+1. `submit-signature` — sends signed-PDF email to seeker + notification to admins/coaches
+2. `sign-document-inline` — sends signed-PDF email to seeker (in-person flow)
+3. `daily-session-report` — sends daily admin digest
+4. `send-lgt-invite` — sends LGT application invite link
+5. `seed-test-notifications` — sends bulk test emails (dry-run seed)
 
-Only `send-test-email` uses the correct path (Lovable Emails queue via `enqueue_email`) — and that's the one that works.
+## Changes
 
-## The fix: migrate all senders to Lovable Emails
+### Common pattern for all 5
+- Add `import { sendEmail } from "../_shared/send-email.ts";`
+- Remove `RESEND_API_KEY` env reads and `fetch("https://api.resend.com/emails", …)` calls.
+- Replace each call with `await sendEmail(supabaseAdmin, { to, subject, html, label })`.
+- Check `result.ok`; log `result.error` on failure (never throw — keep the function's main flow successful).
 
-Lovable Emails is already wired up (`process-email-queue` cron + `enqueue_email` RPC + `email_send_log`). We just need to route all the Resend `fetch()` calls through it instead, using the verified `notify.vivekdoba.com` sender.
+### Attachment handling (signature functions)
 
-### Functions to migrate (15 total)
+The Lovable queue does not support attachments. The signed PDF is already uploaded to the private `signatures` bucket. For `submit-signature` and `sign-document-inline`:
+- After upload, generate a 7-day signed URL: `admin.storage.from("signatures").createSignedUrl(signedPath, 60*60*24*7)`.
+- Embed a "Download your signed copy" button in the email HTML pointing at that URL.
+- Drop the base64 attachment encoding (saves CPU + memory in the function).
 
-Direct Resend → Lovable Emails queue (`enqueue_email` RPC, sender `VDTS <info@notify.vivekdoba.com>`):
+### Per-function specifics
 
-1. `admin-create-user` — welcome email with temp password
-2. `admin-reset-password` — password reset notification
-3. `super-admin-change-own-password` — password change confirmation
-4. `approve-application` — LGT approval email
-5. `send-otp` — OTP delivery (keep < 30s latency note)
-6. `send-notification` — generic notification dispatch
-7. `send-session-invite` — session invite email
-8. `send-lgt-invite` — LGT invitation
-9. `send-lgt-report` — LGT report PDF email
-10. `daily-session-report` — daily report digest
-11. `request-document-signature` — signature request email
-12. `resend-document-signature` — resend signature link
-13. `submit-signature` — signature confirmation + admin notification
-14. `sign-document-inline` — inline signing confirmation
-15. `seed-test-notifications` — test seeding (keep but switch sender)
+**`submit-signature`** (lines 172-226)
+- Two emails: (a) seeker thank-you with signed-URL download link, label `"signature_signed_seeker"`; (b) admin/coach notice, label `"signature_signed_admin"`.
+- Keep the existing in-app `notifications` insert.
 
-### Standard pattern applied to each function
+**`sign-document-inline`** (lines 178, 222-261)
+- One email per signed doc → seeker, with signed-URL download link, label `"signature_signed_inline"`.
+- Track success in `email_sent` / `email_error` exactly as today (now driven by `result.ok`).
 
-Replace this:
-```ts
-await fetch("https://api.resend.com/emails", {
-  method: "POST",
-  headers: { Authorization: `Bearer ${RESEND_API_KEY}`, ... },
-  body: JSON.stringify({ from: "Vivek Doba <info@vivekdoba.com>", to, subject, html }),
-});
-```
+**`daily-session-report`** (lines 8, 134-170)
+- Replace the Resend block with `sendEmail(supabaseAdmin, { to: "info@vivekdoba.com", subject, html, label: "daily_session_report" })`.
+- Drop `app_settings.email_from` lookup and the `RESEND_FROM` env override — sender is now fixed to the verified Lovable address.
+- Return `{ success: true, queue_id, report: r, cleaned: deletedCount }`.
 
-With this:
-```ts
-const messageId = crypto.randomUUID();
-// fetch/create unsubscribe token for `to`
-const { data, error } = await supabase.rpc('enqueue_email', {
-  queue_name: 'transactional_emails',
-  payload: {
-    message_id: messageId,
-    to, from: 'VDTS <info@notify.vivekdoba.com>',
-    sender_domain: 'notify.vivekdoba.com',
-    subject, html, text,
-    purpose: 'transactional',
-    label: '<function-specific-label>',
-    idempotency_key: messageId,
-    unsubscribe_token: token,
-    queued_at: new Date().toISOString(),
-  },
-});
-```
+**`send-lgt-invite`** (lines 27, 153-188)
+- Replace Resend block with `sendEmail(admin, { to: seeker.email, subject, html, label: "lgt_invite" })`.
+- If enqueue fails, return `{ success: true, token, link, warning: result.error }` — token row is already saved, so the admin can resend.
 
-### Shared helper
-
-To avoid 15 copies of the same boilerplate, I'll add `supabase/functions/_shared/send-email.ts` exporting one helper:
-
-```ts
-export async function sendEmail(supabase, { to, subject, html, text, label })
-```
-
-It handles unsubscribe-token lookup/creation + `enqueue_email`. Each function becomes a one-liner.
-
-### What stays the same
-
-- All function names, signatures, callers — no frontend change required
-- All RLS, auth checks, business logic
-- `send-test-email` (already correct — used as the reference pattern)
-- The `RESEND_API_KEY` secret stays in place as a fallback but is no longer used in the hot path
-
-### After deploy
-
-Emails will be sent via Lovable's verified `notify.vivekdoba.com` sender, which means:
-- All recipients receive emails (no more "test mode" restriction)
-- Status visible in **Cloud → Emails** and `email_send_log` table
-- ~30s queue latency (cron runs every 30s) — acceptable for all current flows including OTP
+**`seed-test-notifications`** (lines 8, 89-107, 145-156)
+- Rewrite `sendOne()` to loop over each recipient and call `sendEmail()` per address (queue helper takes a single `to`). Aggregate per-recipient ok/err.
+- Use label `"seed_test"`. Remove `RESEND_API_KEY` check from the main handler.
+- Persist each enqueue result into `email_log` as today (`status`, `resend_message_id` becomes `queue_id`/`message_id`, `error_message`).
 
 ## Out of scope
 
-- Removing the `RESEND_API_KEY` secret (kept as safety net)
-- Changing auth emails (signup/recovery) — Lovable handles those by default already
-- Verifying `vivekdoba.com` (root) on Resend — not needed since we're switching providers
+- No DB schema changes (queue/RPC and `email_unsubscribe_tokens` already exist and are used by the 10 already-migrated functions).
+- No frontend changes.
+- `RESEND_API_KEY` secret stays in place — it's still referenced by the queue worker (`process-email-queue`) and as a fallback elsewhere.
 
-## Files changed
+## Files to edit
 
-- New: `supabase/functions/_shared/send-email.ts`
-- Edited: 15 edge function `index.ts` files listed above (replace Resend `fetch` blocks with helper call)
-- No frontend, no migration, no schema change
+- `supabase/functions/submit-signature/index.ts`
+- `supabase/functions/sign-document-inline/index.ts`
+- `supabase/functions/daily-session-report/index.ts`
+- `supabase/functions/send-lgt-invite/index.ts`
+- `supabase/functions/seed-test-notifications/index.ts`
+
+## Verification after deploy
+
+1. Check `pgmq` `transactional_emails` queue picks up new messages (already polled by `process-email-queue`).
+2. Trigger one signature signing in preview → confirm seeker receives email with download-link button (no attachment), admins receive notice.
+3. Manually invoke `daily-session-report` once → confirm digest arrives at `info@vivekdoba.com`.
+4. Re-run security/email scan — no remaining direct `api.resend.com` calls outside `process-email-queue`.
