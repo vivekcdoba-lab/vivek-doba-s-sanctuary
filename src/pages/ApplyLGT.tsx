@@ -257,7 +257,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
     
     // All mandatory text fields
     const mandatoryTextFields = [
-      'fullName','preferredName','dob','gender','maritalStatus','bloodGroup','mobile','email','city','state','pincode','hometown',
+      'fullName','preferredName','dob','gender','maritalStatus','bloodGroup','mobile','email','city','state','hometown',
       'emergName','emergRelation','emergPhone',
       'designation','company','businessNature','yearsInBiz','website',
       'healthGoal','relGoal',
@@ -289,13 +289,16 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
       if (!f.gstNumber.trim()) missing.add('gstNumber');
     }
     if (f.chronicConditions === 'yes' && !f.chronicDetails.trim()) missing.add('chronicDetails');
-    if (f.state === 'Other' && !f.stateOther.trim()) missing.add('stateOther');
     if (f.emergRelation === 'Other' && !f.emergRelOther.trim()) missing.add('emergRelOther');
+
+    // Country / Pincode handling
+    if (!f.country) missing.add('country');
+    if (!f.pincode || !String(f.pincode).trim()) missing.add('pincode');
+    if (f.country === 'IN' && f.pincode && !/^[1-9]\d{5}$/.test(f.pincode)) missing.add('pincode');
 
     // Email validation
     if (f.email && !isValidEmail(f.email)) missing.add('email');
     if (f.mobile && f.mobile.length !== 10) missing.add('mobile');
-    if (f.state !== 'Other' && f.pincode && f.pincode.length !== 6) missing.add('pincode');
 
     setMissingFields(missing);
 
