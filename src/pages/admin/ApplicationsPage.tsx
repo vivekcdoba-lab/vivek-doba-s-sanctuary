@@ -189,12 +189,19 @@ const ApplicationsPage = () => {
     setActionType(null);
     setActionNotes('');
     setActionLoading(false);
+    if (status === 'approved') stopProgress();
     fetchSubmissions();
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Delete application from ${name}? This cannot be undone.`)) return;
+  const handleDelete = (id: string, name: string) => {
+    setConfirmDelete({ id, name });
+  };
+
+  const performDelete = async () => {
+    if (!confirmDelete) return;
+    const { id, name } = confirmDelete;
     const { error, count } = await supabase.from('submissions').delete({ count: 'exact' }).eq('id', id);
+    setConfirmDelete(null);
     if (error) {
       toast({ title: 'Failed to delete', description: error.message, variant: 'destructive' });
       return;
@@ -207,9 +214,8 @@ const ApplicationsPage = () => {
     fetchSubmissions();
   };
 
-  const handleQuickApprove = async (id: string, name: string) => {
-    if (!window.confirm(`Approve ${name} and create their seeker account?`)) return;
-    await updateStatus(id, 'approved');
+  const handleQuickApprove = (id: string, name: string) => {
+    setConfirmApprove({ id, name });
   };
 
   if (loading) {
