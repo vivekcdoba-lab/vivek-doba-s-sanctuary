@@ -3,6 +3,7 @@
 // Uses stable UID + SEQUENCE so calendar clients update existing events on reschedule.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sendEmail } from "../_shared/send-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -105,7 +106,7 @@ Deno.serve(async (req: Request) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    // RESEND_API_KEY no longer used — emails go through Lovable Emails queue
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
     const body = (await req.json()) as InvitePayload;
@@ -258,42 +259,56 @@ Deno.serve(async (req: Request) => {
 
     let email_sent = false;
     let email_error: string | undefined;
+    let icsUrl: string | null = null;
 
-    if (!RESEND_API_KEY) {
-      email_error = "RESEND_API_KEY not configured";
-    } else {
-      try {
-        const resp = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-          },
-          body: JSON.stringify({
-            from: "Vivek Doba <info@vivekdoba.com>",
-            to: attendees.map((a) => a.email),
-            subject,
-            html,
-            attachments: [
-              {
-                filename: "session.ics",
-                content: icsB64,
-                contentType: "text/calendar; charset=utf-8; method=" + (isCancel ? "CANCEL" : "REQUEST"),
-              },
-            ],
-          }),
+    // Upload .ics to documents bucket and embed a signed-URL link in the email,
+    // since Lovable Emails queue does not support attachments.
+    try {
+      const icsBytes = new TextEncoder().encode(ics);
+      const path = `session-invites/${session.id}-${Date.now()}.ics`;
+      const { error: upErr } = await supabase.storage
+        .from("documents")
+        .upload(path, icsBytes, {
+          contentType: `text/calendar; charset=utf-8; method=${isCancel ? "CANCEL" : "REQUEST"}`,
+          upsert: true,
         });
-        const j = await resp.json().catch(() => ({}));
-        if (!resp.ok) {
-          email_error = `${resp.status}: ${JSON.stringify(j)}`;
-          console.error("resend_failed", email_error);
-        } else {
-          email_sent = true;
-        }
-      } catch (e) {
-        email_error = String(e);
-        console.error("send-session-invite error", e);
+      if (!upErr) {
+        const { data: signed } = await supabase.storage
+          .from("documents")
+          .createSignedUrl(path, 60 * 60 * 24 * 30); // 30 days
+        if (signed?.signedUrl) icsUrl = signed.signedUrl;
+      } else {
+        console.warn("ics upload failed:", upErr.message);
       }
+    } catch (e) {
+      console.warn("ics storage error:", (e as Error).message);
+    }
+
+    const htmlWithLink = icsUrl
+      ? html.replace(
+          "in one click.",
+          `in one click. <br/><br/><a href="${icsUrl}" style="display:inline-block;background:#FF6B00;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600">📅 Download calendar invite (.ics)</a>`,
+        )
+      : html;
+
+    try {
+      // Send to all attendees in parallel
+      const sends = await Promise.all(
+        attendees.map((a) =>
+          sendEmail(supabase, {
+            to: a.email,
+            subject,
+            html: htmlWithLink,
+            label: `session_invite_${action}`,
+          }),
+        ),
+      );
+      email_sent = sends.some((r) => r.ok);
+      const errs = sends.filter((r) => !r.ok).map((r) => r.error).filter(Boolean);
+      if (errs.length) email_error = errs.join("; ");
+    } catch (e) {
+      email_error = String(e);
+      console.error("send-session-invite error", e);
     }
 
     // Audit log into notifications
