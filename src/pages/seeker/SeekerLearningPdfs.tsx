@@ -386,21 +386,17 @@ export default function SeekerLearningPdfs() {
                         ? <BookmarkCheck className="h-4 w-4 text-[hsl(var(--gold-bright))]" />
                         : <Bookmark className="h-4 w-4" />}
                     </Button>
-                    {viewingPdf.url && (
-                      <a href={viewingPdf.url} target="_blank" rel="noopener noreferrer">
-                        <Button variant="ghost" size="icon" className="h-8 w-8"><Download className="h-4 w-4" /></Button>
-                      </a>
-                    )}
+                    {/* Download intentionally disabled — view-only */}
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFullscreen(true)}>
                       <Maximize2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               </DialogHeader>
-              <div className="flex-1 min-h-0">
+              <div className="flex-1 min-h-0" onContextMenu={(e) => e.preventDefault()}>
                 {viewingPdf.url ? (
                   <iframe
-                    src={viewingPdf.url}
+                    src={`${viewingPdf.url}${viewingPdf.url.includes('#') ? '' : '#toolbar=0&navpanes=0'}`}
                     className="w-full h-full border-0"
                     title={viewingPdf.title}
                   />
