@@ -1,15 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { sendEmail } from '../_shared/send-email.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const FROM = 'VDTS Testing <info@vivekdoba.com>';
 
 // Pull the 3 test recipients from profiles by their well-known emails.
 const RECIPIENT_EMAILS = ['vivekcdoba@gmail.com', 'coachviveklgt@gmail.com', 'crwanare@gmail.com'];
