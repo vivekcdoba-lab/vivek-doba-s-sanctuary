@@ -130,6 +130,24 @@ const AdminUploadResource = () => {
               <div><Label>Duration (min)</Label><Input type="number" value={form.duration_minutes} onChange={e => setForm(p => ({ ...p, duration_minutes: e.target.value }))} /></div>
             </div>
 
+            <div>
+              <Label className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" /> Who can access this? *</Label>
+              <Select value={form.visibility} onValueChange={(v: ContentVisibility) => setForm(p => ({ ...p, visibility: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {VISIBILITY_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{opt.label}</span>
+                        <span className="text-[11px] text-muted-foreground">{opt.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">Viewers can listen, watch or read — downloads are disabled for everyone.</p>
+            </div>
+
             <div className="space-y-2">
               <Label>Source *</Label>
               <div className="flex gap-2 flex-wrap">
