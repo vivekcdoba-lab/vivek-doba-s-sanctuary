@@ -154,10 +154,20 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Field too long" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const { data: seeker, error: seekerErr } = await admin.from("profiles").select("id, full_name, email").eq("id", seeker_id).single();
+    const { data: seeker, error: seekerErr } = await admin.from("profiles").select("id, full_name, email, phone").eq("id", seeker_id).single();
     if (seekerErr || !seeker) {
       return new Response(JSON.stringify({ error: "Seeker not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+
+    // Latest fee_structure for this seeker (used to render B1.2)
+    const { data: feeRow } = await admin
+      .from("agreements")
+      .select("fields_json")
+      .eq("client_id", seeker_id)
+      .eq("type", "fee_structure")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     const { data: docs, error: docsErr } = await admin.from("documents").select("id, title, storage_path").in("id", document_ids).eq("is_active", true);
     if (docsErr || !docs || docs.length === 0) {
@@ -188,6 +198,8 @@ Deno.serve(async (req) => {
         admin, docTitle: doc.title, storagePath: doc.storage_path,
         signerName: full_name, place, signatureDate: signature_date,
         ip, verificationId,
+        seeker: { full_name: seeker.full_name ?? null, email: seeker.email ?? null, phone: (seeker as any).phone ?? null },
+        fee: (feeRow?.fields_json as any) ?? null,
       });
       const fileSize = signedBytes.byteLength;
       const signedPath = `${seeker_id}/${req2.id}-signed.pdf`;
