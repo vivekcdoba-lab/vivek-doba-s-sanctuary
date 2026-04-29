@@ -65,7 +65,7 @@ const AdminUploadResource = () => {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('learning_content').insert({ title: form.title, description: form.description || null, type: form.type, category: form.category || null, language: form.language, url: form.url, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null } as any);
+      const { error } = await supabase.from('learning_content').insert({ title: form.title, description: form.description || null, type: form.type, category: form.category || null, language: form.language, url: form.url, duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null, visibility: form.visibility } as any);
       if (error) throw error;
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['learning-content'] }); queryClient.invalidateQueries({ queryKey: ['learning-content-categories'] }); toast({ title: '✅ Resource uploaded' }); reset(); },
