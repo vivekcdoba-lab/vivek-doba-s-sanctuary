@@ -43,16 +43,20 @@ export default function AdminDailyReports() {
   const [sending, setSending] = useState(false);
 
   const [profiles, setProfiles] = useState<Record<string, SeekerProfile>>({});
+  const [filterDate, setFilterDate] = useState<Date>(new Date());
 
-  const load = async () => {
+  const load = async (dateOverride?: Date) => {
     setLoading(true);
+    const targetDate = dateOverride ?? filterDate;
+    const dateStr = format(targetDate, "yyyy-MM-dd");
     const [{ data: s }, { data: l }] = await Promise.all([
       supabase.from("daily_report_settings").select("*").maybeSingle(),
       supabase
         .from("daily_progress_email_log")
         .select("id, seeker_id, sent_date, status, error, created_at")
+        .eq("sent_date", dateStr)
         .order("created_at", { ascending: false })
-        .limit(100),
+        .limit(500),
     ]);
     if (s) setSettings(s as Settings);
     const rows = (l as LogRow[]) || [];
@@ -76,8 +80,9 @@ export default function AdminDailyReports() {
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    load(filterDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterDate]);
 
   const save = async () => {
     if (!settings) return;
