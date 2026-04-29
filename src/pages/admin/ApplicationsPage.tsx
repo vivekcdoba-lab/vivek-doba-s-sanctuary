@@ -142,6 +142,7 @@ const ApplicationsPage = () => {
 
       if (fnError || !data?.success) {
         toast({ title: `Failed to approve: ${data?.error || fnError?.message || 'Unknown error'}`, variant: 'destructive' });
+        stopProgress();
         setActionLoading(false);
         return;
       }
