@@ -38,6 +38,8 @@ export default function AdminDailyReports() {
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
 
+  const [profiles, setProfiles] = useState<Record<string, SeekerProfile>>({});
+
   const load = async () => {
     setLoading(true);
     const [{ data: s }, { data: l }] = await Promise.all([
@@ -49,7 +51,23 @@ export default function AdminDailyReports() {
         .limit(100),
     ]);
     if (s) setSettings(s as Settings);
-    setLogs((l as LogRow[]) || []);
+    const rows = (l as LogRow[]) || [];
+    setLogs(rows);
+
+    const ids = Array.from(new Set(rows.map((r) => r.seeker_id))).filter(Boolean);
+    if (ids.length) {
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", ids);
+      const map: Record<string, SeekerProfile> = {};
+      (p || []).forEach((row: any) => {
+        map[row.id] = { full_name: row.full_name, email: row.email };
+      });
+      setProfiles(map);
+    } else {
+      setProfiles({});
+    }
     setLoading(false);
   };
 
