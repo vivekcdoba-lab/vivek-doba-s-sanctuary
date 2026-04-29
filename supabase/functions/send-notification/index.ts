@@ -10,7 +10,7 @@ function getCorsHeaders(_origin: string | null) {
   };
 }
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+// RESEND_API_KEY no longer used — emails go through Lovable Emails queue
 const ADMIN_EMAIL = "info@vivekdoba.com";
 
 function escapeHtml(v: unknown): string {
@@ -252,7 +252,7 @@ serve(async (req) => {
         }
       }
 
-      return new Response(JSON.stringify({ success: true, id: result.id }), {
+      return new Response(JSON.stringify({ success: true, message_id: r.message_id }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
