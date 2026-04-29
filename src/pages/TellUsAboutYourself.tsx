@@ -181,7 +181,7 @@ const TellUsAboutYourself = () => {
               phone={phone}
               onCountryCodeChange={setPhoneCode}
               onPhoneChange={setPhone}
-              label="Phone Number"
+              label="Mobile Number"
               required
               placeholder="Mobile number"
             />
