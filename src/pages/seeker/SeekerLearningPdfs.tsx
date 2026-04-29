@@ -417,21 +417,14 @@ export default function SeekerLearningPdfs() {
           <div className="flex items-center justify-between px-4 py-2 border-b bg-card">
             <h2 className="text-sm font-semibold text-foreground truncate">{viewingPdf.title}</h2>
             <div className="flex items-center gap-1">
-              {viewingPdf.url && (
-                <a href={viewingPdf.url} target="_blank" rel="noopener noreferrer">
-                  <Button variant="ghost" size="sm"><Download className="h-4 w-4 mr-1" /> Download</Button>
-                </a>
-              )}
-              <a href={viewingPdf.url} target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="sm"><ExternalLink className="h-4 w-4 mr-1" /> Open in Tab</Button>
-              </a>
+              {/* Download and Open-in-tab intentionally disabled — view-only */}
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFullscreen(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
-          <div className="flex-1">
-            <iframe src={viewingPdf.url} className="w-full h-full border-0" title={viewingPdf.title} />
+          <div className="flex-1" onContextMenu={(e) => e.preventDefault()}>
+            <iframe src={`${viewingPdf.url}${viewingPdf.url.includes('#') ? '' : '#toolbar=0&navpanes=0'}`} className="w-full h-full border-0" title={viewingPdf.title} />
           </div>
         </div>
       )}
