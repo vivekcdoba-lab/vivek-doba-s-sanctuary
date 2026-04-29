@@ -156,7 +156,7 @@ async function fetchProfile(userId: string, userEmail?: string, metadata?: any):
 }
 
 async function validateSessionOnInit(userId: string, accessToken: string, userEmail?: string, metadata?: any) {
-  const storedSessionId = localStorage.getItem('vdts_session_id');
+  const storedSessionId = getStoredSessionId();
 
   if (!storedSessionId) {
     await supabase.auth.signOut();
