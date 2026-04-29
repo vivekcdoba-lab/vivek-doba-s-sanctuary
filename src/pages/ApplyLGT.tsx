@@ -4,6 +4,7 @@ import { ArrowLeft, Check, ChevronDown, ChevronUp, AlertCircle } from 'lucide-re
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { COURSES } from '@/data/mockData';
+import CountryStateInput from '@/components/inputs/CountryStateInput';
 
 const PROGRAMS = [
   { id: 'lgt_bo', name: "Life's Golden Triangle — Business Owners", desc: 'For entrepreneurs and business owners ready to align Dharma, Artha, and Kama', duration: '6 Months', sessions: 24, format: '1-on-1', price: 250000, tier: 'Platinum', gradient: 'linear-gradient(135deg, #9E9E9E, #FFD700)' },
@@ -124,7 +125,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
     programId: '', fullName: '', preferredName: '', dob: '', gender: '', maritalStatus: '', children: 0,
     childrenAges: '', bloodGroup: '', aadhaar: '', mobile: '', mobileCode: '+91', whatsapp: '', sameWhatsapp: true, email: '',
     altPhone: '', prefComm: ['whatsapp', 'email'], address1: '', address2: '', city: '', state: '', stateOther: '', pincode: '',
-    country: 'India', hometown: '', emergName: '', emergRelation: '', emergRelOther: '', emergPhone: '', emergPhoneCode: '+91',
+    country: 'IN', hometown: '', emergName: '', emergRelation: '', emergRelOther: '', emergPhone: '', emergPhoneCode: '+91',
     designation: '', company: '', businessNature: '', industry: '', yearsInBiz: '', totalExp: '',
     annualRevenue: '', personalIncome: '', monthlyInvest: '', teamSize: '', managesPeople: 'no', directReports: '',
     hasPartner: 'no', partnerName: '', partnerAware: 'no', website: '',
