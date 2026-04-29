@@ -118,6 +118,7 @@ const adminNav: NavGroup[] = [
       { icon: Award, label: 'Coach Performance', path: '/admin/coach-performance' },
       { icon: RotateCcw, label: 'Retention Analysis', path: '/admin/retention' },
       { icon: FileText, label: 'Export Reports', path: '/admin/export-reports' },
+      { icon: Mail, label: 'Daily Seeker Emails', path: '/admin/daily-reports' },
     ],
   },
   {

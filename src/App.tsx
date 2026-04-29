@@ -119,6 +119,7 @@ const AdminEngagement = lazyWithReload(() => import("./pages/admin/AdminEngageme
 const AdminCoachPerformance = lazyWithReload(() => import("./pages/admin/AdminCoachPerformance"));
 const AdminRetention = lazyWithReload(() => import("./pages/admin/AdminRetention"));
 const AdminExportReports = lazyWithReload(() => import("./pages/admin/AdminExportReports"));
+const AdminDailyReports = lazyWithReload(() => import("./pages/admin/AdminDailyReports"));
 const AdminBranding = lazyWithReload(() => import("./pages/admin/AdminBranding"));
 const AdminNotificationsPage = lazyWithReload(() => import("./pages/admin/AdminNotificationsPage"));
 const AdminIntegrations = lazyWithReload(() => import("./pages/admin/AdminIntegrations"));
@@ -407,6 +408,7 @@ const App = () => (
               <Route path="/admin/coach-performance" element={<AdminCoachPerformance />} />
               <Route path="/admin/retention" element={<AdminRetention />} />
               <Route path="/admin/export-reports" element={<AdminExportReports />} />
+              <Route path="/admin/daily-reports" element={<AdminDailyReports />} />
               <Route path="/admin/branding" element={<AdminBranding />} />
               <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
               <Route path="/admin/integrations" element={<AdminIntegrations />} />
