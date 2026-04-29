@@ -109,6 +109,7 @@ const seekerNav: NavGroup[] = [
   },
   {
     label: 'MOKSHA (Liberation)', emoji: '☀️', items: [
+      { icon: Sunrise, label: 'Daily Mindfulness', path: '/seeker/daily-mindfulness' },
       { icon: Sunrise, label: 'Meditation Practice', path: '/seeker/moksha/meditation' },
       { icon: Clock, label: 'Meditation Timer', path: '/seeker/moksha/meditation-timer' },
       { icon: Compass, label: 'Spiritual Goals', path: '/seeker/moksha/goals' },
