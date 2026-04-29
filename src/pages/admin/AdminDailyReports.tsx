@@ -25,6 +25,11 @@ interface LogRow {
   created_at: string;
 }
 
+interface SeekerProfile {
+  full_name: string | null;
+  email: string | null;
+}
+
 export default function AdminDailyReports() {
   const { toast } = useToast();
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -32,6 +37,8 @@ export default function AdminDailyReports() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
+
+  const [profiles, setProfiles] = useState<Record<string, SeekerProfile>>({});
 
   const load = async () => {
     setLoading(true);
@@ -44,7 +51,23 @@ export default function AdminDailyReports() {
         .limit(100),
     ]);
     if (s) setSettings(s as Settings);
-    setLogs((l as LogRow[]) || []);
+    const rows = (l as LogRow[]) || [];
+    setLogs(rows);
+
+    const ids = Array.from(new Set(rows.map((r) => r.seeker_id))).filter(Boolean);
+    if (ids.length) {
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", ids);
+      const map: Record<string, SeekerProfile> = {};
+      (p || []).forEach((row: any) => {
+        map[row.id] = { full_name: row.full_name, email: row.email };
+      });
+      setProfiles(map);
+    } else {
+      setProfiles({});
+    }
     setLoading(false);
   };
 
@@ -202,7 +225,10 @@ export default function AdminDailyReports() {
             {logs.map((row) => (
               <tr key={row.id} className="border-b border-border/50 hover:bg-muted/20">
                 <td className="p-3 text-xs text-muted-foreground">{new Date(row.created_at).toLocaleString()}</td>
-                <td className="p-3 text-xs font-mono text-muted-foreground">{row.seeker_id.slice(0, 8)}…</td>
+                <td className="p-3 text-xs">
+                  <div className="font-semibold text-foreground">{profiles[row.seeker_id]?.full_name || "Unknown seeker"}</div>
+                  <div className="text-[11px] text-muted-foreground">{profiles[row.seeker_id]?.email || `${row.seeker_id.slice(0, 8)}…`}</div>
+                </td>
                 <td className="p-3 text-xs">{row.sent_date}</td>
                 <td className="p-3">
                   <Badge
