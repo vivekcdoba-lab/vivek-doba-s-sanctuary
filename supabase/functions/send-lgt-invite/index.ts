@@ -150,45 +150,23 @@ Deno.serve(async (req) => {
   </table>
 </body></html>`;
 
-    if (!RESEND_API_KEY) {
-      // Token row is created; just warn that email wasn't dispatched
-      return new Response(
-        JSON.stringify({
-          success: true,
-          token,
-          link,
-          warning: "Email not sent: RESEND_API_KEY not configured",
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const emailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "Vivek Doba <noreply@vivekdoba.com>",
-        to: [seeker.email],
-        subject: "👑 Your Life's Golden Triangle Application — Personal Invitation",
-        html,
-      }),
+    const sendRes = await sendEmail(admin, {
+      to: seeker.email,
+      subject: "👑 Your Life's Golden Triangle Application — Personal Invitation",
+      html,
+      label: "lgt_invite",
     });
 
-    if (!emailRes.ok) {
-      const errText = await emailRes.text();
-      console.error("Resend error:", errText);
-      // Token still saved; return partial success
+    if (!sendRes.ok) {
+      console.error("LGT invite email enqueue failed:", sendRes.error);
       return new Response(
-        JSON.stringify({ success: true, token, link, warning: `Email send failed: ${errText}` }),
+        JSON.stringify({ success: true, token, link, warning: `Email send failed: ${sendRes.error}` }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
-      JSON.stringify({ success: true, token, link, sentTo: seeker.email }),
+      JSON.stringify({ success: true, token, link, sentTo: seeker.email, queue_id: sendRes.queue_id }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
