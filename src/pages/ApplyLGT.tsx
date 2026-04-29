@@ -568,22 +568,17 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
               <input className={inputCls} maxLength={20} value={f.city} onChange={e => set('city', sanitize(e.target.value, 20))} />
               <CharCount current={f.city.length} max={20} />
             </Field>
-            <Field label="State" required>
-              <select className={inputCls} value={f.state} onChange={e => { set('state', e.target.value); if (e.target.value !== 'Other') set('stateOther', ''); }}><option value="">Select...</option>{STATES.map(s => <option key={s}>{s}</option>)}</select>
-              {f.state === 'Other' && (
-                <div className="mt-2">
-                  <input className={inputCls} maxLength={20} value={f.stateOther} onChange={e => set('stateOther', sanitize(e.target.value, 20))} placeholder="Enter your state" />
-                  <CharCount current={f.stateOther.length} max={20} />
-                </div>
-              )}
-            </Field>
-            <Field label={f.state === 'Other' ? 'Postal / ZIP Code' : 'Pincode'} required highlight={missingFields.has('pincode')}>
-              {f.state === 'Other' ? (
-                <input className={inputCls} maxLength={10} value={f.pincode} onChange={e => set('pincode', e.target.value.slice(0, 10))} placeholder="Postal / ZIP code" />
-              ) : (
-                <input className={inputCls} inputMode="numeric" maxLength={6} value={f.pincode} onChange={e => set('pincode', sanitizeDigits(e.target.value, 6))} />
-              )}
-            </Field>
+            <div className="sm:col-span-2">
+              <CountryStateInput
+                country={f.country}
+                state={f.state}
+                pincode={f.pincode}
+                onCountryChange={(v) => set('country', v)}
+                onStateChange={(v) => set('state', v)}
+                onPincodeChange={(v) => set('pincode', v)}
+                required
+              />
+            </div>
             <Field label="Hometown" required highlight={missingFields.has('hometown')}>
               <input className={inputCls} maxLength={20} value={f.hometown} onChange={e => set('hometown', sanitize(e.target.value, 20))} />
               <CharCount current={f.hometown.length} max={20} />
