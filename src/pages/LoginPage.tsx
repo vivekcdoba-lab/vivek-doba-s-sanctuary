@@ -36,6 +36,7 @@ const LoginPage = () => {
   const [resetting, setResetting] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [selectedRole, setSelectedRole] = useState<LoginRole>('seeker');
+  const [rememberMe, setRememberMe] = useState(false);
   const loggingInRef = useRef(false);
   const navigate = useNavigate();
   const { setAuth, setSessionId, isAuthenticated, profile: authProfile } = useAuthStore();
@@ -58,6 +59,13 @@ const LoginPage = () => {
     setLoading(true);
     loggingInRef.current = true;
     try {
+      // Set the storage preference BEFORE signing in so Supabase persists
+      // the new auth tokens into the right storage (sessionStorage by
+      // default = wiped on browser close; localStorage if "Remember me").
+      try {
+        if (rememberMe) localStorage.setItem('vdts_remember_me', '1');
+        else localStorage.removeItem('vdts_remember_me');
+      } catch { /* ignore */ }
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         // Generic error message to avoid leaking whether email exists
