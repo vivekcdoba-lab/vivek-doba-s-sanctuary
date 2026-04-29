@@ -4,9 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
-const HEARTBEAT_INTERVAL = 3 * 60 * 1000; // 3 minutes
-const INACTIVITY_TIMEOUT = 60 * 60 * 1000; // 60 minutes
-const INACTIVITY_CHECK_INTERVAL = 30 * 1000; // 30 seconds
+const HEARTBEAT_INTERVAL = 2 * 60 * 1000; // 2 minutes
+const INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes
+const INACTIVITY_CHECK_INTERVAL = 15 * 1000; // 15 seconds
 
 export function useSessionHeartbeat() {
   const { sessionId, user, logout } = useAuthStore();
@@ -116,9 +116,21 @@ export function useSessionHeartbeat() {
       if (document.visibilityState === 'visible') {
         updateActivity();
         sendHeartbeat();
+      } else if (document.visibilityState === 'hidden') {
+        // Tab/browser is being hidden — fire a best-effort end beacon
+        // so the server-side session is closed promptly. The browser
+        // may or may not be coming back; if it does, the next heartbeat
+        // will re-establish status.
+        endViaBeacon();
       }
     };
     document.addEventListener('visibilitychange', handleVisibility);
+
+    // Browser/tab close — sendBeacon is the only delivery the browser
+    // guarantees during unload. Closes the session immediately so the
+    // user is forced to re-login when they return.
+    const handlePageHide = () => endViaBeacon();
+    window.addEventListener('pagehide', handlePageHide);
 
     // Activity listeners
     const events = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
@@ -135,7 +147,34 @@ export function useSessionHeartbeat() {
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (inactivityRef.current) clearInterval(inactivityRef.current);
       document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pagehide', handlePageHide);
       events.forEach(e => window.removeEventListener(e, updateActivity));
     };
   }, [sessionId, user?.id]);
+}
+
+// Best-effort session close on tab/browser hide. Uses sendBeacon (which
+// can't set Authorization headers) so we hit a public endpoint that only
+// closes the matching active session — never elevates privileges.
+function endViaBeacon() {
+  try {
+    const sessionId = (typeof window !== 'undefined')
+      ? (window.sessionStorage.getItem('vdts_session_id') ||
+         window.localStorage.getItem('vdts_session_id'))
+      : null;
+    if (!sessionId) return;
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/session-heartbeat`;
+    const payload = JSON.stringify({ action: 'end_beacon', session_id: sessionId });
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'application/json' });
+      navigator.sendBeacon(url, blob);
+    } else {
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true,
+      }).catch(() => {});
+    }
+  } catch { /* ignore */ }
 }

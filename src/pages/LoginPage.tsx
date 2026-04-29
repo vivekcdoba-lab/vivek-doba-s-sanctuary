@@ -36,6 +36,7 @@ const LoginPage = () => {
   const [resetting, setResetting] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [selectedRole, setSelectedRole] = useState<LoginRole>('seeker');
+  const [rememberMe, setRememberMe] = useState(false);
   const loggingInRef = useRef(false);
   const navigate = useNavigate();
   const { setAuth, setSessionId, isAuthenticated, profile: authProfile } = useAuthStore();
@@ -58,6 +59,13 @@ const LoginPage = () => {
     setLoading(true);
     loggingInRef.current = true;
     try {
+      // Set the storage preference BEFORE signing in so Supabase persists
+      // the new auth tokens into the right storage (sessionStorage by
+      // default = wiped on browser close; localStorage if "Remember me").
+      try {
+        if (rememberMe) localStorage.setItem('vdts_remember_me', '1');
+        else localStorage.removeItem('vdts_remember_me');
+      } catch { /* ignore */ }
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         // Generic error message to avoid leaking whether email exists
@@ -255,6 +263,21 @@ const LoginPage = () => {
               </button>
             </div>
           </div>
+
+          <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border-input accent-primary"
+            />
+            <span>
+              Remember me on this device
+              <span className="ml-1 opacity-70">
+                (otherwise you'll be signed out when you close the browser)
+              </span>
+            </span>
+          </label>
 
           <button onClick={handleLogin} disabled={loading}
             className={`w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r ${activeTab.gradient} hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50`}>

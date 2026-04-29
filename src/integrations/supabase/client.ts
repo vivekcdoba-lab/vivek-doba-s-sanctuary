@@ -8,9 +8,62 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// Storage adapter: defaults to sessionStorage so closing the browser
+// (last tab of the origin) wipes the auth tokens and prevents silent
+// auto-login on the next launch. Users may opt into "Remember me on
+// this device" — that flag is set BEFORE signInWithPassword, after
+// which the adapter routes reads/writes to localStorage instead.
+const REMEMBER_FLAG = 'vdts_remember_me';
+
+function pickStorage(): Storage {
+  try {
+    if (typeof window === 'undefined') {
+      // SSR / non-browser: noop storage handled by Supabase internally
+      return undefined as unknown as Storage;
+    }
+    const remember = window.localStorage.getItem(REMEMBER_FLAG) === '1';
+    return remember ? window.localStorage : window.sessionStorage;
+  } catch {
+    return window.sessionStorage;
+  }
+}
+
+const authStorage = {
+  getItem: (key: string) => {
+    try {
+      // Read from active storage; fall back to the other storage so users
+      // who switch the remember-me flag mid-session don't get logged out.
+      const active = pickStorage();
+      const value = active?.getItem(key);
+      if (value !== null && value !== undefined) return value;
+      const other =
+        active === window.localStorage ? window.sessionStorage : window.localStorage;
+      return other?.getItem(key) ?? null;
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      const active = pickStorage();
+      active?.setItem(key, value);
+      // Make sure the other storage doesn't keep a stale copy.
+      const other =
+        active === window.localStorage ? window.sessionStorage : window.localStorage;
+      other?.removeItem(key);
+    } catch { /* ignore */ }
+  },
+  removeItem: (key: string) => {
+    try {
+      window.localStorage.removeItem(key);
+      window.sessionStorage.removeItem(key);
+    } catch { /* ignore */ }
+  },
+};
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: authStorage as unknown as Storage,
     persistSession: true,
     autoRefreshToken: true,
   }

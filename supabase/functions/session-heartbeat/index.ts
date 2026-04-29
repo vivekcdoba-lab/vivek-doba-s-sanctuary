@@ -12,11 +12,60 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Allow unauthenticated 'end_beacon' calls (browser unload via sendBeacon
+    // can't attach Authorization headers). The action only ever closes a
+    // matching active session — it never grants access — so the blast radius
+    // is limited to a denial-of-session for someone who already knows a
+    // valid session_id UUID.
+    let earlyBody: any = null;
+    let earlyAction: string | undefined;
+    try {
+      const cloned = req.clone();
+      earlyBody = await cloned.json();
+      earlyAction = earlyBody?.action;
+    } catch { /* ignore */ }
+
+    if (earlyAction === "end_beacon") {
+      const supabaseAdmin = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+      const sid = earlyBody?.session_id;
+      if (!sid || typeof sid !== "string") {
+        return new Response(JSON.stringify({ error: "session_id required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
+        });
+      }
+      // Look up to compute duration; only close if currently active.
+      const { data: row } = await supabaseAdmin
+        .from("user_sessions")
+        .select("id, login_at, status")
+        .eq("id", sid)
+        .maybeSingle();
+      if (row && row.status === "active") {
+        const duration = Math.floor((Date.now() - new Date(row.login_at).getTime()) / 1000);
+        await supabaseAdmin
+          .from("user_sessions")
+          .update({
+            status: "closed",
+            logout_reason: "browser_close",
+            logout_at: new Date().toISOString(),
+            duration_seconds: duration,
+          })
+          .eq("id", sid)
+          .eq("status", "active");
+      }
+      return new Response(JSON.stringify({ closed: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
+      });
+    }
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
       });
     }
 
