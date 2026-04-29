@@ -216,48 +216,38 @@ Deno.serve(async (req) => {
         verification_id: verificationId, file_size_bytes: fileSize,
       });
 
-      // Email seeker the signed copy with "Thank You" template
+      // Email seeker the signed copy with "Thank You" template (link instead of attachment)
       let email_sent = false;
       let email_error: string | undefined;
-      if (RESEND_API_KEY && seeker.email) {
-        // Chunked base64 encoding to avoid "Maximum call stack size exceeded"
-        const bytes = new Uint8Array(signedBytes);
-        let binary = "";
-        const CHUNK = 8192;
-        for (let i = 0; i < bytes.length; i += CHUNK) {
-          binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + CHUNK)));
+      if (seeker.email) {
+        const { data: signedUrl } = await admin.storage
+          .from("signatures")
+          .createSignedUrl(signedPath, 60 * 60 * 24 * 7);
+        const downloadUrl = signedUrl?.signedUrl ?? "";
+        const baseHtml = THANK_YOU_HTML(seeker.full_name ?? full_name, doc.title, verificationId);
+        const html = downloadUrl
+          ? baseHtml.replace(
+              "</body>",
+              `<div style="text-align:center;margin:24px 0;font-family:system-ui,sans-serif">
+                <a href="${downloadUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">📄 Download your signed copy</a>
+                <p style="font-size:12px;color:#9ca3af;margin-top:8px">Link valid for 7 days.</p>
+              </div></body>`,
+            )
+          : baseHtml;
+        const r = await sendEmail(admin, {
+          to: seeker.email,
+          subject: "Thank You for Signing the Agreement",
+          label: "signature_signed_inline",
+          html,
+        });
+        if (r.ok) {
+          email_sent = true;
+        } else {
+          email_error = r.error;
+          console.error("inline email failed", r.error);
         }
-        const b64 = btoa(binary);
-        try {
-          const resp = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${RESEND_API_KEY}`,
-            },
-            body: JSON.stringify({
-              from: "Vivek Doba <info@vivekdoba.com>",
-              to: [seeker.email],
-              subject: "Thank You for Signing the Agreement",
-              html: THANK_YOU_HTML(seeker.full_name ?? full_name, doc.title, verificationId),
-              attachments: [{ filename: `${doc.title.replace(/[^a-z0-9]/gi, "_")}-signed.pdf`, content: b64 }],
-            }),
-          });
-          const j = await resp.json().catch(() => ({}));
-          if (!resp.ok) {
-            email_error = `${resp.status}: ${JSON.stringify(j)}`;
-            console.error("resend_failed", email_error);
-          } else {
-            email_sent = true;
-          }
-        } catch (e) {
-          email_error = String(e);
-          console.error("seeker email failed", e);
-        }
-      } else if (!seeker.email) {
-        email_error = "Seeker has no email on file";
       } else {
-        email_error = "RESEND_API_KEY not configured";
+        email_error = "Seeker has no email on file";
       }
 
       try {
