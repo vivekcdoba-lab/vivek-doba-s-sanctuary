@@ -246,12 +246,34 @@ Deno.serve(async (req) => {
       const { data: me } = await supabaseAdmin.from("profiles").select("id").eq("user_id", callerUserId).single();
       if (me?.id) seekerIds = [me.id];
     } else {
+      // Active seekers = role 'seeker' + opted-in + has at least one non-terminated, non-expired enrollment
       const { data: rows } = await supabaseAdmin
         .from("profiles")
         .select("id")
         .eq("role", "seeker")
         .eq("daily_progress_email_enabled", true);
-      seekerIds = (rows || []).map((r: any) => r.id);
+      const candidateIds = (rows || []).map((r: any) => r.id);
+
+      if (candidateIds.length === 0) {
+        seekerIds = [];
+      } else {
+        const { data: enrolls } = await supabaseAdmin
+          .from("enrollments")
+          .select("seeker_id, status, end_date")
+          .in("seeker_id", candidateIds);
+
+        const TERMINATED = new Set(["completed", "cancelled", "canceled", "dropped", "refunded", "expired"]);
+        const activeSet = new Set<string>();
+        (enrolls || []).forEach((e: any) => {
+          const status = (e.status || "").toLowerCase();
+          const ended = e.end_date && e.end_date < today;
+          if (TERMINATED.has(status)) return;
+          if (ended) return;
+          activeSet.add(e.seeker_id);
+        });
+
+        seekerIds = candidateIds.filter((id: string) => activeSet.has(id));
+      }
     }
 
     let sent = 0, skipped = 0, failed = 0;
