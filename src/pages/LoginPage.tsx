@@ -264,6 +264,21 @@ const LoginPage = () => {
             </div>
           </div>
 
+          <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border-input accent-primary"
+            />
+            <span>
+              Remember me on this device
+              <span className="ml-1 opacity-70">
+                (otherwise you'll be signed out when you close the browser)
+              </span>
+            </span>
+          </label>
+
           <button onClick={handleLogin} disabled={loading}
             className={`w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r ${activeTab.gradient} hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50`}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : '🙏'} Sign In as {activeTab.label}
