@@ -68,6 +68,7 @@ const AdminVideos = () => {
                   <TableHead>Duration</TableHead>
                   <TableHead>Views</TableHead>
                   <TableHead>Language</TableHead>
+                  <TableHead>Access</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
