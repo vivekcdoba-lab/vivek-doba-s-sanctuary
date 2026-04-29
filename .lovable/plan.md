@@ -1,83 +1,71 @@
-## Problem
+## Daily Seeker Progress Email
 
-Closing the browser does not end the session. When the user reopens the browser, they're auto-logged-in because:
+A personalized evening email sent to every active seeker summarizing their day, with an admin toggle and per-seeker opt-out.
 
-1. **Supabase auth uses `localStorage`** (`src/integrations/supabase/client.ts`) with `persistSession: true` + `autoRefreshToken: true`. `localStorage` survives browser close, so the refresh token is reused on next launch to silently re-issue an access token.
-2. **`vdts_session_id` is stored in `localStorage`** (`src/store/authStore.ts`), so the prior session row is reused instead of forcing a fresh login.
-3. **No `pagehide`/`beforeunload` hook** calls the `end` action on `session-heartbeat`. Server-side, sessions only auto-close after **60 minutes** of no heartbeat (`close_inactive_sessions`), so a closed-browser session stays `active` for up to an hour.
-4. The 60-minute inactivity window on the server is too generous for a security-sensitive app.
+### What each seeker receives (8:30 PM IST, daily)
 
-## Goal
+Subject: `🪔 Your Day in Review — {Date} | Streak: {N} days`
 
-- Closing the browser (or the last tab) ends the session **immediately** — both client and server.
-- Reopening the browser **always lands on `/login`** — no silent auto-login.
-- Tightened idle/absolute timeouts so a hijacked refresh token has a tiny window of usefulness.
-- "Remember me" stays opt-in: only when the user explicitly checks it does the session survive a browser restart.
+Sections:
+1. **Greeting** — Namaste {First Name}, in their preferred language (EN/HI/MR).
+2. **Today's Snapshot**
+   - Worksheet completion % (with ✅ submitted / ⏳ partial / ❌ missed)
+   - Morning mood + energy score
+   - Current streak (🔥 N days) + best streak
+3. **LGT Dimensions Today** — Dharma / Artha / Kama / Moksha scores from `daily_lgt_checkins`, with trend arrow vs 7-day average.
+4. **Coach's Note** — latest unread comment from coach (if any) from session/worksheet comments.
+5. **Pending for Tomorrow** — open assignments, next session, any missed items.
+6. **Daily Affirmation / Shloka** — one rotating bilingual line.
+7. **CTA buttons** — "Open Today's Worksheet", "View Full Journey", "Manage Notifications".
+8. Footer — unsubscribe link → toggles `daily_progress_email_enabled` on profile.
 
-## Design
+If the seeker did **not** submit a worksheet, the email becomes a gentle nudge ("We missed you today 🙏") instead of a recap, but still includes streak + tomorrow's focus.
 
-### 1. Switch Supabase auth to `sessionStorage` by default
+### Admin controls (new page: `/admin/daily-reports`)
 
-`sessionStorage` is wiped when the **last tab of the origin** is closed, so the refresh token disappears with the browser session. This single change kills the silent auto-login.
+- Master toggle: enable/disable platform-wide
+- Send time (default 20:30 IST)
+- "Send test to me now" button
+- Last run log: sent / skipped / failed counts
+- Per-seeker override visible in Seeker 360 → Notifications tab
 
-In `src/integrations/supabase/client.ts`, replace the static `localStorage` storage with a small adapter that reads a flag (`vdts_remember_me`) set at login time:
-- Flag absent / false → use `sessionStorage` (default, secure).
-- Flag true → use `localStorage` (explicit "Remember me on this device").
+### Technical Implementation
 
-The adapter implements `getItem`/`setItem`/`removeItem` and routes to whichever storage is currently selected. We mirror writes to the active storage only — never both — to avoid stale tokens.
+**1. DB migration**
+- Add `profiles.daily_progress_email_enabled boolean default true`
+- Add `profiles.preferred_language text default 'en'` (if not present)
+- New table `daily_progress_email_log (id, seeker_id, sent_date, status, summary jsonb, error text, created_at)` with admin-only RLS
+- New table `daily_report_settings (id, enabled bool, send_hour int, send_minute int, updated_by, updated_at)` (singleton row)
+- RPC `get_seeker_daily_summary(_seeker_id uuid, _date date) returns jsonb` — aggregates worksheet, LGT, mood, streak, coach comment, pending assignments, next session.
 
-### 2. Move `vdts_session_id` to match auth storage
+**2. Edge function `send-daily-seeker-reports`** (`verify_jwt = false`, accepts `x-cron-secret` or admin JWT)
+- Loads settings; exits if disabled.
+- Selects all seekers where `daily_progress_email_enabled = true` AND has at least one enrollment.
+- For each seeker → calls RPC, builds bilingual HTML (reuses pattern from `daily-session-report`), enqueues via shared `sendEmail()` (Resend through existing queue).
+- Writes one row per seeker into `daily_progress_email_log`.
+- Returns aggregate counts.
 
-In `src/store/authStore.ts`, replace direct `localStorage.getItem/setItem('vdts_session_id', …)` with a helper that uses the same storage selector. `clearAllAuthStorage()` clears both `localStorage` and `sessionStorage` for `sb-*` and `vdts_session_id` to be safe.
+**3. Cron job** via `pg_cron` + `pg_net` → invokes the function daily at 20:30 IST (15:00 UTC). SQL inserted via Supabase insert tool (not migration) since it embeds the function URL + anon key.
 
-### 3. Add a "Remember me" checkbox on `LoginPage`
+**4. Admin UI**
+- New page `src/pages/admin/AdminDailyReports.tsx` with toggle, time picker, test-send, and last-7-days log table.
+- Add route in `src/App.tsx` and sidebar link in `AdminLayout.tsx`.
+- Add notification preference toggle in seeker settings (`SeekerSettings` if exists, else `SeekerHelp` adjacent).
 
-Default: **unchecked** (most secure). When checked, set `localStorage.setItem('vdts_remember_me', '1')` **before** calling `supabase.auth.signInWithPassword`. When unchecked, remove the flag. This must be done before sign-in so the storage adapter writes the new session to the right place.
+**5. Bilingual templates**
+- Inline EN/HI/MR strings in the edge function (small dict). Devanagari fonts inline-styled (`Noto Sans Devanagari`).
 
-### 4. End the session on browser/tab close
+### Files to create / edit
 
-Create a small `useSessionLifecycle` hook (or extend `useSessionHeartbeat`) that:
-- Listens to `pagehide` and `visibilitychange` (`hidden`).
-- On `pagehide` (most reliable for tab/browser close), fires a **`navigator.sendBeacon`** to `session-heartbeat` with `{ action: 'end', session_id }`. `sendBeacon` is the only request type the browser guarantees to deliver during unload.
-- We can't send `Authorization: Bearer …` headers via `sendBeacon`, so we add a new edge function action **`end_beacon`** that accepts `{ session_id, user_id }` plus a short-lived **HMAC signature** generated client-side from the access token and a server secret derived path. Simpler alternative we'll use: the new endpoint accepts `{ session_id }` and verifies the caller by looking up the session row and confirming `status='active'` + matching `user_agent`/`ip` heuristics; it only ever **closes** a session it never elevates privileges, so the blast radius is limited.
+- Create `supabase/migrations/<ts>_daily_seeker_reports.sql`
+- Create `supabase/functions/send-daily-seeker-reports/index.ts`
+- Insert `pg_cron` schedule via Supabase insert tool
+- Create `src/pages/admin/AdminDailyReports.tsx`
+- Edit `src/App.tsx` (add route)
+- Edit `src/components/AdminLayout.tsx` (sidebar entry under Reports/Settings)
+- Edit seeker settings page (notification preference toggle)
 
-If `sendBeacon` is unavailable, fall back to a synchronous `fetch(..., { keepalive: true })`.
-
-### 5. Tighten server-side timeouts
-
-Add a migration to update `close_inactive_sessions()`:
-- Idle timeout: **60 min → 15 min** (configurable constant).
-- Add an **absolute session lifetime cap of 12 hours** — any `active` session older than 12h since `login_at` is force-closed regardless of activity.
-
-Schedule reminder: this RPC is already called every heartbeat (3 min), so the new limits take effect promptly.
-
-### 6. Reduce client heartbeat / inactivity windows
-
-In `useSessionHeartbeat.ts`:
-- `HEARTBEAT_INTERVAL`: 3 min → **2 min**.
-- `INACTIVITY_TIMEOUT`: 60 min → **15 min**, matching the server.
-- `INACTIVITY_CHECK_INTERVAL`: 30 s → **15 s**.
-
-### 7. Validate session on init regardless of remember-me
-
-`validateSessionOnInit` already requires a stored `vdts_session_id` and a successful heartbeat, otherwise it signs out. With `sessionStorage`, after a browser close there is no stored session id → automatic sign-out path fires → user lands on `/login`. Confirmed working with the change in step 1+2.
-
-### 8. Defense in depth
-
-- Add `Cache-Control: no-store` to the heartbeat responses so intermediaries don't cache active/inactive states.
-- Log every `end_beacon` close into `user_sessions.logout_reason='browser_close'` for the admin Session Monitor dashboard.
-
-## Files to change
-
-- `src/integrations/supabase/client.ts` — storage adapter (sessionStorage by default, localStorage if remember-me).
-- `src/store/authStore.ts` — session-id storage matches adapter; clear both storages on logout; small helper.
-- `src/pages/LoginPage.tsx` (or equivalent) — "Remember me on this device" checkbox; set/unset `vdts_remember_me` before sign-in.
-- `src/hooks/useSessionHeartbeat.ts` — tightened intervals; add `pagehide`/`visibilitychange=hidden` handler that calls `sendBeacon` end.
-- `supabase/functions/session-heartbeat/index.ts` — new `end_beacon` action that accepts a beacon body and force-closes the session with reason `browser_close`.
-- New migration — update `close_inactive_sessions()` (15 min idle) and add an absolute 12h cap.
-
-## Out of scope / notes
-
-- We keep `persistSession: true` so within a single browser session, refreshes work normally; only browser close kills it.
-- Multi-tab behavior is preserved — `sessionStorage` is per-tab, but Supabase uses a `BroadcastChannel` to share session events between tabs of the same origin during the same browser session.
-- Existing single-device enforcement for seekers (in `start`) is unchanged.
+### Out of scope (can add later)
+- WhatsApp delivery (Twilio is connected — easy follow-up)
+- Weekly digest for seekers
+- Coach-facing daily digest of their seekers

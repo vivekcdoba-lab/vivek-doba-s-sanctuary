@@ -1546,6 +1546,66 @@ export type Database = {
           },
         ]
       }
+      daily_progress_email_log: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          seeker_id: string
+          sent_date: string
+          status: string
+          summary: Json | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          seeker_id: string
+          sent_date: string
+          status: string
+          summary?: Json | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          seeker_id?: string
+          sent_date?: string
+          status?: string
+          summary?: Json | null
+        }
+        Relationships: []
+      }
+      daily_report_settings: {
+        Row: {
+          enabled: boolean
+          id: string
+          send_hour: number
+          send_minute: number
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          id?: string
+          send_hour?: number
+          send_minute?: number
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          id?: string
+          send_hour?: number
+          send_minute?: number
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       daily_time_slots: {
         Row: {
           activity_category: string | null
@@ -3046,6 +3106,7 @@ export type Database = {
           company: string | null
           country: string | null
           created_at: string
+          daily_progress_email_enabled: boolean
           designation: string | null
           dob: string | null
           dob_enc: string | null
@@ -3076,6 +3137,7 @@ export type Database = {
           phone_hash: string | null
           pincode: string | null
           pincode_enc: string | null
+          preferred_language: string
           revenue_range: string | null
           role: string
           state: string | null
@@ -3100,6 +3162,7 @@ export type Database = {
           company?: string | null
           country?: string | null
           created_at?: string
+          daily_progress_email_enabled?: boolean
           designation?: string | null
           dob?: string | null
           dob_enc?: string | null
@@ -3130,6 +3193,7 @@ export type Database = {
           phone_hash?: string | null
           pincode?: string | null
           pincode_enc?: string | null
+          preferred_language?: string
           revenue_range?: string | null
           role?: string
           state?: string | null
@@ -3154,6 +3218,7 @@ export type Database = {
           company?: string | null
           country?: string | null
           created_at?: string
+          daily_progress_email_enabled?: boolean
           designation?: string | null
           dob?: string | null
           dob_enc?: string | null
@@ -3184,6 +3249,7 @@ export type Database = {
           phone_hash?: string | null
           pincode?: string | null
           pincode_enc?: string | null
+          preferred_language?: string
           revenue_range?: string | null
           role?: string
           state?: string | null
@@ -5079,6 +5145,10 @@ export type Database = {
         }[]
       }
       get_lgt_application_by_token: { Args: { _token: string }; Returns: Json }
+      get_seeker_daily_summary: {
+        Args: { _date: string; _seeker_id: string }
+        Returns: Json
+      }
       get_seeker_link_group: { Args: { _seeker_id: string }; Returns: string }
       get_session_signatures: {
         Args: { _session_id: string }

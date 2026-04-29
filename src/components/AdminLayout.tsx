@@ -12,7 +12,7 @@ import {
   UserPlus, Crown, Search as SearchIcon, FileText, CheckCircle,
   Megaphone, Video, Headphones, Building2, Trophy, Award,
   PanelLeftClose, PanelLeft, Shield, Bell, Link2, Database, Palette,
-  DollarSign, UserCheck, RotateCcw, Banknote, CreditCard
+  DollarSign, UserCheck, RotateCcw, Banknote, CreditCard, Mail
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -118,6 +118,7 @@ const adminNav: NavGroup[] = [
       { icon: Award, label: 'Coach Performance', path: '/admin/coach-performance' },
       { icon: RotateCcw, label: 'Retention Analysis', path: '/admin/retention' },
       { icon: FileText, label: 'Export Reports', path: '/admin/export-reports' },
+      { icon: Mail, label: 'Daily Seeker Emails', path: '/admin/daily-reports' },
     ],
   },
   {
