@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
 
     for (const m of mails) {
       if (sentSet.has(m.subject)) { skipped++; continue; }
-      const r = await sendOne(recipients, m.subject, m.html);
+      const r = await sendOne(supabase, recipients, m.subject, m.html);
       await supabase.from('email_log').insert({
         seed_run_id,
         recipients,
