@@ -131,46 +131,20 @@ Deno.serve(async (req) => {
       </div>
     </div>`;
 
-    // Step 4: Send email via Resend
-    if (!RESEND_API_KEY) {
-      console.error("RESEND_API_KEY not configured");
-      return new Response(JSON.stringify({ error: "RESEND_API_KEY not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Resolve from-address from app_settings (fallback to env / default)
-    let fromAddress = Deno.env.get("RESEND_FROM") || "VDTS Reports <info@vivekdoba.com>";
-    try {
-      const { data: setting } = await supabaseAdmin
-        .from("app_settings").select("value").eq("key", "email_from").maybeSingle();
-      if (setting?.value && typeof setting.value === "string") fromAddress = setting.value as string;
-    } catch (e) {
-      console.warn("app_settings lookup failed:", (e as Error).message);
-    }
-
-    const emailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: fromAddress,
-        to: [ADMIN_EMAIL],
-        subject: `📊 Daily Session Report — ${r.report_date} | ${r.total_sessions} sessions, ${r.unique_users} users`,
-        html,
-      }),
+    // Step 4: Send email via Lovable Emails queue
+    const sendRes = await sendEmail(supabaseAdmin, {
+      to: ADMIN_EMAIL,
+      subject: `📊 Daily Session Report — ${r.report_date} | ${r.total_sessions} sessions, ${r.unique_users} users`,
+      html,
+      label: "daily_session_report",
     });
 
-    const emailResult = await emailRes.json();
-    if (!emailRes.ok) {
-      throw new Error(`Resend error: ${JSON.stringify(emailResult)}`);
+    if (!sendRes.ok) {
+      throw new Error(`Email enqueue failed: ${sendRes.error}`);
     }
 
     return new Response(
-      JSON.stringify({ success: true, email_id: emailResult.id, report: r, cleaned: deletedCount }),
+      JSON.stringify({ success: true, queue_id: sendRes.queue_id, message_id: sendRes.message_id, report: r, cleaned: deletedCount }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
