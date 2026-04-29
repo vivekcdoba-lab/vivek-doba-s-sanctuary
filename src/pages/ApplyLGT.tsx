@@ -306,7 +306,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
       toast({ title: `Please fill all ${missing.size} mandatory field(s) highlighted in red`, variant: 'destructive' });
       // Open all sections that have errors
       const sectionFieldMap: Record<string, string[]> = {
-        A: ['fullName','preferredName','dob','gender','maritalStatus','bloodGroup','mobile','email','city','state','stateOther','pincode','hometown','emergName','emergRelation','emergRelOther','emergPhone'],
+        A: ['fullName','preferredName','dob','gender','maritalStatus','bloodGroup','mobile','email','city','country','state','pincode','hometown','emergName','emergRelation','emergRelOther','emergPhone'],
         B: ['designation','company','businessNature','yearsInBiz','website'],
         C: ['healthGoal','chronicDetails'],
         D: ['relGoal'],
