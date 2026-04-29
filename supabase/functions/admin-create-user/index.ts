@@ -335,10 +335,9 @@ Deno.serve(async (req) => {
     const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || 'https://vivekdoba.com';
     const loginUrl = `${origin.replace(/\/$/, '')}/login`;
 
-    // Send credentials email (non-blocking failure → still return success)
-    const fromAddress = await getFromAddress(admin);
-    const emailResult = await sendCredentialsEmail({
-      to: email, name: full_name, role, password: finalPassword, isTemp: isTempPassword, loginUrl, from: fromAddress,
+    // Send credentials email via Lovable Emails queue (non-blocking failure → still return success)
+    const emailResult = await sendCredentialsEmail(admin, {
+      to: email, name: full_name, role, password: finalPassword, isTemp: isTempPassword, loginUrl,
     });
 
     return new Response(JSON.stringify({
