@@ -132,6 +132,7 @@ const ResourcesPage = () => {
         view_count: 0,
         download_count: 0,
         url: r.url,
+        visibility: (r.visibility || 'all') as ContentVisibility,
         _source: 'db',
         _createdAt: r.created_at,
       } as ExtResource));
