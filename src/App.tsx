@@ -195,6 +195,7 @@ const SeekerNotifications = lazyWithReload(() => import("./pages/seeker/SeekerNo
 const SeekerAnnouncements = lazyWithReload(() => import("./pages/seeker/SeekerAnnouncements"));
 const SeekerHelp = lazyWithReload(() => import("./pages/seeker/SeekerHelp"));
 const SeekerLiveSession = lazyWithReload(() => import("./pages/seeker/SeekerLiveSession"));
+const SeekerDailyMindfulness = lazyWithReload(() => import("./pages/seeker/SeekerDailyMindfulness"));
 const SeekerSessionNotes = lazyWithReload(() => import("./pages/seeker/SeekerSessionNotes"));
 const SeekerFeedback = lazyWithReload(() => import("./pages/seeker/SeekerFeedback"));
 const SeekerSubmitAssignment = lazyWithReload(() => import("./pages/seeker/SeekerSubmitAssignment"));
@@ -485,6 +486,7 @@ const App = () => (
               <Route path="/seeker/progress-charts" element={<SeekerProgressCharts />} />
               <Route path="/seeker/assessment-history" element={<SeekerAssessmentHistory />} />
               <Route path="/seeker/live-session" element={<SeekerLiveSession />} />
+              <Route path="/seeker/daily-mindfulness" element={<SeekerDailyMindfulness />} />
               <Route path="/seeker/session-notes" element={<SeekerSessionNotes />} />
               <Route path="/seeker/feedback" element={<SeekerFeedback />} />
               <Route path="/seeker/submit-assignment" element={<SeekerSubmitAssignment />} />
