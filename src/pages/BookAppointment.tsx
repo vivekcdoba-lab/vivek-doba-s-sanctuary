@@ -4,6 +4,7 @@ import { ArrowLeft, Check, Phone, MessageSquare, ChevronDown } from 'lucide-reac
 import { useToast } from '@/hooks/use-toast';
 import { COURSES } from '@/data/mockData';
 import { supabase } from '@/integrations/supabase/client';
+import CountryStateInput from '@/components/inputs/CountryStateInput';
 
 const INDUSTRIES = ['IT & Software','Manufacturing','Education','Healthcare','Retail & E-commerce','Finance & Banking','Real Estate','Government & Politics','Legal','Agriculture','Media & Entertainment','Hospitality','Consulting','NGO/Non-Profit','Other'];
 const REVENUE_RANGES = ['Below ₹10 Lakhs','₹10L - ₹50L','₹50L - ₹1 Crore','₹1Cr - ₹5 Crore','₹5Cr - ₹25 Crore','₹25Cr - ₹100 Crore','₹100 Crore+','Not Applicable (Salaried)','Prefer Not to Say'];
@@ -67,6 +68,7 @@ const BookAppointment = () => {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     fullName: '', mobile: '', email: '', whatsapp: '', sameWhatsapp: true, city: '', address: '',
+    country: 'IN', state: '', pincode: '',
     countryCode: '+91', whatsappCountryCode: '+91',
     profession: '', company: '', industry: '', revenue: '', teamSize: '',
     purposes: [] as string[], challenge: '', source: '', referredBy: '',
@@ -227,6 +229,17 @@ const BookAppointment = () => {
               <input className={inputCls} value={form.city} onChange={e => set('city', sanitizeCity(e.target.value))} placeholder="Your city" maxLength={20} />
               <p className="text-xs text-muted-foreground mt-1">{form.city.length}/20 characters</p>
             </Field>
+            <div className="md:col-span-2">
+              <CountryStateInput
+                country={form.country}
+                state={form.state}
+                pincode={form.pincode}
+                onCountryChange={(v) => set('country', v)}
+                onStateChange={(v) => set('state', v)}
+                onPincodeChange={(v) => set('pincode', v)}
+                required
+              />
+            </div>
             <Field label="Full Address">
               <textarea className={inputCls} rows={2} value={form.address} onChange={e => set('address', sanitizeAddress(e.target.value))} placeholder="Your complete address (optional)" maxLength={100} />
               <p className="text-xs text-muted-foreground mt-1">{form.address.length}/100 characters</p>

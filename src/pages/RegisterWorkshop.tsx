@@ -4,6 +4,7 @@ import { ArrowLeft, Check, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { COURSES } from '@/data/mockData';
+import CountryStateInput from '@/components/inputs/CountryStateInput';
 
 const WORKSHOPS = [
   { id: 'w1', name: 'Laws of Attraction through Ramayana', desc: 'Manifest your desires through timeless Ramayana wisdom', duration: 'Full Day (10 AM - 6 PM)', price: 5000, max: 50, gradient: 'linear-gradient(135deg, #2196F3, #00BCD4)' },
@@ -59,7 +60,7 @@ const RegisterWorkshop = () => {
     venueAddress: '', participantCount: '', venueContact: '',
     fullName: '', mobile: '', email: '', whatsapp: '', sameWhatsapp: true,
     countryCode: '+91', whatsappCountryCode: '+91',
-    dob: '', gender: '', city: '', state: '', pincode: '',
+    dob: '', gender: '', country: 'IN', city: '', state: '', pincode: '',
     profession: '', company: '', industry: '', experience: '', revenue: '', teamSize: '', linkedin: '', otherState: '',
     goals: '', challenge: '', priorPrograms: 'no', priorDetails: '', source: '', referredBy: '', otherSource: '',
     interestedCourses: [] as string[],
@@ -268,17 +269,17 @@ const RegisterWorkshop = () => {
               <input className={inputCls} value={form.city} onChange={e => set('city', sanitizeCity(e.target.value))} maxLength={20} />
               <CharCount current={form.city.length} max={20} />
             </Field>
-            <Field label="State" required>
-              <select className={inputCls} value={form.state} onChange={e => { set('state', e.target.value); if (e.target.value !== 'Other') set('otherState', ''); }}>
-                <option value="">Select...</option>{STATES.map(s => <option key={s}>{s}</option>)}
-              </select>
-              {form.state === 'Other' && (
-                <div className="mt-2">
-                  <input className={inputCls} value={form.otherState} onChange={e => set('otherState', sanitize20(e.target.value))} placeholder="Enter your state" maxLength={20} />
-                  <CharCount current={form.otherState.length} max={20} />
-                </div>
-              )}
-            </Field>
+            <div className="sm:col-span-2">
+              <CountryStateInput
+                country={form.country}
+                state={form.state}
+                pincode={form.pincode}
+                onCountryChange={(v) => set('country', v)}
+                onStateChange={(v) => set('state', v)}
+                onPincodeChange={(v) => set('pincode', v)}
+                required
+              />
+            </div>
           </div>
         </div>
 
