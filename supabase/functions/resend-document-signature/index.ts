@@ -54,23 +54,19 @@ Deno.serve(async (req) => {
     const { data: seeker } = await admin.from("profiles").select("full_name, email").eq("id", reqRow.seeker_id).single();
     const { data: doc } = await admin.from("documents").select("title").eq("id", reqRow.document_id).single();
 
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const link = `${APP_URL}/sign/${token}`;
 
-    if (RESEND_API_KEY && seeker?.email) {
-      const resp = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${RESEND_API_KEY}` },
-        body: JSON.stringify({
-          from: "Vivek Doba <info@vivekdoba.com>",
-          to: [seeker.email],
-          subject: `Reminder: Sign your ${doc?.title}`,
-          html: `<p>Dear ${seeker.full_name},</p><p>This is a reminder to sign your <strong>${doc?.title}</strong>.</p>
-            <p><a href="${link}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none">Sign Now</a></p>
-            <p style="font-size:12px;color:#6b7280">Link expires in 7 days.</p>`,
-        }),
+    if (seeker?.email) {
+      const { sendEmail } = await import("../_shared/send-email.ts");
+      const r = await sendEmail(admin, {
+        to: seeker.email,
+        subject: `Reminder: Sign your ${doc?.title}`,
+        html: `<p>Dear ${seeker.full_name},</p><p>This is a reminder to sign your <strong>${doc?.title}</strong>.</p>
+          <p><a href="${link}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none">Sign Now</a></p>
+          <p style="font-size:12px;color:#6b7280">Link expires in 7 days.</p>`,
+        label: "signature_reminder",
       });
-      if (!resp.ok) console.error("resend_failed", resp.status, await resp.text().catch(() => ""));
+      if (!r.ok) console.error("resend reminder enqueue failed", r.error);
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
