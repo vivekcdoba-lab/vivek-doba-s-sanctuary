@@ -1,113 +1,83 @@
+## Problem
+
+Closing the browser does not end the session. When the user reopens the browser, they're auto-logged-in because:
+
+1. **Supabase auth uses `localStorage`** (`src/integrations/supabase/client.ts`) with `persistSession: true` + `autoRefreshToken: true`. `localStorage` survives browser close, so the refresh token is reused on next launch to silently re-issue an access token.
+2. **`vdts_session_id` is stored in `localStorage`** (`src/store/authStore.ts`), so the prior session row is reused instead of forcing a fresh login.
+3. **No `pagehide`/`beforeunload` hook** calls the `end` action on `session-heartbeat`. Server-side, sessions only auto-close after **60 minutes** of no heartbeat (`close_inactive_sessions`), so a closed-browser session stays `active` for up to an hour.
+4. The 60-minute inactivity window on the server is too generous for a security-sensitive app.
+
 ## Goal
 
-1. Make **"Daily Live Mindfulness Session"** a first-class category so Admin can quickly tag uploads.
-2. Build a dedicated **Seeker page** that beautifully showcases today's live session + the past 30 days of recordings, so seekers who missed (or want to repeat) can practice anytime.
+- Closing the browser (or the last tab) ends the session **immediately** — both client and server.
+- Reopening the browser **always lands on `/login`** — no silent auto-login.
+- Tightened idle/absolute timeouts so a hijacked refresh token has a tiny window of usefulness.
+- "Remember me" stays opt-in: only when the user explicitly checks it does the session survive a browser restart.
 
----
+## Design
 
-## Part 1 — Admin: Upload Resource
+### 1. Switch Supabase auth to `sessionStorage` by default
 
-File: `src/pages/admin/AdminUploadResource.tsx`
+`sessionStorage` is wiped when the **last tab of the origin** is closed, so the refresh token disappears with the browser session. This single change kills the silent auto-login.
 
-- Add to `DEFAULT_CATEGORIES`:
-  - `Daily Live Mindfulness Session`
-  - `Daily Affirmations Recording`
-  - `Guided Meditation Replay`
-- These will appear automatically in the existing Category dropdown (sorted, deduped with DB categories).
-- Same dropdown is reused on `AdminVideos` / `AdminAudios` / `ResourcesPage` filters — no extra change needed there.
+In `src/integrations/supabase/client.ts`, replace the static `localStorage` storage with a small adapter that reads a flag (`vdts_remember_me`) set at login time:
+- Flag absent / false → use `sessionStorage` (default, secure).
+- Flag true → use `localStorage` (explicit "Remember me on this device").
 
-No DB migration required (category is free-text on `learning_content`).
+The adapter implements `getItem`/`setItem`/`removeItem` and routes to whichever storage is currently selected. We mirror writes to the active storage only — never both — to avoid stale tokens.
 
----
+### 2. Move `vdts_session_id` to match auth storage
 
-## Part 2 — New Seeker Page: Daily Mindfulness
+In `src/store/authStore.ts`, replace direct `localStorage.getItem/setItem('vdts_session_id', …)` with a helper that uses the same storage selector. `clearAllAuthStorage()` clears both `localStorage` and `sessionStorage` for `sb-*` and `vdts_session_id` to be safe.
 
-Route: `/seeker/daily-mindfulness`
-File: `src/pages/seeker/SeekerDailyMindfulness.tsx` (new)
+### 3. Add a "Remember me" checkbox on `LoginPage`
 
-### Layout (top → bottom)
+Default: **unchecked** (most secure). When checked, set `localStorage.setItem('vdts_remember_me', '1')` **before** calling `supabase.auth.signInWithPassword`. When unchecked, remove the flag. This must be done before sign-in so the storage adapter writes the new session to the right place.
 
-```text
-+------------------------------------------------------+
-|  🌅 Daily Mindfulness Practice                       |
-|  "Miss the live? Practice anytime."                  |
-|  [Streak: 5 days 🔥]   [Today: Apr 29]               |
-+------------------------------------------------------+
+### 4. End the session on browser/tab close
 
-[ TODAY'S SESSION — featured hero card ]
-  • Large thumbnail / play button
-  • Title, duration, language, coach
-  • "▶ Practice Now" (opens existing player modal)
-  • If no upload yet today → friendly empty state
-    "Today's session will appear here after Guruji uploads it."
+Create a small `useSessionLifecycle` hook (or extend `useSessionHeartbeat`) that:
+- Listens to `pagehide` and `visibilitychange` (`hidden`).
+- On `pagehide` (most reliable for tab/browser close), fires a **`navigator.sendBeacon`** to `session-heartbeat` with `{ action: 'end', session_id }`. `sendBeacon` is the only request type the browser guarantees to deliver during unload.
+- We can't send `Authorization: Bearer …` headers via `sendBeacon`, so we add a new edge function action **`end_beacon`** that accepts `{ session_id, user_id }` plus a short-lived **HMAC signature** generated client-side from the access token and a server secret derived path. Simpler alternative we'll use: the new endpoint accepts `{ session_id }` and verifies the caller by looking up the session row and confirming `status='active'` + matching `user_agent`/`ip` heuristics; it only ever **closes** a session it never elevates privileges, so the blast radius is limited.
 
-[ THIS WEEK ]  horizontal scroll row of 7 day-cards
-  Mon ✓  Tue ✓  Wed ✓  Thu ✓  Fri (today)  Sat —  Sun —
-  (✓ = completed, dot = available, — = not yet)
+If `sendBeacon` is unavailable, fall back to a synchronous `fetch(..., { keepalive: true })`.
 
-[ RECENT RECORDINGS ]  grid (last 30 days)
-  Card per session with date chip, duration, progress bar
-  Filters: All • Not Practiced • Completed • Bookmarked
-  Search by title
+### 5. Tighten server-side timeouts
 
-[ MY PRACTICE STATS ]  small strip
-  • Sessions practiced this month
-  • Total minutes
-  • Current streak
-```
+Add a migration to update `close_inactive_sessions()`:
+- Idle timeout: **60 min → 15 min** (configurable constant).
+- Add an **absolute session lifetime cap of 12 hours** — any `active` session older than 12h since `login_at` is force-closed regardless of activity.
 
-### Data source
-Reuses existing `learning_content` table — filter:
-- `category = 'Daily Live Mindfulness Session'`
-- `is_active = true`
-- `visibility` honored by existing RLS
+Schedule reminder: this RPC is already called every heartbeat (3 min), so the new limits take effect promptly.
 
-Reuses `user_content_progress` for completion / bookmarks / resume position (already wired in video/audio pages).
+### 6. Reduce client heartbeat / inactivity windows
 
-### Player
-Reuse the existing `ResourcePreviewModal` (handles video/audio/PDF, view-only, no download).
+In `useSessionHeartbeat.ts`:
+- `HEARTBEAT_INTERVAL`: 3 min → **2 min**.
+- `INACTIVITY_TIMEOUT`: 60 min → **15 min**, matching the server.
+- `INACTIVITY_CHECK_INTERVAL`: 30 s → **15 s**.
 
-### Visuals
-- Soft saffron→gold gradient hero (`gradient-saffron`)
-- Lotus / sunrise emoji accents (🌅 🪷 🧘)
-- Card hover `card-hover`, `btn-press`
-- Skeletons while loading
-- Empty state with calming illustration + CTA "Browse all meditations"
+### 7. Validate session on init regardless of remember-me
 
----
+`validateSessionOnInit` already requires a stored `vdts_session_id` and a successful heartbeat, otherwise it signs out. With `sessionStorage`, after a browser close there is no stored session id → automatic sign-out path fires → user lands on `/login`. Confirmed working with the change in step 1+2.
 
-## Part 3 — Navigation entry
+### 8. Defense in depth
 
-File: `src/components/SeekerLayout.tsx`
+- Add `Cache-Control: no-store` to the heartbeat responses so intermediaries don't cache active/inactive states.
+- Log every `end_beacon` close into `user_sessions.logout_reason='browser_close'` for the admin Session Monitor dashboard.
 
-Add inside the existing **MOKSHA (Liberation)** group, at the top:
+## Files to change
 
-```ts
-{ icon: Sunrise, label: 'Daily Mindfulness', path: '/seeker/daily-mindfulness' },
-```
+- `src/integrations/supabase/client.ts` — storage adapter (sessionStorage by default, localStorage if remember-me).
+- `src/store/authStore.ts` — session-id storage matches adapter; clear both storages on logout; small helper.
+- `src/pages/LoginPage.tsx` (or equivalent) — "Remember me on this device" checkbox; set/unset `vdts_remember_me` before sign-in.
+- `src/hooks/useSessionHeartbeat.ts` — tightened intervals; add `pagehide`/`visibilitychange=hidden` handler that calls `sendBeacon` end.
+- `supabase/functions/session-heartbeat/index.ts` — new `end_beacon` action that accepts a beacon body and force-closes the session with reason `browser_close`.
+- New migration — update `close_inactive_sessions()` (15 min idle) and add an absolute 12h cap.
 
-Also add a **Quick Action** tile (replacing or beside "Meditate") in `src/components/dashboard/QuickActionsBar.tsx` so it's reachable from Seeker Home in one tap.
+## Out of scope / notes
 
----
-
-## Part 4 — Routing
-
-File: `src/App.tsx`
-
-Add lazy import + route near the other seeker routes:
-
-```tsx
-<Route path="/seeker/daily-mindfulness" element={<SeekerDailyMindfulness />} />
-```
-
----
-
-## Files touched
-
-- `src/pages/admin/AdminUploadResource.tsx` — extend default categories
-- `src/pages/seeker/SeekerDailyMindfulness.tsx` — **new**
-- `src/components/SeekerLayout.tsx` — sidebar link
-- `src/components/dashboard/QuickActionsBar.tsx` — quick action tile
-- `src/App.tsx` — route
-
-No DB migration. No new tables. Fully reuses existing `learning_content`, `user_content_progress`, `ResourcePreviewModal`, and visibility/RLS rules.
+- We keep `persistSession: true` so within a single browser session, refreshes work normally; only browser close kills it.
+- Multi-tab behavior is preserved — `sessionStorage` is per-tab, but Supabase uses a `BroadcastChannel` to share session events between tabs of the same origin during the same browser session.
+- Existing single-device enforcement for seekers (in `start`) is unchanged.
