@@ -1,68 +1,48 @@
-# Add Country + Smart State/ZIP to All Entry Forms
+# Country-Aware State Dropdown for All Entry Forms
 
 ## Goal
-Every public entry form should capture **Country** alongside **State** and **Pincode/ZIP**, with this behaviour:
-- **Country = India** → State = dropdown of Indian states + "Other" (free-text), Pincode = 6 digits
-- **Country ≠ India** → State auto-set to "Default" (read-only), Postal/ZIP = free-text
+When a non-India country is selected, replace the read-only "Default" state field with a real dropdown of states/provinces/regions for that country. India behavior stays unchanged (existing `INDIAN_STATES` list + Other free-text). Pincode/ZIP behavior stays unchanged (6-digit numeric for India, free-text for others).
 
-Good news: a reusable `CountryStateInput` component already exists at `src/components/inputs/CountryStateInput.tsx` that does exactly this (30+ countries, India special-case, Other state, free-text ZIP for non-India). We will plug it into the four forms.
+## Approach
+Use the lightweight `country-state-city` npm package (no API key, fully offline, ~1MB, includes ISO-3166-2 subdivisions for every country).
 
-## Forms To Update
-
-### 1. Discovery Call — `src/pages/BookAppointment.tsx`
-Currently has only `city` (no country/state/pincode).
-- Add `country`, `state`, `pincode` to form state (default `country: 'IN'`).
-- Insert `<CountryStateInput>` right after the City field.
-- Persist into `submissions.form_data` (JSON) — no DB change needed.
-
-### 2. Book Workshop — `src/pages/RegisterWorkshop.tsx`
-Currently has city + a hard-coded India-only state dropdown + pincode, no country field.
-- Remove inline `STATES` constant and the manual State + "Other" + Pincode JSX block.
-- Add `country` (default `'IN'`) to form state; replace the State/Pincode block with `<CountryStateInput>`.
-- Continue saving into `submissions.form_data`.
-
-### 3. Tell Us About Yourself — `src/pages/TellUsAboutYourself.tsx`
-Currently has only `city`.
-- Add `country`, `state`, `pincode` state (default `country: 'IN'`).
-- Add `<CountryStateInput>` after the City field.
-- Save inside `form_data` on the existing `submissions` insert.
-
-### 4. Apply for LGT — `src/pages/ApplyLGT.tsx`
-Currently has hard-coded India-only `STATES`, separate `country` text field defaulting to `'India'`, plus city/state/stateOther/pincode.
-- Replace the inline Country text input + manual State dropdown + pincode block with a single `<CountryStateInput>`.
-- Migrate `f.country` from `'India'` → `'IN'` (ISO code, matching component contract).
-- Update validation in `validateRequired()`:
-  - Drop `stateOther` branch (component handles it; state value itself becomes the typed text).
-  - Pincode requirement only when country is `'IN'`.
-- Keep `city`, `address1`, `address2`, `hometown` untouched.
-
-## Shared Component (already exists, no changes)
-`src/components/inputs/CountryStateInput.tsx` exposes:
-```tsx
-<CountryStateInput
-  country={country} state={state} pincode={pincode}
-  onCountryChange={...} onStateChange={...} onPincodeChange={...}
-  required
-/>
+```ts
+import { State } from 'country-state-city';
+const states = State.getStatesOfCountry('US'); // [{ name: 'California', isoCode: 'CA', ... }, ...]
 ```
-Internally it renders `StatePincodeInput` for India and a "Default" state + free-text ZIP for everything else.
 
-## Data Storage
-- `submissions.form_data` is JSON — `country`, `state`, `pincode` go in there for forms 1–3 and ApplyLGT. No migration required.
-- `leads.country` column already exists (used by AdminAddLead).
+This avoids hand-maintaining state lists for 30+ countries.
 
-## Validation Notes
-- Indian pincode: 6 digits, cannot start with 0 (existing `validatePincode` helper).
-- Non-India ZIP: free text, max 12 chars (component already enforces).
-- For ApplyLGT, "state" field is required when country = IN; for non-IN it's auto-"Default" and skipped in required-fields check.
+## Changes
 
-## Out of Scope
-- No DB schema changes.
-- AdminAddLead already has country handling — leaving as-is unless you want it switched to the same shared component (can do in a follow-up).
-- No styling changes beyond the new field placement.
+### 1. Add dependency
+- `country-state-city` (small, MIT, widely used).
+
+### 2. Update `src/components/inputs/CountryStateInput.tsx`
+Replace the non-India branch (currently shows read-only "Default" + free-text ZIP) with:
+- A **State / Region dropdown** populated via `State.getStatesOfCountry(country)`.
+- An **"Other"** option at the bottom that reveals a free-text input (fallback for countries with sparse data, e.g. small island nations).
+- Keep the free-text Postal/ZIP field next to it.
+
+If a country has zero states in the dataset (rare), automatically fall back to a single free-text "State / Region" input so the user is never blocked.
+
+When the country changes:
+- If new country = `IN` → clear state (user picks from Indian list).
+- Else → clear state (user picks from new country's list); never auto-fill "Default" anymore.
+
+### 3. Backwards compatibility
+- Existing submissions stored as `state: "Default"` remain valid; we just stop writing that value going forward.
+- All four forms (`BookAppointment`, `RegisterWorkshop`, `TellUsAboutYourself`, `ApplyLGT`) already use `<CountryStateInput>` — **no changes needed in the form pages**. The component upgrade flows through automatically.
+
+### 4. Validation
+- For non-India: state is **optional** (some users may legitimately have no subdivision, or pick Other and leave blank). ZIP remains free-text.
+- Indian validation (6-digit pincode, required state when `required` flag is set) unchanged.
 
 ## Files To Edit
-- `src/pages/BookAppointment.tsx`
-- `src/pages/RegisterWorkshop.tsx`
-- `src/pages/TellUsAboutYourself.tsx`
-- `src/pages/ApplyLGT.tsx`
+- `src/components/inputs/CountryStateInput.tsx` — swap read-only state for dynamic dropdown.
+- `package.json` — add `country-state-city` dependency.
+
+## Out of Scope
+- No DB changes (state is already a free text field inside `submissions.form_data` / `leads`).
+- No changes to the four form pages — the shared component does all the work.
+- India behavior, pincode rules, and the `INDIAN_STATES` list stay exactly as they are.
