@@ -216,6 +216,37 @@ export default function AdminDailyReports() {
         </Card>
       </div>
 
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Delivery log</h2>
+          <p className="text-xs text-muted-foreground">
+            Showing {logs.length} record{logs.length === 1 ? "" : "s"} for {format(filterDate, "PPP")}
+            {format(filterDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") ? " (today)" : ""}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className={cn("w-[220px] justify-start text-left font-normal")}>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {format(filterDate, "PPP")}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={filterDate}
+                onSelect={(d) => d && setFilterDate(d)}
+                disabled={(d) => d > new Date()}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          <Button variant="ghost" size="sm" onClick={() => setFilterDate(new Date())}>Today</Button>
+        </div>
+      </div>
+
       <Card className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
