@@ -25,6 +25,11 @@ interface LogRow {
   created_at: string;
 }
 
+interface SeekerProfile {
+  full_name: string | null;
+  email: string | null;
+}
+
 export default function AdminDailyReports() {
   const { toast } = useToast();
   const [settings, setSettings] = useState<Settings | null>(null);
