@@ -352,6 +352,18 @@ const App = () => (
               <Route path="/active-sessions" element={<ActiveSessionsPage />} />
               {/* Legacy redirects */}
               <Route path="/admin/seekers" element={<Navigate to="/seekers" replace />} />
+              <Route path="/admin/payments" element={<Navigate to="/payments" replace />} />
+              <Route path="/admin/dashboard" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/admin/leads" element={<Navigate to="/leads" replace />} />
+              <Route path="/admin/courses" element={<Navigate to="/courses" replace />} />
+              <Route path="/admin/sessions" element={<Navigate to="/sessions" replace />} />
+              <Route path="/admin/assignments" element={<Navigate to="/assignments" replace />} />
+              <Route path="/admin/messages" element={<Navigate to="/messages" replace />} />
+              <Route path="/admin/resources" element={<Navigate to="/resources" replace />} />
+              <Route path="/admin/reports" element={<Navigate to="/reports" replace />} />
+              <Route path="/admin/calendar" element={<Navigate to="/calendar" replace />} />
+              <Route path="/admin/assessments" element={<Navigate to="/assessments" replace />} />
+              <Route path="/admin/applications" element={<Navigate to="/applications" replace />} />
               {/* Admin placeholder routes */}
               <Route path="/admin/coaches" element={<AdminCoaches />} />
               <Route path="/admin/linked-profiles" element={<AdminLinkedProfiles />} />
