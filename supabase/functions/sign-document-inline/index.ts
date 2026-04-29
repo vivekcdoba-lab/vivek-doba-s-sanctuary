@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
+import { appendClientPages } from "../_shared/buildClientPages.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +22,8 @@ async function buildSignedPdf(opts: {
   signatureDate: string;
   ip: string | null;
   verificationId: string;
+  seeker: { full_name: string | null; email: string | null; phone: string | null } | null;
+  fee: any | null;
 }) {
   let pdfDoc: PDFDocument;
   if (opts.storagePath) {
@@ -34,6 +37,21 @@ async function buildSignedPdf(opts: {
     }
   } else {
     pdfDoc = await PDFDocument.create();
+  }
+
+  // Append B1.1 + B1.2 after the original template pages so the page order matches
+  // the email-flow output: [..template.., B1.1, B1.2, Signature Certificate].
+  try {
+    await appendClientPages(pdfDoc, {
+      seeker: {
+        full_name: opts.seeker?.full_name ?? opts.signerName ?? null,
+        email: opts.seeker?.email ?? null,
+        phone: opts.seeker?.phone ?? null,
+      },
+      fee: opts.fee ?? null,
+    });
+  } catch (e) {
+    console.error("append_client_pages_failed", e);
   }
 
   const helv = await pdfDoc.embedFont(StandardFonts.Helvetica);
