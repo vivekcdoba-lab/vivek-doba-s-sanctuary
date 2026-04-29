@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { sendEmail } from "../_shared/send-email.ts";
 
 function getCorsHeaders(_origin: string | null) {
   // Allow all origins — preview, custom domains, and lovable.app subdomains all need access.
@@ -165,12 +166,7 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  if (!RESEND_API_KEY) {
-    return new Response(JSON.stringify({ error: "Email service not configured" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+  // Lovable Emails queue is used — no per-request RESEND_API_KEY check needed
 
   // Auth check — only admin/coach can send notifications
   const auth = await validateAdmin(req);
@@ -193,31 +189,20 @@ serve(async (req) => {
       };
       const subjectLabel = typeSubjects[data.form_type] || data.form_type;
 
-      const supabaseForFrom = createClient(
+      const supabaseAdmin = createClient(
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
       );
-      const fromAddress = await getFromAddress(supabaseForFrom);
 
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: fromAddress,
-          to: [ADMIN_EMAIL],
-          subject: sanitizeSubject(`🪷 New ${subjectLabel} — ${data.applicant_name}`),
-          html: buildAdminEmailHtml(data),
-        }),
+      const r = await sendEmail(supabaseAdmin, {
+        to: ADMIN_EMAIL,
+        subject: sanitizeSubject(`🪷 New ${subjectLabel} — ${data.applicant_name}`),
+        html: buildAdminEmailHtml(data),
+        label: "admin_new_submission",
       });
-      const result = await res.json();
-      if (!res.ok) {
-        throw new Error(`Email API error [${res.status}]: ${JSON.stringify(result)}`);
-      }
+      if (!r.ok) throw new Error(`Email enqueue failed: ${r.error}`);
 
-      return new Response(JSON.stringify({ success: true, id: result.id }), {
+      return new Response(JSON.stringify({ success: true, message_id: r.message_id }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -229,29 +214,18 @@ serve(async (req) => {
         info_requested: "📋 Additional Information Needed — Vivek Doba Training Solutions",
       };
 
-      const supabaseForFrom2 = createClient(
+      const supabaseAdmin = createClient(
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
       );
-      const fromAddress2 = await getFromAddress(supabaseForFrom2);
 
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: fromAddress2,
-          to: [data.applicant_email],
-          subject: subjectMap[data.status || "approved"],
-          html: buildApplicantEmailHtml(data),
-        }),
+      const r = await sendEmail(supabaseAdmin, {
+        to: data.applicant_email,
+        subject: subjectMap[data.status || "approved"],
+        html: buildApplicantEmailHtml(data),
+        label: `status_update_${data.status || "approved"}`,
       });
-      const result = await res.json();
-      if (!res.ok) {
-        throw new Error(`Email API error [${res.status}]: ${JSON.stringify(result)}`);
-      }
+      if (!r.ok) throw new Error(`Email enqueue failed: ${r.error}`);
 
       // Also send WhatsApp notification if mobile number is available
       if (data.applicant_mobile) {
