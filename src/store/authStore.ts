@@ -115,6 +115,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     await supabase.auth.signOut();
     clearAllAuthStorage();
+    try { localStorage.removeItem(REMEMBER_FLAG); } catch { /* ignore */ }
     set({ isAuthenticated: false, user: null, profile: null, sessionId: null, loading: false });
   },
   toggleDarkMode: () => set((state) => {
