@@ -226,11 +226,7 @@ export default function SeekerLearningPdfs() {
           {/* Overlay actions */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
             <Button size="icon" className="h-9 w-9 rounded-full"><Eye className="h-4 w-4" /></Button>
-            {item.url && (
-              <a href={item.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
-                <Button size="icon" variant="secondary" className="h-9 w-9 rounded-full"><Download className="h-4 w-4" /></Button>
-              </a>
-            )}
+            {/* Download removed — view-only */}
           </div>
 
           {/* Badges */}
