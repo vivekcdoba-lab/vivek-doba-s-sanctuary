@@ -191,7 +191,8 @@ export default function CoachSchedule() {
     } as any, {
       onSuccess: () => {
         setShowNewSession(false);
-        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '', timezone: defaultTz, location_type: 'online', meeting_link: '' });
+        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '', timezone: defaultTz, location_type: 'online', meeting_link: DEFAULT_ZOOM_LINK });
+        setLinkMode('default');
         toast.success(newForm.session_type === 'couple' ? 'Couple session scheduled — invites sent' : 'Session scheduled — invite sent');
       },
     });
