@@ -392,7 +392,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
           <p className="text-muted-foreground mb-4">Thank you for taking this powerful step toward transformation.</p>
           <div className="bg-muted rounded-xl p-4 text-left text-sm space-y-1 mb-6">
             <p><strong>Application ID:</strong> {appId}</p>
-            <p><strong>Submitted:</strong> {formatDateDMY()}</p>
+            <p><strong>Submitted:</strong> {formatDateDMY(new Date())}</p>
             <p><strong>Program:</strong> {selected?.name}</p>
           </div>
           <div className="text-left text-sm text-muted-foreground space-y-1 mb-6">

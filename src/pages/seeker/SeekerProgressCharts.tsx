@@ -244,7 +244,7 @@ export default function SeekerProgressCharts() {
     doc.text('Progress Report', 20, 20);
     doc.setFontSize(11);
     doc.text(`Seeker: ${profile?.full_name || 'Unknown'}`, 20, 32);
-    doc.text(`Date: ${formatDateDMY()}`, 20, 40);
+    doc.text(`Date: ${formatDateDMY(new Date())}`, 20, 40);
     doc.text(`Total Days Logged: ${totalDaysLogged}`, 20, 52);
     doc.text(`Current Streak: ${currentStreak} days`, 20, 60);
     doc.text(`Current Stage: ${STAGES[currentStageIdx].label}`, 20, 68);
