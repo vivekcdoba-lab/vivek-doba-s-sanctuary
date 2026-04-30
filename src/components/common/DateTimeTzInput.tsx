@@ -32,10 +32,29 @@ export default function DateTimeTzInput({
 }: DateTimeTzInputProps) {
   const browserTz = useMemo(() => detectBrowserTz(), []);
 
+  const addOneHour = (t: string): string => {
+    if (!t || t.length < 4) return t;
+    const [hStr, mStr] = t.split(':');
+    const h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    if (isNaN(h) || isNaN(m)) return t;
+    const next = (h + 1) % 24;
+    return `${String(next).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
   const update = (
     patch: Partial<{ date: string; startTime: string; endTime: string; timezone: string }>,
   ) => {
-    onChange({ date, startTime, endTime, timezone, ...patch });
+    const merged = { date, startTime, endTime, timezone, ...patch };
+    // Auto-default end time to start + 1h when start changes and end is empty
+    // or still matches the previously-derived end (i.e. coach hasn't customized it).
+    if (patch.startTime !== undefined && patch.startTime) {
+      const previousDerivedEnd = addOneHour(startTime);
+      if (!merged.endTime || merged.endTime === previousDerivedEnd) {
+        merged.endTime = addOneHour(patch.startTime);
+      }
+    }
+    onChange(merged);
   };
 
   const previewLocal = useMemo(() => {
