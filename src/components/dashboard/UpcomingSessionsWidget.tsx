@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Video, MapPin } from 'lucide-react';
+import LocalTime from '@/components/common/LocalTime';
 
 interface Session {
   id: string;
@@ -9,6 +10,8 @@ interface Session {
   location_type: string;
   meeting_link?: string;
   status: string;
+  start_at?: string | null;
+  timezone?: string | null;
 }
 
 interface UpcomingSessionsWidgetProps {
