@@ -498,6 +498,7 @@ const App = () => (
               <Route path="/seeker/streaks" element={<SeekerStreaks />} />
               <Route path="/seeker/personality" element={<SeekerPersonality />} />
               <Route path="/seeker/progress-charts" element={<SeekerProgressCharts />} />
+              <Route path="/seeker/reports" element={<Navigate to="/seeker/progress-charts" replace />} />
               <Route path="/seeker/assessment-history" element={<SeekerAssessmentHistory />} />
               <Route path="/seeker/live-session" element={<SeekerLiveSession />} />
               <Route path="/seeker/daily-mindfulness" element={<SeekerDailyMindfulness />} />
