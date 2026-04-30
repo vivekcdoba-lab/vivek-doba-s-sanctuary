@@ -261,7 +261,11 @@ Deno.serve(async (req: Request) => {
       attendees,
     });
 
-    const icsB64 = btoa(ics);
+    // UTF-8 safe base64 (btoa() throws on non-Latin1 chars like Devanagari)
+    const _icsBytes = new TextEncoder().encode(ics);
+    let _bin = "";
+    for (let i = 0; i < _icsBytes.length; i++) _bin += String.fromCharCode(_icsBytes[i]);
+    const icsB64 = btoa(_bin);
 
     const subject = isCancel
       ? `Cancelled: ${courseName} on ${session.date}`
