@@ -256,7 +256,10 @@ export default function CoachSchedule() {
                     {daySessions.slice(0, 3).map(s => (
                       <div key={s.id} draggable onDragStart={() => setDragSession(s.id)}
                         className={`text-[10px] rounded px-1 py-0.5 truncate cursor-move border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}>
-                        {s.start_time?.slice(0, 5)} {seekerName(s.seeker_id)}
+                        {s.start_at
+                          ? new Date(s.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+                          : s.start_time?.slice(0, 5)}{' '}
+                        {seekerName(s.seeker_id)}
                       </div>
                     ))}
                     {daySessions.length > 3 && (
@@ -292,11 +295,15 @@ export default function CoachSchedule() {
                   <div className="p-1 text-[10px] text-muted-foreground text-right pr-2 pt-0">{formatHour(hour)}</div>
                   {visibleDays.map(day => {
                     const dayS = sessionsForDay(day).filter(s => {
-                      const h = parseInt(s.start_time?.split(':')[0] || '0');
+                      const h = s.start_at
+                        ? new Date(s.start_at).getHours()
+                        : parseInt(s.start_time?.split(':')[0] || '0');
                       return h === hour;
                     });
                     const dayB = blockedForDay(day).filter((e: any) => {
-                      const h = parseInt(e.start_time?.split(':')[0] || '0');
+                      const h = e.start_at
+                        ? new Date(e.start_at).getHours()
+                        : parseInt(e.start_time?.split(':')[0] || '0');
                       return h === hour;
                     });
                     const isToday = isSameDay(day, new Date());
@@ -314,7 +321,11 @@ export default function CoachSchedule() {
                             className={`absolute inset-x-0.5 top-0.5 rounded text-[10px] p-1 cursor-move border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}
                             style={{ minHeight: 24 }}>
                             <div className="font-medium truncate">{seekerName(s.seeker_id)}</div>
-                            <div className="opacity-75">{s.start_time?.slice(0, 5)}-{s.end_time?.slice(0, 5)}</div>
+                            <div className="opacity-75">
+                              {s.start_at
+                                ? `${new Date(s.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}-${s.end_at ? new Date(s.end_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : ''}`
+                                : `${s.start_time?.slice(0, 5)}-${s.end_time?.slice(0, 5)}`}
+                            </div>
                           </div>
                         ))}
                       </div>
