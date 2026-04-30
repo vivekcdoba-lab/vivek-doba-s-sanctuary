@@ -326,7 +326,9 @@ export default function CoachSchedule() {
                   <div className="space-y-0.5 mt-1">
                     {daySessions.slice(0, 3).map(s => (
                       <div key={s.id} draggable onDragStart={() => setDragSession(s.id)}
-                        className={`text-[10px] rounded px-1 py-0.5 truncate cursor-move border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}>
+                        onClick={(e) => { e.stopPropagation(); openSessionEditor(s); }}
+                        title={lang === 'hi' ? 'पुनर्निर्धारित या हटाएं' : 'Reschedule or delete'}
+                        className={`text-[10px] rounded px-1 py-0.5 truncate cursor-pointer hover:ring-2 hover:ring-primary/40 border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}>
                         {s.start_at
                           ? new Date(s.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
                           : s.start_time?.slice(0, 5)}{' '}
