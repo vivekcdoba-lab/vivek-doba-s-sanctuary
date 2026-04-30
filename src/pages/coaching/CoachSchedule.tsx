@@ -588,6 +588,96 @@ export default function CoachSchedule() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Reschedule / Delete Session Dialog */}
+      <Dialog open={!!editSession} onOpenChange={(o) => { if (!o) { setEditSession(null); setConfirmDelete(false); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarClock className="w-5 h-5 text-primary" />
+              {lang === 'hi' ? 'सत्र प्रबंधित करें' : 'Manage Session'}
+            </DialogTitle>
+          </DialogHeader>
+          {editSession && (
+            <div className="space-y-3">
+              <div className="rounded-lg bg-muted/40 p-3 text-sm">
+                <div className="font-semibold text-foreground">{seekerName(editSession.seeker_id)}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {formatDateDMY(editSession.start_at || editSession.date)} • {(editSession.start_time || '').slice(0, 5)}–{(editSession.end_time || '').slice(0, 5)}
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-1">Status: <span className="font-medium">{editSession.status}</span></div>
+              </div>
+
+              {!confirmDelete && (
+                <>
+                  <p className="text-xs font-semibold text-foreground">
+                    {lang === 'hi' ? 'नई तारीख और समय' : 'New date & time'}
+                  </p>
+                  <DateTimeTzInput
+                    date={editForm.date}
+                    startTime={editForm.start_time}
+                    endTime={editForm.end_time}
+                    timezone={editForm.timezone}
+                    onChange={(v) => setEditForm(p => ({ ...p, date: v.date, start_time: v.startTime, end_time: v.endTime, timezone: v.timezone }))}
+                  />
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">
+                      {lang === 'hi' ? 'पुनर्निर्धारण का कारण (वैकल्पिक)' : 'Reschedule reason (optional)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.reason}
+                      onChange={e => setEditForm(p => ({ ...p, reason: e.target.value }))}
+                      placeholder={lang === 'hi' ? 'जैसे, साधक की उपलब्धता' : 'e.g., seeker availability'}
+                      className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    <Button
+                      onClick={handleReschedule}
+                      disabled={updateSession.isPending}
+                      className="flex-1"
+                    >
+                      {updateSession.isPending
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : (lang === 'hi' ? 'पुनर्निर्धारित करें और भेजें' : 'Reschedule & Notify')}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => setConfirmDelete(true)}
+                      disabled={deleteSession.isPending}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      {lang === 'hi' ? 'हटाएं' : 'Delete'}
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {confirmDelete && (
+                <div className="space-y-3">
+                  <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                    {lang === 'hi'
+                      ? 'क्या आप वाकई इस सत्र को हटाना चाहते हैं? सभी प्रतिभागियों को रद्दीकरण ईमेल भेजा जाएगा।'
+                      : 'Are you sure you want to delete this session? All attendees will receive a cancellation email.'}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" className="flex-1" onClick={() => setConfirmDelete(false)} disabled={deleteSession.isPending}>
+                      {lang === 'hi' ? 'रद्द करें' : 'Cancel'}
+                    </Button>
+                    <Button variant="destructive" className="flex-1" onClick={handleDelete} disabled={deleteSession.isPending}>
+                      {deleteSession.isPending
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : (lang === 'hi' ? 'हाँ, हटाएं' : 'Yes, Delete')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
