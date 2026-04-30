@@ -15,7 +15,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Progress } from '@/components/ui/progress';
 import {
-import { formatDateDMY } from "@/lib/dateFormat";
   ACTIVITY_GROUPS, DEFAULT_NON_NEGOTIABLES, MOOD_OPTIONS, PILLAR_CONFIG,
   DAY_NAMES, MONEY_AFFIRMATIONS, generateTimeSlots, getPhaseForTime, getPillarForActivity,
   TEMPLATE_SLOTS,
@@ -28,6 +27,7 @@ import { playPreset, stopAll, MOOD_PRESETS, type SoundId } from '@/lib/sacredAud
 import { useAudioStore } from '@/store/audioStore';
 import BackToHome from '@/components/BackToHome';
 
+import { formatDateDMY } from "@/lib/dateFormat";
 const DailyWorksheet = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);

@@ -4,7 +4,6 @@ import { Phone, MessageSquare, Mail, Check, X, RefreshCw, ChevronDown, ChevronUp
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
-import { formatDateDMY } from "@/lib/dateFormat";
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -17,6 +16,7 @@ import { formatDateDMY } from "@/lib/dateFormat";
 import { Progress } from '@/components/ui/progress';
 
 
+import { formatDateDMY } from "@/lib/dateFormat";
 type FormType = 'discovery_call' | 'workshop' | 'lgt_application' | 'registration';
 type SubmissionStatus = 'pending' | 'approved' | 'rejected' | 'info_requested';
 

@@ -9,12 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ResourcePreviewModal } from '@/components/ResourcePreviewModal';
 import {
-import { formatDateDMY } from "@/lib/dateFormat";
   Sunrise, Play, Search, CheckCircle2, Bookmark, BookmarkCheck,
   Clock, Flame, Sparkles, Calendar, Headphones, Video as VideoIcon, FileText,
 } from 'lucide-react';
 import { format, isToday, isSameDay, parseISO, startOfWeek, addDays, differenceInCalendarDays } from 'date-fns';
 
+import { formatDateDMY } from "@/lib/dateFormat";
 const CATEGORY = 'Daily Live Mindfulness Session';
 
 interface Item {
