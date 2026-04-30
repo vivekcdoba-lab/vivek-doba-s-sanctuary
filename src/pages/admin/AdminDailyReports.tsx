@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { formatDateDMY } from "@/lib/dateFormat";
+import { formatDateDMY, toIsoDate } from "@/lib/dateFormat";
 
 interface Settings {
   id: string;
@@ -222,7 +222,7 @@ export default function AdminDailyReports() {
           <h2 className="text-lg font-semibold text-foreground">Delivery log</h2>
           <p className="text-xs text-muted-foreground">
             Showing {logs.length} record{logs.length === 1 ? "" : "s"} for {formatDateDMY(filterDate)}
-            {formatDateDMY(filterDate) === formatDateDMY(new Date()) ? " (today)" : ""}
+            {toIsoDate(filterDate) === toIsoDate(new Date()) ? " (today)" : ""}
           </p>
         </div>
         <div className="flex items-center gap-2">

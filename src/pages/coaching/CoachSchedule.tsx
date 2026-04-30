@@ -1,20 +1,20 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useCoachingLang } from '@/components/CoachingLayout';
-import { useDbSessions, useCreateSession, useUpdateSession, useCoaches } from '@/hooks/useDbSessions';
+import { useDbSessions, useCreateSession, useUpdateSession, useCoaches, useDeleteSession } from '@/hooks/useDbSessions';
 import { useAuthStore } from '@/store/authStore';
 import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays, subDays, startOfWeek, endOfWeek, addWeeks, subWeeks, addMonths, subMonths, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus, X, Loader2, Lock, CalendarDays } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Loader2, Lock, CalendarDays, Trash2, CalendarClock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import DateTimeTzInput, { toUtcIso } from '@/components/common/DateTimeTzInput';
 import { detectBrowserTz } from '@/lib/timezones';
-import { formatDateDMY } from "@/lib/dateFormat";
+import { formatDateDMY, toIsoDate } from "@/lib/dateFormat";
 
 const DEFAULT_ZOOM_LINK = 'https://us06web.zoom.us/j/86310221885?pwd=LdIaVqMxx7tbavIqggTVegh01kL8HB.1';
 
@@ -59,6 +59,7 @@ export default function CoachSchedule() {
   const { data: coaches = [] } = useCoaches();
   const createSession = useCreateSession();
   const updateSession = useUpdateSession();
+  const deleteSession = useDeleteSession();
   const queryClient = useQueryClient();
 
   const isAdmin = profile?.role === 'admin';
@@ -71,6 +72,9 @@ export default function CoachSchedule() {
   const [dragSession, setDragSession] = useState<string | null>(null);
 
   const defaultTz = useMemo(() => detectBrowserTz(), []);
+  const [editSession, setEditSession] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ date: '', start_time: '10:00', end_time: '11:00', timezone: defaultTz, reason: '' });
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '', timezone: defaultTz, location_type: 'in_person' as 'online' | 'in_person', meeting_link: '' });
   const [linkMode, setLinkMode] = useState<'default' | 'custom'>('default');
   const [blockForm, setBlockForm] = useState({ title: '', date: '', start_time: '12:00', end_time: '13:00', timezone: defaultTz });
@@ -128,16 +132,16 @@ export default function CoachSchedule() {
   }, [currentDate, view]);
 
   const sessionsForDay = useCallback((day: Date) => {
-    const ds = formatDateDMY(day);
+    const ds = toIsoDate(day);
     return sessions.filter(s => {
       // Prefer start_at so the session falls into the viewer's local day.
-      if (s.start_at) return formatDateDMY(new Date(s.start_at)) === ds;
+      if (s.start_at) return toIsoDate(new Date(s.start_at)) === ds;
       return s.date === ds;
     });
   }, [sessions]);
 
   const blockedForDay = useCallback((day: Date) => {
-    const ds = formatDateDMY(day);
+    const ds = toIsoDate(day);
     return calEvents.filter((e: any) => e.date === ds);
   }, [calEvents]);
 
@@ -151,7 +155,7 @@ export default function CoachSchedule() {
 
   const handleDrop = (date: Date, hour: number) => {
     if (!dragSession) return;
-    const ds = formatDateDMY(date);
+    const ds = toIsoDate(date);
     const start = `${String(hour).padStart(2, '0')}:00`;
     const end = `${String(hour + 1).padStart(2, '0')}:00`;
     updateSession.mutate({ id: dragSession, date: ds, start_time: start, end_time: end }, {
@@ -196,6 +200,62 @@ export default function CoachSchedule() {
         setLinkMode('default');
         toast.success(newForm.session_type === 'couple' ? 'Couple session scheduled — invites sent' : 'Session scheduled — invite sent');
       },
+    });
+  };
+
+  // ---- Reschedule / Delete handlers ----
+  const openSessionEditor = (s: any) => {
+    setEditSession(s);
+    setConfirmDelete(false);
+    const initialDate = s.start_at
+      ? toIsoDate(new Date(s.start_at))
+      : s.date || toIsoDate(new Date());
+    setEditForm({
+      date: initialDate,
+      start_time: (s.start_time || '10:00').slice(0, 5),
+      end_time: (s.end_time || '11:00').slice(0, 5),
+      timezone: s.timezone || defaultTz,
+      reason: '',
+    });
+  };
+
+  const handleReschedule = () => {
+    if (!editSession) return;
+    if (!editForm.date || !editForm.start_time || !editForm.end_time) {
+      toast.error(lang === 'hi' ? 'कृपया तारीख और समय भरें' : 'Please fill date & time');
+      return;
+    }
+    updateSession.mutate(
+      {
+        id: editSession.id,
+        date: editForm.date,
+        start_time: editForm.start_time,
+        end_time: editForm.end_time,
+        timezone: editForm.timezone,
+        start_at: toUtcIso(editForm.date, editForm.start_time, editForm.timezone),
+        end_at: toUtcIso(editForm.date, editForm.end_time, editForm.timezone),
+        status: 'rescheduled',
+        reschedule_reason: editForm.reason || null,
+      } as any,
+      {
+        onSuccess: () => {
+          toast.success(lang === 'hi' ? 'सत्र पुनर्निर्धारित — अपडेट भेजा गया' : 'Session rescheduled — update sent');
+          setEditSession(null);
+        },
+        onError: (e: any) => toast.error(e?.message || 'Failed to reschedule'),
+      },
+    );
+  };
+
+  const handleDelete = () => {
+    if (!editSession) return;
+    deleteSession.mutate(editSession.id, {
+      onSuccess: () => {
+        toast.success(lang === 'hi' ? 'सत्र हटा दिया गया — सूचना भेजी गई' : 'Session deleted — attendees notified');
+        setEditSession(null);
+        setConfirmDelete(false);
+      },
+      onError: (e: any) => toast.error(e?.message || 'Failed to delete'),
     });
   };
 
@@ -266,7 +326,9 @@ export default function CoachSchedule() {
                   <div className="space-y-0.5 mt-1">
                     {daySessions.slice(0, 3).map(s => (
                       <div key={s.id} draggable onDragStart={() => setDragSession(s.id)}
-                        className={`text-[10px] rounded px-1 py-0.5 truncate cursor-move border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}>
+                        onClick={(e) => { e.stopPropagation(); openSessionEditor(s); }}
+                        title={lang === 'hi' ? 'पुनर्निर्धारित या हटाएं' : 'Reschedule or delete'}
+                        className={`text-[10px] rounded px-1 py-0.5 truncate cursor-pointer hover:ring-2 hover:ring-primary/40 border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}>
                         {s.start_at
                           ? new Date(s.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
                           : s.start_time?.slice(0, 5)}{' '}
@@ -329,7 +391,9 @@ export default function CoachSchedule() {
                         ))}
                         {dayS.map(s => (
                           <div key={s.id} draggable onDragStart={() => setDragSession(s.id)}
-                            className={`absolute inset-x-0.5 top-0.5 rounded text-[10px] p-1 cursor-move border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}
+                            onClick={(e) => { e.stopPropagation(); openSessionEditor(s); }}
+                            title={lang === 'hi' ? 'पुनर्निर्धारित या हटाएं' : 'Reschedule or delete'}
+                            className={`absolute inset-x-0.5 top-0.5 rounded text-[10px] p-1 cursor-pointer hover:ring-2 hover:ring-primary/40 border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}
                             style={{ minHeight: 24 }}>
                             <div className="font-medium truncate">{seekerName(s.seeker_id)}</div>
                             <div className="opacity-75">
@@ -522,6 +586,96 @@ export default function CoachSchedule() {
               {t('save')}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reschedule / Delete Session Dialog */}
+      <Dialog open={!!editSession} onOpenChange={(o) => { if (!o) { setEditSession(null); setConfirmDelete(false); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarClock className="w-5 h-5 text-primary" />
+              {lang === 'hi' ? 'सत्र प्रबंधित करें' : 'Manage Session'}
+            </DialogTitle>
+          </DialogHeader>
+          {editSession && (
+            <div className="space-y-3">
+              <div className="rounded-lg bg-muted/40 p-3 text-sm">
+                <div className="font-semibold text-foreground">{seekerName(editSession.seeker_id)}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {formatDateDMY(editSession.start_at || editSession.date)} • {(editSession.start_time || '').slice(0, 5)}–{(editSession.end_time || '').slice(0, 5)}
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-1">Status: <span className="font-medium">{editSession.status}</span></div>
+              </div>
+
+              {!confirmDelete && (
+                <>
+                  <p className="text-xs font-semibold text-foreground">
+                    {lang === 'hi' ? 'नई तारीख और समय' : 'New date & time'}
+                  </p>
+                  <DateTimeTzInput
+                    date={editForm.date}
+                    startTime={editForm.start_time}
+                    endTime={editForm.end_time}
+                    timezone={editForm.timezone}
+                    onChange={(v) => setEditForm(p => ({ ...p, date: v.date, start_time: v.startTime, end_time: v.endTime, timezone: v.timezone }))}
+                  />
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">
+                      {lang === 'hi' ? 'पुनर्निर्धारण का कारण (वैकल्पिक)' : 'Reschedule reason (optional)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.reason}
+                      onChange={e => setEditForm(p => ({ ...p, reason: e.target.value }))}
+                      placeholder={lang === 'hi' ? 'जैसे, साधक की उपलब्धता' : 'e.g., seeker availability'}
+                      className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    <Button
+                      onClick={handleReschedule}
+                      disabled={updateSession.isPending}
+                      className="flex-1"
+                    >
+                      {updateSession.isPending
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : (lang === 'hi' ? 'पुनर्निर्धारित करें और भेजें' : 'Reschedule & Notify')}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => setConfirmDelete(true)}
+                      disabled={deleteSession.isPending}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      {lang === 'hi' ? 'हटाएं' : 'Delete'}
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {confirmDelete && (
+                <div className="space-y-3">
+                  <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                    {lang === 'hi'
+                      ? 'क्या आप वाकई इस सत्र को हटाना चाहते हैं? सभी प्रतिभागियों को रद्दीकरण ईमेल भेजा जाएगा।'
+                      : 'Are you sure you want to delete this session? All attendees will receive a cancellation email.'}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" className="flex-1" onClick={() => setConfirmDelete(false)} disabled={deleteSession.isPending}>
+                      {lang === 'hi' ? 'रद्द करें' : 'Cancel'}
+                    </Button>
+                    <Button variant="destructive" className="flex-1" onClick={handleDelete} disabled={deleteSession.isPending}>
+                      {deleteSession.isPending
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : (lang === 'hi' ? 'हाँ, हटाएं' : 'Yes, Delete')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

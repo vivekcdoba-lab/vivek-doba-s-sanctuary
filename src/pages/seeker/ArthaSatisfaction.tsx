@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { formatDateDMY } from "@/lib/dateFormat";
+import { formatDateDMY, toIsoDate } from "@/lib/dateFormat";
 
 const CATEGORIES = ['Product', 'Service', 'Support', 'General'];
 
@@ -17,7 +17,7 @@ export default function ArthaSatisfaction() {
   const { business, isLoading: bLoading } = useBusinessProfile();
   const qc = useQueryClient();
   const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ client_name: '', feedback_date: formatDateDMY(new Date()), rating: 5, feedback_text: '', category: 'General', response_action: '' });
+  const [form, setForm] = useState({ client_name: '', feedback_date: toIsoDate(new Date()), rating: 5, feedback_text: '', category: 'General', response_action: '' });
 
   const { data: feedbacks = [] } = useQuery({
     queryKey: ['client-feedback', business?.id],

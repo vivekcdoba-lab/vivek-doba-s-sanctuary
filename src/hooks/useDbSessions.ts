@@ -183,6 +183,29 @@ export function useUpdateSession() {
   });
 }
 
+export function useDeleteSession() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // Notify attendees about cancellation BEFORE deleting (best-effort)
+      try {
+        await supabase.functions.invoke('send-session-invite', {
+          body: { session_id: id, action: 'cancelled' },
+        });
+      } catch (_) { /* non-blocking */ }
+
+      // Remove dependent participants first to avoid FK errors
+      await supabase.from('session_participants').delete().eq('session_id', id);
+      const { error } = await supabase.from('sessions').delete().eq('id', id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['db-sessions'] });
+    },
+  });
+}
+
 export function useResendSessionInvite() {
   return useMutation({
     mutationFn: async (session_id: string) => {

@@ -64,3 +64,17 @@ export function formatDateTimeDMY(
   const mm = String(d.getMinutes()).padStart(2, '0');
   return `${datePart} • ${hh}:${mm}`;
 }
+
+/**
+ * ISO date key "YYYY-MM-DD" — for DB columns, query keys, comparisons, and
+ * <input type="date"> values. NEVER for user display.
+ */
+export function toIsoDate(input: string | Date | number | null | undefined): string {
+  const d = toDate(input);
+  if (!d) return '';
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+

@@ -15,7 +15,7 @@ import {
   PieChart, Pie, Cell, BarChart, Bar,
 } from 'recharts';
 
-import { formatDateDMY } from "@/lib/dateFormat";
+import { formatDateDMY, toIsoDate } from "@/lib/dateFormat";
 const STAGES = [
   { key: 'awakening', label: 'Awakening', emoji: '🌅', day: 0 },
   { key: 'tapasya', label: 'Tapasya', emoji: '🔥', day: 21 },
