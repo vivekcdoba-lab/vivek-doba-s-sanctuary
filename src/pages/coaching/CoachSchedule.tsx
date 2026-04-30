@@ -409,6 +409,30 @@ export default function CoachSchedule() {
                 {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'मोड' : 'Mode'}</label>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                <button type="button"
+                  onClick={() => setNewForm(p => ({ ...p, location_type: 'online' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newForm.location_type === 'online' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  🎥 {lang === 'hi' ? 'ऑनलाइन' : 'Online'}
+                </button>
+                <button type="button"
+                  onClick={() => setNewForm(p => ({ ...p, location_type: 'in_person', meeting_link: '' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newForm.location_type === 'in_person' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  📍 {lang === 'hi' ? 'व्यक्तिगत' : 'In-Person'}
+                </button>
+              </div>
+            </div>
+            {newForm.location_type === 'online' && (
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'मीटिंग लिंक' : 'Meeting Link'}</label>
+                <input type="url" value={newForm.meeting_link}
+                  onChange={e => setNewForm(p => ({ ...p, meeting_link: e.target.value }))}
+                  placeholder="https://meet.google.com/… or Zoom link"
+                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
+              </div>
+            )}
             <DateTimeTzInput
               date={newForm.date}
               startTime={newForm.start_time}
