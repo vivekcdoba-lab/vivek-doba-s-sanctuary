@@ -68,7 +68,7 @@ export default function CoachSchedule() {
   const [dragSession, setDragSession] = useState<string | null>(null);
 
   const defaultTz = useMemo(() => detectBrowserTz(), []);
-  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '', timezone: defaultTz });
+  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '', timezone: defaultTz, location_type: 'online' as 'online' | 'in_person', meeting_link: '' });
   const [blockForm, setBlockForm] = useState({ title: '', date: '', start_time: '12:00', end_time: '13:00', timezone: defaultTz });
 
   // Calendar events for blocked time
