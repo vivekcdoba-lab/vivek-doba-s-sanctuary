@@ -1,27 +1,30 @@
-## Add "Session Mode" dropdown to New Session
+## Default Zoom meeting link for Online sessions
 
-Add an Online / In-Person selector to the **New Session** dialog in `src/pages/coaching/CoachSchedule.tsx`, plus a conditional Meeting Link field when Online is chosen. The value flows through to the existing `location_type` and `meeting_link` columns on `sessions` (already supported by `useCreateSession`), so no DB or hook changes are needed.
+Make the New Session dialog auto-fill the meeting link with your standard Zoom URL when Online is chosen, while still letting the coach override it with a different link.
 
 ### Changes — `src/pages/coaching/CoachSchedule.tsx`
 
-1. **Form state (line 71)** — extend `newForm` with:
-   - `location_type: 'online' | 'in_person'` (default `'online'`)
-   - `meeting_link: string` (default `''`)
-
-2. **UI (between Course select and `DateTimeTzInput`, ~line 409)** — add a two-button toggle styled to match the existing "Session Type" toggle:
+1. **Add constant** near the top of the file (after imports):
+   ```ts
+   const DEFAULT_ZOOM_LINK = 'https://us06web.zoom.us/j/86310221885?pwd=LdIaVqMxx7tbavIqggTVegh01kL8HB.1';
    ```
-   🎥 Online    |    📍 In-Person
-   ```
-   When `online`, show a Meeting Link input (optional, placeholder "https://meet… or Zoom link"). When `in_person`, hide the link field.
 
-3. **Submit (`handleCreateSession`, line 173)** — pass `location_type` and `meeting_link` (only if non-empty) into `createSession.mutate(...)`.
+2. **Form state (line 71)** — initialize `meeting_link: DEFAULT_ZOOM_LINK` (instead of `''`). Same for the reset on line 191 and when switching back to `online` mode.
 
-4. **Reset (line 189)** — include `location_type: 'online'`, `meeting_link: ''` in the post-save reset.
+3. **Online/In-Person toggle (lines 416–422)**:
+   - When user clicks **Online** → set `meeting_link: DEFAULT_ZOOM_LINK` (only if currently empty, so we don't clobber a custom one they typed earlier).
+   - When user clicks **In-Person** → keep existing behavior (clear `meeting_link`).
 
-### Bilingual labels
-Add to the `L` map: `mode` (Mode / मोड), `online` (Online / ऑनलाइन), `inPerson` (In-Person / व्यक्तिगत), `meetingLink` (Meeting Link / मीटिंग लिंक).
+4. **Meeting Link section (lines 427–435)** — replace the single input with a two-mode UI:
+   - Radio/segmented toggle: **Use default Zoom link** | **Use custom link**
+   - When "default" is selected: show the default URL as read-only text (with a small "Copy" link) and store `DEFAULT_ZOOM_LINK` in state.
+   - When "custom" is selected: show the existing URL input, pre-filled empty, for the coach to paste their own (Google Meet, alternate Zoom, etc.).
+   - Track the choice with a small local `linkMode: 'default' | 'custom'` state (does not need to persist to DB — only `meeting_link` is saved).
 
-### Out of scope (kept as-is)
-- "Block Time" dialog — not a session, no mode needed.
-- DB schema and `useCreateSession` already accept `location_type` + `meeting_link`; calendar invite (`send-session-invite`) already renders the right "Location" line based on these fields.
-- No changes to existing rendering of past/scheduled sessions.
+5. **Bilingual labels** to add to `L`: `useDefaultLink` (Use default Zoom link / डिफ़ॉल्ट ज़ूम लिंक का उपयोग करें), `useCustomLink` (Use custom link / कस्टम लिंक का उपयोग करें), `defaultZoom` (Default Zoom Room / डिफ़ॉल्ट ज़ूम रूम).
+
+### Out of scope
+- No DB schema change — `sessions.meeting_link` already stores whatever URL is chosen.
+- Edge function `send-session-invite` already uses `meeting_link` for the calendar `LOCATION` and email body, so the default link will flow through automatically.
+- "Block Time" dialog unchanged.
+- Existing/past sessions unchanged.
