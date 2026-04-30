@@ -22,6 +22,9 @@ export interface DbSession {
   seeker_mood: string | null;
   attendance: string | null;
   pillar: string | null;
+  start_at: string | null;
+  end_at: string | null;
+  timezone: string | null;
   created_at: string;
 }
 
