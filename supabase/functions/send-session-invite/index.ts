@@ -4,6 +4,14 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendEmail } from "../_shared/send-email.ts";
+import { formatDateDMY, type Lang } from "../_shared/date-format.ts";
+
+// In-person venue location (Google Maps deep link)
+const IN_PERSON_VENUE_MAP_URL = "https://maps.app.goo.gl/eAj5thQ2aSDJs4827";
+// Default fallback Zoom link (kept in sync with CoachSchedule.tsx)
+const DEFAULT_ZOOM_LINK = "https://us06web.zoom.us/j/86310221885?pwd=LdIaVqMxx7tbavIqggTVegh01kL8HB.1";
+// Public app base
+const APP_BASE_URL = "https://vivekdoba.com";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
