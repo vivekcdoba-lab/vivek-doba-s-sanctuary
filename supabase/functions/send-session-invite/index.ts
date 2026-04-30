@@ -272,7 +272,7 @@ Deno.serve(async (req: Request) => {
     const html = `
       <div style="font-family: Inter, system-ui, sans-serif; max-width: 560px; margin: 0 auto; color:#1f2937">
         <h2 style="color:#FF6B00; margin-bottom: 4px">${escapeIcs(summary)}</h2>
-        <p style="margin: 4px 0; color:#6b7280">${session.date} • ${session.start_time?.slice(0, 5)} – ${session.end_time?.slice(0, 5)} IST</p>
+        <p style="margin: 4px 0; color:#6b7280">${session.date} • ${session.start_time?.slice(0, 5)} – ${session.end_time?.slice(0, 5)} ${session.timezone || 'Asia/Kolkata'} <em style="color:#9ca3af">(your calendar will show this in your local timezone)</em></p>
         <p>${isCancel ? "This session has been cancelled." : action === "rescheduled" ? "Your session time has been updated." : "You have a new coaching session scheduled."}</p>
         <p><strong>Location:</strong> ${escapeIcs(location)}</p>
         ${coach?.full_name ? `<p><strong>Coach:</strong> ${escapeIcs(coach.full_name)}</p>` : ""}
