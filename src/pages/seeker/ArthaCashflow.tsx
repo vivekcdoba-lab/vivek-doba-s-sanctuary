@@ -11,7 +11,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import ChartWrapper from '@/components/charts/ChartWrapper';
 import { CHART_COLORS } from '@/components/charts/chartColors';
 import { format } from 'date-fns';
-import { formatDateDMY } from "@/lib/dateFormat";
+import { formatDateDMY, toIsoDate } from "@/lib/dateFormat";
 
 const INFLOW_CATS = ['Sales', 'Investment', 'Loan', 'Refund', 'Other'];
 const OUTFLOW_CATS = ['Salary', 'Rent', 'Inventory', 'Marketing', 'Utilities', 'Tax', 'Other'];

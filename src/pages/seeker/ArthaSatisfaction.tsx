@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { formatDateDMY } from "@/lib/dateFormat";
+import { formatDateDMY, toIsoDate } from "@/lib/dateFormat";
 
 const CATEGORIES = ['Product', 'Service', 'Support', 'General'];
 
