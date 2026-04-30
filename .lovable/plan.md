@@ -1,30 +1,16 @@
-## Default Zoom meeting link for Online sessions
+## Goal
+Replace the single-line truncated Zoom link display with a 3-line wrapped read-only text box, so the full URL is visible without overlapping the Copy button and the dialog naturally aligns.
 
-Make the New Session dialog auto-fill the meeting link with your standard Zoom URL when Online is chosen, while still letting the coach override it with a different link.
+## Change
+In `src/pages/coaching/CoachSchedule.tsx`, inside the "default" `linkMode` branch (around lines 446–456):
 
-### Changes — `src/pages/coaching/CoachSchedule.tsx`
+- Switch the layout from a horizontal `flex` row (link + Copy button on the same line) to a vertical stack:
+  - A read-only `<textarea>` showing `DEFAULT_ZOOM_LINK`, with `rows={3}`, `readOnly`, `wrap="soft"`, full-width, small font, muted background, `break-all` so the URL wraps cleanly across 3 lines.
+  - A `Copy` button placed below the textarea, right-aligned, keeping the existing copy-to-clipboard handler and bilingual label (`कॉपी` / `Copy`).
+- Remove the `truncate` / `min-w-0` flex hacks that caused the overlap.
+- Custom-link branch (URL `<input>`) stays unchanged.
 
-1. **Add constant** near the top of the file (after imports):
-   ```ts
-   const DEFAULT_ZOOM_LINK = 'https://us06web.zoom.us/j/86310221885?pwd=LdIaVqMxx7tbavIqggTVegh01kL8HB.1';
-   ```
+No other logic, state, or translations change. This naturally fixes the alignment in the New Session dialog.
 
-2. **Form state (line 71)** — initialize `meeting_link: DEFAULT_ZOOM_LINK` (instead of `''`). Same for the reset on line 191 and when switching back to `online` mode.
-
-3. **Online/In-Person toggle (lines 416–422)**:
-   - When user clicks **Online** → set `meeting_link: DEFAULT_ZOOM_LINK` (only if currently empty, so we don't clobber a custom one they typed earlier).
-   - When user clicks **In-Person** → keep existing behavior (clear `meeting_link`).
-
-4. **Meeting Link section (lines 427–435)** — replace the single input with a two-mode UI:
-   - Radio/segmented toggle: **Use default Zoom link** | **Use custom link**
-   - When "default" is selected: show the default URL as read-only text (with a small "Copy" link) and store `DEFAULT_ZOOM_LINK` in state.
-   - When "custom" is selected: show the existing URL input, pre-filled empty, for the coach to paste their own (Google Meet, alternate Zoom, etc.).
-   - Track the choice with a small local `linkMode: 'default' | 'custom'` state (does not need to persist to DB — only `meeting_link` is saved).
-
-5. **Bilingual labels** to add to `L`: `useDefaultLink` (Use default Zoom link / डिफ़ॉल्ट ज़ूम लिंक का उपयोग करें), `useCustomLink` (Use custom link / कस्टम लिंक का उपयोग करें), `defaultZoom` (Default Zoom Room / डिफ़ॉल्ट ज़ूम रूम).
-
-### Out of scope
-- No DB schema change — `sessions.meeting_link` already stores whatever URL is chosen.
-- Edge function `send-session-invite` already uses `meeting_link` for the calendar `LOCATION` and email body, so the default link will flow through automatically.
-- "Block Time" dialog unchanged.
-- Existing/past sessions unchanged.
+## Files
+- `src/pages/coaching/CoachSchedule.tsx` (only the default-link display block)
