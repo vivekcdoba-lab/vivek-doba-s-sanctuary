@@ -392,23 +392,21 @@ export default function CoachSchedule() {
                 {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">{t('date')}</label>
-              <input type="date" value={newForm.date} onChange={e => setNewForm(p => ({ ...p, date: e.target.value }))}
-                className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">{t('start')}</label>
-                <input type="time" value={newForm.start_time} onChange={e => setNewForm(p => ({ ...p, start_time: e.target.value }))}
-                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">{t('end')}</label>
-                <input type="time" value={newForm.end_time} onChange={e => setNewForm(p => ({ ...p, end_time: e.target.value }))}
-                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-              </div>
-            </div>
+            <DateTimeTzInput
+              date={newForm.date}
+              startTime={newForm.start_time}
+              endTime={newForm.end_time}
+              timezone={newForm.timezone}
+              onChange={(v) =>
+                setNewForm((p) => ({
+                  ...p,
+                  date: v.date,
+                  start_time: v.startTime,
+                  end_time: v.endTime,
+                  timezone: v.timezone,
+                }))
+              }
+            />
             <Button className="w-full" onClick={handleCreateSession} disabled={createSession.isPending}>
               {createSession.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               {t('save')}
@@ -427,23 +425,21 @@ export default function CoachSchedule() {
               <input type="text" value={blockForm.title} onChange={e => setBlockForm(p => ({ ...p, title: e.target.value }))}
                 placeholder="e.g., Lunch break" className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
             </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">{t('date')}</label>
-              <input type="date" value={blockForm.date} onChange={e => setBlockForm(p => ({ ...p, date: e.target.value }))}
-                className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">{t('start')}</label>
-                <input type="time" value={blockForm.start_time} onChange={e => setBlockForm(p => ({ ...p, start_time: e.target.value }))}
-                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">{t('end')}</label>
-                <input type="time" value={blockForm.end_time} onChange={e => setBlockForm(p => ({ ...p, end_time: e.target.value }))}
-                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-              </div>
-            </div>
+            <DateTimeTzInput
+              date={blockForm.date}
+              startTime={blockForm.start_time}
+              endTime={blockForm.end_time}
+              timezone={blockForm.timezone}
+              onChange={(v) =>
+                setBlockForm((p) => ({
+                  ...p,
+                  date: v.date,
+                  start_time: v.startTime,
+                  end_time: v.endTime,
+                  timezone: v.timezone,
+                }))
+              }
+            />
             <Button className="w-full" onClick={() => blockForm.date && createBlockedTime.mutate(blockForm)}>
               {t('save')}
             </Button>
