@@ -391,7 +391,9 @@ export default function CoachSchedule() {
                         ))}
                         {dayS.map(s => (
                           <div key={s.id} draggable onDragStart={() => setDragSession(s.id)}
-                            className={`absolute inset-x-0.5 top-0.5 rounded text-[10px] p-1 cursor-move border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}
+                            onClick={(e) => { e.stopPropagation(); openSessionEditor(s); }}
+                            title={lang === 'hi' ? 'पुनर्निर्धारित या हटाएं' : 'Reschedule or delete'}
+                            className={`absolute inset-x-0.5 top-0.5 rounded text-[10px] p-1 cursor-pointer hover:ring-2 hover:ring-primary/40 border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}
                             style={{ minHeight: 24 }}>
                             <div className="font-medium truncate">{seekerName(s.seeker_id)}</div>
                             <div className="opacity-75">
