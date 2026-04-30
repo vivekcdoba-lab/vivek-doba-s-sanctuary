@@ -15,6 +15,8 @@ import { toast } from 'sonner';
 import DateTimeTzInput, { toUtcIso } from '@/components/common/DateTimeTzInput';
 import { detectBrowserTz } from '@/lib/timezones';
 
+const DEFAULT_ZOOM_LINK = 'https://us06web.zoom.us/j/86310221885?pwd=LdIaVqMxx7tbavIqggTVegh01kL8HB.1';
+
 const L = {
   title: { en: 'Schedule', hi: 'अनुसूची' },
   day: { en: 'Day', hi: 'दिन' },
