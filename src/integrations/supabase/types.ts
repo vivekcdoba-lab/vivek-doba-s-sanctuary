@@ -856,11 +856,14 @@ export type Database = {
           color: string | null
           created_at: string
           date: string
+          end_at: string | null
           end_time: string
           id: string
           notes: string | null
           seeker_id: string | null
+          start_at: string | null
           start_time: string
+          timezone: string | null
           title: string
           type: string
           updated_at: string
@@ -869,11 +872,14 @@ export type Database = {
           color?: string | null
           created_at?: string
           date: string
+          end_at?: string | null
           end_time: string
           id?: string
           notes?: string | null
           seeker_id?: string | null
+          start_at?: string | null
           start_time: string
+          timezone?: string | null
           title: string
           type?: string
           updated_at?: string
@@ -882,11 +888,14 @@ export type Database = {
           color?: string | null
           created_at?: string
           date?: string
+          end_at?: string | null
           end_time?: string
           id?: string
           notes?: string | null
           seeker_id?: string | null
+          start_at?: string | null
           start_time?: string
+          timezone?: string | null
           title?: string
           type?: string
           updated_at?: string
@@ -3142,6 +3151,7 @@ export type Database = {
           role: string
           state: string | null
           team_size: number | null
+          timezone: string | null
           updated_at: string
           user_id: string
           whatsapp: string | null
@@ -3198,6 +3208,7 @@ export type Database = {
           role?: string
           state?: string | null
           team_size?: number | null
+          timezone?: string | null
           updated_at?: string
           user_id: string
           whatsapp?: string | null
@@ -3254,6 +3265,7 @@ export type Database = {
           role?: string
           state?: string | null
           team_size?: number | null
+          timezone?: string | null
           updated_at?: string
           user_id?: string
           whatsapp?: string | null
@@ -4162,6 +4174,7 @@ export type Database = {
           created_at: string
           date: string
           duration_minutes: number | null
+          end_at: string | null
           end_time: string
           engagement_score: number | null
           id: string
@@ -4190,11 +4203,13 @@ export type Database = {
           session_notes: string | null
           session_number: number
           session_type: string | null
+          start_at: string | null
           start_time: string
           status: string
           stories_used: Json | null
           targets: string | null
           therapy_given: string | null
+          timezone: string | null
           topics_covered: Json | null
           updated_at: string
         }
@@ -4208,6 +4223,7 @@ export type Database = {
           created_at?: string
           date: string
           duration_minutes?: number | null
+          end_at?: string | null
           end_time: string
           engagement_score?: number | null
           id?: string
@@ -4236,11 +4252,13 @@ export type Database = {
           session_notes?: string | null
           session_number?: number
           session_type?: string | null
+          start_at?: string | null
           start_time: string
           status?: string
           stories_used?: Json | null
           targets?: string | null
           therapy_given?: string | null
+          timezone?: string | null
           topics_covered?: Json | null
           updated_at?: string
         }
@@ -4254,6 +4272,7 @@ export type Database = {
           created_at?: string
           date?: string
           duration_minutes?: number | null
+          end_at?: string | null
           end_time?: string
           engagement_score?: number | null
           id?: string
@@ -4282,11 +4301,13 @@ export type Database = {
           session_notes?: string | null
           session_number?: number
           session_type?: string | null
+          start_at?: string | null
           start_time?: string
           status?: string
           stories_used?: Json | null
           targets?: string | null
           therapy_given?: string | null
+          timezone?: string | null
           topics_covered?: Json | null
           updated_at?: string
         }
