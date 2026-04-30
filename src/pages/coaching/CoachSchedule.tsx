@@ -70,11 +70,11 @@ export default function CoachSchedule() {
   const [showNewSession, setShowNewSession] = useState(false);
   const [showBlockTime, setShowBlockTime] = useState(false);
   const [dragSession, setDragSession] = useState<string | null>(null);
+
+  const defaultTz = useMemo(() => detectBrowserTz(), []);
   const [editSession, setEditSession] = useState<any | null>(null);
   const [editForm, setEditForm] = useState({ date: '', start_time: '10:00', end_time: '11:00', timezone: defaultTz, reason: '' });
   const [confirmDelete, setConfirmDelete] = useState(false);
-
-  const defaultTz = useMemo(() => detectBrowserTz(), []);
   const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '', timezone: defaultTz, location_type: 'in_person' as 'online' | 'in_person', meeting_link: '' });
   const [linkMode, setLinkMode] = useState<'default' | 'custom'>('default');
   const [blockForm, setBlockForm] = useState({ title: '', date: '', start_time: '12:00', end_time: '13:00', timezone: defaultTz });
