@@ -1,13 +1,13 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useCoachingLang } from '@/components/CoachingLayout';
-import { useDbSessions, useCreateSession, useUpdateSession, useCoaches } from '@/hooks/useDbSessions';
+import { useDbSessions, useCreateSession, useUpdateSession, useCoaches, useDeleteSession } from '@/hooks/useDbSessions';
 import { useAuthStore } from '@/store/authStore';
 import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays, subDays, startOfWeek, endOfWeek, addWeeks, subWeeks, addMonths, subMonths, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus, X, Loader2, Lock, CalendarDays } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Loader2, Lock, CalendarDays, Trash2, CalendarClock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +59,7 @@ export default function CoachSchedule() {
   const { data: coaches = [] } = useCoaches();
   const createSession = useCreateSession();
   const updateSession = useUpdateSession();
+  const deleteSession = useDeleteSession();
   const queryClient = useQueryClient();
 
   const isAdmin = profile?.role === 'admin';
@@ -69,6 +70,9 @@ export default function CoachSchedule() {
   const [showNewSession, setShowNewSession] = useState(false);
   const [showBlockTime, setShowBlockTime] = useState(false);
   const [dragSession, setDragSession] = useState<string | null>(null);
+  const [editSession, setEditSession] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ date: '', start_time: '10:00', end_time: '11:00', timezone: defaultTz, reason: '' });
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const defaultTz = useMemo(() => detectBrowserTz(), []);
   const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '', timezone: defaultTz, location_type: 'in_person' as 'online' | 'in_person', meeting_link: '' });
