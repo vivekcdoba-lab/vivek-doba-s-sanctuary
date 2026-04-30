@@ -152,7 +152,10 @@ const SeekerLiveSession = () => {
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="font-medium">{s.session_name || `Session #${s.session_number}`}</p>
-                  <p className="text-sm text-muted-foreground">{format(parseISO(s.date), 'EEE, MMM d')} • {s.start_time?.slice(0,5)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {format(parseISO(s.date), 'EEE, MMM d')} •{' '}
+                    <LocalTime startAt={s.start_at} sessionTz={s.timezone} fallbackTime={s.start_time} />
+                  </p>
                 </div>
                 <Badge variant="outline">{s.location_type || 'online'}</Badge>
               </CardContent>
