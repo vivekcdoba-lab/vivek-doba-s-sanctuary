@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useDbSessions } from '@/hooks/useDbSessions';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
+import LocalTime from '@/components/common/LocalTime';
 
 const QUICK_MESSAGES = [
   '🎉 Great job on your streak!',
@@ -40,7 +41,9 @@ export default function CoachActionCenter() {
           <p className="text-xs font-semibold text-foreground mb-2">📅 TODAY'S SESSIONS ({todaySessions.length}):</p>
           {todaySessions.length > 0 ? todaySessions.map(s => (
             <div key={s.id} className="flex items-center justify-between py-1.5 text-sm">
-              <span className="text-foreground">{s.start_time} - Session #{s.session_number}</span>
+              <span className="text-foreground">
+                <LocalTime startAt={s.start_at} sessionTz={s.timezone} fallbackTime={s.start_time} /> - Session #{s.session_number}
+              </span>
               {s.meeting_link && (
                 <a href={s.meeting_link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary font-medium">🎥 Join</a>
               )}
