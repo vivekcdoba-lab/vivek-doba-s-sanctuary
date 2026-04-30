@@ -29,9 +29,19 @@ const UpcomingSessionsWidget = ({ sessions, basePath = '/seeker/upcoming-session
         <div className="space-y-3">
           {upcoming.map((s) => (
             <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30">
-              <div className="text-center min-w-[50px]">
-                <p className="text-sm font-bold text-foreground">{s.start_time}</p>
+              <div className="text-center min-w-[60px]">
+                <p className="text-sm font-bold text-foreground">
+                  <LocalTime
+                    startAt={s.start_at}
+                    sessionTz={s.timezone}
+                    fallbackTime={s.start_time}
+                    showHint={false}
+                  />
+                </p>
                 <p className="text-[10px] text-muted-foreground">{s.date}</p>
+                {s.start_at && s.timezone && s.timezone !== Intl.DateTimeFormat().resolvedOptions().timeZone && (
+                  <p className="text-[9px] text-muted-foreground">({s.timezone.split('/').pop()})</p>
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-foreground truncate">Session #{s.session_number}</p>
