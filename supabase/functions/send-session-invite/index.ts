@@ -26,12 +26,22 @@ function escapeIcs(s: string): string {
 }
 
 function toIcsDate(date: string, time: string): string {
-  // date: YYYY-MM-DD, time: HH:MM[:SS] — emit floating local time with TZID=Asia/Kolkata
+  // Floating local time fallback (legacy rows without start_at).
   const t = (time || "00:00").split(":");
   const hh = (t[0] || "00").padStart(2, "0");
   const mm = (t[1] || "00").padStart(2, "0");
   const ss = (t[2] || "00").padStart(2, "0");
   return `${date.replace(/-/g, "")}T${hh}${mm}${ss}`;
+}
+
+function toIcsUtc(iso: string): string {
+  // YYYYMMDDTHHMMSSZ from a UTC ISO timestamp.
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}` +
+    `T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`
+  );
 }
 
 function nowUtcStamp(): string {
@@ -49,12 +59,18 @@ function buildIcs(opts: {
   date: string;
   start_time: string;
   end_time: string;
+  start_at?: string | null;
+  end_at?: string | null;
   organizerEmail: string;
   organizerName: string;
   attendees: { name: string; email: string }[];
 }): string {
-  const dtStart = toIcsDate(opts.date, opts.start_time);
-  const dtEnd = toIcsDate(opts.date, opts.end_time);
+  // Prefer absolute UTC from start_at/end_at so calendar clients render in the
+  // recipient's local timezone automatically. Fall back to TZID=Asia/Kolkata
+  // floating time for legacy rows that pre-date timezone support.
+  const useUtc = !!(opts.start_at && opts.end_at);
+  const dtStart = useUtc ? toIcsUtc(opts.start_at!) : toIcsDate(opts.date, opts.start_time);
+  const dtEnd = useUtc ? toIcsUtc(opts.end_at!) : toIcsDate(opts.date, opts.end_time);
   const dtStamp = nowUtcStamp();
   const attendeeLines = opts.attendees
     .filter((a) => a.email)
@@ -64,27 +80,33 @@ function buildIcs(opts: {
     )
     .join("\r\n");
 
+  const tzBlock = useUtc
+    ? []
+    : [
+        "BEGIN:VTIMEZONE",
+        "TZID:Asia/Kolkata",
+        "BEGIN:STANDARD",
+        "DTSTART:19700101T000000",
+        "TZOFFSETFROM:+0530",
+        "TZOFFSETTO:+0530",
+        "TZNAME:IST",
+        "END:STANDARD",
+        "END:VTIMEZONE",
+      ];
+
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//Vivek Doba Training Solutions//Sessions//EN",
     "CALSCALE:GREGORIAN",
     `METHOD:${opts.method}`,
-    "BEGIN:VTIMEZONE",
-    "TZID:Asia/Kolkata",
-    "BEGIN:STANDARD",
-    "DTSTART:19700101T000000",
-    "TZOFFSETFROM:+0530",
-    "TZOFFSETTO:+0530",
-    "TZNAME:IST",
-    "END:STANDARD",
-    "END:VTIMEZONE",
+    ...tzBlock,
     "BEGIN:VEVENT",
     `UID:${opts.uid}`,
     `SEQUENCE:${opts.sequence}`,
     `DTSTAMP:${dtStamp}`,
-    `DTSTART;TZID=Asia/Kolkata:${dtStart}`,
-    `DTEND;TZID=Asia/Kolkata:${dtEnd}`,
+    useUtc ? `DTSTART:${dtStart}` : `DTSTART;TZID=Asia/Kolkata:${dtStart}`,
+    useUtc ? `DTEND:${dtEnd}` : `DTEND;TZID=Asia/Kolkata:${dtEnd}`,
     `SUMMARY:${escapeIcs(opts.summary)}`,
     `DESCRIPTION:${escapeIcs(opts.description)}`,
     `LOCATION:${escapeIcs(opts.location)}`,
@@ -232,6 +254,8 @@ Deno.serve(async (req: Request) => {
       date: session.date,
       start_time: session.start_time,
       end_time: session.end_time,
+      start_at: session.start_at,
+      end_at: session.end_at,
       organizerEmail: "info@vivekdoba.com",
       organizerName: "Vivek Doba Training Solutions",
       attendees,
@@ -248,7 +272,7 @@ Deno.serve(async (req: Request) => {
     const html = `
       <div style="font-family: Inter, system-ui, sans-serif; max-width: 560px; margin: 0 auto; color:#1f2937">
         <h2 style="color:#FF6B00; margin-bottom: 4px">${escapeIcs(summary)}</h2>
-        <p style="margin: 4px 0; color:#6b7280">${session.date} • ${session.start_time?.slice(0, 5)} – ${session.end_time?.slice(0, 5)} IST</p>
+        <p style="margin: 4px 0; color:#6b7280">${session.date} • ${session.start_time?.slice(0, 5)} – ${session.end_time?.slice(0, 5)} ${session.timezone || 'Asia/Kolkata'} <em style="color:#9ca3af">(your calendar will show this in your local timezone)</em></p>
         <p>${isCancel ? "This session has been cancelled." : action === "rescheduled" ? "Your session time has been updated." : "You have a new coaching session scheduled."}</p>
         <p><strong>Location:</strong> ${escapeIcs(location)}</p>
         ${coach?.full_name ? `<p><strong>Coach:</strong> ${escapeIcs(coach.full_name)}</p>` : ""}

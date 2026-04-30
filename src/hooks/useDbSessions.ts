@@ -22,6 +22,9 @@ export interface DbSession {
   seeker_mood: string | null;
   attendance: string | null;
   pillar: string | null;
+  start_at: string | null;
+  end_at: string | null;
+  timezone: string | null;
   created_at: string;
 }
 
@@ -94,6 +97,12 @@ export function useCreateSession() {
       coach_id?: string;
       session_type?: 'individual' | 'couple' | 'group';
       partner_seeker_id?: string;
+      /** UTC ISO timestamp; if provided, takes precedence over date/start_time. */
+      start_at?: string | null;
+      /** UTC ISO timestamp. */
+      end_at?: string | null;
+      /** IANA timezone the scheduler used (e.g. 'Asia/Kolkata'). */
+      timezone?: string | null;
     }) => {
       const sessionType = session.session_type || 'individual';
       const { data, error } = await supabase.from('sessions').insert({
@@ -109,6 +118,9 @@ export function useCreateSession() {
         session_notes: session.session_notes || null,
         coach_id: session.coach_id || null,
         session_type: sessionType,
+        start_at: session.start_at ?? null,
+        end_at: session.end_at ?? null,
+        timezone: session.timezone ?? null,
       } as any).select().single();
       if (error) throw error;
 

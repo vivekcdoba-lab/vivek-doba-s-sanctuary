@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import DateTimeTzInput, { toUtcIso } from '@/components/common/DateTimeTzInput';
+import { detectBrowserTz } from '@/lib/timezones';
 
 const L = {
   title: { en: 'Schedule', hi: 'अनुसूची' },
@@ -65,8 +67,9 @@ export default function CoachSchedule() {
   const [showBlockTime, setShowBlockTime] = useState(false);
   const [dragSession, setDragSession] = useState<string | null>(null);
 
-  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '' });
-  const [blockForm, setBlockForm] = useState({ title: '', date: '', start_time: '12:00', end_time: '13:00' });
+  const defaultTz = useMemo(() => detectBrowserTz(), []);
+  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '', timezone: defaultTz });
+  const [blockForm, setBlockForm] = useState({ title: '', date: '', start_time: '12:00', end_time: '13:00', timezone: defaultTz });
 
   // Calendar events for blocked time
   const { data: calEvents = [] } = useQuery({
@@ -79,19 +82,24 @@ export default function CoachSchedule() {
 
   const createBlockedTime = useMutation({
     mutationFn: async (evt: typeof blockForm) => {
+      const startAt = toUtcIso(evt.date, evt.start_time, evt.timezone);
+      const endAt = toUtcIso(evt.date, evt.end_time, evt.timezone);
       const { error } = await supabase.from('calendar_events').insert({
         title: evt.title || 'Blocked',
         type: 'blocked',
         date: evt.date,
         start_time: evt.start_time,
         end_time: evt.end_time,
+        start_at: startAt,
+        end_at: endAt,
+        timezone: evt.timezone,
       } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach-cal-events'] });
       setShowBlockTime(false);
-      setBlockForm({ title: '', date: '', start_time: '12:00', end_time: '13:00' });
+      setBlockForm({ title: '', date: '', start_time: '12:00', end_time: '13:00', timezone: defaultTz });
       toast.success('Time blocked');
     },
   });
@@ -117,7 +125,11 @@ export default function CoachSchedule() {
 
   const sessionsForDay = useCallback((day: Date) => {
     const ds = format(day, 'yyyy-MM-dd');
-    return sessions.filter(s => s.date === ds);
+    return sessions.filter(s => {
+      // Prefer start_at so the session falls into the viewer's local day.
+      if (s.start_at) return format(new Date(s.start_at), 'yyyy-MM-dd') === ds;
+      return s.date === ds;
+    });
   }, [sessions]);
 
   const blockedForDay = useCallback((day: Date) => {
@@ -168,10 +180,13 @@ export default function CoachSchedule() {
       status: 'scheduled',
       session_type: newForm.session_type,
       partner_seeker_id: newForm.session_type === 'couple' ? newForm.partner_seeker_id : undefined,
+      start_at: toUtcIso(newForm.date, newForm.start_time, newForm.timezone),
+      end_at: toUtcIso(newForm.date, newForm.end_time, newForm.timezone),
+      timezone: newForm.timezone,
     }, {
       onSuccess: () => {
         setShowNewSession(false);
-        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '' });
+        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '', timezone: defaultTz });
         toast.success(newForm.session_type === 'couple' ? 'Couple session scheduled — invites sent' : 'Session scheduled — invite sent');
       },
     });
@@ -245,7 +260,10 @@ export default function CoachSchedule() {
                     {daySessions.slice(0, 3).map(s => (
                       <div key={s.id} draggable onDragStart={() => setDragSession(s.id)}
                         className={`text-[10px] rounded px-1 py-0.5 truncate cursor-move border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}>
-                        {s.start_time?.slice(0, 5)} {seekerName(s.seeker_id)}
+                        {s.start_at
+                          ? new Date(s.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+                          : s.start_time?.slice(0, 5)}{' '}
+                        {seekerName(s.seeker_id)}
                       </div>
                     ))}
                     {daySessions.length > 3 && (
@@ -281,11 +299,15 @@ export default function CoachSchedule() {
                   <div className="p-1 text-[10px] text-muted-foreground text-right pr-2 pt-0">{formatHour(hour)}</div>
                   {visibleDays.map(day => {
                     const dayS = sessionsForDay(day).filter(s => {
-                      const h = parseInt(s.start_time?.split(':')[0] || '0');
+                      const h = s.start_at
+                        ? new Date(s.start_at).getHours()
+                        : parseInt(s.start_time?.split(':')[0] || '0');
                       return h === hour;
                     });
                     const dayB = blockedForDay(day).filter((e: any) => {
-                      const h = parseInt(e.start_time?.split(':')[0] || '0');
+                      const h = e.start_at
+                        ? new Date(e.start_at).getHours()
+                        : parseInt(e.start_time?.split(':')[0] || '0');
                       return h === hour;
                     });
                     const isToday = isSameDay(day, new Date());
@@ -303,7 +325,11 @@ export default function CoachSchedule() {
                             className={`absolute inset-x-0.5 top-0.5 rounded text-[10px] p-1 cursor-move border ${STATUS_COLORS[s.status] || 'bg-muted border-border'}`}
                             style={{ minHeight: 24 }}>
                             <div className="font-medium truncate">{seekerName(s.seeker_id)}</div>
-                            <div className="opacity-75">{s.start_time?.slice(0, 5)}-{s.end_time?.slice(0, 5)}</div>
+                            <div className="opacity-75">
+                              {s.start_at
+                                ? `${new Date(s.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}-${s.end_at ? new Date(s.end_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : ''}`
+                                : `${s.start_time?.slice(0, 5)}-${s.end_time?.slice(0, 5)}`}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -381,23 +407,21 @@ export default function CoachSchedule() {
                 {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">{t('date')}</label>
-              <input type="date" value={newForm.date} onChange={e => setNewForm(p => ({ ...p, date: e.target.value }))}
-                className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">{t('start')}</label>
-                <input type="time" value={newForm.start_time} onChange={e => setNewForm(p => ({ ...p, start_time: e.target.value }))}
-                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">{t('end')}</label>
-                <input type="time" value={newForm.end_time} onChange={e => setNewForm(p => ({ ...p, end_time: e.target.value }))}
-                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-              </div>
-            </div>
+            <DateTimeTzInput
+              date={newForm.date}
+              startTime={newForm.start_time}
+              endTime={newForm.end_time}
+              timezone={newForm.timezone}
+              onChange={(v) =>
+                setNewForm((p) => ({
+                  ...p,
+                  date: v.date,
+                  start_time: v.startTime,
+                  end_time: v.endTime,
+                  timezone: v.timezone,
+                }))
+              }
+            />
             <Button className="w-full" onClick={handleCreateSession} disabled={createSession.isPending}>
               {createSession.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               {t('save')}
@@ -416,23 +440,21 @@ export default function CoachSchedule() {
               <input type="text" value={blockForm.title} onChange={e => setBlockForm(p => ({ ...p, title: e.target.value }))}
                 placeholder="e.g., Lunch break" className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
             </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground">{t('date')}</label>
-              <input type="date" value={blockForm.date} onChange={e => setBlockForm(p => ({ ...p, date: e.target.value }))}
-                className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">{t('start')}</label>
-                <input type="time" value={blockForm.start_time} onChange={e => setBlockForm(p => ({ ...p, start_time: e.target.value }))}
-                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">{t('end')}</label>
-                <input type="time" value={blockForm.end_time} onChange={e => setBlockForm(p => ({ ...p, end_time: e.target.value }))}
-                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
-              </div>
-            </div>
+            <DateTimeTzInput
+              date={blockForm.date}
+              startTime={blockForm.start_time}
+              endTime={blockForm.end_time}
+              timezone={blockForm.timezone}
+              onChange={(v) =>
+                setBlockForm((p) => ({
+                  ...p,
+                  date: v.date,
+                  start_time: v.startTime,
+                  end_time: v.endTime,
+                  timezone: v.timezone,
+                }))
+              }
+            />
             <Button className="w-full" onClick={() => blockForm.date && createBlockedTime.mutate(blockForm)}>
               {t('save')}
             </Button>
