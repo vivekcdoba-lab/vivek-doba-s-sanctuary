@@ -1,82 +1,61 @@
 ## Problem
 
-Coaches cannot reschedule a session. The toast `record "new" has no field "coach_private_notes"` comes from the Postgres trigger function `public.validate_seeker_session_update`, which runs on every `UPDATE` on `public.sessions`. It tries to do `NEW.coach_private_notes := OLD.coach_private_notes;`, but the `sessions` table has no such column, so the trigger aborts the update.
+Coach-initiated session deletes appear to "succeed" in the UI but the session keeps showing in the calendar. Root cause: the `public.sessions` table has **no DELETE RLS policy for coaches** — only `Admins can manage sessions` covers DELETE. When a coach calls `supabase.from('sessions').delete()`, RLS silently filters out the row (0 affected rows, no error), so the client thinks it worked while the row stays in the DB.
 
-This blocks both the new "Reschedule & Notify" flow and the "Delete" flow on `/coaching/schedule`.
+The current `useDeleteSession` hook also doesn't check the affected-rows count, so the silent block never surfaces as an error.
 
-## Fix
+## Fix (two parts)
 
-Patch the trigger function to remove the reference to the non-existent `coach_private_notes` column. Keep all other guard logic intact (seekers still cannot edit coach-only fields).
+### 1. Database — add DELETE policies (migration)
 
-### Migration
-
-```sql
-CREATE OR REPLACE FUNCTION public.validate_seeker_session_update()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  IF NOT is_admin(auth.uid()) THEN
-    -- Revert any unauthorized field changes by seekers
-    NEW.engagement_score := OLD.engagement_score;
-    NEW.punishments := OLD.punishments;
-    NEW.rewards := OLD.rewards;
-    NEW.key_insights := OLD.key_insights;
-    NEW.breakthroughs := OLD.breakthroughs;
-    NEW.session_notes := OLD.session_notes;
-    NEW.therapy_given := OLD.therapy_given;
-    NEW.targets := OLD.targets;
-    NEW.next_week_assignments := OLD.next_week_assignments;
-    NEW.pending_assignments_review := OLD.pending_assignments_review;
-    NEW.stories_used := OLD.stories_used;
-    NEW.client_good_things := OLD.client_good_things;
-    NEW.client_growth_json := OLD.client_growth_json;
-    NEW.attendance := OLD.attendance;
-    NEW.pillar := OLD.pillar;
-    NEW.session_name := OLD.session_name;
-    NEW.duration_minutes := OLD.duration_minutes;
-    NEW.location_type := OLD.location_type;
-    NEW.meeting_link := OLD.meeting_link;
-    NEW.missed_reason := OLD.missed_reason;
-    NEW.reschedule_reason := OLD.reschedule_reason;
-    NEW.revision_note := OLD.revision_note;
-    NEW.next_session_time := OLD.next_session_time;
-    NEW.major_win := OLD.major_win;
-    NEW.topics_covered := OLD.topics_covered;
-    NEW.course_id := OLD.course_id;
-    NEW.session_number := OLD.session_number;
-    NEW.date := OLD.date;
-    NEW.start_time := OLD.start_time;
-    NEW.end_time := OLD.end_time;
-    NEW.seeker_id := OLD.seeker_id;
-  END IF;
-  RETURN NEW;
-END;
-$$;
-```
-
-### Note
-
-The trigger gates seekers, but coaches/admins doing the reschedule are also subject to it (the admin bypass uses `is_admin`). The function uses `is_admin`, so coach-initiated updates currently take the seeker branch. That branch still reverts critical fields like `date`, `start_time`, `end_time` for non-admins — which would silently undo a coach reschedule.
-
-I'll also extend the bypass so coaches assigned to the session can update scheduling/notes fields. Concretely, replace the guard with:
+Add a coach DELETE policy on `public.sessions` and `public.session_participants` so the coach who owns the session (or is the assigned coach for the seeker) can delete it. Admins keep full access via the existing "Admins can manage sessions" policy. Seekers remain unable to delete.
 
 ```sql
-IF NOT is_admin(auth.uid())
-   AND NOT EXISTS (
-     SELECT 1 FROM public.sessions s
-     WHERE s.id = NEW.id AND s.coach_id = auth.uid()
-   )
-THEN
-  -- existing seeker-revert block (without coach_private_notes)
-END IF;
+DROP POLICY IF EXISTS "Coaches delete their sessions" ON public.sessions;
+CREATE POLICY "Coaches delete their sessions"
+  ON public.sessions
+  FOR DELETE
+  TO authenticated
+  USING (
+    is_admin(auth.uid())
+    OR is_assigned_coach(auth.uid(), seeker_id)
+    OR coach_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
+  );
+
+DROP POLICY IF EXISTS "Coaches delete session participants" ON public.session_participants;
+CREATE POLICY "Coaches delete session participants"
+  ON public.session_participants
+  FOR DELETE
+  TO authenticated
+  USING (
+    is_admin(auth.uid())
+    OR EXISTS (
+      SELECT 1 FROM public.sessions s
+      WHERE s.id = session_participants.session_id
+        AND (
+          is_assigned_coach(auth.uid(), s.seeker_id)
+          OR s.coach_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
+        )
+    )
+  );
 ```
 
-This keeps seekers locked down while letting the assigned coach reschedule, edit notes, and update meeting details. Admins continue to have full access.
+### 2. Client — surface silent RLS blocks (`src/hooks/useDbSessions.ts`)
 
-## Files
+In `useDeleteSession`, change the delete to return the deleted rows and treat 0 rows as an error so the toast actually shows when something is blocked, instead of pretending success.
 
-- New migration adjusting `public.validate_seeker_session_update` (the trigger itself stays bound to `sessions`).
-- No frontend changes required; `CoachSchedule.tsx` reschedule/delete flows will start working once the trigger is fixed.
+```ts
+const { error, data } = await supabase
+  .from('sessions')
+  .delete()
+  .eq('id', id)
+  .select('id');
+if (error) throw error;
+if (!data || data.length === 0) {
+  throw new Error(
+    "Session could not be deleted. You may not have permission to delete this session — please contact an admin."
+  );
+}
+```
+
+No other files need to change. After the migration runs, coach delete from `/coaching/schedule` will remove the session from the calendar immediately (the existing `queryClient.invalidateQueries(['db-sessions'])` already refreshes the view), and any future RLS regression will surface as a visible error instead of a silent no-op.
