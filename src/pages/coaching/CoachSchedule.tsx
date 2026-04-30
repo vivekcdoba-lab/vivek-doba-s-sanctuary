@@ -417,7 +417,7 @@ export default function CoachSchedule() {
               <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'मोड' : 'Mode'}</label>
               <div className="mt-1 grid grid-cols-2 gap-2">
                 <button type="button"
-                  onClick={() => setNewForm(p => ({ ...p, location_type: 'online' }))}
+                  onClick={() => setNewForm(p => ({ ...p, location_type: 'online', meeting_link: linkMode === 'default' ? DEFAULT_ZOOM_LINK : p.meeting_link }))}
                   className={`px-3 py-2 rounded-lg text-sm border transition ${newForm.location_type === 'online' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
                   🎥 {lang === 'hi' ? 'ऑनलाइन' : 'Online'}
                 </button>
@@ -429,12 +429,37 @@ export default function CoachSchedule() {
               </div>
             </div>
             {newForm.location_type === 'online' && (
-              <div>
+              <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'मीटिंग लिंक' : 'Meeting Link'}</label>
-                <input type="url" value={newForm.meeting_link}
-                  onChange={e => setNewForm(p => ({ ...p, meeting_link: e.target.value }))}
-                  placeholder="https://meet.google.com/… or Zoom link"
-                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button"
+                    onClick={() => { setLinkMode('default'); setNewForm(p => ({ ...p, meeting_link: DEFAULT_ZOOM_LINK })); }}
+                    className={`px-3 py-2 rounded-lg text-xs border transition ${linkMode === 'default' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                    {lang === 'hi' ? 'डिफ़ॉल्ट ज़ूम लिंक' : 'Use default Zoom link'}
+                  </button>
+                  <button type="button"
+                    onClick={() => { setLinkMode('custom'); setNewForm(p => ({ ...p, meeting_link: '' })); }}
+                    className={`px-3 py-2 rounded-lg text-xs border transition ${linkMode === 'custom' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                    {lang === 'hi' ? 'कस्टम लिंक' : 'Use custom link'}
+                  </button>
+                </div>
+                {linkMode === 'default' ? (
+                  <div className="flex items-center justify-between gap-2 rounded-lg border border-input bg-muted/40 px-3 py-2 text-xs">
+                    <span className="truncate text-muted-foreground" title={DEFAULT_ZOOM_LINK}>
+                      🔗 {DEFAULT_ZOOM_LINK}
+                    </span>
+                    <button type="button"
+                      onClick={() => { navigator.clipboard?.writeText(DEFAULT_ZOOM_LINK); toast.success(lang === 'hi' ? 'लिंक कॉपी किया गया' : 'Link copied'); }}
+                      className="shrink-0 text-primary hover:underline">
+                      {lang === 'hi' ? 'कॉपी' : 'Copy'}
+                    </button>
+                  </div>
+                ) : (
+                  <input type="url" value={newForm.meeting_link}
+                    onChange={e => setNewForm(p => ({ ...p, meeting_link: e.target.value }))}
+                    placeholder="https://meet.google.com/… or Zoom link"
+                    className="w-full border border-input rounded-lg px-3 py-2 text-sm bg-background" />
+                )}
               </div>
             )}
             <DateTimeTzInput
