@@ -350,7 +350,7 @@ export default function CoachSchedule() {
 
       {/* New Session Dialog */}
       <Dialog open={showNewSession} onOpenChange={setShowNewSession}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{t('newSession')}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
