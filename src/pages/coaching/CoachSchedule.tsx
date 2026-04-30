@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import DateTimeTzInput, { toUtcIso } from '@/components/common/DateTimeTzInput';
+import { detectBrowserTz } from '@/lib/timezones';
 
 const L = {
   title: { en: 'Schedule', hi: 'अनुसूची' },
@@ -65,8 +67,9 @@ export default function CoachSchedule() {
   const [showBlockTime, setShowBlockTime] = useState(false);
   const [dragSession, setDragSession] = useState<string | null>(null);
 
-  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '' });
-  const [blockForm, setBlockForm] = useState({ title: '', date: '', start_time: '12:00', end_time: '13:00' });
+  const defaultTz = useMemo(() => detectBrowserTz(), []);
+  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '', timezone: defaultTz });
+  const [blockForm, setBlockForm] = useState({ title: '', date: '', start_time: '12:00', end_time: '13:00', timezone: defaultTz });
 
   // Calendar events for blocked time
   const { data: calEvents = [] } = useQuery({
