@@ -3,6 +3,7 @@ import BackToHome from '@/components/BackToHome';
 import { Users, Plus, Calendar, Smile, Heart } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 type Entry = { date: string; person: string; score: number; note: string };
 const STORAGE_KEY = 'seeker_kama_family';
@@ -47,7 +48,7 @@ export default function SeekerKamaFamily() {
               <span className="text-sm font-medium text-foreground flex items-center gap-1"><Heart className="w-3 h-3 text-[hsl(var(--lotus-pink))]" />{e.person}</span>
               <span className="text-xs font-medium text-[hsl(var(--lotus-pink))]">{e.score}/10</span>
             </div>
-            <p className="text-[10px] text-muted-foreground mb-1">{format(new Date(e.date), 'MMM dd, yyyy')}</p>
+            <p className="text-[10px] text-muted-foreground mb-1">{formatDateDMY(new Date(e.date))}</p>
             {e.note && <p className="text-xs text-muted-foreground">{e.note}</p>}
           </div>
         ))}

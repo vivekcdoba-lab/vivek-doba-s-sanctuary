@@ -10,6 +10,7 @@ import SwotResults from './SwotResults';
 import SwotActionPlan from './SwotActionPlan';
 import SwotHistory from './SwotHistory';
 import { useSwotAssessment, SwotAssessment } from '@/hooks/useSwotAssessment';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Props {
   onClose?: () => void;
@@ -71,7 +72,7 @@ const SwotFullExperience = ({ onClose }: Props) => {
           </p>
           {previousAssessment && (
             <p className="text-xs text-muted-foreground mt-1">
-              Last Assessment: {format(new Date(previousAssessment.created_at), 'MMM d, yyyy')} | Balance: {previousAssessment.balance_score?.toFixed(0)}%
+              Last Assessment: {formatDateDMY(new Date(previousAssessment.created_at))} | Balance: {previousAssessment.balance_score?.toFixed(0)}%
             </p>
           )}
         </div>

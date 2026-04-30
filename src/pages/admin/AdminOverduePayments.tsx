@@ -6,6 +6,7 @@ import { usePayments } from '@/hooks/usePayments';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { AlertTriangle, Clock } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const AdminOverduePayments = () => {
   const { payments, isLoading } = usePayments();
@@ -28,7 +29,7 @@ const AdminOverduePayments = () => {
           {isLoading ? <p className="text-center py-8 text-muted-foreground">Loading...</p> :
           <Table><TableHeader><TableRow><TableHead>Invoice</TableHead><TableHead>Seeker</TableHead><TableHead>Amount</TableHead><TableHead>Due Date</TableHead><TableHead>Days Overdue</TableHead><TableHead>Action</TableHead></TableRow></TableHeader>
             <TableBody>{overdue.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">🎉 No overdue payments!</TableCell></TableRow> :
-              overdue.map(p => <TableRow key={p.id}><TableCell className="font-mono">{p.invoice_number}</TableCell><TableCell>{seekerMap[p.seeker_id] || 'Unknown'}</TableCell><TableCell className="font-semibold">₹{p.total_amount.toLocaleString('en-IN')}</TableCell><TableCell>{p.due_date ? format(parseISO(p.due_date), 'dd MMM yyyy') : '—'}</TableCell><TableCell><Badge variant="destructive"><Clock className="w-3 h-3 mr-1" />{differenceInDays(today, parseISO(p.due_date!))} days</Badge></TableCell><TableCell><Button size="sm" variant="outline">Send Reminder</Button></TableCell></TableRow>)}</TableBody></Table>}
+              overdue.map(p => <TableRow key={p.id}><TableCell className="font-mono">{p.invoice_number}</TableCell><TableCell>{seekerMap[p.seeker_id] || 'Unknown'}</TableCell><TableCell className="font-semibold">₹{p.total_amount.toLocaleString('en-IN')}</TableCell><TableCell>{p.due_date ? formatDateDMY(parseISO(p.due_date)) : '—'}</TableCell><TableCell><Badge variant="destructive"><Clock className="w-3 h-3 mr-1" />{differenceInDays(today, parseISO(p.due_date!))} days</Badge></TableCell><TableCell><Button size="sm" variant="outline">Send Reminder</Button></TableCell></TableRow>)}</TableBody></Table>}
         </CardContent>
       </Card>
     </div>

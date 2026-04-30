@@ -11,6 +11,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import ChartWrapper from '@/components/charts/ChartWrapper';
 import { CHART_COLORS } from '@/components/charts/chartColors';
 import { format } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const INFLOW_CATS = ['Sales', 'Investment', 'Loan', 'Refund', 'Other'];
 const OUTFLOW_CATS = ['Salary', 'Rent', 'Inventory', 'Marketing', 'Utilities', 'Tax', 'Other'];
@@ -19,7 +20,7 @@ export default function ArthaCashflow() {
   const { business, isLoading: bLoading } = useBusinessProfile();
   const qc = useQueryClient();
   const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ date: format(new Date(), 'yyyy-MM-dd'), type: 'inflow' as 'inflow' | 'outflow', category: 'Sales', amount: '', description: '' });
+  const [form, setForm] = useState({ date: formatDateDMY(new Date()), type: 'inflow' as 'inflow' | 'outflow', category: 'Sales', amount: '', description: '' });
 
   const { data: records = [] } = useQuery({
     queryKey: ['cashflow-records', business?.id],
@@ -44,7 +45,7 @@ export default function ArthaCashflow() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['cashflow-records'] });
       setAdding(false);
-      setForm({ date: format(new Date(), 'yyyy-MM-dd'), type: 'inflow', category: 'Sales', amount: '', description: '' });
+      setForm({ date: formatDateDMY(new Date()), type: 'inflow', category: 'Sales', amount: '', description: '' });
       toast.success('Entry added!');
     },
     onError: (e: any) => toast.error(e.message),

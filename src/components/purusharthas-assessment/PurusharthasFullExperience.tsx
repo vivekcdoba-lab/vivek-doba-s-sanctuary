@@ -10,6 +10,7 @@ import PurusharthasResults from './PurusharthasResults';
 import PurusharthasActionPlan from './PurusharthasActionPlan';
 import PurusharthasHistory from './PurusharthasHistory';
 import { usePurusharthasAssessment, PurusharthasAssessment } from '@/hooks/usePurusharthasAssessment';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Props { onClose?: () => void; }
 
@@ -43,7 +44,7 @@ const PurusharthasFullExperience = ({ onClose }: Props) => {
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">🕉️ Purusharthas Assessment</h2>
           <p className="text-sm text-muted-foreground">Dharma, Artha, Kama, Moksha — The 4 aims of human life (Deep Assessment)</p>
-          {previousAssessment && <p className="text-xs text-muted-foreground mt-1">Last: {format(new Date(previousAssessment.created_at), 'MMM d, yyyy')} | Avg: {previousAssessment.average_score?.toFixed(1)}/10</p>}
+          {previousAssessment && <p className="text-xs text-muted-foreground mt-1">Last: {formatDateDMY(new Date(previousAssessment.created_at))} | Avg: {previousAssessment.average_score?.toFixed(1)}/10</p>}
         </div>
         {onClose && <Button variant="ghost" size="sm" onClick={onClose}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>}
       </div>

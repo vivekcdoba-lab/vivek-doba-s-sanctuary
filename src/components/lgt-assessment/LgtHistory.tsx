@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { LGT_DIMENSIONS } from './lgtData';
 import type { LgtAssessment } from '@/hooks/useLgtAssessment';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Props {
   history: LgtAssessment[];
@@ -94,7 +95,7 @@ const LgtHistory = ({ history, onViewDetails }: Props) => {
             return (
               <div key={h.id} className="flex items-center justify-between p-2 rounded border text-sm">
                 <div>
-                  <p className="font-medium">{format(new Date(h.created_at), 'MMM d, yyyy')}</p>
+                  <p className="font-medium">{formatDateDMY(new Date(h.created_at))}</p>
                   <p className="text-xs text-muted-foreground">
                     Avg: {h.average_score?.toFixed(1)} | High: {highest} | Low: {lowest}
                   </p>

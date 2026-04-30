@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Megaphone, Pin, Send, Clock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 export default function CoachAnnouncements() {
   const { profile } = useAuthStore();
@@ -95,7 +96,7 @@ export default function CoachAnnouncements() {
                 {ann.priority}
               </Badge>
               <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Clock className="w-3 h-3" /> {format(new Date(ann.created_at), 'dd MMM yyyy')}
+                <Clock className="w-3 h-3" /> {formatDateDMY(new Date(ann.created_at))}
               </span>
             </div>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">{ann.content}</p>

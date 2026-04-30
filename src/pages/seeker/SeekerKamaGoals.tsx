@@ -3,6 +3,7 @@ import BackToHome from '@/components/BackToHome';
 import { Heart, Plus, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 type Entry = { date: string; text: string };
 const STORAGE_KEY = 'seeker_kama_goals';
@@ -36,7 +37,7 @@ export default function SeekerKamaGoals() {
       <div className="space-y-3">
         {goals.map((g, i) => (
           <div key={i} className="bg-card rounded-xl border border-border p-4">
-            <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1"><Calendar className="w-3 h-3" />{format(new Date(g.date), 'MMM dd, yyyy')}</p>
+            <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1"><Calendar className="w-3 h-3" />{formatDateDMY(new Date(g.date))}</p>
             <p className="text-sm text-foreground">{g.text}</p>
           </div>
         ))}

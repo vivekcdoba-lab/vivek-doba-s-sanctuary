@@ -6,6 +6,7 @@ import { BookOpen, Search, Loader2, Target, Award, Zap, ChevronDown, ChevronUp }
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const SeekerSessionNotes = () => {
   const { profile } = useAuthStore();
@@ -67,7 +68,7 @@ const SeekerSessionNotes = () => {
                         <h3 className="font-semibold">{s.session_name || `Session #${s.session_number}`}</h3>
                         {s.pillar && <Badge variant="secondary" className="text-xs">{s.pillar}</Badge>}
                       </div>
-                      <p className="text-sm text-muted-foreground">{format(parseISO(s.date), 'MMM d, yyyy')} • {s.duration_minutes || 60} min</p>
+                      <p className="text-sm text-muted-foreground">{formatDateDMY(parseISO(s.date))} • {s.duration_minutes || 60} min</p>
                       {topics.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {topics.slice(0, 3).map((t: string) => <Badge key={t} variant="outline" className="text-xs">{t}</Badge>)}

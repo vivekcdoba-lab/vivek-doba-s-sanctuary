@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { TrendingUp, TrendingDown, Minus, Eye } from 'lucide-react';
 import { WOL_SPOKES } from './wolData';
 import type { WoLAssessment } from '@/hooks/useWheelOfLife';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Props {
   history: WoLAssessment[];
@@ -139,7 +140,7 @@ const WoLHistory = ({ history, onViewDetails }: Props) => {
 
                   return (
                     <TableRow key={assessment.id}>
-                      <TableCell className="text-xs">{format(new Date(assessment.created_at), 'dd MMM yyyy')}</TableCell>
+                      <TableCell className="text-xs">{formatDateDMY(new Date(assessment.created_at))}</TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-1">
                           <span className="font-bold text-sm">{(assessment.average_score || 0).toFixed(1)}</span>

@@ -6,6 +6,7 @@ import { format, parseISO, subMonths, startOfMonth, endOfMonth, eachWeekOfInterv
 import { BarChart3, Loader2, TrendingUp, Users, Clock, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, CartesianGrid, Legend } from 'recharts';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const L = {
   title: { en: 'Session Analytics', hi: 'सत्र विश्लेषण' },
@@ -76,8 +77,8 @@ export default function CoachSessionAnalytics() {
     const weeks = eachWeekOfInterval({ start: subMonths(now, 2), end: now }, { weekStartsOn: 1 });
     return weeks.map(weekStart => {
       const wEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-      const ws = format(weekStart, 'yyyy-MM-dd');
-      const we = format(wEnd, 'yyyy-MM-dd');
+      const ws = formatDateDMY(weekStart);
+      const we = formatDateDMY(wEnd);
       const weekSessions = sessions.filter(s => s.date >= ws && s.date <= we && s.engagement_score != null);
       const avg = weekSessions.length ? Math.round(weekSessions.reduce((a, s) => a + (s.engagement_score || 0), 0) / weekSessions.length * 10) / 10 : 0;
       return { week: format(weekStart, 'MMM d'), avg };

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, FileText, Trash2, Download, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const AdminDocuments = () => {
   const { toast } = useToast();
@@ -103,7 +104,7 @@ const AdminDocuments = () => {
               </div>
               <h3 className="font-semibold mt-3 text-foreground">{d.title}</h3>
               <p className="text-xs text-muted-foreground capitalize">
-                {d.category} · v{d.version} · Uploaded {new Date(d.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                {d.category} · v{d.version} · Uploaded {formatDateDMY(d.created_at)}
               </p>
               {d.description && <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{d.description}</p>}
               <div className="flex gap-2 mt-4">

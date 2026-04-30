@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Eye, Mail, MapPin, Phone, Building2, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 export default function CoachSeekersSearch() {
   const { data: seekers = [], isLoading } = useScopedSeekers();
@@ -89,7 +90,7 @@ export default function CoachSeekersSearch() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Calendar className="w-3 h-3" /> Joined: {format(new Date(seeker.created_at), 'dd MMM yyyy')}
+                    <Calendar className="w-3 h-3" /> Joined: {formatDateDMY(new Date(seeker.created_at))}
                   </p>
                   {seeker.gender && <p className="text-xs text-muted-foreground capitalize">{seeker.gender}</p>}
                 </div>

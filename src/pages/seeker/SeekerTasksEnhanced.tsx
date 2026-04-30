@@ -8,6 +8,7 @@ import { format, parseISO, differenceInDays } from 'date-fns';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const CATEGORY_CONFIG: Record<string, { emoji: string; label: string }> = {
   reading: { emoji: '📖', label: 'Reading' },
@@ -183,7 +184,7 @@ export default function SeekerTasksEnhanced() {
 
                     {/* Due date */}
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>📅 Due: {format(parseISO(a.due_date), 'MMMM dd, yyyy')}</span>
+                      <span>📅 Due: {formatDateDMY(parseISO(a.due_date))}</span>
                       {(a.courses as any)?.name && <span>📚 Course: {(a.courses as any).name}</span>}
                     </div>
 

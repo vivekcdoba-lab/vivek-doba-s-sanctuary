@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useStreakCount } from '@/hooks/useStreakCount';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const PILLAR_COLORS: Record<string, string> = {
   all: 'bg-primary/10 text-primary',
@@ -91,7 +92,7 @@ export default function SeekerGratitudeWall() {
             <div key={i} className="break-inside-avoid bg-card rounded-xl p-4 border border-border shadow-sm hover:shadow-md transition-shadow">
               <span className="text-2xl">{g.emoji}</span>
               <p className="text-sm text-foreground mt-2">"{g.text}"</p>
-              <p className="text-[10px] text-muted-foreground mt-2">{new Date(g.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</p>
+              <p className="text-[10px] text-muted-foreground mt-2">{formatDateDMY(g.date)}</p>
             </div>
           ))}
         </div>
@@ -102,7 +103,7 @@ export default function SeekerGratitudeWall() {
               <span className="text-xl">{g.emoji}</span>
               <div className="flex-1">
                 <p className="text-sm text-foreground">"{g.text}"</p>
-                <p className="text-[10px] text-muted-foreground mt-1">{new Date(g.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{formatDateDMY(g.date)}</p>
               </div>
             </div>
           ))}

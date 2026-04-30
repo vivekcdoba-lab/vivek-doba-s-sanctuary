@@ -7,6 +7,7 @@ import SessionNotesPanel from '@/components/SessionNotesPanel';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Shield, BookOpen, Target, Award, Zap, CheckCircle2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface SessionData {
   id: string;
@@ -423,7 +424,7 @@ const SeekerSessionDetail = () => {
 
         {session.seeker_accepted_at && (
           <div className="bg-dharma-green/10 rounded-lg p-3 text-center">
-            <p className="text-sm font-medium text-dharma-green">✅ Accepted on {new Date(session.seeker_accepted_at).toLocaleDateString()}</p>
+            <p className="text-sm font-medium text-dharma-green">✅ Accepted on {formatDateDMY(session.seeker_accepted_at)}</p>
           </div>
         )}
       </div>

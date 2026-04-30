@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { COURSES } from '@/data/mockData';
 import { supabase } from '@/integrations/supabase/client';
 import CountryStateInput from '@/components/inputs/CountryStateInput';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const INDUSTRIES = ['IT & Software','Manufacturing','Education','Healthcare','Retail & E-commerce','Finance & Banking','Real Estate','Government & Politics','Legal','Agriculture','Media & Entertainment','Hospitality','Consulting','NGO/Non-Profit','Other'];
 const REVENUE_RANGES = ['Below ₹10 Lakhs','₹10L - ₹50L','₹50L - ₹1 Crore','₹1Cr - ₹5 Crore','₹5Cr - ₹25 Crore','₹25Cr - ₹100 Crore','₹100 Crore+','Not Applicable (Salaried)','Prefer Not to Say'];
@@ -45,7 +46,7 @@ const getNext14Days = () => {
     const dow = d.getDay();
     days.push({
       date: d,
-      label: d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }),
+      label: formatDateDMY(d),
       available: dow !== 0,
     });
   }
@@ -151,7 +152,7 @@ const BookAppointment = () => {
           <div className="text-5xl mb-4">✅</div>
           <h2 className="text-2xl font-bold text-foreground mb-2">Appointment Request Submitted!</h2>
           <div className="bg-muted rounded-xl p-4 my-4 text-left">
-            <p className="text-sm text-foreground">📅 {form.selectedDate?.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} at {form.selectedSlot}</p>
+            <p className="text-sm text-foreground">📅 {formatDateDMY(form.selectedDate?)} at {form.selectedSlot}</p>
           </div>
           <div className="text-left text-sm text-muted-foreground space-y-1 mb-6">
             <p className="font-semibold text-foreground">What happens next:</p>
@@ -406,7 +407,7 @@ const BookAppointment = () => {
 
           {form.selectedDate && form.selectedSlot && (
             <div className="mt-4 p-4 rounded-xl bg-primary/5 border border-primary/20">
-              <p className="text-sm font-medium text-foreground">📅 Your Appointment: {form.selectedDate.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })} at {form.selectedSlot} (45 minutes)</p>
+              <p className="text-sm font-medium text-foreground">📅 Your Appointment: {formatDateDMY(form.selectedDate)} at {form.selectedSlot} (45 minutes)</p>
               <p className="text-xs text-muted-foreground mt-1">📍 Mode: Online (Google Meet link will be shared after approval)</p>
             </div>
           )}

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import {
+import { formatDateDMY } from "@/lib/dateFormat";
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
   ResponsiveContainer,
 } from 'recharts';
@@ -124,7 +125,7 @@ const LgtReport = ({ seekerName, seekerEmail, submittedAt, filledByRole, data }:
             <div className="font-semibold text-base">{seekerName || f.fullName || 'Seeker'}</div>
             <div className="opacity-90">{seekerEmail || f.email || ''}</div>
             {submittedAt && (
-              <div className="opacity-80 mt-1">📅 {new Date(submittedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+              <div className="opacity-80 mt-1">📅 {formatDateDMY(submittedAt)}</div>
             )}
             {filledByRole && (
               <div className="opacity-80">📝 Filled by {filledByRole}</div>

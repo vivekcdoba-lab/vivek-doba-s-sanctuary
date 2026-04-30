@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const L = {
   title: { en: 'Past Sessions', hi: 'पिछले सत्र' },
@@ -48,7 +49,7 @@ export default function CoachPastSessions() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [limit, setLimit] = useState(PAGE_SIZE);
 
-  const today = format(startOfToday(), 'yyyy-MM-dd');
+  const today = formatDateDMY(startOfToday());
 
   const seekerName = (id: string) => seekers.find(s => s.id === id)?.full_name || 'Unknown';
 
@@ -195,7 +196,7 @@ export default function CoachPastSessions() {
                                 {session.pillar && <Badge variant="secondary" className="text-[10px]">{session.pillar}</Badge>}
                               </div>
                               <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                <span>{format(parseISO(session.date), 'MMM d, yyyy')}</span>
+                                <span>{formatDateDMY(parseISO(session.date))}</span>
                                 <span>{formatTime(session.start_time)} — {formatTime(session.end_time)}</span>
                                 {session.duration_minutes && <span>{session.duration_minutes} min</span>}
                               </div>

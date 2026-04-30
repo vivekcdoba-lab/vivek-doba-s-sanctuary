@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const SeekerFeedback = () => {
   const { profile } = useAuthStore();
@@ -79,7 +80,7 @@ const SeekerFeedback = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium text-sm">{s.session_name || `Session #${s.session_number}`}</p>
-                  <p className="text-xs text-muted-foreground">{format(parseISO(s.date), 'MMM d, yyyy')}</p>
+                  <p className="text-xs text-muted-foreground">{formatDateDMY(parseISO(s.date))}</p>
                 </div>
                 {s.post_session_feedback && <Badge variant="secondary" className="text-xs"><CheckCircle2 className="h-3 w-3 mr-1" />Reviewed</Badge>}
                 {selectedSession === s.id && <CheckCircle2 className="h-5 w-5 text-primary" />}

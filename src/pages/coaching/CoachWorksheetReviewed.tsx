@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Download, CheckCircle, Star } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 export default function CoachWorksheetReviewed() {
   const { lang } = useCoachingLang();
@@ -123,7 +124,7 @@ export default function CoachWorksheetReviewed() {
                             <span className="font-medium text-foreground">{p?.full_name || 'Unknown'}</span>
                           </div>
                         </td>
-                        <td className="p-3 text-muted-foreground">{format(new Date(w.worksheet_date), 'dd MMM yyyy')}</td>
+                        <td className="p-3 text-muted-foreground">{formatDateDMY(new Date(w.worksheet_date))}</td>
                         <td className="p-3 text-center">
                           <Badge variant="secondary" className={`${(w.completion_rate_percent || 0) >= 80 ? 'bg-green-500/10 text-green-700' : 'bg-yellow-500/10 text-yellow-700'}`}>
                             {w.completion_rate_percent || 0}%

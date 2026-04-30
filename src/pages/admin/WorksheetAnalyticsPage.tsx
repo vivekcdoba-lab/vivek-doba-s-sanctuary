@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, LineChart, Line, Legend } from 'recharts';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface WorksheetRow {
   id: string;
@@ -72,7 +73,7 @@ const WorksheetAnalyticsPage = () => {
   const [trendData, setTrendData] = useState<WorksheetRow[]>([]);
   const [badgeData, setBadgeData] = useState<BadgeWithDef[]>([]);
 
-  const dateKey = format(selectedDate, 'yyyy-MM-dd');
+  const dateKey = formatDateDMY(selectedDate);
 
   // Load data
   useEffect(() => {
@@ -279,7 +280,7 @@ const WorksheetAnalyticsPage = () => {
             <PopoverTrigger asChild>
               <Button variant="outline" className="min-w-[160px]">
                 <CalendarIcon className="w-4 h-4 mr-2" />
-                {format(selectedDate, 'dd MMM yyyy')}
+                {formatDateDMY(selectedDate)}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="center">

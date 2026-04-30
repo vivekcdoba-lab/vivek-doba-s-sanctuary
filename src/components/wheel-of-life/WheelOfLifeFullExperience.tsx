@@ -10,6 +10,7 @@ import WoLResults from './WoLResults';
 import WoLActionPlan from './WoLActionPlan';
 import WoLHistory from './WoLHistory';
 import { useWheelOfLife, WoLAssessment } from '@/hooks/useWheelOfLife';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Props {
   onClose?: () => void;
@@ -76,7 +77,7 @@ const WheelOfLifeFullExperience = ({ onClose }: Props) => {
           </p>
           {previousAssessment && (
             <p className="text-xs text-muted-foreground mt-1">
-              Last Assessment: {format(new Date(previousAssessment.created_at), 'MMM d, yyyy')} | Avg: {previousAssessment.average_score?.toFixed(1)}/10
+              Last Assessment: {formatDateDMY(new Date(previousAssessment.created_at))} | Avg: {previousAssessment.average_score?.toFixed(1)}/10
             </p>
           )}
         </div>

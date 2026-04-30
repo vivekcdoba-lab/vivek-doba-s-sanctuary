@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import DateTimeTzInput, { toUtcIso } from '@/components/common/DateTimeTzInput';
 import { detectBrowserTz } from '@/lib/timezones';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const DEFAULT_ZOOM_LINK = 'https://us06web.zoom.us/j/86310221885?pwd=LdIaVqMxx7tbavIqggTVegh01kL8HB.1';
 
@@ -127,16 +128,16 @@ export default function CoachSchedule() {
   }, [currentDate, view]);
 
   const sessionsForDay = useCallback((day: Date) => {
-    const ds = format(day, 'yyyy-MM-dd');
+    const ds = formatDateDMY(day);
     return sessions.filter(s => {
       // Prefer start_at so the session falls into the viewer's local day.
-      if (s.start_at) return format(new Date(s.start_at), 'yyyy-MM-dd') === ds;
+      if (s.start_at) return formatDateDMY(new Date(s.start_at)) === ds;
       return s.date === ds;
     });
   }, [sessions]);
 
   const blockedForDay = useCallback((day: Date) => {
-    const ds = format(day, 'yyyy-MM-dd');
+    const ds = formatDateDMY(day);
     return calEvents.filter((e: any) => e.date === ds);
   }, [calEvents]);
 
@@ -150,7 +151,7 @@ export default function CoachSchedule() {
 
   const handleDrop = (date: Date, hour: number) => {
     if (!dragSession) return;
-    const ds = format(date, 'yyyy-MM-dd');
+    const ds = formatDateDMY(date);
     const start = `${String(hour).padStart(2, '0')}:00`;
     const end = `${String(hour + 1).padStart(2, '0')}:00`;
     updateSession.mutate({ id: dragSession, date: ds, start_time: start, end_time: end }, {
@@ -234,7 +235,7 @@ export default function CoachSchedule() {
         <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg hover:bg-muted"><ChevronLeft className="w-5 h-5" /></button>
         <span className="font-semibold text-foreground">
           {view === 'day' && format(currentDate, 'EEEE, MMMM d, yyyy')}
-          {view === 'week' && `${format(visibleDays[0], 'MMM d')} — ${format(visibleDays[6] || visibleDays[visibleDays.length - 1], 'MMM d, yyyy')}`}
+          {view === 'week' && `${format(visibleDays[0], 'MMM d')} — ${formatDateDMY(visibleDays[6] || visibleDays[visibleDays.length - 1])}`}
           {view === 'month' && format(currentDate, 'MMMM yyyy')}
         </span>
         <button onClick={() => navigate(1)} className="p-1.5 rounded-lg hover:bg-muted"><ChevronRight className="w-5 h-5" /></button>

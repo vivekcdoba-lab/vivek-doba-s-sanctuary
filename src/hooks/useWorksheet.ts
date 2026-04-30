@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getPillarForActivity, type PillarKey } from '@/data/worksheetData';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 export interface TimeSlotData {
   activity: string;
@@ -130,7 +131,7 @@ export function useWorksheet(selectedDate: Date) {
   const [seekerProfileId, setSeekerProfileId] = useState<string | null>(null);
   const dirtyRef = useRef(false);
   const autoSaveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const dateKey = format(selectedDate, 'yyyy-MM-dd');
+  const dateKey = formatDateDMY(selectedDate);
 
   // Get current user's profile id
   useEffect(() => {
@@ -448,7 +449,7 @@ export function useWorksheet(selectedDate: Date) {
     if (!seekerProfileId) return;
     const yesterday = new Date(selectedDate);
     yesterday.setDate(yesterday.getDate() - 1);
-    const yKey = format(yesterday, 'yyyy-MM-dd');
+    const yKey = formatDateDMY(yesterday);
 
     const { data: yWs } = await supabase
       .from('daily_worksheets')

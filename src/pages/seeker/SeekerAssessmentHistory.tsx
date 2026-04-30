@@ -13,6 +13,7 @@ import { ScrollText, TrendingUp, Download, GitCompareArrows, Eye, RotateCcw, Arr
 import { format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import jsPDF from 'jspdf';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface AssessmentRecord {
   id: string;
@@ -131,13 +132,13 @@ export default function SeekerAssessmentHistory() {
     doc.setFontSize(18);
     doc.text('Assessment History Report', 20, 20);
     doc.setFontSize(10);
-    doc.text(`Generated: ${format(new Date(), 'PPP')}`, 20, 28);
+    doc.text(`Generated: ${formatDateDMY(new Date())}`, 20, 28);
     let y = 40;
     filtered.forEach(a => {
       if (y > 260) { doc.addPage(); y = 20; }
       const score = extractOverallScore(a.type, a.scores_json);
       doc.setFontSize(12);
-      doc.text(`${TYPE_LABELS[a.type] || a.type} — ${format(new Date(a.created_at), 'PP')}`, 20, y);
+      doc.text(`${TYPE_LABELS[a.type] || a.type} — ${formatDateDMY(new Date(a.created_at))}`, 20, y);
       y += 7;
       doc.setFontSize(10);
       doc.text(`Score: ${score}%`, 20, y);
@@ -246,7 +247,7 @@ export default function SeekerAssessmentHistory() {
                         </div>
                         <Badge className={scoreBadgeClass(score)}>{score}%</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">{format(new Date(a.created_at), 'PPP')}</p>
+                      <p className="text-sm text-muted-foreground mb-3">{formatDateDMY(new Date(a.created_at))}</p>
                       {metricEntries.length > 0 && (
                         <div className="grid grid-cols-2 gap-2 mb-4">
                           {metricEntries.map(([k, v]) => (
@@ -338,8 +339,8 @@ export default function SeekerAssessmentHistory() {
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-2 text-sm font-semibold text-center border-b pb-2">
                   <span>Metric</span>
-                  <span>{format(new Date(a.created_at), 'PP')}</span>
-                  <span>{format(new Date(b.created_at), 'PP')}</span>
+                  <span>{formatDateDMY(new Date(a.created_at))}</span>
+                  <span>{formatDateDMY(new Date(b.created_at))}</span>
                 </div>
                 {/* Overall */}
                 {(() => {

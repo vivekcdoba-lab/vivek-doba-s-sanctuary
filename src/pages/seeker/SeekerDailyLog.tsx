@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface TimePhase {
   id: string;
@@ -476,7 +477,7 @@ const SeekerDailyLog = () => {
       <div>
         <h1 className="text-xl font-bold text-foreground">Daily Transformation Log</h1>
         <p className="text-sm text-muted-foreground">
-          {today.toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' })} · Day {dayNumber} · <span className="text-green-600 dark:text-green-400">Auto-saved ✓</span>
+          {formatDateDMY(today)} · Day {dayNumber} · <span className="text-green-600 dark:text-green-400">Auto-saved ✓</span>
         </p>
       </div>
 

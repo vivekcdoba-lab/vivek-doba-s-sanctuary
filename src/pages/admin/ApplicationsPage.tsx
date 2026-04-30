@@ -4,6 +4,7 @@ import { Phone, MessageSquare, Mail, Check, X, RefreshCw, ChevronDown, ChevronUp
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
+import { formatDateDMY } from "@/lib/dateFormat";
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -293,7 +294,7 @@ const ApplicationsPage = () => {
                       {timeAgo(sub.created_at)} · {sub.country_code || '+91'}{sub.mobile} · {sub.email}
                     </p>
                     {sub.form_type === 'discovery_call' && fd.selectedSlot && (
-                      <p className="text-xs text-primary mt-1">📅 Requested: {fd.selectedDate ? new Date(fd.selectedDate).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) : ''} at {fd.selectedSlot}</p>
+                      <p className="text-xs text-primary mt-1">📅 Requested: {fd.selectedDate ? formatDateDMY(fd.selectedDate) : ''} at {fd.selectedSlot}</p>
                     )}
                     {sub.form_type === 'workshop' && <p className="text-xs text-primary mt-1">🎯 {fd.workshopName || fd.workshopId}</p>}
                     {sub.form_type === 'lgt_application' && <p className="text-xs text-primary mt-1">👑 {fd.programName || fd.programId}</p>}

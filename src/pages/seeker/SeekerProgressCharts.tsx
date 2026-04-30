@@ -10,6 +10,7 @@ import { Download, TrendingUp, Target, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import jsPDF from 'jspdf';
 import {
+import { formatDateDMY } from "@/lib/dateFormat";
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend,
   PieChart, Pie, Cell, BarChart, Bar,
@@ -105,7 +106,7 @@ export default function SeekerProgressCharts() {
       const k = scores.kama ?? scores.Kama ?? 0;
       const m = scores.moksha ?? scores.Moksha ?? 0;
       return {
-        date: new Date(a.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+        date: formatDateDMY(a.created_at),
         score: Math.round((d + ar + k + m) / 4),
         dharma: d, artha: ar, kama: k, moksha: m,
       };
@@ -200,7 +201,7 @@ export default function SeekerProgressCharts() {
       }
       lastDate = w.worksheet_date;
       points.push({
-        date: new Date(w.worksheet_date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+        date: formatDateDMY(w.worksheet_date),
         streak,
       });
     });
@@ -243,7 +244,7 @@ export default function SeekerProgressCharts() {
     doc.text('Progress Report', 20, 20);
     doc.setFontSize(11);
     doc.text(`Seeker: ${profile?.full_name || 'Unknown'}`, 20, 32);
-    doc.text(`Date: ${new Date().toLocaleDateString('en-IN')}`, 20, 40);
+    doc.text(`Date: ${formatDateDMY(new Date())}`, 20, 40);
     doc.text(`Total Days Logged: ${totalDaysLogged}`, 20, 52);
     doc.text(`Current Streak: ${currentStreak} days`, 20, 60);
     doc.text(`Current Stage: ${STAGES[currentStageIdx].label}`, 20, 68);

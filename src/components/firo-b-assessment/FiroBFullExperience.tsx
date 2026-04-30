@@ -10,6 +10,7 @@ import FiroBResults from './FiroBResults';
 import FiroBActionPlan from './FiroBActionPlan';
 import FiroBHistory from './FiroBHistory';
 import { useFiroBAssessment, FiroBAssessment } from '@/hooks/useFiroBAssessment';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Props { onClose?: () => void; }
 
@@ -45,7 +46,7 @@ const FiroBFullExperience = ({ onClose }: Props) => {
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">👥 FIRO-B (Interpersonal)</h2>
           <p className="text-sm text-muted-foreground">Understand your interpersonal needs — Inclusion, Control & Affection</p>
-          {previousAssessment && <p className="text-xs text-muted-foreground mt-1">Last: {format(new Date(previousAssessment.created_at), 'MMM d, yyyy')} | E={previousAssessment.total_expressed} W={previousAssessment.total_wanted}</p>}
+          {previousAssessment && <p className="text-xs text-muted-foreground mt-1">Last: {formatDateDMY(new Date(previousAssessment.created_at))} | E={previousAssessment.total_expressed} W={previousAssessment.total_wanted}</p>}
         </div>
         {onClose && <Button variant="ghost" size="sm" onClick={onClose}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>}
       </div>

@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { COURSES } from '@/data/mockData';
 import CountryStateInput from '@/components/inputs/CountryStateInput';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const PROGRAMS = [
   { id: 'lgt_bo', name: "Life's Golden Triangle — Business Owners", desc: 'For entrepreneurs and business owners ready to align Dharma, Artha, and Kama', duration: '6 Months', sessions: 24, format: '1-on-1', price: 250000, tier: 'Platinum', gradient: 'linear-gradient(135deg, #9E9E9E, #FFD700)' },
@@ -391,7 +392,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
           <p className="text-muted-foreground mb-4">Thank you for taking this powerful step toward transformation.</p>
           <div className="bg-muted rounded-xl p-4 text-left text-sm space-y-1 mb-6">
             <p><strong>Application ID:</strong> {appId}</p>
-            <p><strong>Submitted:</strong> {new Date().toLocaleDateString('en-IN')}</p>
+            <p><strong>Submitted:</strong> {formatDateDMY(new Date())}</p>
             <p><strong>Program:</strong> {selected?.name}</p>
           </div>
           <div className="text-left text-sm text-muted-foreground space-y-1 mb-6">

@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { differenceInDays, parseISO, format } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const CATEGORIES = [
   { value: 'reading', label: '📖 Reading' },
@@ -213,7 +214,7 @@ const AssignmentsPage = () => {
                 {isExpanded && (
                   <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
                     {a.description && <p className="text-sm text-muted-foreground">{a.description}</p>}
-                    <p className="text-xs text-muted-foreground">📅 Due: {format(parseISO(a.due_date), 'MMMM dd, yyyy')}</p>
+                    <p className="text-xs text-muted-foreground">📅 Due: {formatDateDMY(parseISO(a.due_date))}</p>
 
                     {/* Existing feedback */}
                     {a.feedback && (

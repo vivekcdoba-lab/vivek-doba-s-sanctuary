@@ -8,6 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { CalendarDays, Clock, Video, MapPin, ChevronRight, List, LayoutGrid, BookOpen, CheckCircle2 } from 'lucide-react';
 import { format, parseISO, isSameDay } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 export default function SeekerUpcomingSessions() {
   const { profile } = useAuthStore();
@@ -23,7 +24,7 @@ export default function SeekerUpcomingSessions() {
         .select('*, courses(name)')
         .eq('seeker_id', profile!.id)
         .in('status', ['scheduled', 'confirmed', 'in_progress'])
-        .gte('date', format(new Date(), 'yyyy-MM-dd'))
+        .gte('date', formatDateDMY(new Date()))
         .order('date', { ascending: true })
         .order('start_time', { ascending: true });
       return data || [];
@@ -93,7 +94,7 @@ export default function SeekerUpcomingSessions() {
           />
           {selectedDate && (
             <p className="text-xs text-muted-foreground text-center mt-2">
-              {filteredSessions.length} session(s) on {format(selectedDate, 'MMM dd, yyyy')}
+              {filteredSessions.length} session(s) on {formatDateDMY(selectedDate)}
               <button onClick={() => setSelectedDate(undefined)} className="ml-2 text-primary underline">Clear</button>
             </p>
           )}

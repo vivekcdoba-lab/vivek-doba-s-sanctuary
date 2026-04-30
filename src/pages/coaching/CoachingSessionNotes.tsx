@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const L = {
   title: { en: "Session Notes", hi: "सत्र नोट्स" },
@@ -135,7 +136,7 @@ export default function CoachingSessionNotes() {
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                         <span className="flex items-center gap-1"><User className="w-3 h-3" />{s.profiles?.full_name || "—"}</span>
-                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{format(new Date(s.date), "dd MMM yyyy")}</span>
+                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDateDMY(new Date(s.date))}</span>
                         <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{s.start_time}–{s.end_time}</span>
                         {s.location_type && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{s.location_type}</span>}
                       </div>

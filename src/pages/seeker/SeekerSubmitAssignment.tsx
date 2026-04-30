@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const STATUS_COLORS: Record<string, string> = {
   assigned: 'bg-blue-500/10 text-blue-600',
@@ -100,7 +101,7 @@ const SeekerSubmitAssignment = () => {
                     {a.description && <p className="text-sm text-muted-foreground line-clamp-2">{a.description}</p>}
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className={STATUS_COLORS[isOverdue ? 'overdue' : a.status] || ''}>{isOverdue ? 'Overdue' : a.status}</Badge>
-                      <span className="text-xs text-muted-foreground">Due: {format(parseISO(a.due_date), 'MMM d, yyyy')}</span>
+                      <span className="text-xs text-muted-foreground">Due: {formatDateDMY(parseISO(a.due_date))}</span>
                       {a.priority && <Badge variant="outline" className="text-xs">{a.priority}</Badge>}
                     </div>
                   </div>
@@ -133,7 +134,7 @@ const SeekerSubmitAssignment = () => {
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="font-medium">{a.title}</p>
-                  <p className="text-xs text-muted-foreground">{format(parseISO(a.due_date), 'MMM d, yyyy')}</p>
+                  <p className="text-xs text-muted-foreground">{formatDateDMY(parseISO(a.due_date))}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {a.score != null && <Badge variant="secondary">Score: {a.score}/10</Badge>}

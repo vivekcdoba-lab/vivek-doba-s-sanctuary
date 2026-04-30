@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import BackToHome from '@/components/BackToHome';
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, ArrowRight } from 'lucide-react';
 import { format, subDays } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const DIMENSIONS = [
   { key: 'dharma', label: 'DHARMA', subtitle: 'Purpose', emoji: '🕉️', color: 'hsl(var(--dharma-green))', bg: 'bg-[hsl(122,46%,33%)]/10', border: 'border-[hsl(122,46%,33%)]', actions: ['Review your mission statement', 'Practice daily dharma reflection', 'Align one action with your values'] },
@@ -17,7 +18,7 @@ function useDAKMScores(seekerId: string | null) {
     queryKey: ['dakm-scores', seekerId],
     enabled: !!seekerId,
     queryFn: async () => {
-      const today = format(new Date(), 'yyyy-MM-dd');
+      const today = formatDateDMY(new Date());
       const weekAgo = format(subDays(new Date(), 7), 'yyyy-MM-dd');
       const monthAgo = format(subDays(new Date(), 30), 'yyyy-MM-dd');
 

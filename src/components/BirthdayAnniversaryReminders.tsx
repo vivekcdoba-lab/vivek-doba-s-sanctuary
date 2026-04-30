@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Cake, Heart, Gift } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface ReminderItem {
   id: string;
@@ -77,7 +78,7 @@ const BirthdayAnniversaryReminders = () => {
               <p className="text-sm font-medium text-foreground truncate">{r.full_name}</p>
               <p className="text-xs text-muted-foreground">
                 {r.type === 'birthday' ? '🎂 Birthday' : '💍 Anniversary'} ·{' '}
-                {new Date(r.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                {formatDateDMY(r.date)}
               </p>
             </div>
             <span

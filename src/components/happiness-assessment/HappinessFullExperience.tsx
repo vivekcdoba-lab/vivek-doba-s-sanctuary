@@ -10,6 +10,7 @@ import HappinessResults from './HappinessResults';
 import HappinessActionPlan from './HappinessActionPlan';
 import HappinessHistory from './HappinessHistory';
 import { useHappinessAssessment, HappinessAssessment, HAPPINESS_KEYS } from '@/hooks/useHappinessAssessment';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Props { onClose?: () => void; }
 
@@ -45,7 +46,7 @@ const HappinessFullExperience = ({ onClose }: Props) => {
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">😊 Happiness Index</h2>
           <p className="text-sm text-muted-foreground">Measure your overall happiness across 8 PERMA+ dimensions</p>
-          {previousAssessment && <p className="text-xs text-muted-foreground mt-1">Last: {format(new Date(previousAssessment.created_at), 'MMM d, yyyy')} | Avg: {previousAssessment.average_score?.toFixed(1)}/10</p>}
+          {previousAssessment && <p className="text-xs text-muted-foreground mt-1">Last: {formatDateDMY(new Date(previousAssessment.created_at))} | Avg: {previousAssessment.average_score?.toFixed(1)}/10</p>}
         </div>
         {onClose && <Button variant="ghost" size="sm" onClick={onClose}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>}
       </div>

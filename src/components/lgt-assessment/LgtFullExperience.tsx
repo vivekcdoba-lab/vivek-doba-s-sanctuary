@@ -10,6 +10,7 @@ import LgtResults from './LgtResults';
 import LgtActionPlan from './LgtActionPlan';
 import LgtHistory from './LgtHistory';
 import { useLgtAssessment, LgtAssessment } from '@/hooks/useLgtAssessment';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Props {
   onClose?: () => void;
@@ -70,7 +71,7 @@ const LgtFullExperience = ({ onClose }: Props) => {
           <p className="text-sm text-muted-foreground">Life's Golden Triangle — Balance Dharma, Artha, Kama & Moksha</p>
           {previousAssessment && (
             <p className="text-xs text-muted-foreground mt-1">
-              Last Assessment: {format(new Date(previousAssessment.created_at), 'MMM d, yyyy')} | Avg: {previousAssessment.average_score?.toFixed(1)}/10
+              Last Assessment: {formatDateDMY(new Date(previousAssessment.created_at))} | Avg: {previousAssessment.average_score?.toFixed(1)}/10
             </p>
           )}
         </div>

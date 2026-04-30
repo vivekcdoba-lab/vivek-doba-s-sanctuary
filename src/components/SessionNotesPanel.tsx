@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Loader2, Save, Lock, Eye, FileText, CheckCircle2, Lightbulb, ClipboardList, GraduationCap, Edit2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface SessionNotesPanelProps {
   sessionId: string;
@@ -174,7 +175,7 @@ const SessionNotesPanel = ({ sessionId, sessionTitle, sessionDate, coachName, vi
           {sessionTitle && (
             <p className="text-sm text-muted-foreground">
               "{sessionTitle}" {coachName && `with ${coachName}`}
-              {sessionDate && ` • ${format(parseISO(sessionDate), 'MMM d, yyyy')}`}
+              {sessionDate && ` • ${formatDateDMY(parseISO(sessionDate))}`}
             </p>
           )}
         </div>

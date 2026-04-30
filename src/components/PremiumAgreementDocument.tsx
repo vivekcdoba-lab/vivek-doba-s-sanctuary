@@ -1,5 +1,6 @@
 import { premiumAgreementContent as C } from "@/content/premiumAgreement";
 import type { FeeStructureFields } from "@/hooks/useFeeStructure";
+import { formatDateDMY } from "@/lib/dateFormat";
 
 export interface PremiumAgreementClient {
   fullName: string;
@@ -68,7 +69,7 @@ const formatINR = (n: number | string | "") => {
 const fmtDate = (d?: string) => {
   if (!d) return "—";
   try {
-    return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    return formatDateDMY(d);
   } catch {
     return d;
   }

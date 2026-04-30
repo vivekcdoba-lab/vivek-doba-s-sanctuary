@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Search, Eye, CheckCircle, Flag, ArrowUpDown, Calendar, Download } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 export default function CoachWorksheetPending() {
   const { lang } = useCoachingLang();
@@ -172,7 +173,7 @@ export default function CoachWorksheetPending() {
                             <span className="font-medium text-foreground">{p?.full_name || 'Unknown'}</span>
                           </div>
                         </td>
-                        <td className="p-3 text-muted-foreground">{format(new Date(w.worksheet_date), 'dd MMM yyyy')}</td>
+                        <td className="p-3 text-muted-foreground">{formatDateDMY(new Date(w.worksheet_date))}</td>
                         <td className="p-3 text-center">
                           <Badge variant="secondary" className={completionColor(pct)}>{pct}%</Badge>
                         </td>

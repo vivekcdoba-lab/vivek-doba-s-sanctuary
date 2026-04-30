@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
+import { formatDateDMY } from "@/lib/dateFormat";
   Bookmark, Search, Trash2, ExternalLink, StickyNote, Video,
   Headphones, FileText, BookOpen, ClipboardList, Tag, Filter,
   SortAsc, Edit2, X, Plus
@@ -152,7 +153,7 @@ export default function SeekerBookmarks() {
 
   const formatDate = (d: string) => {
     const dt = new Date(d);
-    return dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    return formatDateDMY(dt);
   };
 
   return (

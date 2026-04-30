@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const L = {
   title: { en: 'Reviewed Assignments', hi: 'समीक्षित कार्य' },
@@ -166,7 +167,7 @@ export default function CoachReviewedAssignments() {
                       <h3 className="font-semibold text-foreground">{a.title}</h3>
                       <p className="text-sm text-muted-foreground">{seekerName(a.seeker_id)}</p>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>{format(parseISO(a.due_date), 'MMM d, yyyy')}</span>
+                        <span>{formatDateDMY(parseISO(a.due_date))}</span>
                         {a.category && <Badge variant="secondary" className="text-[10px]">{a.category}</Badge>}
                         {a.type && <Badge variant="outline" className="text-[10px]">{a.type}</Badge>}
                       </div>

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { TrendingUp, FileText, Calendar, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { format, subDays, eachDayOfInterval } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 export default function CoachEngagement() {
   const { data: seekers = [] } = useSeekerProfiles();
@@ -28,7 +29,7 @@ export default function CoachEngagement() {
   });
 
   const chartData = last14Days.map(day => {
-    const dateStr = format(day, 'yyyy-MM-dd');
+    const dateStr = formatDateDMY(day);
     return {
       date: format(day, 'dd MMM'),
       worksheets: worksheets.filter(w => w.worksheet_date === dateStr).length,

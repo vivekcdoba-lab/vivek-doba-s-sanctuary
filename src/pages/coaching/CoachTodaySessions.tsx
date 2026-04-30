@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const L = {
   title: { en: "Today's Sessions", hi: 'आज के सत्र' },
@@ -43,7 +44,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function CoachTodaySessions() {
   const { lang } = useCoachingLang();
   const t = (key: keyof typeof L) => L[key][lang];
-  const today = format(new Date(), 'yyyy-MM-dd');
+  const today = formatDateDMY(new Date());
   const now = format(new Date(), 'HH:mm');
 
   const { data: allSessions = [], isLoading } = useDbSessions();
