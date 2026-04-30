@@ -203,7 +203,62 @@ export default function CoachSchedule() {
     });
   };
 
-  if (isLoading) {
+  // ---- Reschedule / Delete handlers ----
+  const openSessionEditor = (s: any) => {
+    setEditSession(s);
+    setConfirmDelete(false);
+    const initialDate = s.start_at
+      ? toIsoDate(new Date(s.start_at))
+      : s.date || toIsoDate(new Date());
+    setEditForm({
+      date: initialDate,
+      start_time: (s.start_time || '10:00').slice(0, 5),
+      end_time: (s.end_time || '11:00').slice(0, 5),
+      timezone: s.timezone || defaultTz,
+      reason: '',
+    });
+  };
+
+  const handleReschedule = () => {
+    if (!editSession) return;
+    if (!editForm.date || !editForm.start_time || !editForm.end_time) {
+      toast.error(lang === 'hi' ? 'कृपया तारीख और समय भरें' : 'Please fill date & time');
+      return;
+    }
+    updateSession.mutate(
+      {
+        id: editSession.id,
+        date: editForm.date,
+        start_time: editForm.start_time,
+        end_time: editForm.end_time,
+        timezone: editForm.timezone,
+        start_at: toUtcIso(editForm.date, editForm.start_time, editForm.timezone),
+        end_at: toUtcIso(editForm.date, editForm.end_time, editForm.timezone),
+        status: 'rescheduled',
+        reschedule_reason: editForm.reason || null,
+      } as any,
+      {
+        onSuccess: () => {
+          toast.success(lang === 'hi' ? 'सत्र पुनर्निर्धारित — अपडेट भेजा गया' : 'Session rescheduled — update sent');
+          setEditSession(null);
+        },
+        onError: (e: any) => toast.error(e?.message || 'Failed to reschedule'),
+      },
+    );
+  };
+
+  const handleDelete = () => {
+    if (!editSession) return;
+    deleteSession.mutate(editSession.id, {
+      onSuccess: () => {
+        toast.success(lang === 'hi' ? 'सत्र हटा दिया गया — सूचना भेजी गई' : 'Session deleted — attendees notified');
+        setEditSession(null);
+        setConfirmDelete(false);
+      },
+      onError: (e: any) => toast.error(e?.message || 'Failed to delete'),
+    });
+  };
+
     return <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
 
