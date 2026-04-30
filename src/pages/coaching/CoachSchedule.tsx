@@ -165,17 +165,49 @@ export default function CoachSchedule() {
   };
 
   const handleCreateSession = () => {
-    if (!newForm.seeker_id || !newForm.date) return;
+    const hi = lang === 'hi';
+    if (!newForm.session_type) {
+      toast.error(hi ? 'कृपया सत्र प्रकार चुनें' : 'Please select a session type');
+      return;
+    }
+    if (!newForm.seeker_id) {
+      toast.error(hi ? 'कृपया साधक चुनें' : 'Please select a seeker');
+      return;
+    }
     if (!newForm.coach_id) {
-      toast.error(lang === 'hi' ? 'कृपया कोच चुनें' : 'Please select a coach');
+      toast.error(hi ? 'कृपया कोच चुनें' : 'Please select a coach');
+      return;
+    }
+    if (!newForm.location_type) {
+      toast.error(hi ? 'कृपया मोड चुनें' : 'Please select a mode (Online or In-Person)');
+      return;
+    }
+    if (newForm.location_type === 'online' && !newForm.meeting_link) {
+      toast.error(hi ? 'कृपया मीटिंग लिंक जोड़ें' : 'Please provide a meeting link');
+      return;
+    }
+    if (!newForm.date) {
+      toast.error(hi ? 'कृपया तिथि चुनें' : 'Please select a date');
+      return;
+    }
+    if (!newForm.start_time) {
+      toast.error(hi ? 'कृपया प्रारंभ समय चुनें' : 'Please select a start time');
+      return;
+    }
+    if (!newForm.end_time) {
+      toast.error(hi ? 'कृपया समाप्ति समय चुनें' : 'Please select an end time');
+      return;
+    }
+    if (!newForm.timezone) {
+      toast.error(hi ? 'कृपया समय क्षेत्र चुनें' : 'Please select a timezone');
       return;
     }
     if (newForm.session_type === 'couple' && !newForm.partner_seeker_id) {
-      toast.error(lang === 'hi' ? 'कृपया साथी चुनें' : 'Please select a partner seeker');
+      toast.error(hi ? 'कृपया साथी चुनें' : 'Please select a partner seeker');
       return;
     }
     if (newForm.session_type === 'couple' && newForm.partner_seeker_id === newForm.seeker_id) {
-      toast.error(lang === 'hi' ? 'साथी अलग होना चाहिए' : 'Partner must be a different seeker');
+      toast.error(hi ? 'साथी अलग होना चाहिए' : 'Partner must be a different seeker');
       return;
     }
     createSession.mutate({
