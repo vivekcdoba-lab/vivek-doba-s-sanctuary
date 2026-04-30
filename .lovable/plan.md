@@ -1,106 +1,82 @@
-## Goal
+## Problem
 
-Two related changes:
-1. **Enhance session invite emails** with rich, mode-specific content (in-person Google Maps + parking instructions, online Zoom link), plus reminders for assignments/assessments/activities and meeting prep checklist.
-2. **Standardize date format** across the entire app and all outgoing emails to `DD-Month-YYYY` (e.g., `30-April-2026`).
+Coaches cannot reschedule a session. The toast `record "new" has no field "coach_private_notes"` comes from the Postgres trigger function `public.validate_seeker_session_update`, which runs on every `UPDATE` on `public.sessions`. It tries to do `NEW.coach_private_notes := OLD.coach_private_notes;`, but the `sessions` table has no such column, so the trigger aborts the update.
 
----
+This blocks both the new "Reschedule & Notify" flow and the "Delete" flow on `/coaching/schedule`.
 
-## Part 1: Session invite email enhancements
+## Fix
 
-**File:** `supabase/functions/send-session-invite/index.ts`
+Patch the trigger function to remove the reference to the non-existent `coach_private_notes` column. Keep all other guard logic intact (seekers still cannot edit coach-only fields).
 
-Replace the current minimal HTML with a richer template that branches on `session.location_type`:
+### Migration
 
-### In-Person block (when `location_type === 'in_person'`)
-- **Address / Map link:** `https://maps.app.goo.gl/eAj5thQ2aSDJs4827` (rendered as a "📍 Open in Google Maps" button)
-- **Parking instructions** (bilingual EN/HI based on seeker `preferred_language`):
-  - Roadside parking is free — pick the best available spot
-  - Do NOT park in front of gates
-  - Do NOT park in "No Parking" zones or near "No Parking" boards
-
-### Online block (when `location_type === 'online'`)
-- Prominent **"🎥 Join Zoom Meeting"** CTA button using `session.meeting_link` (falls back to the default Zoom link if missing)
-- Meeting ID / passcode hint extracted from URL when possible
-
-### Common sections (both modes)
-- Friendly greeting using seeker's first name + warm opening line
-- Session date (in `DD-Month-YYYY`), time, duration, coach name
-- **Action items** section listing pending items pulled from DB:
-  - Pending assignments → link `https://vivekdoba.com/seeker/assignments`
-  - Pending assessments → link `https://vivekdoba.com/seeker/assessments`
-  - Pending activities/worksheets → link `https://vivekdoba.com/seeker/activities`
-  - Each with a clear "Complete now" CTA
-- **Pre-meeting checklist:**
-  - Prepare your questions in advance
-  - Bring all your notebooks/journals (for in-person) or have them ready beside you (for online)
-  - Quiet, distraction-free space
-  - Carry pen + water
-- **Activity report link:** `https://vivekdoba.com/seeker/reports` (remaining activities & progress)
-- Calendar `.ics` download CTA (existing)
-- Closing signature: "🙏 Vivek Doba Training Solutions"
-
-### Data fetched (new query)
-Add a count query before composing email:
-```ts
-const { count: pendingAssignments } = await supabase
-  .from('assignments').select('*', { count: 'exact', head: true })
-  .eq('seeker_id', seeker.id)
-  .in('status', ['pending', 'assigned', 'in_progress']);
-```
-(Same pattern for assessments / pending worksheets where applicable.)
-
-### Bilingual support
-Read `seeker.preferred_language` (`en` | `hi` | `mr`); render labels accordingly. Keep English fallback.
-
----
-
-## Part 2: Global date format standardization → `DD-Month-YYYY`
-
-### New shared formatter
-Create **`src/lib/dateFormat.ts`**:
-```ts
-export const MONTHS_EN = ['January','February',...,'December'];
-export const MONTHS_HI = ['जनवरी', ...];
-export const MONTHS_MR = ['जानेवारी', ...];
-
-export function formatDateDMY(input: string | Date | null | undefined, lang: 'en'|'hi'|'mr' = 'en'): string {
-  // returns "30-April-2026" / "30-अप्रैल-2026" / "30-एप्रिल-2026"
-}
+```sql
+CREATE OR REPLACE FUNCTION public.validate_seeker_session_update()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NOT is_admin(auth.uid()) THEN
+    -- Revert any unauthorized field changes by seekers
+    NEW.engagement_score := OLD.engagement_score;
+    NEW.punishments := OLD.punishments;
+    NEW.rewards := OLD.rewards;
+    NEW.key_insights := OLD.key_insights;
+    NEW.breakthroughs := OLD.breakthroughs;
+    NEW.session_notes := OLD.session_notes;
+    NEW.therapy_given := OLD.therapy_given;
+    NEW.targets := OLD.targets;
+    NEW.next_week_assignments := OLD.next_week_assignments;
+    NEW.pending_assignments_review := OLD.pending_assignments_review;
+    NEW.stories_used := OLD.stories_used;
+    NEW.client_good_things := OLD.client_good_things;
+    NEW.client_growth_json := OLD.client_growth_json;
+    NEW.attendance := OLD.attendance;
+    NEW.pillar := OLD.pillar;
+    NEW.session_name := OLD.session_name;
+    NEW.duration_minutes := OLD.duration_minutes;
+    NEW.location_type := OLD.location_type;
+    NEW.meeting_link := OLD.meeting_link;
+    NEW.missed_reason := OLD.missed_reason;
+    NEW.reschedule_reason := OLD.reschedule_reason;
+    NEW.revision_note := OLD.revision_note;
+    NEW.next_session_time := OLD.next_session_time;
+    NEW.major_win := OLD.major_win;
+    NEW.topics_covered := OLD.topics_covered;
+    NEW.course_id := OLD.course_id;
+    NEW.session_number := OLD.session_number;
+    NEW.date := OLD.date;
+    NEW.start_time := OLD.start_time;
+    NEW.end_time := OLD.end_time;
+    NEW.seeker_id := OLD.seeker_id;
+  END IF;
+  RETURN NEW;
+END;
+$$;
 ```
 
-Mirror in edge functions: **`supabase/functions/_shared/date-format.ts`** (Deno-compatible copy).
+### Note
 
-### Replacement strategy
-Run a sweep across `src/` and `supabase/functions/` for date rendering and replace with `formatDateDMY`. Targets include (non-exhaustive — full grep sweep during implementation):
-- `toLocaleDateString(...)` calls on session/event/birthday/anniversary/payment dates
-- `format(date, 'yyyy-MM-dd')` / `'PPP'` / `'dd MMM yyyy'` patterns from `date-fns`
-- Hardcoded `${session.date}` in email HTML
-- Date columns in tables (admin sessions list, payments, leads, enrollments, reports)
+The trigger gates seekers, but coaches/admins doing the reschedule are also subject to it (the admin bypass uses `is_admin`). The function uses `is_admin`, so coach-initiated updates currently take the seeker branch. That branch still reverts critical fields like `date`, `start_time`, `end_time` for non-admins — which would silently undo a coach reschedule.
 
-Specific high-impact files (verified via earlier exploration):
-- `src/pages/coaching/CoachSchedule.tsx`
-- `src/pages/admin/SeekerDetailPage.tsx`
-- `src/pages/seeker/SeekerBookmarks.tsx`
-- `src/data/mockData.ts` (display strings only, leave ISO data intact)
-- All edge functions sending email: `send-session-invite`, `send-daily-seeker-reports`, `send-lgt-invite`, `send-lgt-report`, `send-notification`, `daily-session-report`, `approve-application`, `request-document-signature`, `resend-document-signature`
+I'll also extend the bypass so coaches assigned to the session can update scheduling/notes fields. Concretely, replace the guard with:
 
-**Rule:** Only the **displayed** string changes. Database storage, API payloads, ICS file dates, `<input type="date">` values, and sort keys remain ISO `YYYY-MM-DD`.
+```sql
+IF NOT is_admin(auth.uid())
+   AND NOT EXISTS (
+     SELECT 1 FROM public.sessions s
+     WHERE s.id = NEW.id AND s.coach_id = auth.uid()
+   )
+THEN
+  -- existing seeker-revert block (without coach_private_notes)
+END IF;
+```
 
----
+This keeps seekers locked down while letting the assigned coach reschedule, edit notes, and update meeting details. Admins continue to have full access.
 
-## Technical notes
+## Files
 
-- No DB migration required.
-- Edge function `send-session-invite` will be redeployed automatically.
-- Bilingual month names follow existing localization memory (English, Hindi, Marathi).
-- The Google Maps link is hardcoded as a constant `IN_PERSON_VENUE_MAP_URL` at top of edge function for easy future updates.
-- Calendar `.ics` `LOCATION` field for in-person sessions will include the maps URL so calendar apps render it as a clickable address.
-
----
-
-## Out of scope
-
-- No changes to scheduling logic, RLS, or DB schema.
-- No new pages/routes.
-- Existing "Only Add and Enhance" preservation rule respected — nothing removed.
+- New migration adjusting `public.validate_seeker_session_update` (the trigger itself stays bound to `sessions`).
+- No frontend changes required; `CoachSchedule.tsx` reschedule/delete flows will start working once the trigger is fixed.
