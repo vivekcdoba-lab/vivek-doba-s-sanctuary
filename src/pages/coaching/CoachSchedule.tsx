@@ -165,17 +165,49 @@ export default function CoachSchedule() {
   };
 
   const handleCreateSession = () => {
-    if (!newForm.seeker_id || !newForm.date) return;
+    const hi = lang === 'hi';
+    if (!newForm.session_type) {
+      toast.error(hi ? 'कृपया सत्र प्रकार चुनें' : 'Please select a session type');
+      return;
+    }
+    if (!newForm.seeker_id) {
+      toast.error(hi ? 'कृपया साधक चुनें' : 'Please select a seeker');
+      return;
+    }
     if (!newForm.coach_id) {
-      toast.error(lang === 'hi' ? 'कृपया कोच चुनें' : 'Please select a coach');
+      toast.error(hi ? 'कृपया कोच चुनें' : 'Please select a coach');
+      return;
+    }
+    if (!newForm.location_type) {
+      toast.error(hi ? 'कृपया मोड चुनें' : 'Please select a mode (Online or In-Person)');
+      return;
+    }
+    if (newForm.location_type === 'online' && !newForm.meeting_link) {
+      toast.error(hi ? 'कृपया मीटिंग लिंक जोड़ें' : 'Please provide a meeting link');
+      return;
+    }
+    if (!newForm.date) {
+      toast.error(hi ? 'कृपया तिथि चुनें' : 'Please select a date');
+      return;
+    }
+    if (!newForm.start_time) {
+      toast.error(hi ? 'कृपया प्रारंभ समय चुनें' : 'Please select a start time');
+      return;
+    }
+    if (!newForm.end_time) {
+      toast.error(hi ? 'कृपया समाप्ति समय चुनें' : 'Please select an end time');
+      return;
+    }
+    if (!newForm.timezone) {
+      toast.error(hi ? 'कृपया समय क्षेत्र चुनें' : 'Please select a timezone');
       return;
     }
     if (newForm.session_type === 'couple' && !newForm.partner_seeker_id) {
-      toast.error(lang === 'hi' ? 'कृपया साथी चुनें' : 'Please select a partner seeker');
+      toast.error(hi ? 'कृपया साथी चुनें' : 'Please select a partner seeker');
       return;
     }
     if (newForm.session_type === 'couple' && newForm.partner_seeker_id === newForm.seeker_id) {
-      toast.error(lang === 'hi' ? 'साथी अलग होना चाहिए' : 'Partner must be a different seeker');
+      toast.error(hi ? 'साथी अलग होना चाहिए' : 'Partner must be a different seeker');
       return;
     }
     createSession.mutate({
@@ -419,7 +451,7 @@ export default function CoachSchedule() {
           <DialogHeader><DialogTitle>{t('newSession')}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground">Session Type</label>
+              <label className="text-xs font-medium text-muted-foreground">Session Type *</label>
               <div className="mt-1 grid grid-cols-2 gap-2">
                 <button type="button"
                   onClick={() => setNewForm(p => ({ ...p, session_type: 'individual', partner_seeker_id: '' }))}
@@ -434,7 +466,7 @@ export default function CoachSchedule() {
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground">{newForm.session_type === 'couple' ? 'Primary Seeker' : t('seeker')}</label>
+              <label className="text-xs font-medium text-muted-foreground">{newForm.session_type === 'couple' ? 'Primary Seeker *' : `${t('seeker')} *`}</label>
               <select value={newForm.seeker_id} onChange={e => setNewForm(p => ({ ...p, seeker_id: e.target.value }))}
                 className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background">
                 <option value="">Select seeker</option>
@@ -471,15 +503,15 @@ export default function CoachSchedule() {
               )}
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground">{t('course')}</label>
+              <label className="text-xs font-medium text-muted-foreground">{t('course')} <span className="text-muted-foreground/70">({lang === 'hi' ? 'वैकल्पिक' : 'Optional'})</span></label>
               <select value={newForm.course_id} onChange={e => setNewForm(p => ({ ...p, course_id: e.target.value }))}
                 className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background">
-                <option value="">Optional</option>
+                <option value="">{lang === 'hi' ? 'वैकल्पिक' : 'Optional'}</option>
                 {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'मोड' : 'Mode'}</label>
+              <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'मोड *' : 'Mode *'}</label>
               <div className="mt-1 grid grid-cols-2 gap-2">
                 <button type="button"
                   onClick={() => setNewForm(p => ({ ...p, location_type: 'online', meeting_link: linkMode === 'default' ? DEFAULT_ZOOM_LINK : p.meeting_link }))}
@@ -495,7 +527,7 @@ export default function CoachSchedule() {
             </div>
             {newForm.location_type === 'online' && (
               <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'मीटिंग लिंक' : 'Meeting Link'}</label>
+                <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'मीटिंग लिंक *' : 'Meeting Link *'}</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button type="button"
                     onClick={() => { setLinkMode('default'); setNewForm(p => ({ ...p, meeting_link: DEFAULT_ZOOM_LINK })); }}
