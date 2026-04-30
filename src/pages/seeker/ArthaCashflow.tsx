@@ -20,7 +20,7 @@ export default function ArthaCashflow() {
   const { business, isLoading: bLoading } = useBusinessProfile();
   const qc = useQueryClient();
   const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ date: formatDateDMY(new Date()), type: 'inflow' as 'inflow' | 'outflow', category: 'Sales', amount: '', description: '' });
+  const [form, setForm] = useState({ date: toIsoDate(new Date()), type: 'inflow' as 'inflow' | 'outflow', category: 'Sales', amount: '', description: '' });
 
   const { data: records = [] } = useQuery({
     queryKey: ['cashflow-records', business?.id],
@@ -45,7 +45,7 @@ export default function ArthaCashflow() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['cashflow-records'] });
       setAdding(false);
-      setForm({ date: formatDateDMY(new Date()), type: 'inflow', category: 'Sales', amount: '', description: '' });
+      setForm({ date: toIsoDate(new Date()), type: 'inflow', category: 'Sales', amount: '', description: '' });
       toast.success('Entry added!');
     },
     onError: (e: any) => toast.error(e.message),

@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import DateTimeTzInput, { toUtcIso } from '@/components/common/DateTimeTzInput';
 import { detectBrowserTz } from '@/lib/timezones';
-import { formatDateDMY } from "@/lib/dateFormat";
+import { formatDateDMY, toIsoDate } from "@/lib/dateFormat";
 
 const DEFAULT_ZOOM_LINK = 'https://us06web.zoom.us/j/86310221885?pwd=LdIaVqMxx7tbavIqggTVegh01kL8HB.1';
 
@@ -128,16 +128,16 @@ export default function CoachSchedule() {
   }, [currentDate, view]);
 
   const sessionsForDay = useCallback((day: Date) => {
-    const ds = formatDateDMY(day);
+    const ds = toIsoDate(day);
     return sessions.filter(s => {
       // Prefer start_at so the session falls into the viewer's local day.
-      if (s.start_at) return formatDateDMY(new Date(s.start_at)) === ds;
+      if (s.start_at) return toIsoDate(new Date(s.start_at)) === ds;
       return s.date === ds;
     });
   }, [sessions]);
 
   const blockedForDay = useCallback((day: Date) => {
-    const ds = formatDateDMY(day);
+    const ds = toIsoDate(day);
     return calEvents.filter((e: any) => e.date === ds);
   }, [calEvents]);
 
@@ -151,7 +151,7 @@ export default function CoachSchedule() {
 
   const handleDrop = (date: Date, hour: number) => {
     if (!dragSession) return;
-    const ds = formatDateDMY(date);
+    const ds = toIsoDate(date);
     const start = `${String(hour).padStart(2, '0')}:00`;
     const end = `${String(hour + 1).padStart(2, '0')}:00`;
     updateSession.mutate({ id: dragSession, date: ds, start_time: start, end_time: end }, {

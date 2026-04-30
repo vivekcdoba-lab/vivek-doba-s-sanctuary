@@ -17,7 +17,7 @@ export default function ArthaSatisfaction() {
   const { business, isLoading: bLoading } = useBusinessProfile();
   const qc = useQueryClient();
   const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ client_name: '', feedback_date: formatDateDMY(new Date()), rating: 5, feedback_text: '', category: 'General', response_action: '' });
+  const [form, setForm] = useState({ client_name: '', feedback_date: toIsoDate(new Date()), rating: 5, feedback_text: '', category: 'General', response_action: '' });
 
   const { data: feedbacks = [] } = useQuery({
     queryKey: ['client-feedback', business?.id],
