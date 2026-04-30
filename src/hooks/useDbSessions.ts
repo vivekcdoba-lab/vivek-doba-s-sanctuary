@@ -196,8 +196,21 @@ export function useDeleteSession() {
 
       // Remove dependent participants first to avoid FK errors
       await supabase.from('session_participants').delete().eq('session_id', id);
-      const { error } = await supabase.from('sessions').delete().eq('id', id);
+
+      // Delete the session and verify it actually went away. RLS may silently
+      // filter out the row (0 affected rows, no error), which previously made
+      // the UI think the delete succeeded while the row stayed in the DB.
+      const { error, data } = await supabase
+        .from('sessions')
+        .delete()
+        .eq('id', id)
+        .select('id');
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error(
+          "Session could not be deleted. You may not have permission to delete this session — please contact an admin."
+        );
+      }
       return id;
     },
     onSuccess: () => {
