@@ -125,7 +125,11 @@ export default function CoachSchedule() {
 
   const sessionsForDay = useCallback((day: Date) => {
     const ds = format(day, 'yyyy-MM-dd');
-    return sessions.filter(s => s.date === ds);
+    return sessions.filter(s => {
+      // Prefer start_at so the session falls into the viewer's local day.
+      if (s.start_at) return format(new Date(s.start_at), 'yyyy-MM-dd') === ds;
+      return s.date === ds;
+    });
   }, [sessions]);
 
   const blockedForDay = useCallback((day: Date) => {
