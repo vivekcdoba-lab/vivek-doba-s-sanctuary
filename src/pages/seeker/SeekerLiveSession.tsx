@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import LocalTime from '@/components/common/LocalTime';
 
 const PILLAR_CONFIG: Record<string, { emoji: string; label: string }> = {
   dharma: { emoji: '🙏', label: 'Dharma' },
@@ -87,7 +88,12 @@ const SeekerLiveSession = () => {
                         <Badge className={s.status === 'in_progress' ? 'bg-green-600 text-white' : 'bg-primary/20 text-primary'}>{s.status === 'in_progress' ? '🔴 LIVE' : 'Scheduled'}</Badge>
                       </div>
                       <h3 className="text-lg font-semibold">{s.session_name || `Session #${s.session_number}`}</h3>
-                      <p className="text-sm text-muted-foreground flex items-center gap-1"><Clock className="h-4 w-4" />{s.start_time?.slice(0,5)} – {s.end_time?.slice(0,5)} • {s.duration_minutes || 60} min</p>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1"><Clock className="h-4 w-4" />
+                        <LocalTime startAt={s.start_at} sessionTz={s.timezone} fallbackTime={s.start_time} />
+                        {' – '}
+                        <LocalTime startAt={s.end_at} sessionTz={s.timezone} fallbackTime={s.end_time} showHint={false} />
+                        {' • '}{s.duration_minutes || 60} min
+                      </p>
                     </div>
                     {s.meeting_link && (
                       <Button asChild size="lg" className="gap-2">
