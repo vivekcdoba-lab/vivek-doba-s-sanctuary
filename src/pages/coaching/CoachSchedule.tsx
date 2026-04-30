@@ -82,19 +82,24 @@ export default function CoachSchedule() {
 
   const createBlockedTime = useMutation({
     mutationFn: async (evt: typeof blockForm) => {
+      const startAt = toUtcIso(evt.date, evt.start_time, evt.timezone);
+      const endAt = toUtcIso(evt.date, evt.end_time, evt.timezone);
       const { error } = await supabase.from('calendar_events').insert({
         title: evt.title || 'Blocked',
         type: 'blocked',
         date: evt.date,
         start_time: evt.start_time,
         end_time: evt.end_time,
+        start_at: startAt,
+        end_at: endAt,
+        timezone: evt.timezone,
       } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach-cal-events'] });
       setShowBlockTime(false);
-      setBlockForm({ title: '', date: '', start_time: '12:00', end_time: '13:00' });
+      setBlockForm({ title: '', date: '', start_time: '12:00', end_time: '13:00', timezone: defaultTz });
       toast.success('Time blocked');
     },
   });
@@ -171,10 +176,13 @@ export default function CoachSchedule() {
       status: 'scheduled',
       session_type: newForm.session_type,
       partner_seeker_id: newForm.session_type === 'couple' ? newForm.partner_seeker_id : undefined,
+      start_at: toUtcIso(newForm.date, newForm.start_time, newForm.timezone),
+      end_at: toUtcIso(newForm.date, newForm.end_time, newForm.timezone),
+      timezone: newForm.timezone,
     }, {
       onSuccess: () => {
         setShowNewSession(false);
-        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '' });
+        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '', timezone: defaultTz });
         toast.success(newForm.session_type === 'couple' ? 'Couple session scheduled — invites sent' : 'Session scheduled — invite sent');
       },
     });
