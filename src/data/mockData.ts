@@ -1,4 +1,5 @@
 import { Course, SeekerWithDetails, Session, Assignment, Lead, Payment, Resource, FollowUp, Message, CalendarEvent, JourneyStage } from '@/types';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 export const COURSES: Course[] = [
   { id: 'c1', name: 'Laws of Attraction through Ramayana', tagline: 'Manifest your destiny through ancient wisdom', duration: '1 Day', format: 'Workshop', tier: 'standard', price: 5000, max_participants: 50, gradient_colors: ['#2196F3', '#00BCD4'], is_active: true },
@@ -254,7 +255,7 @@ export function getTierBadgeClass(tier: string): string {
 
 export function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
-  return d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return formatDateDMY(d);
 }
 
 export function formatTime12(time: string): string {

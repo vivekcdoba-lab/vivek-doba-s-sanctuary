@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
+import { formatDateDMY } from "@/lib/dateFormat";
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
   ResponsiveContainer, Tooltip, Legend
 } from 'recharts';
@@ -222,7 +223,7 @@ const WheelOfLifeEnhanced = ({ onClose, onSave }: WheelOfLifeEnhancedProps) => {
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             🌟 Your Wheel of Life Results
           </h2>
-          <p className="text-sm text-muted-foreground">Assessment completed • {format(new Date(), 'MMM d, yyyy')}</p>
+          <p className="text-sm text-muted-foreground">Assessment completed • {formatDateDMY(new Date())}</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => setStep('input')}>
           <ArrowLeft className="h-4 w-4 mr-1" /> Edit

@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import {
+import { formatDateDMY } from "@/lib/dateFormat";
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
@@ -91,7 +92,7 @@ const AdminSearchUsers = () => {
 
   const exportCSV = () => {
     const headers = ['Name', 'Email', 'Phone', 'Role', 'City', 'Company', 'Joined'];
-    const rows = filtered.map(p => [p.full_name, p.email, p.phone || '', p.role, p.city || '', p.company || '', format(new Date(p.created_at), 'yyyy-MM-dd')]);
+    const rows = filtered.map(p => [p.full_name, p.email, p.phone || '', p.role, p.city || '', p.company || '', formatDateDMY(new Date(p.created_at))]);
     const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -232,7 +233,7 @@ const AdminSearchUsers = () => {
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{user.city || '—'}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{format(new Date(user.created_at), 'dd MMM yy')}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm">{formatDateDMY(new Date(user.created_at))}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       {user.role === 'seeker' && (

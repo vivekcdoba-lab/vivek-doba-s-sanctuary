@@ -3,6 +3,7 @@ import BackToHome from '@/components/BackToHome';
 import { Users, Plus, Target, Smile, Globe, Star, Heart } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const STORAGE_KEY = 'seeker_kama_social';
 const QUOTES = [
@@ -112,7 +113,7 @@ export default function SeekerKamaSocial() {
                     <span className="text-xs font-medium text-[hsl(var(--lotus-pink))]">{e.quality}/10</span>
                   </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground mb-1">{format(new Date(e.date), 'MMM dd, yyyy')}</p>
+                <p className="text-[10px] text-muted-foreground mb-1">{formatDateDMY(new Date(e.date))}</p>
                 {e.note && <p className="text-xs text-muted-foreground">{e.note}</p>}
               </div>
             ))}

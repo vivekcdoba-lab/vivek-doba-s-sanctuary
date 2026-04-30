@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const WIN_SIZES = [
   { key: 'small', label: '🔥', desc: 'Small Win' },
@@ -87,7 +88,7 @@ export default function SeekerWinJournal() {
                     <span>|</span>
                     <span>Dimension: {w.dimension.charAt(0).toUpperCase() + w.dimension.slice(1)}</span>
                     <span>|</span>
-                    <span>{new Date(w.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</span>
+                    <span>{formatDateDMY(w.date)}</span>
                   </div>
                 </div>
               </div>

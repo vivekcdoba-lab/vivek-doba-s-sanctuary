@@ -12,6 +12,7 @@ import { toast } from '@/hooks/use-toast';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { useAllSeekerLinks, useLinkSeekers, useUnlinkSeekers, RELATIONSHIP_EMOJIS, RELATIONSHIP_LABELS, type SeekerLinkRow } from '@/hooks/useSeekerLinks';
 import { useAuthStore } from '@/store/authStore';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const AdminLinkedProfiles = () => {
   const { profile } = useAuthStore();
@@ -148,7 +149,7 @@ const AdminLinkedProfiles = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {new Date(r0?.created_at || '').toLocaleDateString('en-IN')}
+                        {formatDateDMY(r0?.created_at || '')}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="sm" onClick={() => handleUnlink(g.group_id)}>

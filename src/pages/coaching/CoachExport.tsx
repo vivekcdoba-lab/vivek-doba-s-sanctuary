@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Download, FileText, Users, Calendar, ClipboardList } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 function downloadCSV(filename: string, csvContent: string) {
   const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -40,7 +41,7 @@ export default function CoachExport() {
 
   const exportSeekers = () => {
     const header = 'Name,Email,Phone,City,State,Occupation,Company,Gender,Joined';
-    const rows = seekers.map(s => `"${s.full_name}","${s.email}","${s.phone || ''}","${s.city || ''}","${s.state || ''}","${s.occupation || ''}","${s.company || ''}","${s.gender || ''}","${format(new Date(s.created_at), 'yyyy-MM-dd')}"`);
+    const rows = seekers.map(s => `"${s.full_name}","${s.email}","${s.phone || ''}","${s.city || ''}","${s.state || ''}","${s.occupation || ''}","${s.company || ''}","${s.gender || ''}","${formatDateDMY(new Date(s.created_at))}"`);
     downloadCSV('seekers_export.csv', `${header}\n${rows.join('\n')}`);
   };
 

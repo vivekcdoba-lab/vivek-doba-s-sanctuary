@@ -5,6 +5,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } f
 import { format } from 'date-fns';
 import { Eye } from 'lucide-react';
 import type { SwotAssessment } from '@/hooks/useSwotAssessment';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Props {
   history: SwotAssessment[];
@@ -68,7 +69,7 @@ const SwotHistory = ({ history, onViewDetails }: Props) => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">
-                      {format(new Date(assessment.created_at), 'MMMM d, yyyy')}
+                      {formatDateDMY(new Date(assessment.created_at))}
                     </p>
                     <div className="flex gap-2 mt-1 flex-wrap">
                       <Badge variant="outline" className="text-[10px] text-green-600">S: {assessment.strength_count}</Badge>

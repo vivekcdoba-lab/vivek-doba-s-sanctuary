@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import LocalTime from '@/components/common/LocalTime';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const PILLAR_CONFIG: Record<string, { emoji: string; label: string }> = {
   dharma: { emoji: '🙏', label: 'Dharma' },
@@ -37,7 +38,7 @@ const SeekerLiveSession = () => {
   useEffect(() => {
     if (!profile?.id) return;
     const fetchSessions = async () => {
-      const today = format(new Date(), 'yyyy-MM-dd');
+      const today = formatDateDMY(new Date());
       const { data } = await supabase
         .from('sessions')
         .select('*')

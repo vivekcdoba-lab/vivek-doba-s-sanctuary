@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useDbMessages, useSendMessage } from '@/hooks/useDbMessages';
 import { useAllProfiles } from '@/hooks/useSeekerProfiles';
 import BackToHome from '@/components/BackToHome';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const SeekerMessages = () => {
   const { profile } = useAuthStore();
@@ -66,7 +67,7 @@ const SeekerMessages = () => {
     yesterday.setDate(yesterday.getDate() - 1);
     if (d.toDateString() === today.toDateString()) return 'Today';
     if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
-    return d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return formatDateDMY(d);
   };
 
   let lastDate = '';

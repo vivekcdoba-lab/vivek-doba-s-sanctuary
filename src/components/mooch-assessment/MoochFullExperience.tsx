@@ -10,6 +10,7 @@ import MoochResults from './MoochResults';
 import MoochActionPlan from './MoochActionPlan';
 import MoochHistory from './MoochHistory';
 import { useMoochAssessment, MoochAssessment, MOOCH_KEYS } from '@/hooks/useMoochAssessment';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Props { onClose?: () => void; }
 
@@ -44,7 +45,7 @@ const MoochFullExperience = ({ onClose }: Props) => {
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">🧠 MOOCH (Mind Patterns)</h2>
           <p className="text-sm text-muted-foreground">Discover and transform your mental patterns — lower intensity is healthier</p>
-          {previousAssessment && <p className="text-xs text-muted-foreground mt-1">Last: {format(new Date(previousAssessment.created_at), 'MMM d, yyyy')} | Avg Intensity: {previousAssessment.average_score?.toFixed(1)}/10</p>}
+          {previousAssessment && <p className="text-xs text-muted-foreground mt-1">Last: {formatDateDMY(new Date(previousAssessment.created_at))} | Avg Intensity: {previousAssessment.average_score?.toFixed(1)}/10</p>}
         </div>
         {onClose && <Button variant="ghost" size="sm" onClick={onClose}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>}
       </div>

@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const AdminCoaches = () => {
   const { data: allProfiles = [], isLoading } = useAllProfiles();
@@ -106,7 +107,7 @@ const AdminCoaches = () => {
                   <TableCell>
                     <Badge className="bg-green-500/10 text-green-600 border-green-200">Active</Badge>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{format(new Date(coach.created_at), 'dd MMM yyyy')}</TableCell>
+                  <TableCell className="text-muted-foreground">{formatDateDMY(new Date(coach.created_at))}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" onClick={() => setResetUser(coach)} title="Reset password">
                       <KeyRound className="w-4 h-4" />

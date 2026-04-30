@@ -6,6 +6,7 @@ import { MessageSquare, Star, Loader2, BookOpen, Target, TrendingUp, ClipboardLi
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const SeekerCoachFeedback = () => {
   const { profile } = useAuthStore();
@@ -54,7 +55,7 @@ const SeekerCoachFeedback = () => {
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-semibold">{a.title}</h3>
-                    <p className="text-xs text-muted-foreground">{format(parseISO(a.updated_at), 'MMM d, yyyy')}</p>
+                    <p className="text-xs text-muted-foreground">{formatDateDMY(parseISO(a.updated_at))}</p>
                   </div>
                   {a.score != null && (
                     <div className="flex items-center gap-1">
@@ -81,7 +82,7 @@ const SeekerCoachFeedback = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold">{s.session_name || `Session #${s.session_number}`}</h3>
-                    <p className="text-xs text-muted-foreground">{format(parseISO(s.date), 'MMM d, yyyy')}</p>
+                    <p className="text-xs text-muted-foreground">{formatDateDMY(parseISO(s.date))}</p>
                   </div>
                   {s.engagement_score && <Badge variant="secondary">Engagement: {s.engagement_score}/10</Badge>}
                 </div>

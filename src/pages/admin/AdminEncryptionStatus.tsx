@@ -5,6 +5,7 @@ import { Shield, KeyRound, Clock, RotateCcw, CheckCircle2, AlertCircle } from 'l
 import { getEncryptionStatus } from '@/lib/encryption';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface RotationLogRow {
   id: string;
@@ -75,7 +76,7 @@ const AdminEncryptionStatus = () => {
               </CardTitle></CardHeader>
               <CardContent>
                 <p className="text-lg font-bold text-foreground">
-                  {format(new Date(status.next_scheduled_rotation), 'dd MMM yyyy')}
+                  {formatDateDMY(new Date(status.next_scheduled_rotation))}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Automatic — 1st of every month, 03:00 UTC</p>
               </CardContent>
@@ -88,7 +89,7 @@ const AdminEncryptionStatus = () => {
               <CardContent>
                 <p className="text-3xl font-bold text-foreground">{status.total_key_versions}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {status.last_rotation_at ? `Last rotated ${format(new Date(status.last_rotation_at), 'dd MMM yyyy')}` : 'No rotations yet'}
+                  {status.last_rotation_at ? `Last rotated ${formatDateDMY(new Date(status.last_rotation_at))}` : 'No rotations yet'}
                 </p>
               </CardContent>
             </Card>

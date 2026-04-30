@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import ApplyLGT from '../ApplyLGT';
 import LgtReport from '@/components/lgt/LgtReport';
 import { captureAndEmailLgtReport } from '@/lib/lgtReportEmail';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface SeekerRow {
   id: string;
@@ -353,7 +354,7 @@ const AdminApplyLgt = () => {
                         )}
                         {filledAt && (
                           <div className="text-[10px] text-muted-foreground mt-1">
-                            {submitted ? 'Filled' : 'Invited'} {new Date(filledAt).toLocaleDateString('en-IN')}
+                            {submitted ? 'Filled' : 'Invited'} {formatDateDMY(filledAt)}
                             {submittedNew && app?.version && app.version > 1 && (
                               <span className="ml-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold">v{app.version}</span>
                             )}
@@ -361,7 +362,7 @@ const AdminApplyLgt = () => {
                         )}
                         {submittedNew && app?.last_emailed_at && (
                           <div className="text-[10px] text-muted-foreground/80">
-                            📧 Emailed {new Date(app.last_emailed_at).toLocaleDateString('en-IN')}
+                            📧 Emailed {formatDateDMY(app.last_emailed_at)}
                           </div>
                         )}
                       </td>

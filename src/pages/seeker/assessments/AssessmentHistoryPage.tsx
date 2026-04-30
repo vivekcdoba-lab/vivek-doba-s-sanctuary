@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/store/authStore';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useState } from 'react';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface AssessmentEntry {
   id: string;
@@ -77,7 +78,7 @@ const AssessmentHistoryPage = () => {
 
   const filtered = filter === 'all' ? allEntries : allEntries.filter(e => e.type === filter);
   const typesTaken = new Set(allEntries.map(e => e.type)).size;
-  const latestDate = allEntries.length > 0 ? format(new Date(allEntries[0].date), 'MMM d, yyyy') : 'N/A';
+  const latestDate = allEntries.length > 0 ? formatDateDMY(new Date(allEntries[0].date)) : 'N/A';
 
   // Chart data: group by month and type
   const chartMap = new Map<string, Record<string, number[]>>();

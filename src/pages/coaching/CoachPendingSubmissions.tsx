@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const L = {
   title: { en: 'Pending Submissions', hi: 'लंबित प्रस्तुतियाँ' },
@@ -201,7 +202,7 @@ export default function CoachPendingSubmissions() {
                       </div>
 
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span>Due: {format(parseISO(assignment.due_date), 'MMM d, yyyy')}</span>
+                        <span>Due: {formatDateDMY(parseISO(assignment.due_date))}</span>
                         {assignment.category && <Badge variant="secondary" className="text-[10px]">{assignment.category}</Badge>}
                         {assignment.priority && (
                           <Badge variant={assignment.priority === 'high' ? 'destructive' : 'outline'} className="text-[10px]">

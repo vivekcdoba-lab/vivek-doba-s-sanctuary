@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const STATUS_OPTIONS = ['active', 'paused', 'completed', 'dropped'];
 const statusColor = (s: string) => {
@@ -126,7 +127,7 @@ const AdminEnrollments = () => {
                     <TableCell className="text-muted-foreground">{course?.name || 'Unknown'}</TableCell>
                     <TableCell><Badge variant="outline">{e.tier}</Badge></TableCell>
                     <TableCell><Badge className={statusColor(e.status)}>{e.status}</Badge></TableCell>
-                    <TableCell className="text-muted-foreground">{format(new Date(e.start_date), 'dd MMM yyyy')}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatDateDMY(new Date(e.start_date))}</TableCell>
                     <TableCell><Badge variant={e.payment_status === 'received' ? 'default' : 'destructive'}>{e.payment_status}</Badge></TableCell>
                     <TableCell>
                       <div className="flex gap-1">

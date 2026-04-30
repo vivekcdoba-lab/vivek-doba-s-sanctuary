@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Progress } from '@/components/ui/progress';
 import {
+import { formatDateDMY } from "@/lib/dateFormat";
   ACTIVITY_GROUPS, DEFAULT_NON_NEGOTIABLES, MOOD_OPTIONS, PILLAR_CONFIG,
   DAY_NAMES, MONEY_AFFIRMATIONS, generateTimeSlots, getPhaseForTime, getPillarForActivity,
   TEMPLATE_SLOTS,
@@ -128,7 +129,7 @@ const DailyWorksheet = () => {
     await saveWorksheet(true);
     // Check badge streaks after submit
     const totalIncome = state.incomeEntries.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
-    const newlyEarned = await checkAndAwardBadges(format(selectedDate, 'yyyy-MM-dd'), {
+    const newlyEarned = await checkAndAwardBadges(formatDateDMY(selectedDate), {
       is_submitted: true,
       water_intake_glasses: state.waterGlasses,
       sampoorna_din_score: null,
@@ -209,7 +210,7 @@ const DailyWorksheet = () => {
             <PopoverTrigger asChild>
               <Button variant="outline" className="min-w-[180px]">
                 <CalendarIcon className="w-4 h-4 mr-2" />
-                {format(selectedDate, 'dd MMM yyyy')}
+                {formatDateDMY(selectedDate)}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="center">
@@ -1415,7 +1416,7 @@ const DailyWorksheet = () => {
                     <p className="text-xs font-bold text-foreground mt-1">{b.badge.name}</p>
                     <p className="text-[10px] text-muted-foreground">{b.badge.description}</p>
                     <p className="text-[10px] text-primary mt-1">
-                      Earned {format(new Date(b.earned_at), 'dd MMM yyyy')}
+                      Earned {formatDateDMY(new Date(b.earned_at))}
                     </p>
                   </div>
                 ))}

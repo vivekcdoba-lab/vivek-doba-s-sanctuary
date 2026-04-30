@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import {
+import { formatDateDMY } from "@/lib/dateFormat";
   Megaphone, Pin, Search, CheckCheck, ChevronDown, ChevronUp,
   Share2, Calendar, BookOpen, PartyPopper, Wrench, Globe,
   AlertTriangle, Flame,
@@ -243,7 +244,7 @@ const SeekerAnnouncements = () => {
                         {a.starts_at && (
                           <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                             <Calendar className="w-2.5 h-2.5" />
-                            {format(new Date(a.starts_at), 'MMM d, yyyy')}
+                            {formatDateDMY(new Date(a.starts_at))}
                           </span>
                         )}
                         {isLong && (

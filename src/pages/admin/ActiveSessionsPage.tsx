@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface SessionRow {
   id: string;
@@ -311,7 +312,7 @@ const ActiveSessionsPage = () => {
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateFilter ? format(dateFilter, "MMM dd, yyyy") : "Pick a date"}
+                  {dateFilter ? formatDateDMY(dateFilter) : "Pick a date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">

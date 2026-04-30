@@ -10,6 +10,7 @@ import { Slider } from '@/components/ui/slider';
 import { toast } from '@/hooks/use-toast';
 import { format, subDays, startOfWeek, addDays } from 'date-fns';
 import { Clock, Droplets, Utensils, Footprints, Zap, Brain, Save } from 'lucide-react';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const energyEmojis = ['😫', '😴', '😐', '🙂', '😊', '😄', '💪', '🔥', '⚡', '🚀'];
 
@@ -17,7 +18,7 @@ const SeekerTimeSheet = () => {
   const { profile } = useAuthStore();
   const profileId = profile?.id;
   const queryClient = useQueryClient();
-  const today = format(new Date(), 'yyyy-MM-dd');
+  const today = formatDateDMY(new Date());
 
   const { data: existing, isLoading } = useQuery({
     queryKey: ['timesheet', profileId, today],
@@ -88,7 +89,7 @@ const SeekerTimeSheet = () => {
         .from('time_sheets')
         .select('date, energy_level, meditation_minutes')
         .eq('seeker_id', profileId)
-        .gte('date', format(weekStart, 'yyyy-MM-dd'))
+        .gte('date', formatDateDMY(weekStart))
         .lte('date', format(addDays(weekStart, 6), 'yyyy-MM-dd'));
       return data || [];
     },
@@ -97,7 +98,7 @@ const SeekerTimeSheet = () => {
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = addDays(weekStart, i);
-    const dateStr = format(d, 'yyyy-MM-dd');
+    const dateStr = formatDateDMY(d);
     const entry = weekData.find(w => w.date === dateStr);
     const isToday = dateStr === today;
     return { day: format(d, 'EEE'), date: dateStr, entry, isToday };

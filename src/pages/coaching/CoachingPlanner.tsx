@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const L = {
   title: { en: "Daily Planner", hi: "दैनिक योजना" },
@@ -26,7 +27,7 @@ export default function CoachingPlanner() {
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  const dateStr = format(selectedDate, "yyyy-MM-dd");
+  const dateStr = formatDateDMY(selectedDate);
 
   const { data: sessions = [] } = useQuery({
     queryKey: ["planner-sessions", dateStr],

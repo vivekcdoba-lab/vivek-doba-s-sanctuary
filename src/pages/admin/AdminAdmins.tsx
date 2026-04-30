@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { PERMISSION_KEYS, PERMISSION_LABELS, allPermissionsTrue, permissionCount, type PermissionKey } from '@/lib/adminPermissions';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 type AdminProfile = SeekerProfile & {
   admin_level?: string | null;
@@ -156,7 +157,7 @@ const AdminAdmins = () => {
                         {isSuper ? 'All Access' : `${pCount} of ${PERMISSION_KEYS.length}`}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{format(new Date(admin.created_at), 'dd MMM yyyy')}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatDateDMY(new Date(admin.created_at))}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         {callerIsSuper && (

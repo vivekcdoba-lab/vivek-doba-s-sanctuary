@@ -3,6 +3,7 @@ import BackToHome from '@/components/BackToHome';
 import { Brain, Plus, BookOpen, Eye, Feather, Sparkles, Sun } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const STORAGE_KEY = 'seeker_moksha_consciousness';
 const QUOTES = [
@@ -121,7 +122,7 @@ export default function SeekerMokshaConsciousness() {
                     <span className="text-[10px] bg-[hsl(var(--wisdom-purple))]/10 text-[hsl(var(--wisdom-purple))] px-2 py-0.5 rounded-full">{typeInfo.label}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-2">
-                    <span>{format(new Date(e.date), 'MMM dd, yyyy')}</span>
+                    <span>{formatDateDMY(new Date(e.date))}</span>
                     <span className="flex items-center gap-1">
                       <span className={`w-2 h-2 rounded-full ${levelInfo?.color || 'bg-muted'}`} />
                       {levelInfo?.name} ({levelInfo?.label})

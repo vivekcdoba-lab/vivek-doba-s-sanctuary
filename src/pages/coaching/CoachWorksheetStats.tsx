@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, Users, AlertTriangle, Trophy, Calendar, Target } from 'lucide-react';
 import { format, subDays, startOfWeek, getDay } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', '#F59E0B', '#10B981', '#8B5CF6', '#EC4899', '#06B6D4'];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -37,7 +38,7 @@ export default function CoachWorksheetStats() {
   // KPIs
   const totalSeekers = profiles.length;
   const submitted = worksheets.filter((w: any) => w.is_submitted);
-  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const todayStr = formatDateDMY(new Date());
   const todaySubmitted = submitted.filter((w: any) => w.worksheet_date === todayStr).length;
   const avgCompletion = submitted.length
     ? Math.round(submitted.reduce((s: number, w: any) => s + (w.completion_rate_percent || 0), 0) / submitted.length)

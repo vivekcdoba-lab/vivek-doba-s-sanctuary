@@ -6,6 +6,7 @@ import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { useDbFollowUps } from '@/hooks/useDbFollowUps';
 import { usePayments } from '@/hooks/usePayments';
 import { Play, Phone, MessageSquare, Bell, CheckCircle2, AlertTriangle, Clock, Calendar, Loader2 } from 'lucide-react';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const formatTime12 = (t: string) => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`; };
 const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
@@ -59,7 +60,7 @@ const CoachDayView = () => {
       <div className="gradient-hero rounded-2xl p-6 text-primary-foreground relative overflow-hidden">
         <div className="absolute top-2 right-6 text-5xl opacity-10">🙏</div>
         <h1 className="text-2xl font-bold">{getGreeting()}, Coach</h1>
-        <p className="text-primary-foreground/70 mt-1">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        <p className="text-primary-foreground/70 mt-1">{formatDateDMY()}</p>
         <p className="text-sm text-primary-foreground/80 mt-2">
           You have <strong>{todaySessions.length} sessions</strong> today | <strong>{overdueFollowUps.length} follow-ups</strong> due
         </p>

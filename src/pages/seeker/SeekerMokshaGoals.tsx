@@ -3,6 +3,7 @@ import BackToHome from '@/components/BackToHome';
 import { Compass, Plus, Calendar, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 type Goal = { date: string; text: string; progress: number };
 const STORAGE_KEY = 'seeker_moksha_goals';
@@ -43,7 +44,7 @@ export default function SeekerMokshaGoals() {
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className="text-sm font-medium text-foreground flex items-center gap-1"><Sparkles className="w-3 h-3 text-[hsl(var(--wisdom-purple))]" />{g.text}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{format(new Date(g.date), 'MMM dd, yyyy')}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{formatDateDMY(new Date(g.date))}</p>
               </div>
               <span className="text-xs font-medium text-[hsl(var(--wisdom-purple))]">{g.progress}%</span>
             </div>

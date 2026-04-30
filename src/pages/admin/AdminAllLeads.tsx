@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const STAGES = [
   { key: 'new', label: 'Enquiry' }, { key: 'contacted', label: 'Contacted' }, { key: 'discovery', label: 'Interested' },
@@ -64,7 +65,7 @@ const AdminAllLeads = () => {
 
   const exportCSV = () => {
     const headers = ['Name', 'Phone', 'Email', 'Source', 'Stage', 'Priority', 'Created'];
-    const rows = filtered.map(l => [l.name, l.phone || '', l.email || '', l.source || '', l.stage || 'new', l.priority || '', format(new Date(l.created_at), 'yyyy-MM-dd')]);
+    const rows = filtered.map(l => [l.name, l.phone || '', l.email || '', l.source || '', l.stage || 'new', l.priority || '', formatDateDMY(new Date(l.created_at))]);
     const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `leads_${format(new Date(), 'yyyyMMdd')}.csv`; a.click();

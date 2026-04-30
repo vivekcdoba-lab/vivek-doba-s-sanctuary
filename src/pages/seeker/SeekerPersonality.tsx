@@ -12,6 +12,7 @@ import { Brain, Users, Lightbulb, Shield, Heart, Target, RotateCcw, Share2, Tria
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { format, differenceInMonths } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface FiroBScores {
   eI: number; wI: number;
@@ -194,7 +195,7 @@ export default function SeekerPersonality() {
             <Brain className="h-6 w-6 text-primary" /> Personality Insights
           </h1>
           <p className="text-sm text-muted-foreground">
-            Based on FIRO-B taken {format(new Date(assessment!.created_at), 'PPP')}
+            Based on FIRO-B taken {formatDateDMY(new Date(assessment!.created_at))}
             {isOlderThan6Months && <span className="text-destructive ml-2">• Over 6 months old</span>}
           </p>
         </div>

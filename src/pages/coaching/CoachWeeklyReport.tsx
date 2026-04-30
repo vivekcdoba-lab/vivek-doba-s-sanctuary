@@ -4,6 +4,7 @@ import { BarChart3, Users, FileText, Calendar, TrendingUp, CheckCircle, AlertTri
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { startOfWeek, endOfWeek, format, subWeeks } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface WeeklyStats {
   totalSeekers: number;
@@ -34,8 +35,8 @@ const CoachWeeklyReport = () => {
 
   const loadStats = async () => {
     setLoading(true);
-    const ws = format(weekStart, 'yyyy-MM-dd');
-    const we = format(weekEnd, 'yyyy-MM-dd');
+    const ws = formatDateDMY(weekStart);
+    const we = formatDateDMY(weekEnd);
 
     const [{ data: seekers }, { data: worksheets }, { data: sessions }, { data: assignments }] = await Promise.all([
       supabase.from('profiles').select('id, full_name, created_at').eq('role', 'seeker'),
@@ -101,7 +102,7 @@ const CoachWeeklyReport = () => {
             <BarChart3 className="w-6 h-6 text-primary" /> 📊 Weekly Coach Report
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
+            {format(weekStart, 'MMM d')} - {formatDateDMY(weekEnd)}
           </p>
         </div>
         <div className="flex gap-2">

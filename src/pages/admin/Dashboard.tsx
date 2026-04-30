@@ -19,6 +19,7 @@ import ChartWrapper from '@/components/charts/ChartWrapper';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import CoachPerformanceChart from '@/components/dashboard/CoachPerformanceChart';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const CountUp = ({ end, prefix = '' }: { end: number; prefix?: string }) => {
   const [count, setCount] = useState(0);
@@ -148,7 +149,7 @@ const AdminDashboard = () => {
       <div className="gradient-hero rounded-2xl p-6 lg:p-8 text-primary-foreground relative overflow-hidden">
         <div className="absolute top-2 right-6 text-6xl opacity-10">ॐ</div>
         <h1 className="text-2xl lg:text-3xl font-bold">👑 {getGreeting()}, Vivek Sir</h1>
-        <p className="text-primary-foreground/70 mt-1">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        <p className="text-primary-foreground/70 mt-1">{formatDateDMY()}</p>
         <p className="text-sm text-primary-foreground/60 mt-3 italic">"{quote.text}" — {quote.author}</p>
         <Link to="/coach-day" className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-xl bg-primary-foreground/20 text-primary-foreground text-sm font-medium hover:bg-primary-foreground/30 transition-colors">
           <Clipboard className="w-4 h-4" /> 📋 My Day

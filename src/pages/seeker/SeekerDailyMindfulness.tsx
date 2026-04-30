@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ResourcePreviewModal } from '@/components/ResourcePreviewModal';
 import {
+import { formatDateDMY } from "@/lib/dateFormat";
   Sunrise, Play, Search, CheckCircle2, Bookmark, BookmarkCheck,
   Clock, Flame, Sparkles, Calendar, Headphones, Video as VideoIcon, FileText,
 } from 'lucide-react';
@@ -106,12 +107,12 @@ export default function SeekerDailyMindfulness() {
     const days = new Set<string>();
     items.forEach(i => {
       const p = progressMap[i.id];
-      if (p?.is_completed) days.add(format(parseISO(i.created_at), 'yyyy-MM-dd'));
+      if (p?.is_completed) days.add(formatDateDMY(parseISO(i.created_at)));
     });
     let s = 0;
     let cursor = new Date();
-    if (!days.has(format(cursor, 'yyyy-MM-dd'))) cursor = addDays(cursor, -1);
-    while (days.has(format(cursor, 'yyyy-MM-dd'))) { s++; cursor = addDays(cursor, -1); }
+    if (!days.has(formatDateDMY(cursor))) cursor = addDays(cursor, -1);
+    while (days.has(formatDateDMY(cursor))) { s++; cursor = addDays(cursor, -1); }
     return s;
   }, [items, progressMap]);
 

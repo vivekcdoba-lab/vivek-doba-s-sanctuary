@@ -7,10 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, MessageCircle, Flame, Clock, Download } from 'lucide-react';
 import { format, subDays } from 'date-fns';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 export default function CoachWorksheetMissed() {
   const { lang } = useCoachingLang();
-  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const todayStr = formatDateDMY(new Date());
 
   const { data: profiles = [] } = useQuery({
     queryKey: ['coach-missed-profiles'],

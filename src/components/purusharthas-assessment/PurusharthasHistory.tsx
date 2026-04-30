@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { PurusharthasAssessment } from '@/hooks/usePurusharthasAssessment';
 import { PURUSHARTHAS_DIMENSIONS } from './purusharthasData';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Props {
   history: PurusharthasAssessment[];
@@ -79,7 +80,7 @@ const PurusharthasHistory = ({ history, onViewDetails }: Props) => {
             return (
               <div key={a.id} className="flex items-center justify-between p-2 rounded bg-muted/50">
                 <div>
-                  <p className="text-xs font-medium">{format(new Date(a.created_at), 'MMM d, yyyy')}</p>
+                  <p className="text-xs font-medium">{formatDateDMY(new Date(a.created_at))}</p>
                   <p className="text-xs text-muted-foreground">Avg: {a.average_score?.toFixed(1)} | High: {highest} | Low: {lowest}</p>
                 </div>
                 <Button variant="ghost" size="sm" className="text-xs" onClick={() => onViewDetails(a)}>View</Button>

@@ -3,6 +3,7 @@ import BackToHome from '@/components/BackToHome';
 import { Sunrise, CheckCircle, Circle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const DEFAULT_PRACTICES = [
   { id: '1', name: 'Morning Prayer / Mantra', emoji: '🙏' },
@@ -16,7 +17,7 @@ const DEFAULT_PRACTICES = [
 const STORAGE_KEY = 'seeker_dharma_practices';
 
 export default function SeekerDharmaPractices() {
-  const today = format(new Date(), 'yyyy-MM-dd');
+  const today = formatDateDMY(new Date());
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
 
   useEffect(() => {

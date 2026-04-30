@@ -5,6 +5,7 @@ import { Plus, Trash2, Loader2, BookOpen, FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Template {
   id: string;
@@ -129,7 +130,7 @@ const SessionTemplatesPage = () => {
               </div>
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p>{t.default_assignments.length} default assignment{t.default_assignments.length !== 1 ? 's' : ''}</p>
-                <p>Created {new Date(t.created_at).toLocaleDateString()}</p>
+                <p>Created {formatDateDMY(t.created_at)}</p>
               </div>
               {t.default_assignments.length > 0 && (
                 <div className="mt-3 space-y-1">

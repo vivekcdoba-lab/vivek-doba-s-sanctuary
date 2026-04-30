@@ -2,6 +2,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useBreadcrumbOverride } from '@/components/AdminLayout';
 import { useState, useEffect, useCallback } from 'react';
 import {
+import { formatDateDMY } from "@/lib/dateFormat";
   Phone, MessageSquare, Mail, Edit, Archive, Calendar, ClipboardList, TrendingUp,
   CreditCard, Flame, ArrowLeft, UserCheck, CalendarCheck, Eye, ChevronDown, ChevronUp,
   Lock, Star, Flag, Printer, X, Target, Heart, BookOpen, Sparkles, AlertTriangle, Award, Plus, Gift, Loader2, Download, Send, FileText
@@ -510,7 +511,7 @@ const SeekerDetailPage = () => {
                   <div key={b.id} className="text-center p-3 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors" title={b.badge?.description}>
                     <span className="text-3xl block">{b.badge?.emoji}</span>
                     <p className="text-[11px] font-bold text-foreground mt-1 truncate">{b.badge?.name}</p>
-                    <p className="text-[9px] text-muted-foreground">{format(new Date(b.earned_at), 'dd MMM yyyy')}</p>
+                    <p className="text-[9px] text-muted-foreground">{formatDateDMY(new Date(b.earned_at))}</p>
                   </div>
                 ))}
               </div>
@@ -924,7 +925,7 @@ const SeekerDetailPage = () => {
               <div className="flex flex-wrap items-center justify-between gap-2 bg-card rounded-xl border border-border p-3">
                 <div className="text-xs text-muted-foreground">
                   Source: <span className="font-medium text-foreground">{lgtApp.source === 'submissions' ? 'Legacy public submission' : 'Admin / Seeker form'}</span>
-                  {lgtApp.submitted_at && <> · Submitted {new Date(lgtApp.submitted_at).toLocaleDateString('en-IN')}</>}
+                  {lgtApp.submitted_at && <> · Submitted {formatDateDMY(lgtApp.submitted_at)}</>}
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={handleDownloadLgtPdf} className="gap-1">

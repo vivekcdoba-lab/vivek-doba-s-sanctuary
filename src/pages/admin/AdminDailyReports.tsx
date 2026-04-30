@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { formatDateDMY } from "@/lib/dateFormat";
 
 interface Settings {
   id: string;
@@ -48,7 +49,7 @@ export default function AdminDailyReports() {
   const load = async (dateOverride?: Date) => {
     setLoading(true);
     const targetDate = dateOverride ?? filterDate;
-    const dateStr = format(targetDate, "yyyy-MM-dd");
+    const dateStr = formatDateDMY(targetDate);
     const [{ data: s }, { data: l }] = await Promise.all([
       supabase.from("daily_report_settings").select("*").maybeSingle(),
       supabase
@@ -220,8 +221,8 @@ export default function AdminDailyReports() {
         <div>
           <h2 className="text-lg font-semibold text-foreground">Delivery log</h2>
           <p className="text-xs text-muted-foreground">
-            Showing {logs.length} record{logs.length === 1 ? "" : "s"} for {format(filterDate, "PPP")}
-            {format(filterDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") ? " (today)" : ""}
+            Showing {logs.length} record{logs.length === 1 ? "" : "s"} for {formatDateDMY(filterDate)}
+            {formatDateDMY(filterDate) === formatDateDMY(new Date()) ? " (today)" : ""}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -229,7 +230,7 @@ export default function AdminDailyReports() {
             <PopoverTrigger asChild>
               <Button variant="outline" className={cn("w-[220px] justify-start text-left font-normal")}>
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {format(filterDate, "PPP")}
+                {formatDateDMY(filterDate)}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">

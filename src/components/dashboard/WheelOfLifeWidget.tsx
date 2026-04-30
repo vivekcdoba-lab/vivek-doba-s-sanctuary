@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useWheelOfLife } from '@/hooks/useWheelOfLife';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
+import { formatDateDMY } from "@/lib/dateFormat";
 
 const DIMENSIONS = [
   { key: 'career_score', label: '💼 Career' },
@@ -65,7 +66,7 @@ const WheelOfLifeWidget = () => {
       </div>
       <div className="flex items-center justify-between mt-1">
         <p className="text-xs text-muted-foreground">Avg: <span className="font-semibold text-foreground">{latest.average_score?.toFixed(1) ?? '—'}/10</span></p>
-        <p className="text-[10px] text-muted-foreground">{new Date(latest.created_at).toLocaleDateString()}</p>
+        <p className="text-[10px] text-muted-foreground">{formatDateDMY(latest.created_at)}</p>
       </div>
     </div>
   );
