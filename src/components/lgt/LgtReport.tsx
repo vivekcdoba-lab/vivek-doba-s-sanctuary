@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import {
-import { formatDateDMY } from "@/lib/dateFormat";
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
   ResponsiveContainer,
 } from 'recharts';
 
+import { formatDateDMY } from "@/lib/dateFormat";
 /**
  * Shared read-only "nice visualization" of an LGT application.
  * Reads from a flexible form_data object (may come from either

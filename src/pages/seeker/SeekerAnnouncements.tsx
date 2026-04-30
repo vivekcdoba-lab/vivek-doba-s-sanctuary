@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import {
-import { formatDateDMY } from "@/lib/dateFormat";
   Megaphone, Pin, Search, CheckCheck, ChevronDown, ChevronUp,
   Share2, Calendar, BookOpen, PartyPopper, Wrench, Globe,
   AlertTriangle, Flame,
@@ -16,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BackToHome from '@/components/BackToHome';
 
+import { formatDateDMY } from "@/lib/dateFormat";
 const TYPE_CONFIG: Record<string, { emoji: string; icon: typeof Globe; label: string; color: string }> = {
   general: { emoji: '📢', icon: Globe, label: 'General', color: 'bg-primary/10 text-primary' },
   workshop: { emoji: '🎓', icon: Calendar, label: 'Workshop', color: 'bg-blue-500/10 text-blue-600' },
