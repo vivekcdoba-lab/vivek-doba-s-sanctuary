@@ -1,41 +1,27 @@
-## Timezone-Aware Scheduling
+## Add "Session Mode" dropdown to New Session
 
-### Database (additive, non-breaking)
-- Add to `sessions` and `calendar_events`:
-  - `start_at TIMESTAMPTZ`, `end_at TIMESTAMPTZ`, `timezone TEXT`
-- Backfill existing rows treating `date + start_time` as `Asia/Kolkata`.
-- `BEFORE INSERT/UPDATE` trigger keeps legacy `date/start_time/end_time` columns coherent with `start_at` (rendered in the row's `timezone`). Old code paths keep working untouched (Preservation Policy).
-- Add `timezone TEXT` to `profiles` for per-user reminder preference.
+Add an Online / In-Person selector to the **New Session** dialog in `src/pages/coaching/CoachSchedule.tsx`, plus a conditional Meeting Link field when Online is chosen. The value flows through to the existing `location_type` and `meeting_link` columns on `sessions` (already supported by `useCreateSession`), so no DB or hook changes are needed.
 
-### Reusable components
-- `src/lib/timezones.ts` — grouped IANA zones + browser-tz detection + live offset formatter.
-- `src/components/common/TimezonePicker.tsx` — grouped `<select>` with live UTC offset, defaults to viewer browser tz.
-- `src/components/common/DateTimeTzInput.tsx` — date + start + end + timezone + live preview line ("10:00 in Asia/Kolkata = 05:30 your local time"). Exports `toUtcIso` / `fromUtcIso` helpers using `date-fns-tz`.
-- Add dependency: `date-fns-tz` (already installed).
+### Changes — `src/pages/coaching/CoachSchedule.tsx`
 
-### Wire `CoachSchedule.tsx` first
-- Replace plain date/time inputs in **New Session** and **Block Time** dialogs with `<DateTimeTzInput />`.
-- Default timezone = scheduler's browser tz (so a coach in Berlin defaults to Europe/Berlin).
-- On save, persist `start_at`, `end_at`, `timezone` (the trigger fills legacy fields automatically).
+1. **Form state (line 71)** — extend `newForm` with:
+   - `location_type: 'online' | 'in_person'` (default `'online'`)
+   - `meeting_link: string` (default `''`)
 
-### Update display surfaces to render in viewer's tz
-- `UpcomingSessionsWidget`, `SeekerLiveSession`, `CoachActionCenter`, `CoachTodaySessions`, `CalendarPage` (admin + coach grids).
-- When `start_at` is present, render via `formatInTimeZone(start_at, viewerTz, ...)`.
-- If `session.timezone !== viewerTz`, show small dual-zone hint: `10:00 IST → 05:30 your time`.
-- Fallback to legacy `date/start_time` rendering when `start_at` is null (old rows after backfill should all have it).
+2. **UI (between Course select and `DateTimeTzInput`, ~line 409)** — add a two-button toggle styled to match the existing "Session Type" toggle:
+   ```
+   🎥 Online    |    📍 In-Person
+   ```
+   When `online`, show a Meeting Link input (optional, placeholder "https://meet… or Zoom link"). When `in_person`, hide the link field.
 
-### Calendar invites
-- Update `supabase/functions/send-session-invite` to emit `DTSTART;TZID=<session.timezone>` plus the `VTIMEZONE` block, so Google/Outlook auto-convert per recipient.
+3. **Submit (`handleCreateSession`, line 173)** — pass `location_type` and `meeting_link` (only if non-empty) into `createSession.mutate(...)`.
 
-### Rollout order in build mode
-1. Submit migration (schema + backfill + trigger + profiles.timezone).
-2. Create `lib/timezones.ts`, `TimezonePicker`, `DateTimeTzInput`.
-3. Wire `CoachSchedule` (new + block dialogs).
-4. Update display widgets to viewer tz with dual-zone hint.
-5. Update `send-session-invite` to TZID-aware ICS.
-6. Roll the same control to remaining schedulers (`BookAppointment`, admin calendar, reschedule flows) in subsequent passes.
+4. **Reset (line 189)** — include `location_type: 'online'`, `meeting_link: ''` in the post-save reset.
 
-### Preservation
-- All existing pages, columns, rows preserved.
-- Default timezone everywhere = `Asia/Kolkata` so existing Indian users see no behavioural change.
-- New flexibility activates only when a scheduler explicitly chooses a different zone.
+### Bilingual labels
+Add to the `L` map: `mode` (Mode / मोड), `online` (Online / ऑनलाइन), `inPerson` (In-Person / व्यक्तिगत), `meetingLink` (Meeting Link / मीटिंग लिंक).
+
+### Out of scope (kept as-is)
+- "Block Time" dialog — not a session, no mode needed.
+- DB schema and `useCreateSession` already accept `location_type` + `meeting_link`; calendar invite (`send-session-invite`) already renders the right "Location" line based on these fields.
+- No changes to existing rendering of past/scheduled sessions.

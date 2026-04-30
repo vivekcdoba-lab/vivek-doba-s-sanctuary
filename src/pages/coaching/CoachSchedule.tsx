@@ -68,7 +68,7 @@ export default function CoachSchedule() {
   const [dragSession, setDragSession] = useState<string | null>(null);
 
   const defaultTz = useMemo(() => detectBrowserTz(), []);
-  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '', timezone: defaultTz });
+  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '', timezone: defaultTz, location_type: 'online' as 'online' | 'in_person', meeting_link: '' });
   const [blockForm, setBlockForm] = useState({ title: '', date: '', start_time: '12:00', end_time: '13:00', timezone: defaultTz });
 
   // Calendar events for blocked time
@@ -180,13 +180,15 @@ export default function CoachSchedule() {
       status: 'scheduled',
       session_type: newForm.session_type,
       partner_seeker_id: newForm.session_type === 'couple' ? newForm.partner_seeker_id : undefined,
+      location_type: newForm.location_type,
+      meeting_link: newForm.location_type === 'online' && newForm.meeting_link ? newForm.meeting_link : undefined,
       start_at: toUtcIso(newForm.date, newForm.start_time, newForm.timezone),
       end_at: toUtcIso(newForm.date, newForm.end_time, newForm.timezone),
       timezone: newForm.timezone,
-    }, {
+    } as any, {
       onSuccess: () => {
         setShowNewSession(false);
-        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '', timezone: defaultTz });
+        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '', timezone: defaultTz, location_type: 'online', meeting_link: '' });
         toast.success(newForm.session_type === 'couple' ? 'Couple session scheduled — invites sent' : 'Session scheduled — invite sent');
       },
     });
@@ -407,6 +409,30 @@ export default function CoachSchedule() {
                 {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'मोड' : 'Mode'}</label>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                <button type="button"
+                  onClick={() => setNewForm(p => ({ ...p, location_type: 'online' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newForm.location_type === 'online' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  🎥 {lang === 'hi' ? 'ऑनलाइन' : 'Online'}
+                </button>
+                <button type="button"
+                  onClick={() => setNewForm(p => ({ ...p, location_type: 'in_person', meeting_link: '' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newForm.location_type === 'in_person' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  📍 {lang === 'hi' ? 'व्यक्तिगत' : 'In-Person'}
+                </button>
+              </div>
+            </div>
+            {newForm.location_type === 'online' && (
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'मीटिंग लिंक' : 'Meeting Link'}</label>
+                <input type="url" value={newForm.meeting_link}
+                  onChange={e => setNewForm(p => ({ ...p, meeting_link: e.target.value }))}
+                  placeholder="https://meet.google.com/… or Zoom link"
+                  className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background" />
+              </div>
+            )}
             <DateTimeTzInput
               date={newForm.date}
               startTime={newForm.start_time}
