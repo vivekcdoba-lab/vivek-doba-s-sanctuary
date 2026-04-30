@@ -152,7 +152,7 @@ const BookAppointment = () => {
           <div className="text-5xl mb-4">✅</div>
           <h2 className="text-2xl font-bold text-foreground mb-2">Appointment Request Submitted!</h2>
           <div className="bg-muted rounded-xl p-4 my-4 text-left">
-            <p className="text-sm text-foreground">📅 {formatDateDMY(form.selectedDate?)} at {form.selectedSlot}</p>
+            <p className="text-sm text-foreground">📅 {formatDateDMY(form.selectedDate)} at {form.selectedSlot}</p>
           </div>
           <div className="text-left text-sm text-muted-foreground space-y-1 mb-6">
             <p className="font-semibold text-foreground">What happens next:</p>
