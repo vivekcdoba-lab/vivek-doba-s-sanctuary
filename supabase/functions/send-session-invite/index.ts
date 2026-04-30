@@ -165,9 +165,11 @@ Deno.serve(async (req: Request) => {
     // Load primary seeker
     const { data: seeker } = await supabase
       .from("profiles")
-      .select("id, full_name, email")
+      .select("id, full_name, email, preferred_language")
       .eq("id", session.seeker_id)
       .single();
+    const seekerLang: Lang = ((seeker?.preferred_language as Lang) || "en");
+    const sessionDateDisplay = formatDateDMY(session.date, seekerLang);
 
     // Load participants (for couple/group)
     const { data: participants } = await supabase
@@ -236,15 +238,27 @@ Deno.serve(async (req: Request) => {
     const sequence = body.sequence ?? Math.max(0, Math.floor((updated - created) / 1000));
 
     const isCancel = action === "cancelled";
+    const isOnline = session.location_type !== "in_person";
+    const joinLink = session.meeting_link || (isOnline ? DEFAULT_ZOOM_LINK : "");
     const summary = `${isCancel ? "[Cancelled] " : ""}VDTS Session: ${courseName}`;
-    const location =
-      session.location_type === "in_person"
-        ? "In-Person (details from your coach)"
-        : session.meeting_link || "Online (link will be shared)";
+    const location = isOnline
+      ? (joinLink || "Online (link will be shared)")
+      : `In-Person Venue — ${IN_PERSON_VENUE_MAP_URL}`;
     const description = [
       `Session with ${coach?.full_name || "your coach"}`,
-      session.meeting_link ? `Join: ${session.meeting_link}` : null,
+      `Date: ${sessionDateDisplay}`,
+      isOnline
+        ? `Join Zoom: ${joinLink}`
+        : `Venue (Google Maps): ${IN_PERSON_VENUE_MAP_URL}`,
+      !isOnline
+        ? "Parking: Free roadside parking. Please do NOT park in front of gates or near 'No Parking' boards."
+        : null,
       session.session_notes ? `Notes: ${session.session_notes}` : null,
+      "",
+      "Pre-meeting checklist:",
+      "• Prepare your questions in advance",
+      "• Carry/keep ALL your notebooks ready to take notes",
+      "• Complete pending assignments, assessments & activities",
       "",
       "— Vivek Doba Training Solutions",
     ]
@@ -276,21 +290,146 @@ Deno.serve(async (req: Request) => {
     const icsB64 = btoa(_bin);
 
     const subject = isCancel
-      ? `Cancelled: ${courseName} on ${session.date}`
+      ? `Cancelled: ${courseName} on ${sessionDateDisplay}`
       : action === "rescheduled"
-      ? `Updated: ${courseName} on ${session.date}`
-      : `Invite: ${courseName} on ${session.date}`;
+      ? `Updated: ${courseName} on ${sessionDateDisplay}`
+      : `Invite: ${courseName} on ${sessionDateDisplay}`;
+
+    // ---- Pull pending counts to nudge seeker before the meeting ----
+    let pendingAssignments = 0;
+    let pendingWorksheets = 0;
+    if (seeker?.id) {
+      const { count: aCount } = await supabase
+        .from("assignments")
+        .select("*", { count: "exact", head: true })
+        .eq("seeker_id", seeker.id)
+        .in("status", ["pending", "assigned", "in_progress"]);
+      pendingAssignments = aCount || 0;
+
+      const { count: wCount } = await supabase
+        .from("daily_worksheets")
+        .select("*", { count: "exact", head: true })
+        .eq("seeker_id", seeker.id)
+        .eq("is_submitted", false);
+      pendingWorksheets = wCount || 0;
+    }
+
+    const firstName = (seeker?.full_name || "Seeker").split(" ")[0];
+    const greetingMap: Record<Lang, string> = {
+      en: `Namaste ${firstName} 🙏`,
+      hi: `नमस्ते ${firstName} 🙏`,
+      mr: `नमस्ते ${firstName} 🙏`,
+    };
+    const introMap: Record<Lang, string> = {
+      en: isCancel
+        ? "Your upcoming coaching session has been cancelled."
+        : action === "rescheduled"
+        ? "Your coaching session time has been updated. Please find the new details below."
+        : "Your next coaching session is confirmed. Here are all the details to help you arrive ready and grounded.",
+      hi: isCancel
+        ? "आपका आगामी कोचिंग सत्र रद्द कर दिया गया है।"
+        : action === "rescheduled"
+        ? "आपके सत्र का समय अपडेट किया गया है। कृपया नीचे नई जानकारी देखें।"
+        : "आपका अगला कोचिंग सत्र पुष्टि हो चुका है। कृपया नीचे सभी विवरण देखें।",
+      mr: isCancel
+        ? "तुमचा आगामी कोचिंग सत्र रद्द करण्यात आला आहे."
+        : action === "rescheduled"
+        ? "तुमच्या सत्राची वेळ अपडेट केली आहे. कृपया खालील नवीन माहिती पहा."
+        : "तुमचा पुढील कोचिंग सत्र निश्चित झाला आहे. खालील सर्व माहिती पहा.",
+    };
+
+    const locationBlock = isOnline
+      ? `
+        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:16px;margin:16px 0">
+          <p style="margin:0 0 8px;font-weight:700;color:#1E3A8A">🎥 Online Meeting (Zoom)</p>
+          <p style="margin:0 0 12px;font-size:13px;color:#1f2937;word-break:break-all">
+            <a href="${joinLink}" style="color:#2563EB;text-decoration:underline">${joinLink}</a>
+          </p>
+          <a href="${joinLink}" style="display:inline-block;background:#2563EB;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600">Join Zoom Meeting</a>
+          <p style="margin:12px 0 0;font-size:12px;color:#6b7280">Tip: Test your camera & mic 5 minutes before the session.</p>
+        </div>`
+      : `
+        <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:16px;margin:16px 0">
+          <p style="margin:0 0 8px;font-weight:700;color:#9A3412">📍 In-Person Venue</p>
+          <a href="${IN_PERSON_VENUE_MAP_URL}" style="display:inline-block;background:#FF6B00;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;margin-bottom:10px">Open in Google Maps</a>
+          <div style="background:#fff;border:1px dashed #FDBA74;border-radius:8px;padding:12px;margin-top:10px">
+            <p style="margin:0 0 6px;font-weight:600;color:#9A3412">🚗 Parking Instructions</p>
+            <ul style="margin:0;padding-left:18px;color:#1f2937;font-size:13px;line-height:1.6">
+              <li><strong>Roadside parking is FREE</strong> — pick the best available spot.</li>
+              <li>Do <strong>NOT</strong> park in front of any gates.</li>
+              <li>Do <strong>NOT</strong> park in "No Parking" zones or near "No Parking" boards.</li>
+            </ul>
+          </div>
+        </div>`;
+
+    const actionItems: string[] = [];
+    if (pendingAssignments > 0) {
+      actionItems.push(
+        `<li style="margin:6px 0">📝 <strong>${pendingAssignments}</strong> pending assignment${pendingAssignments > 1 ? "s" : ""} — <a href="${APP_BASE_URL}/seeker/assignments" style="color:#FF6B00;font-weight:600">Complete now</a></li>`,
+      );
+    }
+    if (pendingWorksheets > 0) {
+      actionItems.push(
+        `<li style="margin:6px 0">📒 <strong>${pendingWorksheets}</strong> pending daily activity / worksheet — <a href="${APP_BASE_URL}/seeker/activities" style="color:#FF6B00;font-weight:600">Complete now</a></li>`,
+      );
+    }
+    actionItems.push(
+      `<li style="margin:6px 0">🧪 Pending assessments — <a href="${APP_BASE_URL}/seeker/assessments" style="color:#FF6B00;font-weight:600">Take assessments</a></li>`,
+    );
+    actionItems.push(
+      `<li style="margin:6px 0">📊 Your remaining activities & progress report — <a href="${APP_BASE_URL}/seeker/reports" style="color:#FF6B00;font-weight:600">View report</a></li>`,
+    );
+
+    const checklistItems = [
+      "✍️ <strong>Prepare your questions</strong> in advance — write them down",
+      isOnline
+        ? "📚 Keep <strong>all your notebooks/journals</strong> ready beside you to take notes"
+        : "📚 <strong>Carry ALL your notebooks/journals</strong> with you to take notes",
+      "🤫 Find a quiet, distraction-free space",
+      "🖊️ Carry a pen and water bottle",
+      isOnline ? "🔋 Ensure your device is fully charged & internet is stable" : "⏰ Arrive 5–10 minutes early",
+    ];
 
     const html = `
-      <div style="font-family: Inter, system-ui, sans-serif; max-width: 560px; margin: 0 auto; color:#1f2937">
-        <h2 style="color:#FF6B00; margin-bottom: 4px">${escapeIcs(summary)}</h2>
-        <p style="margin: 4px 0; color:#6b7280">${session.date} • ${session.start_time?.slice(0, 5)} – ${session.end_time?.slice(0, 5)} ${session.timezone || 'Asia/Kolkata'} <em style="color:#9ca3af">(your calendar will show this in your local timezone)</em></p>
-        <p>${isCancel ? "This session has been cancelled." : action === "rescheduled" ? "Your session time has been updated." : "You have a new coaching session scheduled."}</p>
-        <p><strong>Location:</strong> ${escapeIcs(location)}</p>
-        ${coach?.full_name ? `<p><strong>Coach:</strong> ${escapeIcs(coach.full_name)}</p>` : ""}
-        <p style="margin-top:16px">The attached <code>.ics</code> file will add this to your Google Calendar, Outlook, or Apple Calendar in one click.</p>
-        <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb"/>
-        <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions</p>
+      <div style="font-family: Inter, system-ui, sans-serif; max-width: 620px; margin: 0 auto; color:#1f2937; padding:8px">
+        <div style="text-align:center;padding:14px 0;border-bottom:3px solid #FF6B00">
+          <h2 style="color:#FF6B00; margin:0">${escapeIcs(summary)}</h2>
+        </div>
+
+        <p style="margin:18px 0 6px;font-size:16px">${greetingMap[seekerLang]},</p>
+        <p style="margin:0 0 14px;color:#374151">${introMap[seekerLang]}</p>
+
+        <div style="background:#F9FAFB;border-radius:12px;padding:14px 16px;margin:14px 0">
+          <p style="margin:0 0 6px"><strong>📅 Date:</strong> ${sessionDateDisplay}</p>
+          <p style="margin:0 0 6px"><strong>⏰ Time:</strong> ${session.start_time?.slice(0, 5)} – ${session.end_time?.slice(0, 5)} (${session.timezone || "Asia/Kolkata"})</p>
+          ${coach?.full_name ? `<p style="margin:0 0 6px"><strong>👤 Coach:</strong> ${escapeIcs(coach.full_name)}</p>` : ""}
+          ${courseName ? `<p style="margin:0"><strong>🎯 Program:</strong> ${escapeIcs(courseName)}</p>` : ""}
+        </div>
+
+        ${!isCancel ? locationBlock : ""}
+
+        ${!isCancel ? `
+        <div style="margin:18px 0">
+          <h3 style="color:#9A3412;margin:0 0 8px;font-size:16px">✅ Action Items Before the Session</h3>
+          <p style="margin:0 0 8px;color:#374151;font-size:13px">Please update or complete the following so we can make the most of our time together:</p>
+          <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.6">
+            ${actionItems.join("")}
+          </ul>
+        </div>
+
+        <div style="background:#FEF3C7;border-left:4px solid #F59E0B;border-radius:8px;padding:14px 16px;margin:18px 0">
+          <p style="margin:0 0 8px;font-weight:700;color:#92400E">🧘 Pre-Meeting Checklist</p>
+          <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#1f2937">
+            ${checklistItems.map((c) => `<li>${c}</li>`).join("")}
+          </ul>
+        </div>
+        ` : ""}
+
+        <p style="margin-top:18px;font-size:13px;color:#6b7280">📎 The attached <code>.ics</code> file will add this to your Google Calendar, Outlook, or Apple Calendar in one click.</p>
+
+        <hr style="margin:24px 0; border:none; border-top:1px solid #e5e7eb"/>
+        <p style="text-align:center;font-size:13px;color:#6b7280;margin:0">🙏 With gratitude,<br/><strong style="color:#FF6B00">Vivek Doba Training Solutions</strong></p>
+        <p style="text-align:center;font-size:11px;color:#9ca3af;margin:6px 0 0">${APP_BASE_URL}</p>
       </div>`;
 
     let email_sent = false;
