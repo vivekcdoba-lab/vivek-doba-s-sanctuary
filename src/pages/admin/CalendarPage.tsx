@@ -27,7 +27,15 @@ const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<number | null>(new Date().getDate());
   const [showAdd, setShowAdd] = useState(false);
+  const adminTz = detectBrowserTz();
+  const todayLocal = todayInTz(adminTz);
+  const nowLocalHHMM = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: adminTz, hour12: false });
   const [newEvent, setNewEvent] = useState({ title: '', type: 'session', date: '', start_time: '10:00', end_time: '11:00', seeker_id: '' });
+  const openAdd = () => {
+    const start = nowRoundedHHMM(adminTz, 15);
+    setNewEvent((p) => ({ ...p, date: todayInTz(adminTz), start_time: start, end_time: addOneHourHHMM(start) }));
+    setShowAdd(true);
+  };
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: seekers = [] } = useSeekerProfiles();
