@@ -48,6 +48,8 @@ const SessionsPage = () => {
   const resendInvite = useResendSessionInvite();
   const navigate = useNavigate();
   const adminTz = detectBrowserTz();
+  const { profile } = useAuthStore();
+  const isAdmin = profile?.role === 'admin';
 
   const [statusFilter, setStatusFilter] = useState('all');
   const [reminder, setReminder] = useState<{ seekerName: string; seekerPhone: string; seekerEmail: string; session: any } | null>(null);
