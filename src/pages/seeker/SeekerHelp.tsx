@@ -77,17 +77,24 @@ export default function SeekerHelp() {
   const submitIssue = async () => {
     if (!issueType || !issueDesc.trim() || !profile?.id) return;
     setIssueSubmitting(true);
-    const { error } = await supabase.from('notifications').insert({
-      user_id: profile.id,
-      type: 'system' as const,
-      title: `🐛 Issue Report: ${issueType}`,
-      message: issueDesc.trim(),
-    });
+    const { data: ticket, error } = await supabase
+      .from('support_tickets')
+      .insert({
+        seeker_id: profile.id,
+        kind: 'issue',
+        category: issueType,
+        description: issueDesc.trim(),
+      })
+      .select('id')
+      .single();
+    if (!error && ticket) {
+      await supabase.rpc('notify_admins_of_ticket', { _ticket_id: ticket.id });
+    }
     setIssueSubmitting(false);
     if (error) {
       toast({ title: '❌ Failed to submit', variant: 'destructive' });
     } else {
-      toast({ title: '✅ Issue reported!', description: 'Our team will look into it.' });
+      toast({ title: '✅ Issue reported!', description: 'Our team has been notified and will look into it.' });
       setIssueType('');
       setIssueDesc('');
     }
@@ -96,17 +103,23 @@ export default function SeekerHelp() {
   const submitFeature = async () => {
     if (!featureDesc.trim() || !profile?.id) return;
     setFeatureSubmitting(true);
-    const { error } = await supabase.from('notifications').insert({
-      user_id: profile.id,
-      type: 'system' as const,
-      title: '💡 Feature Request',
-      message: featureDesc.trim(),
-    });
+    const { data: ticket, error } = await supabase
+      .from('support_tickets')
+      .insert({
+        seeker_id: profile.id,
+        kind: 'feature',
+        description: featureDesc.trim(),
+      })
+      .select('id')
+      .single();
+    if (!error && ticket) {
+      await supabase.rpc('notify_admins_of_ticket', { _ticket_id: ticket.id });
+    }
     setFeatureSubmitting(false);
     if (error) {
       toast({ title: '❌ Failed to submit', variant: 'destructive' });
     } else {
-      toast({ title: '✅ Suggestion received!', description: 'Thank you for your feedback.' });
+      toast({ title: '✅ Suggestion received!', description: 'Thank you — your idea is now with our team.' });
       setFeatureDesc('');
     }
   };
