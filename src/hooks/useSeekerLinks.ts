@@ -12,27 +12,28 @@ export interface SeekerLinkRow {
   seeker?: { id: string; full_name: string; email: string };
 }
 
-/** Fetch the link group for a single seeker (their own row + all partners in the same group). */
+/** Fetch the link partners for a single seeker (excludes the seeker's own row).
+ *  Uses a SECURITY DEFINER RPC so we can read partner profile names/emails
+ *  without requiring direct profiles RLS access. */
 export function useSeekerLinkGroup(seekerId: string | null | undefined) {
   return useQuery({
     queryKey: ['seeker-link-group', seekerId],
     enabled: !!seekerId,
     queryFn: async (): Promise<SeekerLinkRow[]> => {
-      // 1. Find this seeker's group_id
-      const { data: own } = await supabase
-        .from('seeker_links')
-        .select('group_id')
-        .eq('seeker_id', seekerId!)
-        .maybeSingle();
-      if (!own?.group_id) return [];
-
-      // 2. Fetch all rows in that group with seeker profile info
-      const { data, error } = await supabase
-        .from('seeker_links')
-        .select('id, group_id, seeker_id, relationship, relationship_label, linked_by, created_at, seeker:seeker_id(id, full_name, email)')
-        .eq('group_id', own.group_id);
+      const { data, error } = await supabase.rpc('get_linked_seekers_basic', {
+        _seeker_id: seekerId!,
+      });
       if (error) throw error;
-      return (data as any[]) as SeekerLinkRow[];
+      return ((data || []) as any[]).map(r => ({
+        id: r.link_id,
+        group_id: r.group_id,
+        seeker_id: r.partner_id,
+        relationship: r.relationship,
+        relationship_label: r.relationship_label,
+        linked_by: null,
+        created_at: '',
+        seeker: { id: r.partner_id, full_name: r.full_name, email: r.email },
+      })) as SeekerLinkRow[];
     },
   });
 }
