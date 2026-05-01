@@ -772,6 +772,7 @@ const SessionsPage = () => {
                   toast.error('Cannot schedule a session in the past — please pick a future time.');
                   return;
                 }
+                const seekerSessions = sessions.filter(s => s.seeker_id === newSession.seeker_id);
                 const nextNum = seekerSessions.length > 0 ? Math.max(...seekerSessions.map(s => s.session_number)) + 1 : 1;
                 const commonPayload = {
                   seeker_id: newSession.seeker_id,
