@@ -40,6 +40,7 @@ const SessionsPage = () => {
   const { data: courses = [] } = useDbCourses();
   const { data: coaches = [] } = useCoaches();
   const createSession = useCreateSession();
+  const createRecurring = useCreateRecurringSessions();
   const updateSession = useUpdateSession();
   const resendInvite = useResendSessionInvite();
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ const SessionsPage = () => {
     seeker_id: '', course_id: '', coach_id: '', date: '', start_time: '10:00', end_time: '11:00',
     session_type: 'video' as 'video' | 'in_person', duration_minutes: 60, notes: '',
     booking_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '',
+    repeat: false, frequency: 'weekly' as RecurrenceFrequency, repeat_count: 4,
   });
 
   // Live session state
