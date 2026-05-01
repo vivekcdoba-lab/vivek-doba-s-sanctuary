@@ -153,6 +153,129 @@ export function useCreateSession() {
   });
 }
 
+export type RecurrenceFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly';
+
+/** Build the array of local YYYY-MM-DD dates for a recurring series. */
+export function buildRecurrenceDates(
+  startDate: string,
+  frequency: RecurrenceFrequency,
+  count: number,
+): string[] {
+  const out: string[] = [];
+  if (!startDate || count < 1) return out;
+  const [y, m, d] = startDate.split('-').map(Number);
+  for (let i = 0; i < count; i++) {
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    if (frequency === 'daily') dt.setUTCDate(dt.getUTCDate() + i);
+    else if (frequency === 'weekly') dt.setUTCDate(dt.getUTCDate() + i * 7);
+    else if (frequency === 'biweekly') dt.setUTCDate(dt.getUTCDate() + i * 14);
+    else if (frequency === 'monthly') dt.setUTCMonth(dt.getUTCMonth() + i);
+    const yyyy = dt.getUTCFullYear();
+    const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(dt.getUTCDate()).padStart(2, '0');
+    out.push(`${yyyy}-${mm}-${dd}`);
+  }
+  return out;
+}
+
+export function useCreateRecurringSessions() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      seeker_id: string;
+      date: string;
+      start_time: string;
+      end_time: string;
+      session_number?: number;
+      location_type?: string;
+      duration_minutes?: number;
+      course_id?: string;
+      status?: string;
+      session_notes?: string;
+      coach_id?: string;
+      session_type?: 'individual' | 'couple' | 'group';
+      partner_seeker_id?: string;
+      meeting_link?: string;
+      timezone?: string | null;
+      /** Builder helper to compute UTC ISO from a per-occurrence local date. */
+      buildStartAt?: (date: string) => string | null;
+      buildEndAt?: (date: string) => string | null;
+      /** Recurrence config */
+      frequency: RecurrenceFrequency;
+      count: number;
+    }) => {
+      const dates = buildRecurrenceDates(input.date, input.frequency, input.count);
+      if (dates.length === 0) throw new Error('No dates to schedule.');
+
+      const groupId =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : undefined;
+
+      const baseNumber = input.session_number || 1;
+      const sessionType = input.session_type || 'individual';
+
+      const rows = dates.map((d, idx) => ({
+        seeker_id: input.seeker_id,
+        date: d,
+        start_time: input.start_time,
+        end_time: input.end_time,
+        session_number: baseNumber + idx,
+        location_type: input.location_type || 'online',
+        duration_minutes: input.duration_minutes || 60,
+        course_id: input.course_id || null,
+        status: input.status || 'scheduled',
+        session_notes: input.session_notes || null,
+        coach_id: input.coach_id || null,
+        session_type: sessionType,
+        meeting_link: input.meeting_link || null,
+        start_at: input.buildStartAt ? input.buildStartAt(d) : null,
+        end_at: input.buildEndAt ? input.buildEndAt(d) : null,
+        timezone: input.timezone ?? null,
+        recurrence_group_id: groupId ?? null,
+      }));
+
+      const { data, error } = await supabase
+        .from('sessions')
+        .insert(rows as any)
+        .select();
+      if (error) throw error;
+
+      // Insert participants for every created session
+      const participants: any[] = [];
+      (data || []).forEach((row: any) => {
+        participants.push({ session_id: row.id, seeker_id: input.seeker_id, role: 'primary' });
+        if (sessionType === 'couple' && input.partner_seeker_id) {
+          participants.push({
+            session_id: row.id,
+            seeker_id: input.partner_seeker_id,
+            role: 'partner',
+          });
+        }
+      });
+      if (participants.length > 0) {
+        const { error: pErr } = await supabase.from('session_participants').insert(participants);
+        if (pErr) {
+          // Best-effort rollback
+          await supabase
+            .from('sessions')
+            .delete()
+            .in('id', (data || []).map((r: any) => r.id));
+          throw pErr;
+        }
+      }
+
+      // Fire calendar invites in parallel (non-blocking on failure)
+      (data || []).forEach((row: any) => sendSessionInvite(row.id, 'created'));
+
+      return { sessions: data || [], group_id: groupId };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['db-sessions'] });
+    },
+  });
+}
+
 export function useUpdateSession() {
   const queryClient = useQueryClient();
   return useMutation({

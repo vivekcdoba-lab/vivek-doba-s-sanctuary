@@ -1,61 +1,71 @@
-## Problem
+## Goal
 
-Coach-initiated session deletes appear to "succeed" in the UI but the session keeps showing in the calendar. Root cause: the `public.sessions` table has **no DELETE RLS policy for coaches** — only `Admins can manage sessions` covers DELETE. When a coach calls `supabase.from('sessions').delete()`, RLS silently filters out the row (0 affected rows, no error), so the client thinks it worked while the row stays in the DB.
+Add a "Recurring meeting" option to the New Session scheduler used in both **Coach Schedule** (`src/pages/coaching/CoachSchedule.tsx`) and **Admin Sessions** (`src/pages/admin/SessionsPage.tsx`). When enabled, the system creates the original session plus a configurable series of follow-up sessions (e.g. weekly for 4 weeks). Existing single-session behavior is preserved (Only Add and Enhance).
 
-The current `useDeleteSession` hook also doesn't check the affected-rows count, so the silent block never surfaces as an error.
+## UX
 
-## Fix (two parts)
+In the New Session dialog, below the Date/Time/Timezone block, add a collapsible "Repeat" section:
 
-### 1. Database — add DELETE policies (migration)
+1. **Repeat toggle** (default OFF — single session, current behavior).
+2. When ON, show:
+   - **Frequency**: Daily / Weekly / Bi-weekly / Monthly (default: Weekly)
+   - **Repeat count**: number input, 2–24 occurrences (default: 4)
+   - **End date** (read-only preview, auto-calculated from frequency × count)
+3. Below the form summary line:
+   _"This will create 4 sessions: every Monday from 06 May 2026 to 27 May 2026, 10:00–11:00 IST."_
+4. Submit button label switches from "Schedule Session" → "Schedule 4 Sessions" when recurring.
 
-Add a coach DELETE policy on `public.sessions` and `public.session_participants` so the coach who owns the session (or is the assigned coach for the seeker) can delete it. Admins keep full access via the existing "Admins can manage sessions" policy. Seekers remain unable to delete.
+Validation:
+- Recurring requires all the same mandatory fields as a single session.
+- For couple sessions, the same partner is used for every occurrence.
+- Skip dates that fall on already-booked slots? → No, just create them all; coach can edit/delete individually later (matches existing edit/delete flow).
 
+## Backend / Data
+
+No schema change required — each occurrence is a separate row in `public.sessions`. To allow grouping/management later, add an optional `recurrence_group_id uuid` column on `public.sessions` (nullable). All occurrences in one series share the same UUID. This is purely additive.
+
+Migration:
 ```sql
-DROP POLICY IF EXISTS "Coaches delete their sessions" ON public.sessions;
-CREATE POLICY "Coaches delete their sessions"
-  ON public.sessions
-  FOR DELETE
-  TO authenticated
-  USING (
-    is_admin(auth.uid())
-    OR is_assigned_coach(auth.uid(), seeker_id)
-    OR coach_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
-  );
-
-DROP POLICY IF EXISTS "Coaches delete session participants" ON public.session_participants;
-CREATE POLICY "Coaches delete session participants"
-  ON public.session_participants
-  FOR DELETE
-  TO authenticated
-  USING (
-    is_admin(auth.uid())
-    OR EXISTS (
-      SELECT 1 FROM public.sessions s
-      WHERE s.id = session_participants.session_id
-        AND (
-          is_assigned_coach(auth.uid(), s.seeker_id)
-          OR s.coach_id IN (SELECT id FROM public.profiles WHERE user_id = auth.uid())
-        )
-    )
-  );
+ALTER TABLE public.sessions
+  ADD COLUMN IF NOT EXISTS recurrence_group_id uuid;
+CREATE INDEX IF NOT EXISTS idx_sessions_recurrence_group
+  ON public.sessions(recurrence_group_id);
 ```
 
-### 2. Client — surface silent RLS blocks (`src/hooks/useDbSessions.ts`)
+## Code Changes
 
-In `useDeleteSession`, change the delete to return the deleted rows and treat 0 rows as an error so the toast actually shows when something is blocked, instead of pretending success.
+### 1. `src/hooks/useDbSessions.ts`
+Add a new mutation `useCreateRecurringSessions` that:
+- Accepts the same payload as `useCreateSession` plus `{ frequency: 'daily'|'weekly'|'biweekly'|'monthly'; count: number }`.
+- Generates one `recurrence_group_id` (via `crypto.randomUUID()`).
+- Builds an array of session payloads by incrementing the date (date-fns `addDays`/`addWeeks`/`addMonths`) while keeping start/end times and timezone identical, recomputing `start_at`/`end_at` (UTC) per occurrence using `toUtcIso`.
+- Inserts all sessions in one `.insert([...])` call, then bulk-inserts participants for all `data` rows returned.
+- Fires `send-session-invite` for each created session id (non-blocking, in parallel).
+- Invalidates `db-sessions` query.
 
-```ts
-const { error, data } = await supabase
-  .from('sessions')
-  .delete()
-  .eq('id', id)
-  .select('id');
-if (error) throw error;
-if (!data || data.length === 0) {
-  throw new Error(
-    "Session could not be deleted. You may not have permission to delete this session — please contact an admin."
-  );
-}
-```
+Keep `useCreateSession` unchanged for single-session callers.
 
-No other files need to change. After the migration runs, coach delete from `/coaching/schedule` will remove the session from the calendar immediately (the existing `queryClient.invalidateQueries(['db-sessions'])` already refreshes the view), and any future RLS regression will surface as a visible error instead of a silent no-op.
+### 2. `src/pages/coaching/CoachSchedule.tsx`
+- Extend `newForm` state with `repeat: false`, `frequency: 'weekly'`, `repeat_count: 4`.
+- Add the Repeat UI block in the dialog.
+- In the submit handler: if `repeat` → call `useCreateRecurringSessions`, else current `createSession.mutate`.
+- Reset these fields on dialog close/success.
+- Toast: `"4 sessions scheduled — invites sent"`.
+
+### 3. `src/pages/admin/SessionsPage.tsx`
+Same additions as Coach Schedule, using the same hook.
+
+### 4. `src/components/common/DateTimeTzInput.tsx`
+No change required (it already handles single date/time). The Repeat UI lives in the parent dialog so each scheduler stays in control.
+
+## Out of Scope
+
+- Editing the entire series at once ("apply to all future occurrences") — for now coaches edit/delete each occurrence individually, which already works.
+- Calendar RRULE export (the `.ics` invite from `send-session-invite` will continue to send one event per session). Can be added later if needed.
+
+## Files Touched
+
+- `supabase/migrations/<new>.sql` — add `recurrence_group_id` column + index
+- `src/hooks/useDbSessions.ts` — add `useCreateRecurringSessions`
+- `src/pages/coaching/CoachSchedule.tsx` — repeat UI + branch
+- `src/pages/admin/SessionsPage.tsx` — repeat UI + branch

@@ -4189,6 +4189,7 @@ export type Database = {
           pillar: string | null
           post_session_feedback: Json | null
           punishments: string | null
+          recurrence_group_id: string | null
           reschedule_reason: string | null
           revision_note: string | null
           rewards: string | null
@@ -4238,6 +4239,7 @@ export type Database = {
           pillar?: string | null
           post_session_feedback?: Json | null
           punishments?: string | null
+          recurrence_group_id?: string | null
           reschedule_reason?: string | null
           revision_note?: string | null
           rewards?: string | null
@@ -4287,6 +4289,7 @@ export type Database = {
           pillar?: string | null
           post_session_feedback?: Json | null
           punishments?: string | null
+          recurrence_group_id?: string | null
           reschedule_reason?: string | null
           revision_note?: string | null
           rewards?: string | null

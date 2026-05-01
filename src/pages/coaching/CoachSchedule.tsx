@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useCoachingLang } from '@/components/CoachingLayout';
-import { useDbSessions, useCreateSession, useUpdateSession, useCoaches, useDeleteSession } from '@/hooks/useDbSessions';
+import { useDbSessions, useCreateSession, useUpdateSession, useCoaches, useDeleteSession, useCreateRecurringSessions, buildRecurrenceDates, type RecurrenceFrequency } from '@/hooks/useDbSessions';
 import { useAuthStore } from '@/store/authStore';
 import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { useDbCourses } from '@/hooks/useDbCourses';
@@ -58,6 +58,7 @@ export default function CoachSchedule() {
   const { data: courses = [] } = useDbCourses();
   const { data: coaches = [] } = useCoaches();
   const createSession = useCreateSession();
+  const createRecurring = useCreateRecurringSessions();
   const updateSession = useUpdateSession();
   const deleteSession = useDeleteSession();
   const queryClient = useQueryClient();
@@ -75,7 +76,7 @@ export default function CoachSchedule() {
   const [editSession, setEditSession] = useState<any | null>(null);
   const [editForm, setEditForm] = useState({ date: '', start_time: '10:00', end_time: '11:00', timezone: defaultTz, reason: '' });
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '', timezone: defaultTz, location_type: 'in_person' as 'online' | 'in_person', meeting_link: '' });
+  const [newForm, setNewForm] = useState({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '', timezone: defaultTz, location_type: 'in_person' as 'online' | 'in_person', meeting_link: '', repeat: false, frequency: 'weekly' as RecurrenceFrequency, repeat_count: 4 });
   const [linkMode, setLinkMode] = useState<'default' | 'custom'>('default');
   const [blockForm, setBlockForm] = useState({ title: '', date: '', start_time: '12:00', end_time: '13:00', timezone: defaultTz });
 
@@ -210,7 +211,7 @@ export default function CoachSchedule() {
       toast.error(hi ? 'साथी अलग होना चाहिए' : 'Partner must be a different seeker');
       return;
     }
-    createSession.mutate({
+    const commonPayload = {
       seeker_id: newForm.seeker_id,
       date: newForm.date,
       start_time: newForm.start_time,
@@ -222,17 +223,41 @@ export default function CoachSchedule() {
       partner_seeker_id: newForm.session_type === 'couple' ? newForm.partner_seeker_id : undefined,
       location_type: newForm.location_type,
       meeting_link: newForm.location_type === 'online' && newForm.meeting_link ? newForm.meeting_link : undefined,
-      start_at: toUtcIso(newForm.date, newForm.start_time, newForm.timezone),
-      end_at: toUtcIso(newForm.date, newForm.end_time, newForm.timezone),
       timezone: newForm.timezone,
-    } as any, {
-      onSuccess: () => {
-        setShowNewSession(false);
-        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '', timezone: defaultTz, location_type: 'in_person', meeting_link: '' });
-        setLinkMode('default');
-        toast.success(newForm.session_type === 'couple' ? 'Couple session scheduled — invites sent' : 'Session scheduled — invite sent');
-      },
-    });
+    } as any;
+
+    const resetForm = () => {
+      setShowNewSession(false);
+      setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '', timezone: defaultTz, location_type: 'in_person', meeting_link: '', repeat: false, frequency: 'weekly', repeat_count: 4 });
+      setLinkMode('default');
+    };
+
+    if (newForm.repeat) {
+      const count = Math.min(24, Math.max(2, Number(newForm.repeat_count) || 2));
+      createRecurring.mutate({
+        ...commonPayload,
+        frequency: newForm.frequency,
+        count,
+        buildStartAt: (d: string) => toUtcIso(d, newForm.start_time, newForm.timezone),
+        buildEndAt: (d: string) => toUtcIso(d, newForm.end_time, newForm.timezone),
+      }, {
+        onSuccess: () => {
+          resetForm();
+          toast.success(`${count} sessions scheduled — invites sent`);
+        },
+      });
+    } else {
+      createSession.mutate({
+        ...commonPayload,
+        start_at: toUtcIso(newForm.date, newForm.start_time, newForm.timezone),
+        end_at: toUtcIso(newForm.date, newForm.end_time, newForm.timezone),
+      }, {
+        onSuccess: () => {
+          resetForm();
+          toast.success(newForm.session_type === 'couple' ? 'Couple session scheduled — invites sent' : 'Session scheduled — invite sent');
+        },
+      });
+    }
   };
 
   // ---- Reschedule / Delete handlers ----
@@ -581,9 +606,58 @@ export default function CoachSchedule() {
                 }))
               }
             />
-            <Button className="w-full" onClick={handleCreateSession} disabled={createSession.isPending}>
-              {createSession.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              {t('save')}
+            {/* Recurring meeting */}
+            <div className="rounded-lg border border-input p-3 space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newForm.repeat}
+                  onChange={(e) => setNewForm(p => ({ ...p, repeat: e.target.checked }))}
+                  className="h-4 w-4 rounded border-input"
+                />
+                🔁 {lang === 'hi' ? 'दोहराने वाली बैठक' : 'Recurring meeting'}
+              </label>
+              {newForm.repeat && (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'आवृत्ति' : 'Frequency'}</label>
+                    <select
+                      value={newForm.frequency}
+                      onChange={(e) => setNewForm(p => ({ ...p, frequency: e.target.value as RecurrenceFrequency }))}
+                      className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background"
+                    >
+                      <option value="daily">{lang === 'hi' ? 'दैनिक' : 'Daily'}</option>
+                      <option value="weekly">{lang === 'hi' ? 'साप्ताहिक' : 'Weekly'}</option>
+                      <option value="biweekly">{lang === 'hi' ? 'द्वि-साप्ताहिक' : 'Bi-weekly'}</option>
+                      <option value="monthly">{lang === 'hi' ? 'मासिक' : 'Monthly'}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">{lang === 'hi' ? 'कुल बैठकें' : 'Occurrences'}</label>
+                    <input
+                      type="number"
+                      min={2}
+                      max={24}
+                      value={newForm.repeat_count}
+                      onChange={(e) => setNewForm(p => ({ ...p, repeat_count: Math.min(24, Math.max(2, Number(e.target.value) || 2)) }))}
+                      className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background"
+                    />
+                  </div>
+                  {newForm.date && (() => {
+                    const dates = buildRecurrenceDates(newForm.date, newForm.frequency, Math.min(24, Math.max(2, Number(newForm.repeat_count) || 2)));
+                    if (dates.length === 0) return null;
+                    return (
+                      <div className="col-span-2 text-[11px] text-muted-foreground bg-muted/40 rounded-lg px-2 py-1.5">
+                        {dates.length} {lang === 'hi' ? 'सत्र' : 'sessions'}: {formatDateDMY(dates[0])} → {formatDateDMY(dates[dates.length - 1])}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+            <Button className="w-full" onClick={handleCreateSession} disabled={createSession.isPending || createRecurring.isPending}>
+              {(createSession.isPending || createRecurring.isPending) ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {newForm.repeat ? `${t('save')} (${Math.min(24, Math.max(2, Number(newForm.repeat_count) || 2))})` : t('save')}
             </Button>
           </div>
         </DialogContent>
