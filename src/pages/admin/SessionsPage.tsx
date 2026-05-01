@@ -607,6 +607,55 @@ const SessionsPage = () => {
               <label className="text-sm font-medium text-foreground">Notes</label>
               <textarea value={newSession.notes} onChange={e => setNewSession(p => ({ ...p, notes: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" />
             </div>
+            {/* Recurring meeting */}
+            <div className="rounded-lg border border-input p-3 space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newSession.repeat}
+                  onChange={(e) => setNewSession(p => ({ ...p, repeat: e.target.checked }))}
+                  className="h-4 w-4 rounded border-input"
+                />
+                🔁 Recurring meeting
+              </label>
+              {newSession.repeat && (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Frequency</label>
+                    <select
+                      value={newSession.frequency}
+                      onChange={(e) => setNewSession(p => ({ ...p, frequency: e.target.value as RecurrenceFrequency }))}
+                      className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background"
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="biweekly">Bi-weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Occurrences</label>
+                    <input
+                      type="number"
+                      min={2}
+                      max={24}
+                      value={newSession.repeat_count}
+                      onChange={(e) => setNewSession(p => ({ ...p, repeat_count: Math.min(24, Math.max(2, Number(e.target.value) || 2)) }))}
+                      className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background"
+                    />
+                  </div>
+                  {newSession.date && (() => {
+                    const dates = buildRecurrenceDates(newSession.date, newSession.frequency, Math.min(24, Math.max(2, Number(newSession.repeat_count) || 2)));
+                    if (dates.length === 0) return null;
+                    return (
+                      <div className="col-span-2 text-[11px] text-muted-foreground bg-muted/40 rounded-lg px-2 py-1.5">
+                        {dates.length} sessions: {dates[0]} → {dates[dates.length - 1]}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
           </div>
           <div className="shrink-0 border-t pt-3 flex gap-2">
             <button
@@ -617,10 +666,10 @@ const SessionsPage = () => {
               Cancel
             </button>
             <button
-              disabled={createSession.isPending}
+              disabled={createSession.isPending || createRecurring.isPending}
               onClick={() => {
-                if (!newSession.seeker_id || !newSession.course_id || !newSession.date) {
-                  toast.error('Please fill Seeker, Course and Date');
+                if (!newSession.seeker_id || !newSession.date) {
+                  toast.error('Please fill Seeker and Date');
                   return;
                 }
                 if (!newSession.coach_id) {
@@ -639,9 +688,9 @@ const SessionsPage = () => {
                 }
                 const seekerSessions = sessions.filter(s => s.seeker_id === newSession.seeker_id);
                 const nextNum = seekerSessions.length > 0 ? Math.max(...seekerSessions.map(s => s.session_number)) + 1 : 1;
-                createSession.mutate({
+                const commonPayload = {
                   seeker_id: newSession.seeker_id,
-                  course_id: newSession.course_id,
+                  course_id: newSession.course_id || undefined,
                   coach_id: newSession.coach_id,
                   date: newSession.date,
                   start_time: newSession.start_time,
@@ -652,18 +701,32 @@ const SessionsPage = () => {
                   session_notes: newSession.notes || undefined,
                   session_type: newSession.booking_type,
                   partner_seeker_id: newSession.booking_type === 'couple' ? newSession.partner_seeker_id : undefined,
-                }, {
-                  onSuccess: () => {
-                    toast.success(newSession.booking_type === 'couple' ? 'Couple session scheduled — invites sent to both seekers' : 'Session scheduled — calendar invite sent');
-                    setShowSchedule(false);
-                    setNewSession({ seeker_id: '', course_id: '', coach_id: coaches.length === 1 ? coaches[0].id : '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '', booking_type: 'individual', partner_seeker_id: '' });
-                    setSelectedTemplateId('');
-                  },
-                });
+                } as any;
+                const reset = () => {
+                  setShowSchedule(false);
+                  setNewSession({ seeker_id: '', course_id: '', coach_id: coaches.length === 1 ? coaches[0].id : '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '', booking_type: 'individual', partner_seeker_id: '', repeat: false, frequency: 'weekly', repeat_count: 4 });
+                  setSelectedTemplateId('');
+                };
+                if (newSession.repeat) {
+                  const count = Math.min(24, Math.max(2, Number(newSession.repeat_count) || 2));
+                  createRecurring.mutate({ ...commonPayload, frequency: newSession.frequency, count }, {
+                    onSuccess: () => {
+                      toast.success(`${count} sessions scheduled — invites sent`);
+                      reset();
+                    },
+                  });
+                } else {
+                  createSession.mutate(commonPayload, {
+                    onSuccess: () => {
+                      toast.success(newSession.booking_type === 'couple' ? 'Couple session scheduled — invites sent to both seekers' : 'Session scheduled — calendar invite sent');
+                      reset();
+                    },
+                  });
+                }
               }}
               className="flex-1 py-2.5 rounded-xl gradient-sacred text-primary-foreground font-medium text-sm disabled:opacity-50"
             >
-              {createSession.isPending ? 'Scheduling...' : 'Schedule Session'}
+              {(createSession.isPending || createRecurring.isPending) ? 'Scheduling...' : (newSession.repeat ? `Schedule ${Math.min(24, Math.max(2, Number(newSession.repeat_count) || 2))} Sessions` : 'Schedule Session')}
             </button>
           </div>
         </DialogContent>
