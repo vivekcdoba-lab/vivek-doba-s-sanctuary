@@ -44,9 +44,22 @@ const PILLAR_EMOJI: Record<string, string> = {
 export default function CoachingSessionNotes() {
   const { lang } = useCoachingLang();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const setAttendance = async (sessionId: string, value: 'present' | 'no_show' | 'excused') => {
+    const { error } = await supabase.from('sessions').update({ attendance: value }).eq('id', sessionId);
+    if (error) { toast.error(error.message); return; }
+    const labels: Record<string, string> = {
+      present: '✅ Marked Present (counts as attended)',
+      no_show: '🚫 Marked No-Show (counts as attended)',
+      excused: '🛡️ Marked Excused (does NOT count toward sessions)',
+    };
+    toast.success(labels[value]);
+    qc.invalidateQueries({ queryKey: ['coaching-sessions'] });
+  };
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ["coaching-sessions"],
