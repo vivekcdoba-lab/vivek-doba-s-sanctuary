@@ -153,6 +153,33 @@ const SessionsPage = () => {
     setTimerRunning(true);
   };
 
+  // Re-enter the live view for a session that's already 'in_progress' (e.g. after
+  // a page refresh). Restores any previously-saved notes from the DB.
+  const resumeSession = (sessionId: string) => {
+    const s = sessions.find((x) => x.id === sessionId);
+    if (s?.session_notes) setLiveNotes(s.session_notes);
+    setLiveSession(sessionId);
+    setLiveTimer(0);
+    setTimerRunning(true);
+  };
+
+  // Admin-only manual status override.
+  const ALL_STATUSES: Array<keyof typeof SESSION_STATUS_CONFIG> = [
+    'requested', 'scheduled', 'confirmed', 'in_progress', 'completed',
+    'submitted', 'reviewing', 'approved', 'revision_requested',
+    'missed', 'rescheduled', 'cancelled',
+  ] as any;
+  const changeStatus = (sessionId: string, newStatus: string) => {
+    if (!isAdmin) return;
+    updateSession.mutate(
+      { id: sessionId, status: newStatus },
+      {
+        onSuccess: () => toast.success(`Status changed to ${newStatus}`),
+        onError: (e: any) => toast.error(e?.message || 'Failed to update status'),
+      },
+    );
+  };
+
   const submitToSeeker = (sessionId: string) => {
     setTimerRunning(false);
     updateSession.mutate({
