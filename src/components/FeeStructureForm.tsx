@@ -3,13 +3,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { addDays, addMonths, addWeeks, format as fmtDate, parseISO } from 'date-fns';
 import {
   FeeStructureFields,
   defaultFeeStructure,
   useFeeStructure,
   useUpsertFeeStructure,
 } from '@/hooks/useFeeStructure';
+import { useAllDbCourses } from '@/hooks/useDbCourses';
 
 interface Props {
   seekerId: string;
