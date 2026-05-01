@@ -542,6 +542,15 @@ const SessionsPage = () => {
                             <Play className="w-3 h-3" /> Start
                           </button>
                         )}
+                        {session.status === 'in_progress' && (
+                          <button
+                            onClick={() => resumeSession(session.id)}
+                            title="Resume the live session view"
+                            className="px-2 py-1 rounded-lg text-[10px] font-medium gradient-sacred text-primary-foreground flex items-center gap-1 animate-pulse"
+                          >
+                            <Play className="w-3 h-3" /> Resume
+                          </button>
+                        )}
                         {canStart && (
                           <button onClick={() => markMissed(session.id)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-destructive/10 text-destructive flex items-center gap-1">
                             <X className="w-3 h-3" /> No-Show
