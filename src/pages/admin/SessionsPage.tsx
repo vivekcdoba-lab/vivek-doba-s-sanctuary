@@ -656,18 +656,22 @@ const SessionsPage = () => {
                 {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
+            <div className="text-[11px] text-muted-foreground bg-muted/30 border border-border rounded-md px-2 py-1 flex items-center justify-between">
+              <span>🕐 {nowLabel(adminTz)}</span>
+              <span className="opacity-70">{adminTz}</span>
+            </div>
             <div>
               <label className="text-sm font-medium text-foreground">Date *</label>
-              <input type="date" value={newSession.date} onChange={e => setNewSession(p => ({ ...p, date: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+              <input type="date" value={newSession.date} min={todayLocal} onChange={e => setNewSession(p => ({ ...p, date: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
             </div>
             <div className="flex gap-2">
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Start *</label>
-                <input type="time" value={newSession.start_time} onChange={e => setNewSession(p => ({ ...p, start_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+                <input type="time" value={newSession.start_time} min={newSession.date === todayLocal ? nowLocal : undefined} onChange={e => setNewSession(p => ({ ...p, start_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
               </div>
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">End *</label>
-                <input type="time" value={newSession.end_time} onChange={e => setNewSession(p => ({ ...p, end_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+                <input type="time" value={newSession.end_time} min={newSession.date === todayLocal ? (newSession.start_time || nowLocal) : newSession.start_time || undefined} onChange={e => setNewSession(p => ({ ...p, end_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
               </div>
             </div>
             <div>
