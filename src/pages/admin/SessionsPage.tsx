@@ -46,6 +46,7 @@ const SessionsPage = () => {
   const updateSession = useUpdateSession();
   const resendInvite = useResendSessionInvite();
   const navigate = useNavigate();
+  const adminTz = detectBrowserTz();
 
   const [statusFilter, setStatusFilter] = useState('all');
   const [reminder, setReminder] = useState<{ seekerName: string; seekerPhone: string; seekerEmail: string; session: any } | null>(null);
@@ -58,6 +59,33 @@ const SessionsPage = () => {
     booking_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '',
     repeat: false, frequency: 'weekly' as RecurrenceFrequency, repeat_count: 4,
   });
+  // Live "now" tick to refresh min-date/min-time guards every 30s while dialog open.
+  const [nowTick, setNowTick] = useState(0);
+  useEffect(() => {
+    if (!showSchedule) return;
+    const id = setInterval(() => setNowTick((n) => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, [showSchedule]);
+  const todayLocal = todayInTz(adminTz); // refreshed via nowTick re-render
+  const nowLocal = nowHHMMHelper();
+  function nowHHMMHelper() {
+    // tiny inline helper so the value is recomputed on each render (incl. nowTick)
+    return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: adminTz, hour12: false });
+  }
+  // Reference nowTick so eslint doesn't drop the dep — it's the whole point.
+  void nowTick;
+
+  const openSchedule = () => {
+    const start = nowRoundedHHMM(adminTz, 15);
+    setNewSession((p) => ({
+      ...p,
+      coach_id: p.coach_id || (coaches.length === 1 ? coaches[0].id : ''),
+      date: todayInTz(adminTz),
+      start_time: start,
+      end_time: addOneHourHHMM(start),
+    }));
+    setShowSchedule(true);
+  };
 
   // Live session state
   const [liveSession, setLiveSession] = useState<string | null>(null);
