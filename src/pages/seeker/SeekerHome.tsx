@@ -102,9 +102,26 @@ const SeekerHome = () => {
 
       {/* Hero Banner */}
       <div data-tour="greeting" className="gradient-saffron rounded-2xl p-5 text-primary-foreground relative overflow-hidden">
-        <div className="absolute top-2 right-4 text-5xl opacity-10">ॐ</div>
-        <h1 className="text-xl font-bold">🌅 {getGreeting()}, {displayName}!</h1>
-        <p className="text-sm text-primary-foreground/80 mt-1">"Balance your Triangle, Everything changes"</p>
+        <div className="absolute top-2 right-4 text-5xl opacity-10 pointer-events-none">ॐ</div>
+        <div className="flex items-center gap-4 relative">
+          <Link
+            to="/seeker/profile"
+            className="flex-shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-primary-foreground/40 bg-primary-foreground/10 flex items-center justify-center hover:border-primary-foreground/80 transition-colors"
+            aria-label="View profile"
+          >
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt={displayName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-xl font-bold text-primary-foreground">
+                {displayName.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </Link>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold truncate">🌅 {getGreeting()}, {displayName}!</h1>
+            <p className="text-sm text-primary-foreground/80 mt-1">"Balance your Triangle, Everything changes"</p>
+          </div>
+        </div>
       </div>
 
       {/* Badge Notifications */}
