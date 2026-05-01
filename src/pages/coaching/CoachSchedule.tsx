@@ -381,10 +381,10 @@ export default function CoachSchedule() {
             ))}
           </div>
           <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>{t('today')}</Button>
-          <Button variant="outline" size="sm" onClick={() => setShowBlockTime(true)}>
+          <Button variant="outline" size="sm" onClick={openBlockTime}>
             <Lock className="w-3.5 h-3.5 mr-1" /> {t('blockTime')}
           </Button>
-          <Button size="sm" onClick={() => setShowNewSession(true)}>
+          <Button size="sm" onClick={openNewSession}>
             <Plus className="w-3.5 h-3.5 mr-1" /> {t('newSession')}
           </Button>
         </div>
