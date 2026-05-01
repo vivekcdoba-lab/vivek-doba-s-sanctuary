@@ -37,6 +37,20 @@ const SeekerHome = () => {
   const completedSessions = sessions.filter(s => s.status === 'completed' || s.status === 'approved').length;
   const totalSessions = Math.max(sessions.length, 24);
 
+  // Avatar (not present in local Profile type — fetch directly)
+  const { data: avatarUrl } = useQuery({
+    queryKey: ['seeker-home-avatar', profileId],
+    enabled: !!profileId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', profileId!)
+        .maybeSingle();
+      return (data?.avatar_url as string | null) ?? null;
+    },
+  });
+
   // Query latest LGT assessment scores from DB
   const { data: latestLgt } = useQuery({
     queryKey: ['latest-lgt', profileId],
