@@ -28,11 +28,15 @@ const SeekerProfile = () => {
     full_name: '', email: '',
     phoneCode: DEFAULT_COUNTRY_CODE, phone: '',
     whatsappCode: DEFAULT_COUNTRY_CODE, whatsapp: '',
+    country: 'India',
     city: '', state: '',
     occupation: '', company: '', dob: '', gender: '', pincode: '',
     hometown: '', linkedin_url: '',
     blood_group: '', designation: '', industry: '',
   });
+  const [whatsappSameAsMobile, setWhatsappSameAsMobile] = useState(false);
+
+  const GENDER_OPTIONS = ['Male', 'Female', 'Other', 'Prefer not to say'];
 
   useEffect(() => {
     loadProfile();
