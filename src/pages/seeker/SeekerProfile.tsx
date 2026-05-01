@@ -105,15 +105,17 @@ const SeekerProfile = () => {
       const e = validatePhone(profile.phoneCode, profile.phone);
       if (e) { toast({ title: e, variant: 'destructive' }); return; }
     }
-    if (profile.whatsapp) {
+    if (!whatsappSameAsMobile && profile.whatsapp) {
       const e = validatePhone(profile.whatsappCode, profile.whatsapp);
       if (e) { toast({ title: `WhatsApp: ${e}`, variant: 'destructive' }); return; }
     }
-    const pinErr = validatePincode(profile.pincode, !!profile.state && !INDIAN_STATES.includes(profile.state));
+    const pinErr = validatePincode(profile.pincode, profile.country !== 'India');
     if (pinErr) { toast({ title: pinErr, variant: 'destructive' }); return; }
 
     const phoneE164 = profile.phone ? toE164(profile.phoneCode, profile.phone) : '';
-    const whatsappE164 = profile.whatsapp ? toE164(profile.whatsappCode, profile.whatsapp) : '';
+    const whatsappE164 = whatsappSameAsMobile
+      ? phoneE164
+      : (profile.whatsapp ? toE164(profile.whatsappCode, profile.whatsapp) : '');
 
     setSaving(true);
     try {
@@ -132,6 +134,7 @@ const SeekerProfile = () => {
         full_name: profile.full_name,
         phone: phoneE164,
         whatsapp: whatsappE164,
+        country: profile.country,
         city: profile.city,
         state: profile.state,
         pincode: profile.pincode,
