@@ -89,6 +89,9 @@ const SeekerPayments = () => {
       {/* Fee structure — read-only (admin-managed) */}
       <FeeStructureReadOnlyCard seekerId={profile?.id} />
 
+      {/* Sessions remaining — counts attended (present + no-show) and excludes excused */}
+      <SessionsRemainingCard seekerId={profile?.id} />
+
       <div className="grid grid-cols-2 gap-3">
         {stats.map(s => (
           <div key={s.label} className={`bg-card rounded-xl p-3 shadow-sm border-l-4 ${s.border}`}>
