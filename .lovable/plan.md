@@ -1,37 +1,55 @@
-# Profile Pic Edit Dialog + Move GST Above Discount
+# Make Win Journal, Gratitude Wall, Streaks & Batches Actionable
 
-Two small, focused changes.
+Currently four pages are read-only / passive. Add interaction so users can actually log entries and admins can manage batches.
 
-## 1. Profile picture: clickable avatar with EDIT badge → "Upload or Camera" dialog
+## 1. `/seeker/win-journal` — Add "Log a Win" button + dialog
 
-**File:** `src/components/AvatarUploader.tsx`
+**File:** `src/pages/seeker/SeekerWinJournal.tsx`
 
-- Make the avatar circle a `<button>`. Clicking it (or the new edit badge) opens a chooser dialog titled **"Update profile picture"** with two large buttons: **Upload** and **Camera**.
-  - Upload → triggers the hidden `<input type="file">` (existing flow).
-  - Camera → opens the existing camera capture dialog (existing flow).
-- Add a small circular **pencil EDIT badge** at the bottom-right of the avatar (always visible) so users discover the action.
-- Add a `compact?: boolean` prop. When `true`, the side-by-side Upload/Camera buttons and helper text are hidden — only the avatar + edit badge show. The chooser dialog is the only entry point.
-- Existing call sites (which currently show side buttons) keep working unchanged because `compact` defaults to `false`.
-- While uploading, show a spinner overlay on the avatar and disable both the avatar button and edit badge.
+- Add a primary **"+ Log a Win"** button in the hero bar.
+- Clicking opens a dialog with:
+  - Win text (textarea, required)
+  - Size: Small / Medium / Big (radio)
+  - Dimension: Dharma / Artha / Kama / Moksha (radio with emojis)
+  - Date (defaults to today)
+- On submit: upsert into `daily_worksheets` for that date — write the win into the first empty `todays_win_1/2/3` slot. Tag `dimension` & `size` are saved as a prefix marker in the win text so existing classifier still works (or kept as inferred).
+- After save: invalidate `['win-journal']` query and toast success.
+- Keep all existing read-only display & filters intact.
 
-No changes to upload logic, storage path, RLS, or the `onChange` contract.
+## 2. `/seeker/gratitude-wall` — Add "Add Gratitude" button + dialog
 
-## 2. Pricing Summary: move "Include GST?" above "Discount (₹)"
+**File:** `src/pages/seeker/SeekerGratitudeWall.tsx`
 
-**File:** `src/components/FeeStructureForm.tsx`
+- Add **"+ Add Gratitude"** button in hero.
+- Dialog: gratitude text (textarea, required) + emoji picker (12 presets, default 🙏) + date (defaults to today) + optional pillar (Dharma/Artha/Kama/Moksha).
+- On submit: upsert today's row in `daily_worksheets` and write into the first empty `gratitude_1..5` slot.
+- Invalidate `['gratitude-wall']` and `useStreakCount` queries.
 
-- **Remove** the "Include GST?" block from the top "Course Selection & Pricing Rules" card (currently around lines 181–208). The top card will then contain only the **Primary Course** selector.
-- **Insert** the same "Include GST?" block into the "Pricing Summary" card (below the invoice table) **immediately above** the "Discount (₹)" row.
-- Resulting Pricing Summary order:
-  1. Bundled Courses (Free)
-  2. **Include GST?** ← moved here
-  3. Discount (₹)
-  4. Totals box (Subtotal / Discount / GST / Total Investment / Total sessions / Coaching window)
+## 3. `/seeker/streaks` — Add primary CTAs
 
-No state, calculation, or save-logic changes — just JSX relocation. The `f.include_gst` / `f.gst_rate` setters are unchanged.
+**File:** `src/pages/seeker/SeekerStreaks.tsx`
+
+- Below the hero, always-visible CTA bar with three buttons:
+  - **Fill Today's Worksheet** → `/seeker/worksheet`
+  - **Add Gratitude** → `/seeker/gratitude-wall`
+  - **Log a Win** → `/seeker/win-journal`
+- Currently the "Restart your journey" CTA only appears when `currentStreak === 0 && totalDays > 0`. Keep that, but add the always-visible CTAs so the page is never a dead-end.
+
+## 4. Admin → Batch Management — Make CRUD-capable
+
+**File:** `src/pages/admin/AdminBatches.tsx`
+
+The existing `public.batches` table (id, name, course_id, start_date, capacity, status) is fully RLS-writable by admins but the page never uses it. Rebuild the page so it:
+
+1. **Lists real batches** from `public.batches` (with course join), in addition to the existing auto-derived enrollment timeline (kept under a "Auto-grouped from enrollments" section so we don't break the current view).
+2. **"+ Add Batch" button** opens a dialog: name, course (select from `useDbCourses`), start date, capacity (int), status (planned / active / completed / cancelled).
+3. Each batch card has an **Edit** (pencil) and **Delete** action. Edit reopens the same dialog pre-filled. Delete confirms and removes.
+4. Show enrollment count per batch by counting enrollments with matching `course_id` and `start_date` in the same month (current heuristic) — no schema change required for now.
+
+Uses TanStack Query mutations + `supabase.from('batches')`. Toast on success/error. Invalidate `['batches']` query.
 
 ## Out of Scope
 
-- No DB / storage / RLS changes.
-- No changes to the invoice table rows.
-- No changes to admin SeekerDetailPage usage of `<AvatarUploader />` — it will automatically gain the edit badge + click-to-open behavior, and we'll pass `compact` where it makes sense (admin header & seeker profile header) so the side buttons disappear and the click-on-pic flow becomes the single entry point.
+- No DB schema changes. The `batches.id` ↔ `enrollments` link is left for a future task; we'll keep the month-based enrollment heuristic for showing seeker counts under each batch card.
+- No changes to `daily_worksheets` schema — we reuse existing `todays_win_*` and `gratitude_*` columns.
+- The console warning from `RuleEditor` (Radix Select needing forwardRef on a wrapper div) is unrelated to these requests; not addressed here.
