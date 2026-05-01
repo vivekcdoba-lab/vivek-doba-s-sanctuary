@@ -1,87 +1,55 @@
-# Auto-decrement Sessions + Reminder Emails
+# Admin Avatar + Sessions Counter on Seeker Profile
 
-## 1. Auto-decrement attendance after each session
+## Problem
 
-The counter already subtracts attended sessions from total — the only gap is that **no UI action currently writes `attendance`** on the happy path (admin clicks "Approve" / "Sign", but never sets `attendance='present'`). Today the seeker only sees the count drop if admin/coach manually picks "Present" from the dropdown.
+1. The big circle on `/seekers/:id` (admin Seeker 360 page) only renders **initials** (e.g. "CW" for Chandrakant Wanare). There is no way for either the admin or the seeker to upload a profile picture from this view.
+2. Admin sees no Attended / Remaining session count next to that avatar — they have to scroll to find it.
 
-**Fix** — make it automatic via a database trigger:
+## Fix
 
-```sql
-CREATE OR REPLACE FUNCTION public.auto_set_attendance_on_status()
-RETURNS trigger LANGUAGE plpgsql AS $$
-BEGIN
-  -- When session is moved to a "session actually happened" state, default attendance=present
-  IF NEW.status IN ('in_progress','submitted','reviewing','approved','completed')
-     AND (NEW.attendance IS NULL OR NEW.attendance = '')
-  THEN
-    NEW.attendance := 'present';
-  END IF;
-  -- When status flips to missed/no_show and no attendance set, default to no_show (counts as attended)
-  IF NEW.status IN ('missed','no_show')
-     AND (NEW.attendance IS NULL OR NEW.attendance = '')
-  THEN
-    NEW.attendance := 'no_show';
-  END IF;
-  RETURN NEW;
-END;
-$$;
+### 1. Mount AvatarUploader on the admin Seeker 360 header
+
+`src/pages/admin/SeekerDetailPage.tsx` (lines 433–440) — replace the static gradient initials circle with the existing `<AvatarUploader>` component.
+
+```tsx
+<AvatarUploader
+  profileId={seeker.id}
+  targetUserId={seeker.user_id}   // upload into the SEEKER's folder, not admin's
+  avatarUrl={seeker.avatar_url}
+  fallbackName={seeker.full_name}
+  size={80}
+  onChange={(url) => setSeeker((s: any) => ({ ...s, avatar_url: url }))}
+/>
 ```
-Plus a one-time backfill UPDATE for already-completed sessions with NULL attendance.
 
-This means the moment a coach starts/submits/approves/certifies a session, `attendance` becomes `'present'` → the counter auto-decrements. Admin can still override to `excused` later if the seeker had a strong reason.
+This automatically gives admin both **camera capture** and **file upload** (already built into `AvatarUploader.tsx`). Storage RLS already permits admin uploads (`Users can upload own avatar` policy includes `OR is_admin(auth.uid())`).
 
-## 2. Daily evening reminder — Gratitude Wall
+The same uploader is already wired on the seeker's own `/seeker/profile` page, so seekers continue to be able to update their own picture.
 
-A new edge function **`send-evening-gratitude-nudge`** runs at **7 PM IST every day** and emails every active seeker:
+### 2. Show Attended / Remaining counters next to the avatar
 
-- Subject: *"🙏 End your day with gratitude"*
-- Body (EN/HI/MR): "Please complete today's tasks and write 3 things you are grateful for."
-- Big CTA → `https://www.vivekdoba.com/seeker/gratitude-wall`
-- Skipped for seekers who have already submitted their gratitude entry for today
-- Skipped for seekers who set `daily_progress_email_enabled = false`
+Use the existing `useSeekerSessionCount(seeker.id)` hook plus the active enrollment's `fee_structures.total_sessions` (already loaded in the page) to render two small chips beside the name:
 
-Cron: `0 13 * * *` (UTC = 6:30 PM IST → use `30 13 * * *`).
+```
+🟢 Attended: 7    ⏳ Remaining: 17
+```
 
-## 3. 24-hour pre-session reminder — Challenges + Weekly Review
+Layout: small pill badges in the header row, visible at a glance, color-coded (green for attended, amber for remaining, gray when no fee structure exists yet).
 
-A new edge function **`send-pre-session-prep-reminder`** runs **hourly** and finds every seeker whose next scheduled session falls in the **next 23–25 hour window**:
+### 3. Make sure existing seeker upload still works
 
-- Subject: *"📅 Session tomorrow — please complete your prep"*
-- Body lists what to finish before the session:
-  1. **Weekly Review** → CTA → `/seeker/weekly-review`
-  2. **Active Challenge** → CTA → `/seeker/challenges`
-  3. (gentle reminder) Today's Gratitude → `/seeker/gratitude-wall`
-- One email per seeker per session (dedup via `notifications` table marker `kind = 'pre_session_prep'` + `related_session_id`)
-- Skips if `daily_progress_email_enabled = false`
-
-Cron: every hour at minute 0 → `0 * * * *`.
-
-## 4. Sessions card update on `/seeker/payments`
-
-The existing card already shows Total / Attended / Excused / Remaining. After the trigger lands, it will update automatically — no code change needed.
+No change needed — `SeekerProfile.tsx` already mounts the uploader. The bucket policy already lets a seeker write under their own folder.
 
 ## Technical Details
 
-**New files:**
-- `supabase/functions/send-evening-gratitude-nudge/index.ts`
-- `supabase/functions/send-pre-session-prep-reminder/index.ts`
+**Files edited:**
+- `src/pages/admin/SeekerDetailPage.tsx` — swap initials block for `AvatarUploader`, add session-count chips, add hook import.
 
-**New migration:**
-- Trigger `auto_set_attendance_on_status` on `public.sessions` (BEFORE INSERT/UPDATE)
-- Backfill UPDATE for existing completed/approved/missed sessions with NULL attendance
+**No DB / migration changes** — storage policies, the avatars bucket, and the hook all already exist.
 
-**New cron jobs** (added via insert tool, not migration, because they contain anon key):
-- `evening-gratitude-nudge` → `30 13 * * *`
-- `pre-session-prep-reminder` → `0 * * * *`
-
-**Both functions use the existing `_shared/send-email.ts` queue** — no new secrets needed.
-
-**Tri-lingual** (EN/HI/MR) — same pattern as `send-daily-seeker-reports`.
-
-**Idempotency:** each function checks the `notifications` table before sending, and writes a row after sending so it won't double-send.
+**No new dependencies.**
 
 ## Out of Scope
 
-- Building the Gratitude Wall / Challenges / Weekly Review pages (they exist)
-- WhatsApp reminders (email only — can add later)
-- Custom per-seeker timing (everyone gets 7 PM IST)
+- Merging the two duplicate "Chandrakant Wanare" profiles found in the database (`e2fb3a77…` and `0c0ada4d…`) — that's a separate data-cleanup task.
+- Editing avatar anywhere else (it already works in `/seeker/profile`, `AdminAdmins`, etc.).
