@@ -445,7 +445,7 @@ const SessionsPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Sessions</h1>
-        <button onClick={() => setShowSchedule(true)} className="gradient-sacred text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 hover:opacity-90">
+        <button onClick={openSchedule} className="gradient-sacred text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 hover:opacity-90">
           <Plus className="w-4 h-4" /> Schedule Session
         </button>
       </div>
