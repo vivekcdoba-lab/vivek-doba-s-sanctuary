@@ -187,20 +187,7 @@ export default function AvatarUploader({
         </button>
       </div>
 
-      {!compact && (
-        <div className="flex flex-col gap-2">
-          <div className="flex gap-2 flex-wrap">
-            <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => fileRef.current?.click()}>
-              {busy ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Upload className="w-4 h-4 mr-1" />}
-              Upload
-            </Button>
-            <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setCameraOpen(true)}>
-              <Camera className="w-4 h-4 mr-1" /> Camera
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">JPG/PNG up to 20MB. Auto-resized.</p>
-        </div>
-      )}
+      {/* Side Upload/Camera buttons removed — pencil edit badge on the avatar opens the chooser dialog */}
 
       {/* Chooser dialog: Upload or Camera */}
       <Dialog open={chooserOpen} onOpenChange={setChooserOpen}>
