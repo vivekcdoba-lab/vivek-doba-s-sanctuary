@@ -34,6 +34,9 @@ import {
 } from '@/hooks/useSeekerLinks';
 import { Badge } from '@/components/ui/badge';
 import { Link2, Unlink, Users } from 'lucide-react';
+import AvatarUploader from '@/components/AvatarUploader';
+import { useSeekerSessionCount } from '@/hooks/useSeekerSessionCount';
+import { useFeeStructure } from '@/hooks/useFeeStructure';
 
 import { formatDateDMY } from "@/lib/dateFormat";
 const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
@@ -50,6 +53,35 @@ const moodEmoji = (score?: number | null) => {
   if (score >= 3) return '😔';
   return '😰';
 };
+
+function SessionCountChips({ seekerId }: { seekerId: string }) {
+  const { data: count } = useSeekerSessionCount(seekerId);
+  const { data: fee } = useFeeStructure(seekerId);
+  const total = Number((fee as any)?.fields_json?.numSessions ?? (fee as any)?.fields_json?.total_sessions ?? 0) || 0;
+  const attended = count?.attended ?? 0;
+  const remaining = total ? Math.max(0, total - attended) : null;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+        ✅ Attended: {attended}
+      </span>
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-saffron/10 text-saffron border border-saffron/20">
+        ⏳ Remaining: {remaining ?? '—'}
+      </span>
+      {total > 0 && (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground border border-border">
+          Total: {total}
+        </span>
+      )}
+      {(count?.excused ?? 0) > 0 && (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-500/10 text-sky-600 border border-sky-500/20">
+          Excused: {count!.excused}
+        </span>
+      )}
+    </div>
+  );
+}
+
 
 const SeekerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -330,8 +362,7 @@ const SeekerDetailPage = () => {
     } finally {
       setLgtSending(false);
     }
-  };
-
+};
 
   const handleAwardBadge = async () => {
     if (!id) return;
@@ -431,13 +462,14 @@ const SeekerDetailPage = () => {
       <div className="bg-card rounded-2xl p-6 shadow-md border border-border">
         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
           <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-primary-foreground flex-shrink-0 ring-4 ring-primary/30 ${
-              enrollment?.tier === 'chakravartin' ? 'shimmer-gold' :
-              enrollment?.tier === 'platinum' ? 'bg-gradient-to-br from-gray-400 to-gray-200 text-foreground' :
-              enrollment?.tier === 'premium' ? 'gradient-sacred' : 'gradient-chakravartin'
-            }`}>
-              {seeker.full_name.split(' ').map((n: string) => n[0]).join('')}
-            </div>
+            <AvatarUploader
+              profileId={seeker.id}
+              targetUserId={seeker.user_id}
+              avatarUrl={seeker.avatar_url}
+              fallbackName={seeker.full_name}
+              size={80}
+              onChange={(url) => setSeeker((s: any) => ({ ...s, avatar_url: url }))}
+            />
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-bold text-foreground">{seeker.full_name}</h1>
@@ -449,6 +481,7 @@ const SeekerDetailPage = () => {
               </div>
               <p className="text-sm text-muted-foreground">{course?.name || 'No course assigned'}</p>
               <p className="text-xs text-muted-foreground">{seeker.city}{seeker.state ? `, ${seeker.state}` : ''}</p>
+              <SessionCountChips seekerId={seeker.id} />
             </div>
           </div>
           <div className="flex items-center gap-3 flex-wrap">

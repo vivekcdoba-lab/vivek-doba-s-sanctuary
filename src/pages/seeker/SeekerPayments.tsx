@@ -210,7 +210,7 @@ function SessionsRemainingCard({ seekerId }: { seekerId?: string }) {
   const { data: fee } = useFeeStructure(seekerId);
   const { data: count } = useSeekerSessionCount(seekerId);
   if (!seekerId || !fee || !count) return null;
-  const total = (fee as any).total_sessions ?? 0;
+  const total = Number((fee as any)?.fields_json?.numSessions ?? (fee as any)?.fields_json?.total_sessions ?? (fee as any)?.total_sessions ?? 0) || 0;
   if (!total) return null;
   const remaining = Math.max(0, total - count.attended);
   return (
