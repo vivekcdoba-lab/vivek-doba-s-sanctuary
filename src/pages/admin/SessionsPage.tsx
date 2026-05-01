@@ -524,6 +524,20 @@ const SessionsPage = () => {
                             <Shield className="w-3 h-3" /> Sign
                           </button>
                         )}
+                        {/* Attendance counter control */}
+                        {['completed', 'approved', 'submitted', 'reviewing', 'missed'].includes(session.status) && (
+                          <select
+                            value={session.attendance || ''}
+                            onChange={(e) => setAttendance(session.id, e.target.value as any)}
+                            title="Attendance — Excused does NOT count toward total sessions"
+                            className="px-1.5 py-1 rounded-lg text-[10px] font-medium border border-border bg-background"
+                          >
+                            <option value="">Attendance…</option>
+                            <option value="present">✅ Present (counts)</option>
+                            <option value="no_show">🚫 No-Show (counts)</option>
+                            <option value="excused">🛡️ Excused (free)</option>
+                          </select>
+                        )}
                       </div>
                     </td>
                   </tr>
