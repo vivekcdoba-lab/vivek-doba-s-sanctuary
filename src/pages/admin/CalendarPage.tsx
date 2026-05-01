@@ -100,7 +100,7 @@ const CalendarPage = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Sacred Calendar</h1>
-        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm">
+        <button onClick={openAdd} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-sm">
           <Plus className="w-4 h-4" /> Add Event
         </button>
       </div>
