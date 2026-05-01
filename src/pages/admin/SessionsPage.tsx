@@ -607,6 +607,24 @@ const SessionsPage = () => {
                             <option value="excused">🛡️ Excused (free)</option>
                           </select>
                         )}
+                        {/* Admin-only: manual status override */}
+                        {isAdmin && (
+                          <select
+                            value={session.status}
+                            onChange={(e) => changeStatus(session.id, e.target.value)}
+                            title="Admin: change session status manually"
+                            className="px-1.5 py-1 rounded-lg text-[10px] font-medium border border-primary/40 bg-primary/5 text-primary"
+                          >
+                            {ALL_STATUSES.map((st) => {
+                              const cfg = SESSION_STATUS_CONFIG[st];
+                              return (
+                                <option key={st} value={st}>
+                                  {cfg?.emoji} {cfg?.label || st}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        )}
                       </div>
                     </td>
                   </tr>
