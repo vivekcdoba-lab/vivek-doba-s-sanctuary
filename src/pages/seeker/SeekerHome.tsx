@@ -37,6 +37,20 @@ const SeekerHome = () => {
   const completedSessions = sessions.filter(s => s.status === 'completed' || s.status === 'approved').length;
   const totalSessions = Math.max(sessions.length, 24);
 
+  // Avatar (not present in local Profile type — fetch directly)
+  const { data: avatarUrl } = useQuery({
+    queryKey: ['seeker-home-avatar', profileId],
+    enabled: !!profileId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', profileId!)
+        .maybeSingle();
+      return (data?.avatar_url as string | null) ?? null;
+    },
+  });
+
   // Query latest LGT assessment scores from DB
   const { data: latestLgt } = useQuery({
     queryKey: ['latest-lgt', profileId],
@@ -102,9 +116,26 @@ const SeekerHome = () => {
 
       {/* Hero Banner */}
       <div data-tour="greeting" className="gradient-saffron rounded-2xl p-5 text-primary-foreground relative overflow-hidden">
-        <div className="absolute top-2 right-4 text-5xl opacity-10">ॐ</div>
-        <h1 className="text-xl font-bold">🌅 {getGreeting()}, {displayName}!</h1>
-        <p className="text-sm text-primary-foreground/80 mt-1">"Balance your Triangle, Everything changes"</p>
+        <div className="absolute top-2 right-4 text-5xl opacity-10 pointer-events-none">ॐ</div>
+        <div className="flex items-center gap-4 relative">
+          <Link
+            to="/seeker/profile"
+            className="flex-shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-primary-foreground/40 bg-primary-foreground/10 flex items-center justify-center hover:border-primary-foreground/80 transition-colors"
+            aria-label="View profile"
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-xl font-bold text-primary-foreground">
+                {displayName.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </Link>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold truncate">🌅 {getGreeting()}, {displayName}!</h1>
+            <p className="text-sm text-primary-foreground/80 mt-1">"Balance your Triangle, Everything changes"</p>
+          </div>
+        </div>
       </div>
 
       {/* Badge Notifications */}
