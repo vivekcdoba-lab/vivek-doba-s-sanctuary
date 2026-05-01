@@ -1232,6 +1232,63 @@ export type Database = {
           },
         ]
       }
+      course_session_rules: {
+        Row: {
+          course_id: string
+          created_at: string
+          discounted_rate_inr: number
+          discounted_sessions: number
+          free_sessions: number
+          id: string
+          is_active: boolean
+          notes: string | null
+          paid_after: number
+          trigger_enrollment_course_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          discounted_rate_inr?: number
+          discounted_sessions?: number
+          free_sessions?: number
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          paid_after?: number
+          trigger_enrollment_course_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          discounted_rate_inr?: number
+          discounted_sessions?: number
+          free_sessions?: number
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          paid_after?: number
+          trigger_enrollment_course_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_session_rules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_session_rules_trigger_enrollment_course_id_fkey"
+            columns: ["trigger_enrollment_course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           created_at: string
