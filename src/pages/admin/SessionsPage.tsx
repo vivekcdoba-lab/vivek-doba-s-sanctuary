@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { todayInTz, nowRoundedHHMM, addOneHourHHMM, isFutureLocal, nowLabel } from '@/lib/scheduleTime';
 import { detectBrowserTz } from '@/lib/timezones';
+import { useAuthStore } from '@/store/authStore';
 
 const SESSION_STATUS_CONFIG: Record<string, { label: string; emoji: string; color: string }> = {
   requested: { label: 'Requested', emoji: '📋', color: 'bg-muted text-muted-foreground' },
@@ -47,6 +48,8 @@ const SessionsPage = () => {
   const resendInvite = useResendSessionInvite();
   const navigate = useNavigate();
   const adminTz = detectBrowserTz();
+  const { profile } = useAuthStore();
+  const isAdmin = profile?.role === 'admin';
 
   const [statusFilter, setStatusFilter] = useState('all');
   const [reminder, setReminder] = useState<{ seekerName: string; seekerPhone: string; seekerEmail: string; session: any } | null>(null);
@@ -148,6 +151,33 @@ const SessionsPage = () => {
     setLiveSession(sessionId);
     setLiveTimer(0);
     setTimerRunning(true);
+  };
+
+  // Re-enter the live view for a session that's already 'in_progress' (e.g. after
+  // a page refresh). Restores any previously-saved notes from the DB.
+  const resumeSession = (sessionId: string) => {
+    const s = sessions.find((x) => x.id === sessionId);
+    if (s?.session_notes) setLiveNotes(s.session_notes);
+    setLiveSession(sessionId);
+    setLiveTimer(0);
+    setTimerRunning(true);
+  };
+
+  // Admin-only manual status override.
+  const ALL_STATUSES: Array<keyof typeof SESSION_STATUS_CONFIG> = [
+    'requested', 'scheduled', 'confirmed', 'in_progress', 'completed',
+    'submitted', 'reviewing', 'approved', 'revision_requested',
+    'missed', 'rescheduled', 'cancelled',
+  ] as any;
+  const changeStatus = (sessionId: string, newStatus: string) => {
+    if (!isAdmin) return;
+    updateSession.mutate(
+      { id: sessionId, status: newStatus },
+      {
+        onSuccess: () => toast.success(`Status changed to ${newStatus}`),
+        onError: (e: any) => toast.error(e?.message || 'Failed to update status'),
+      },
+    );
   };
 
   const submitToSeeker = (sessionId: string) => {
@@ -512,6 +542,15 @@ const SessionsPage = () => {
                             <Play className="w-3 h-3" /> Start
                           </button>
                         )}
+                        {session.status === 'in_progress' && (
+                          <button
+                            onClick={() => resumeSession(session.id)}
+                            title="Resume the live session view"
+                            className="px-2 py-1 rounded-lg text-[10px] font-medium gradient-sacred text-primary-foreground flex items-center gap-1 animate-pulse"
+                          >
+                            <Play className="w-3 h-3" /> Resume
+                          </button>
+                        )}
                         {canStart && (
                           <button onClick={() => markMissed(session.id)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-destructive/10 text-destructive flex items-center gap-1">
                             <X className="w-3 h-3" /> No-Show
@@ -566,6 +605,24 @@ const SessionsPage = () => {
                             <option value="present">✅ Present (counts)</option>
                             <option value="no_show">🚫 No-Show (counts)</option>
                             <option value="excused">🛡️ Excused (free)</option>
+                          </select>
+                        )}
+                        {/* Admin-only: manual status override */}
+                        {isAdmin && (
+                          <select
+                            value={session.status}
+                            onChange={(e) => changeStatus(session.id, e.target.value)}
+                            title="Admin: change session status manually"
+                            className="px-1.5 py-1 rounded-lg text-[10px] font-medium border border-primary/40 bg-primary/5 text-primary"
+                          >
+                            {ALL_STATUSES.map((st) => {
+                              const cfg = SESSION_STATUS_CONFIG[st];
+                              return (
+                                <option key={st} value={st}>
+                                  {cfg?.emoji} {cfg?.label || st}
+                                </option>
+                              );
+                            })}
                           </select>
                         )}
                       </div>
