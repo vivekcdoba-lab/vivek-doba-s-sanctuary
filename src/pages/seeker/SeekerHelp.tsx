@@ -77,17 +77,24 @@ export default function SeekerHelp() {
   const submitIssue = async () => {
     if (!issueType || !issueDesc.trim() || !profile?.id) return;
     setIssueSubmitting(true);
-    const { error } = await supabase.from('notifications').insert({
-      user_id: profile.id,
-      type: 'system' as const,
-      title: `🐛 Issue Report: ${issueType}`,
-      message: issueDesc.trim(),
-    });
+    const { data: ticket, error } = await supabase
+      .from('support_tickets')
+      .insert({
+        seeker_id: profile.id,
+        kind: 'issue',
+        category: issueType,
+        description: issueDesc.trim(),
+      })
+      .select('id')
+      .single();
+    if (!error && ticket) {
+      await supabase.rpc('notify_admins_of_ticket', { _ticket_id: ticket.id });
+    }
     setIssueSubmitting(false);
     if (error) {
       toast({ title: '❌ Failed to submit', variant: 'destructive' });
     } else {
-      toast({ title: '✅ Issue reported!', description: 'Our team will look into it.' });
+      toast({ title: '✅ Issue reported!', description: 'Our team has been notified and will look into it.' });
       setIssueType('');
       setIssueDesc('');
     }
@@ -96,17 +103,23 @@ export default function SeekerHelp() {
   const submitFeature = async () => {
     if (!featureDesc.trim() || !profile?.id) return;
     setFeatureSubmitting(true);
-    const { error } = await supabase.from('notifications').insert({
-      user_id: profile.id,
-      type: 'system' as const,
-      title: '💡 Feature Request',
-      message: featureDesc.trim(),
-    });
+    const { data: ticket, error } = await supabase
+      .from('support_tickets')
+      .insert({
+        seeker_id: profile.id,
+        kind: 'feature',
+        description: featureDesc.trim(),
+      })
+      .select('id')
+      .single();
+    if (!error && ticket) {
+      await supabase.rpc('notify_admins_of_ticket', { _ticket_id: ticket.id });
+    }
     setFeatureSubmitting(false);
     if (error) {
       toast({ title: '❌ Failed to submit', variant: 'destructive' });
     } else {
-      toast({ title: '✅ Suggestion received!', description: 'Thank you for your feedback.' });
+      toast({ title: '✅ Suggestion received!', description: 'Thank you — your idea is now with our team.' });
       setFeatureDesc('');
     }
   };
@@ -132,11 +145,11 @@ export default function SeekerHelp() {
           </div>
         </a>
 
-        <a href="mailto:support@vivekdoba.in" className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow">
+        <a href="mailto:info@vivekdoba.com" className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow">
           <div className="p-2 rounded-lg bg-primary/10"><Mail className="w-5 h-5 text-primary" /></div>
           <div>
             <p className="font-semibold text-sm text-foreground">Email Support</p>
-            <p className="text-xs text-muted-foreground">support@vivekdoba.in</p>
+            <p className="text-xs text-muted-foreground">info@vivekdoba.com</p>
           </div>
         </a>
 
