@@ -74,7 +74,7 @@ export default function SeekerWinJournal() {
       if (existing?.id) {
         const { error } = await supabase
           .from('daily_worksheets')
-          .update({ [slot]: text.trim() })
+          .update({ [slot]: text.trim() } as any)
           .eq('id', existing.id);
         if (error) throw error;
       } else {

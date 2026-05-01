@@ -74,7 +74,7 @@ export default function SeekerGratitudeWall() {
       if (existing?.id) {
         const { error } = await supabase
           .from('daily_worksheets')
-          .update({ [slot]: value })
+          .update({ [slot]: value } as any)
           .eq('id', existing.id);
         if (error) throw error;
       } else {
