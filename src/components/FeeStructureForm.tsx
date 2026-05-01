@@ -344,6 +344,35 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
         </div>
 
         <div className="grid sm:grid-cols-[200px_1fr] gap-3 items-center">
+          <Label className="text-sm">Include GST?</Label>
+          <div className="flex flex-wrap gap-4 text-sm items-center">
+            {[{ v: true, l: 'Yes (add GST)' }, { v: false, l: 'No (exclude GST)' }].map(opt => (
+              <label key={String(opt.v)} className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="radio"
+                  checked={(f.include_gst ?? true) === opt.v}
+                  onChange={() => set('include_gst', opt.v as any)}
+                  disabled={readOnly}
+                />
+                {opt.l}
+              </label>
+            ))}
+            {(f.include_gst ?? true) && (
+              <div className="flex items-center gap-1 text-xs">
+                <span>Rate %</span>
+                <Input
+                  type="number"
+                  value={f.gst_rate ?? 18}
+                  onChange={e => set('gst_rate', Number(e.target.value) as any)}
+                  disabled={readOnly}
+                  className="h-7 w-16"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-[200px_1fr] gap-3 items-center">
           <Label className="text-sm">Discount (₹)</Label>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
             <Input
