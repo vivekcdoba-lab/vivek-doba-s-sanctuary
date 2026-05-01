@@ -329,8 +329,31 @@ const SessionsPage = () => {
 
         {/* Next Session, Targets, Rewards, Consequences */}
         <div className="bg-card rounded-xl p-4 border border-border">
-          <h3 className="font-semibold text-foreground text-sm mb-1">📅 Next Session Time</h3>
-          <input value={postData.nextSessionTime} onChange={e => setPostData(p => ({ ...p, nextSessionTime: e.target.value }))} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="e.g., Thursday 10:00 AM" />
+          <div className="flex items-center justify-between mb-1 gap-2">
+            <h3 className="font-semibold text-foreground text-sm">📅 Next Session Time</h3>
+            <button
+              type="button"
+              onClick={() => {
+                const nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + 7);
+                setNewSession(p => ({
+                  ...p,
+                  seeker_id: session?.seeker_id || '',
+                  coach_id: session?.coach_id || p.coach_id,
+                  course_id: session?.course_id || '',
+                  date: nextDate.toISOString().split('T')[0],
+                  start_time: session?.start_time?.slice(0, 5) || '10:00',
+                  end_time: session?.end_time?.slice(0, 5) || '11:00',
+                  notes: '',
+                }));
+                setShowSchedule(true);
+              }}
+              className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground hover:opacity-90 inline-flex items-center gap-1"
+            >
+              <Plus className="w-3 h-3" /> Schedule Now
+            </button>
+          </div>
+          <input value={postData.nextSessionTime} onChange={e => setPostData(p => ({ ...p, nextSessionTime: e.target.value }))} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="e.g., Thursday 10:00 AM (or click Schedule Now)" />
         </div>
         <div className="bg-card rounded-xl p-4 border border-border">
           <h3 className="font-semibold text-foreground text-sm mb-1">🎯 Targets</h3>
