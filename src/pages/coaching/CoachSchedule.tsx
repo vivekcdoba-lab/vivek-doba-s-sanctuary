@@ -246,6 +246,10 @@ export default function CoachSchedule() {
       toast.error(hi ? 'साथी अलग होना चाहिए' : 'Partner must be a different seeker');
       return;
     }
+    if (!isFutureLocal(newForm.date, newForm.start_time, newForm.timezone)) {
+      toast.error(hi ? 'पिछले समय में सत्र निर्धारित नहीं कर सकते' : 'Cannot schedule a session in the past — please pick a future time.');
+      return;
+    }
     const commonPayload = {
       seeker_id: newForm.seeker_id,
       date: newForm.date,
