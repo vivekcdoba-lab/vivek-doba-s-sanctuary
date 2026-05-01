@@ -93,6 +93,7 @@ const AdminProgramAnalytics = lazyWithReload(() => import("./pages/admin/AdminPr
 const AdminEnrollments = lazyWithReload(() => import("./pages/admin/AdminEnrollments"));
 const AdminNewEnrollment = lazyWithReload(() => import("./pages/admin/AdminNewEnrollment"));
 const AdminBatches = lazyWithReload(() => import("./pages/admin/AdminBatches"));
+const AdminCourseSessionRules = lazyWithReload(() => import("./pages/admin/AdminCourseSessionRules"));
 const AdminEnrollmentStats = lazyWithReload(() => import("./pages/admin/AdminEnrollmentStats"));
 const AdminAddLead = lazyWithReload(() => import("./pages/admin/AdminAddLead"));
 const AdminAllLeads = lazyWithReload(() => import("./pages/admin/AdminAllLeads"));
