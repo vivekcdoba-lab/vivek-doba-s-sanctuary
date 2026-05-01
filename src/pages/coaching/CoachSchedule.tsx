@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useCoachingLang } from '@/components/CoachingLayout';
-import { useDbSessions, useCreateSession, useUpdateSession, useCoaches, useDeleteSession } from '@/hooks/useDbSessions';
+import { useDbSessions, useCreateSession, useUpdateSession, useCoaches, useDeleteSession, useCreateRecurringSessions, buildRecurrenceDates, type RecurrenceFrequency } from '@/hooks/useDbSessions';
 import { useAuthStore } from '@/store/authStore';
 import { useScopedSeekers } from '@/hooks/useScopedSeekers';
 import { useDbCourses } from '@/hooks/useDbCourses';
