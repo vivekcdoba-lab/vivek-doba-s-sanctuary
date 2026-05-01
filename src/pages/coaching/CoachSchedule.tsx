@@ -58,6 +58,7 @@ export default function CoachSchedule() {
   const { data: courses = [] } = useDbCourses();
   const { data: coaches = [] } = useCoaches();
   const createSession = useCreateSession();
+  const createRecurring = useCreateRecurringSessions();
   const updateSession = useUpdateSession();
   const deleteSession = useDeleteSession();
   const queryClient = useQueryClient();
