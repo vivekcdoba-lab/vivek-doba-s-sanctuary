@@ -1,55 +1,57 @@
-# Admin Avatar + Sessions Counter on Seeker Profile
+# Reorganize Seekers → Documents (Fee Structure) Form
 
-## Problem
+File: `src/components/FeeStructureForm.tsx`
 
-1. The big circle on `/seekers/:id` (admin Seeker 360 page) only renders **initials** (e.g. "CW" for Chandrakant Wanare). There is no way for either the admin or the seeker to upload a profile picture from this view.
-2. Admin sees no Attended / Remaining session count next to that avatar — they have to scroll to find it.
+## Goal
 
-## Fix
+Restructure the Course Selection & Pricing Rules card and the invoice table so the layout flows: course selection → invoice → pricing summary, with GST toggle moved earlier and session duration shown alongside dates.
 
-### 1. Mount AvatarUploader on the admin Seeker 360 header
+## Changes
 
-`src/pages/admin/SeekerDetailPage.tsx` (lines 433–440) — replace the static gradient initials circle with the existing `<AvatarUploader>` component.
+### 1. Split the top "Course Selection & Pricing Rules" card
 
-```tsx
-<AvatarUploader
-  profileId={seeker.id}
-  targetUserId={seeker.user_id}   // upload into the SEEKER's folder, not admin's
-  avatarUrl={seeker.avatar_url}
-  fallbackName={seeker.full_name}
-  size={80}
-  onChange={(url) => setSeeker((s: any) => ({ ...s, avatar_url: url }))}
-/>
-```
+Keep at the top (above the invoice table), in this exact order:
+1. **Primary Course \*** (unchanged)
+2. **Include GST?** (Yes/No + Rate %) — moved up so it sits right after Primary Course and before the invoice table's `GST @ 18%` row
+3. **Bundled Courses (Free)** — MOVED OUT (see step 3)
+4. **Discount (₹)** — MOVED OUT (see step 3)
+5. The summary box (Subtotal / Discount / GST / Total Investment / Total sessions / Coaching window) — MOVED OUT (see step 3)
 
-This automatically gives admin both **camera capture** and **file upload** (already built into `AvatarUploader.tsx`). Storage RLS already permits admin uploads (`Users can upload own avatar` policy includes `OR is_admin(auth.uid())`).
+Result: top card only contains the heading, Primary Course, and Include GST? toggle.
 
-The same uploader is already wired on the seeker's own `/seeker/profile` page, so seekers continue to be able to update their own picture.
+### 2. Invoice table stays in the middle (unchanged structure)
 
-### 2. Show Attended / Remaining counters next to the avatar
+The existing `<div className="border-2 border-[#1e3a5f] rounded-lg ...">` table (rows: Fee per session, Number of sessions, Coaching duration, …, GST @ 18%, TOTAL INVESTMENT, …, Invoice) renders as-is.
 
-Use the existing `useSeekerSessionCount(seeker.id)` hook plus the active enrollment's `fee_structures.total_sessions` (already loaded in the page) to render two small chips beside the name:
+Because Include GST? was moved above, the toggle now visually precedes the `GST @ 18%` row inside the invoice table — matching the requested order.
 
-```
-🟢 Attended: 7    ⏳ Remaining: 17
-```
+### 3. New "Pricing Summary" card BELOW the invoice table
 
-Layout: small pill badges in the header row, visible at a glance, color-coded (green for attended, amber for remaining, gray when no fee structure exists yet).
+After the invoice table, add a new bordered card that contains, in order:
+- **Bundled Courses (Free)** selector (with the saved-value caption)
+- **Discount (₹)** + reason input
+- The summary box (Subtotal, Discount, GST line, Total Investment, Total sessions incl. bundled, Coaching window)
 
-### 3. Make sure existing seeker upload still works
+### 4. Enhance the Coaching window line
 
-No change needed — `SeekerProfile.tsx` already mounts the uploader. The bucket policy already lets a seeker write under their own folder.
+Currently shows: `Start → End`.
+
+Update to display three pieces when available:
+- **Start date** (`f.startDate`)
+- **End date** (`f.endDate`, already auto-computed from start + coachingDuration)
+- **Session duration** — derived from `f.coachingDuration` (e.g. "6 months"). Display as: `Start: 01 Jan 2026 · End: 30 Jun 2026 · Duration: 6 months`.
+
+If only start date exists, show start + duration. End date already auto-fills via the existing effect at lines 107–121, so no new computation is needed.
 
 ## Technical Details
 
-**Files edited:**
-- `src/pages/admin/SeekerDetailPage.tsx` — swap initials block for `AvatarUploader`, add session-count chips, add hook import.
-
-**No DB / migration changes** — storage policies, the avatars bucket, and the hook all already exist.
-
-**No new dependencies.**
+- Pure JSX reordering inside `FeeStructureForm.tsx`. No schema, no hook, no DB changes.
+- The existing `computed` useMemo, `set`, and auto-effects continue to work unchanged because they don't depend on JSX position.
+- `Coaching window` row formatting: render three `<span>`s separated by `·`; use `format(parseISO(...), 'dd MMM yyyy')` from `date-fns` (already imported) for nicer date display.
+- Session duration text comes from `f.coachingDuration` (free-form string already collected in the invoice table row "Coaching duration").
 
 ## Out of Scope
 
-- Merging the two duplicate "Chandrakant Wanare" profiles found in the database (`e2fb3a77…` and `0c0ada4d…`) — that's a separate data-cleanup task.
-- Editing avatar anywhere else (it already works in `/seeker/profile`, `AdminAdmins`, etc.).
+- No new fields added to `FeeStructureFields`.
+- No changes to save/load logic, GST math, or bundled-session calculation.
+- No changes outside `src/components/FeeStructureForm.tsx`.
