@@ -125,6 +125,7 @@ const adminNav: NavGroup[] = [
   {
     label: 'SYSTEM', emoji: '⚙️', dividerBefore: 'SYSTEM', items: [
       { icon: Mail, label: 'Support Inbox', path: '/admin/support' },
+      { icon: BookOpen, label: 'Operation Docs', path: '/admin/operation-docs' },
       { icon: Palette, label: 'Branding', path: '/admin/branding' },
       { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
       { icon: Link2, label: 'Integrations', path: '/admin/integrations' },

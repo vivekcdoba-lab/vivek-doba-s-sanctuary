@@ -94,6 +94,7 @@ const AdminEnrollments = lazyWithReload(() => import("./pages/admin/AdminEnrollm
 const AdminNewEnrollment = lazyWithReload(() => import("./pages/admin/AdminNewEnrollment"));
 const AdminBatches = lazyWithReload(() => import("./pages/admin/AdminBatches"));
 const AdminSupportInbox = lazyWithReload(() => import("./pages/admin/AdminSupportInbox"));
+const AdminOperationDocs = lazyWithReload(() => import("./pages/admin/AdminOperationDocs"));
 const AdminCourseSessionRules = lazyWithReload(() => import("./pages/admin/AdminCourseSessionRules"));
 const AdminEnrollmentStats = lazyWithReload(() => import("./pages/admin/AdminEnrollmentStats"));
 const AdminAddLead = lazyWithReload(() => import("./pages/admin/AdminAddLead"));
@@ -385,6 +386,7 @@ const App = () => (
               <Route path="/admin/apply-lgt" element={<AdminApplyLgt />} />
               <Route path="/admin/batches" element={<AdminBatches />} />
               <Route path="/admin/support" element={<AdminSupportInbox />} />
+              <Route path="/admin/operation-docs" element={<AdminOperationDocs />} />
               <Route path="/admin/session-rules" element={<AdminCourseSessionRules />} />
               <Route path="/admin/enrollment-stats" element={<AdminEnrollmentStats />} />
               <Route path="/admin/add-lead" element={<AdminAddLead />} />
