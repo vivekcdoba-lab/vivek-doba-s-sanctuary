@@ -399,9 +399,11 @@ export default function SeekerLearningPdfs() {
                 </div>
               </DialogHeader>
               <div className="flex-1 min-h-0" onContextMenu={(e) => e.preventDefault()}>
-                {viewingPdf.url ? (
+                {viewingPdf.url && !viewingUrl ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Loading…</div>
+                ) : viewingUrl ? (
                   <iframe
-                    src={`${viewingPdf.url}${viewingPdf.url.includes('#') ? '' : '#toolbar=0&navpanes=0'}`}
+                    src={`${viewingUrl}${viewingUrl.includes('#') ? '' : '#toolbar=0&navpanes=0'}`}
                     className="w-full h-full border-0"
                     title={viewingPdf.title}
                   />
@@ -429,7 +431,11 @@ export default function SeekerLearningPdfs() {
             </div>
           </div>
           <div className="flex-1" onContextMenu={(e) => e.preventDefault()}>
-            <iframe src={`${viewingPdf.url}${viewingPdf.url.includes('#') ? '' : '#toolbar=0&navpanes=0'}`} className="w-full h-full border-0" title={viewingPdf.title} />
+            {viewingUrl ? (
+              <iframe src={`${viewingUrl}${viewingUrl.includes('#') ? '' : '#toolbar=0&navpanes=0'}`} className="w-full h-full border-0" title={viewingPdf.title} />
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Loading…</div>
+            )}
           </div>
         </div>
       )}
