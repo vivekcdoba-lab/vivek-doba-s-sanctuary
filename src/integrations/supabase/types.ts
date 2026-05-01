@@ -5226,6 +5226,18 @@ export type Database = {
         }[]
       }
       get_lgt_application_by_token: { Args: { _token: string }; Returns: Json }
+      get_linked_seekers_basic: {
+        Args: { _seeker_id: string }
+        Returns: {
+          email: string
+          full_name: string
+          group_id: string
+          link_id: string
+          partner_id: string
+          relationship: string
+          relationship_label: string
+        }[]
+      }
       get_seeker_daily_summary: {
         Args: { _date: string; _seeker_id: string }
         Returns: Json
