@@ -8,6 +8,7 @@ import { usePayments } from '@/hooks/usePayments';
 import { useSeekerLinkGroup } from '@/hooks/useSeekerLinks';
 import FeeStructureForm from '@/components/FeeStructureForm';
 import { useFeeStructure } from '@/hooks/useFeeStructure';
+import SeekerSignedDocuments from '@/components/SeekerSignedDocuments';
 
 type FilterType = 'all' | 'individual' | 'joint';
 
@@ -178,6 +179,8 @@ const SeekerPayments = () => {
           </table>
         </div>
       )}
+
+      <SeekerSignedDocuments />
 
       {invoiceModal && (
         <InvoiceModal open={!!invoiceModal} onClose={() => setInvoiceModal(null)} invoice={invoiceModal} />
