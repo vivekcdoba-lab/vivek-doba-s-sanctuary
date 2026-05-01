@@ -321,6 +321,10 @@ export default function CoachSchedule() {
       toast.error(lang === 'hi' ? 'कृपया तारीख और समय भरें' : 'Please fill date & time');
       return;
     }
+    if (!isFutureLocal(editForm.date, editForm.start_time, editForm.timezone)) {
+      toast.error(lang === 'hi' ? 'पिछले समय में पुनर्निर्धारित नहीं कर सकते' : 'Cannot reschedule into the past — please pick a future time.');
+      return;
+    }
     updateSession.mutate(
       {
         id: editSession.id,
