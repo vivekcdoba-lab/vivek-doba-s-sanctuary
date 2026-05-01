@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { fromZonedTime, toZonedTime, formatInTimeZone } from 'date-fns-tz';
 import TimezonePicker from './TimezonePicker';
 import { detectBrowserTz, offsetFor } from '@/lib/timezones';
+import { todayInTz, nowHHMM, nowLabel } from '@/lib/scheduleTime';
 
 interface DateTimeTzInputProps {
   /** Local date YYYY-MM-DD as the scheduler perceives it (in `timezone`). */
@@ -15,6 +16,8 @@ interface DateTimeTzInputProps {
   onChange: (next: { date: string; startTime: string; endTime: string; timezone: string }) => void;
   hideEnd?: boolean;
   showLabels?: boolean;
+  /** When true, prevent picking a date/time in the past and show the live current time. */
+  disablePast?: boolean;
 }
 
 /**
@@ -29,8 +32,34 @@ export default function DateTimeTzInput({
   onChange,
   hideEnd = false,
   showLabels = true,
+  disablePast = false,
 }: DateTimeTzInputProps) {
   const browserTz = useMemo(() => detectBrowserTz(), []);
+
+  // Live "now" tick (every 30s) so date/time mins and the "Now" label stay fresh.
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!disablePast) return;
+    const id = setInterval(() => setTick((n) => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, [disablePast]);
+
+  const minDate = useMemo(
+    () => (disablePast ? todayInTz(timezone) : undefined),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [disablePast, timezone, tick],
+  );
+  const minStartTime = useMemo(() => {
+    if (!disablePast) return undefined;
+    return date && date === todayInTz(timezone) ? nowHHMM(timezone) : undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disablePast, date, timezone, tick]);
+  const minEndTime = useMemo(() => {
+    if (!disablePast) return undefined;
+    if (date && date === todayInTz(timezone)) return startTime || nowHHMM(timezone);
+    return startTime || undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disablePast, date, timezone, startTime, tick]);
 
   const addOneHour = (t: string): string => {
     if (!t || t.length < 4) return t;
@@ -46,8 +75,6 @@ export default function DateTimeTzInput({
     patch: Partial<{ date: string; startTime: string; endTime: string; timezone: string }>,
   ) => {
     const merged = { date, startTime, endTime, timezone, ...patch };
-    // Auto-default end time to start + 1h when start changes and end is empty
-    // or still matches the previously-derived end (i.e. coach hasn't customized it).
     if (patch.startTime !== undefined && patch.startTime) {
       const previousDerivedEnd = addOneHour(startTime);
       if (!merged.endTime || merged.endTime === previousDerivedEnd) {
@@ -70,11 +97,18 @@ export default function DateTimeTzInput({
 
   return (
     <div className="space-y-3">
+      {disablePast && (
+        <div className="text-[11px] text-muted-foreground bg-muted/30 border border-border rounded-md px-2 py-1 flex items-center justify-between">
+          <span>🕐 {nowLabel(timezone)}</span>
+          <span className="opacity-70">{timezone}</span>
+        </div>
+      )}
       <div>
         {showLabels && <label className="text-xs font-medium text-muted-foreground">Date</label>}
         <input
           type="date"
           value={date}
+          min={minDate}
           onChange={(e) => update({ date: e.target.value })}
           className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background"
         />
@@ -88,6 +122,7 @@ export default function DateTimeTzInput({
           <input
             type="time"
             value={startTime}
+            min={minStartTime}
             onChange={(e) => update({ startTime: e.target.value })}
             className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background"
           />
@@ -100,6 +135,7 @@ export default function DateTimeTzInput({
             <input
               type="time"
               value={endTime}
+              min={minEndTime}
               onChange={(e) => update({ endTime: e.target.value })}
               className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background"
             />

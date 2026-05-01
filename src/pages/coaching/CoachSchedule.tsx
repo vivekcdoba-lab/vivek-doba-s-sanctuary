@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import DateTimeTzInput, { toUtcIso } from '@/components/common/DateTimeTzInput';
 import { detectBrowserTz } from '@/lib/timezones';
 import { formatDateDMY, toIsoDate } from "@/lib/dateFormat";
+import { todayInTz, nowRoundedHHMM, addOneHourHHMM, isFutureLocal } from '@/lib/scheduleTime';
 
 const DEFAULT_ZOOM_LINK = 'https://us06web.zoom.us/j/86310221885?pwd=LdIaVqMxx7tbavIqggTVegh01kL8HB.1';
 
@@ -159,10 +160,44 @@ export default function CoachSchedule() {
     const ds = toIsoDate(date);
     const start = `${String(hour).padStart(2, '0')}:00`;
     const end = `${String(hour + 1).padStart(2, '0')}:00`;
+    if (!isFutureLocal(ds, start, defaultTz)) {
+      toast.error(lang === 'hi' ? 'पिछले समय में पुनर्निर्धारित नहीं कर सकते' : 'Cannot reschedule into the past');
+      setDragSession(null);
+      return;
+    }
     updateSession.mutate({ id: dragSession, date: ds, start_time: start, end_time: end }, {
       onSuccess: () => toast.success('Session rescheduled'),
     });
     setDragSession(null);
+  };
+
+  // Open helpers — pre-fill with current local time so the scheduler always
+  // sees the real "now", and the no-past guard kicks in immediately.
+  const openNewSession = () => {
+    const tz = defaultTz;
+    const start = nowRoundedHHMM(tz, 15);
+    setNewForm((p) => ({
+      ...p,
+      coach_id: p.coach_id || myCoachId,
+      date: todayInTz(tz),
+      start_time: start,
+      end_time: addOneHourHHMM(start),
+      timezone: tz,
+    }));
+    setShowNewSession(true);
+  };
+
+  const openBlockTime = () => {
+    const tz = defaultTz;
+    const start = nowRoundedHHMM(tz, 15);
+    setBlockForm({
+      title: '',
+      date: todayInTz(tz),
+      start_time: start,
+      end_time: addOneHourHHMM(start),
+      timezone: tz,
+    });
+    setShowBlockTime(true);
   };
 
   const handleCreateSession = () => {
@@ -209,6 +244,10 @@ export default function CoachSchedule() {
     }
     if (newForm.session_type === 'couple' && newForm.partner_seeker_id === newForm.seeker_id) {
       toast.error(hi ? 'साथी अलग होना चाहिए' : 'Partner must be a different seeker');
+      return;
+    }
+    if (!isFutureLocal(newForm.date, newForm.start_time, newForm.timezone)) {
+      toast.error(hi ? 'पिछले समय में सत्र निर्धारित नहीं कर सकते' : 'Cannot schedule a session in the past — please pick a future time.');
       return;
     }
     const commonPayload = {
@@ -282,6 +321,10 @@ export default function CoachSchedule() {
       toast.error(lang === 'hi' ? 'कृपया तारीख और समय भरें' : 'Please fill date & time');
       return;
     }
+    if (!isFutureLocal(editForm.date, editForm.start_time, editForm.timezone)) {
+      toast.error(lang === 'hi' ? 'पिछले समय में पुनर्निर्धारित नहीं कर सकते' : 'Cannot reschedule into the past — please pick a future time.');
+      return;
+    }
     updateSession.mutate(
       {
         id: editSession.id,
@@ -338,10 +381,10 @@ export default function CoachSchedule() {
             ))}
           </div>
           <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>{t('today')}</Button>
-          <Button variant="outline" size="sm" onClick={() => setShowBlockTime(true)}>
+          <Button variant="outline" size="sm" onClick={openBlockTime}>
             <Lock className="w-3.5 h-3.5 mr-1" /> {t('blockTime')}
           </Button>
-          <Button size="sm" onClick={() => setShowNewSession(true)}>
+          <Button size="sm" onClick={openNewSession}>
             <Plus className="w-3.5 h-3.5 mr-1" /> {t('newSession')}
           </Button>
         </div>
@@ -605,6 +648,7 @@ export default function CoachSchedule() {
                   timezone: v.timezone,
                 }))
               }
+              disablePast
             />
             {/* Recurring meeting */}
             <div className="rounded-lg border border-input p-3 space-y-2">
@@ -687,8 +731,16 @@ export default function CoachSchedule() {
                   timezone: v.timezone,
                 }))
               }
+              disablePast
             />
-            <Button className="w-full" onClick={() => blockForm.date && createBlockedTime.mutate(blockForm)}>
+            <Button className="w-full" onClick={() => {
+              if (!blockForm.date) return;
+              if (!isFutureLocal(blockForm.date, blockForm.start_time, blockForm.timezone)) {
+                toast.error(lang === 'hi' ? 'पिछले समय में अवरोधित नहीं कर सकते' : 'Cannot block a past time slot.');
+                return;
+              }
+              createBlockedTime.mutate(blockForm);
+            }}>
               {t('save')}
             </Button>
           </div>
@@ -725,6 +777,7 @@ export default function CoachSchedule() {
                     endTime={editForm.end_time}
                     timezone={editForm.timezone}
                     onChange={(v) => setEditForm(p => ({ ...p, date: v.date, start_time: v.startTime, end_time: v.endTime, timezone: v.timezone }))}
+                    disablePast
                   />
                   <div>
                     <label className="text-xs font-medium text-muted-foreground">

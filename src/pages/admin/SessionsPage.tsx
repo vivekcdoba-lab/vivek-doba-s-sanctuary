@@ -9,6 +9,8 @@ import SendReminderModal from '@/components/SendReminderModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { todayInTz, nowRoundedHHMM, addOneHourHHMM, isFutureLocal, nowLabel } from '@/lib/scheduleTime';
+import { detectBrowserTz } from '@/lib/timezones';
 
 const SESSION_STATUS_CONFIG: Record<string, { label: string; emoji: string; color: string }> = {
   requested: { label: 'Requested', emoji: '📋', color: 'bg-muted text-muted-foreground' },
@@ -44,6 +46,7 @@ const SessionsPage = () => {
   const updateSession = useUpdateSession();
   const resendInvite = useResendSessionInvite();
   const navigate = useNavigate();
+  const adminTz = detectBrowserTz();
 
   const [statusFilter, setStatusFilter] = useState('all');
   const [reminder, setReminder] = useState<{ seekerName: string; seekerPhone: string; seekerEmail: string; session: any } | null>(null);
@@ -56,6 +59,33 @@ const SessionsPage = () => {
     booking_type: 'individual' as 'individual' | 'couple', partner_seeker_id: '',
     repeat: false, frequency: 'weekly' as RecurrenceFrequency, repeat_count: 4,
   });
+  // Live "now" tick to refresh min-date/min-time guards every 30s while dialog open.
+  const [nowTick, setNowTick] = useState(0);
+  useEffect(() => {
+    if (!showSchedule) return;
+    const id = setInterval(() => setNowTick((n) => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, [showSchedule]);
+  const todayLocal = todayInTz(adminTz); // refreshed via nowTick re-render
+  const nowLocal = nowHHMMHelper();
+  function nowHHMMHelper() {
+    // tiny inline helper so the value is recomputed on each render (incl. nowTick)
+    return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: adminTz, hour12: false });
+  }
+  // Reference nowTick so eslint doesn't drop the dep — it's the whole point.
+  void nowTick;
+
+  const openSchedule = () => {
+    const start = nowRoundedHHMM(adminTz, 15);
+    setNewSession((p) => ({
+      ...p,
+      coach_id: p.coach_id || (coaches.length === 1 ? coaches[0].id : ''),
+      date: todayInTz(adminTz),
+      start_time: start,
+      end_time: addOneHourHHMM(start),
+    }));
+    setShowSchedule(true);
+  };
 
   // Live session state
   const [liveSession, setLiveSession] = useState<string | null>(null);
@@ -415,7 +445,7 @@ const SessionsPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Sessions</h1>
-        <button onClick={() => setShowSchedule(true)} className="gradient-sacred text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 hover:opacity-90">
+        <button onClick={openSchedule} className="gradient-sacred text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 hover:opacity-90">
           <Plus className="w-4 h-4" /> Schedule Session
         </button>
       </div>
@@ -626,18 +656,22 @@ const SessionsPage = () => {
                 {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
+            <div className="text-[11px] text-muted-foreground bg-muted/30 border border-border rounded-md px-2 py-1 flex items-center justify-between">
+              <span>🕐 {nowLabel(adminTz)}</span>
+              <span className="opacity-70">{adminTz}</span>
+            </div>
             <div>
               <label className="text-sm font-medium text-foreground">Date *</label>
-              <input type="date" value={newSession.date} onChange={e => setNewSession(p => ({ ...p, date: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+              <input type="date" value={newSession.date} min={todayLocal} onChange={e => setNewSession(p => ({ ...p, date: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
             </div>
             <div className="flex gap-2">
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Start *</label>
-                <input type="time" value={newSession.start_time} onChange={e => setNewSession(p => ({ ...p, start_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+                <input type="time" value={newSession.start_time} min={newSession.date === todayLocal ? nowLocal : undefined} onChange={e => setNewSession(p => ({ ...p, start_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
               </div>
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">End *</label>
-                <input type="time" value={newSession.end_time} onChange={e => setNewSession(p => ({ ...p, end_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+                <input type="time" value={newSession.end_time} min={newSession.date === todayLocal ? (newSession.start_time || nowLocal) : newSession.start_time || undefined} onChange={e => setNewSession(p => ({ ...p, end_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
               </div>
             </div>
             <div>
@@ -733,6 +767,10 @@ const SessionsPage = () => {
                     toast.error('Partner must be a different seeker');
                     return;
                   }
+                }
+                if (!isFutureLocal(newSession.date, newSession.start_time, adminTz)) {
+                  toast.error('Cannot schedule a session in the past — please pick a future time.');
+                  return;
                 }
                 const seekerSessions = sessions.filter(s => s.seeker_id === newSession.seeker_id);
                 const nextNum = seekerSessions.length > 0 ? Math.max(...seekerSessions.map(s => s.session_number)) + 1 : 1;
