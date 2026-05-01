@@ -522,6 +522,7 @@ const App = () => (
             {/* Coaching Management Routes */}
             <Route element={<AuthGuard requiredRole="coach"><CoachingLayout /></AuthGuard>}>
               <Route path="/coaching" element={<CoachingDashboard />} />
+              <Route path="/coaching/coach-day" element={<CoachDayView />} />
               <Route path="/coaching/intake" element={<ClientIntakePage />} />
               <Route path="/coaching/agreements" element={<AgreementsPage />} />
               <Route path="/coaching/premium-agreement/:seekerId" element={<PremiumAgreementPage />} />
