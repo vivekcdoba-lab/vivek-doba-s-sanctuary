@@ -51,6 +51,7 @@ const parseFee = (s: string): number => {
 
 export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSaved }: Props) {
   const { data: existing, isLoading } = useFeeStructure(seekerId);
+  const { data: allCourses = [] } = useAllDbCourses();
   const upsert = useUpsertFeeStructure();
   const [f, setF] = useState<FeeStructureFields>(defaultFeeStructure);
 
@@ -60,27 +61,64 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
     }
   }, [existing]);
 
-  // Auto-calculations
+  const primaryCourse = useMemo(
+    () => allCourses.find(c => c.id === f.primary_course_id) || null,
+    [allCourses, f.primary_course_id]
+  );
+  const bundledCourses = useMemo(
+    () => allCourses.filter(c => (f.bundled_course_ids || []).includes(c.id)),
+    [allCourses, f.bundled_course_ids]
+  );
+
+  // Auto-calculations (now respect GST toggle + discount + bundled course sessions)
   const computed = useMemo(() => {
     const perSession = parseFee(f.feePerSession);
     const sessions = Number(f.numSessions) || 0;
-    const totalExcl = perSession * sessions;
-    const gst = Math.round(totalExcl * 0.18);
-    const total = totalExcl + gst;
+    const subtotal = perSession * sessions;
+    const discount = Math.max(0, Number(f.discount_amount) || 0);
+    const taxableBase = Math.max(0, subtotal - discount);
+    const gstRate = f.include_gst === false ? 0 : Number(f.gst_rate ?? 18);
+    const gst = Math.round((taxableBase * gstRate) / 100);
+    const total = taxableBase + gst;
     const paid = Number(f.amountPaidToday) || 0;
     const balance = total - paid;
-    return { totalExcl, gst, total, balance };
-  }, [f.feePerSession, f.numSessions, f.amountPaidToday]);
+    const bundledSessionTotal = bundledCourses.reduce((sum, c: any) => {
+      const m = String(c.duration || '').match(/(\d+)\s*sessions?/i);
+      return sum + (m ? Number(m[1]) : 0);
+    }, 0);
+    const totalSessions = sessions + bundledSessionTotal;
+    const bundledValue = bundledCourses.reduce((s, c: any) => s + Number(c.price || 0), 0);
+    return { subtotal, gst, total, balance, totalSessions, bundledValue, gstRate };
+  }, [f.feePerSession, f.numSessions, f.amountPaidToday, f.include_gst, f.gst_rate, f.discount_amount, bundledCourses]);
 
   useEffect(() => {
     setF(prev => ({
       ...prev,
-      totalFeesExclGst: computed.totalExcl || '',
+      totalFeesExclGst: computed.subtotal || '',
       gstAmount: computed.gst || '',
       totalInvestment: computed.total || '',
       balanceDue: computed.total ? computed.balance : '',
+      subtotal_amount: computed.subtotal,
+      total_sessions: computed.totalSessions,
     }));
-  }, [computed.totalExcl, computed.gst, computed.total, computed.balance]);
+  }, [computed.subtotal, computed.gst, computed.total, computed.balance, computed.totalSessions]);
+
+  // Auto-compute end date from start_date + coachingDuration ("X months" / "X weeks" / "X days")
+  useEffect(() => {
+    if (!f.startDate || !f.coachingDuration) return;
+    const m = f.coachingDuration.match(/(\d+)\s*(month|week|day)/i);
+    if (!m) return;
+    try {
+      const n = Number(m[1]);
+      const unit = m[2].toLowerCase();
+      const start = parseISO(f.startDate);
+      const end = unit.startsWith('month') ? addMonths(start, n)
+        : unit.startsWith('week') ? addWeeks(start, n)
+        : addDays(start, n);
+      const iso = fmtDate(addDays(end, -1), 'yyyy-MM-dd');
+      setF(prev => prev.endDate === iso ? prev : { ...prev, endDate: iso });
+    } catch { /* ignore */ }
+  }, [f.startDate, f.coachingDuration]);
 
   const set = <K extends keyof FeeStructureFields>(k: K, v: FeeStructureFields[K]) =>
     setF(p => ({ ...p, [k]: v }));
@@ -98,6 +136,24 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
   if (isLoading) return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
 
   const inr = (n: number | '') => (n === '' || n === 0 ? '' : `₹${Number(n).toLocaleString('en-IN')}`);
+  const inrLabel = (n: number) => `₹${n.toLocaleString('en-IN')}`;
+
+  const toggleBundled = (id: string) => {
+    const cur = f.bundled_course_ids || [];
+    const next = cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id];
+    set('bundled_course_ids', next as any);
+  };
+
+  const handlePrimaryChange = (id: string) => {
+    const c = allCourses.find(x => x.id === id);
+    if (!c) { set('primary_course_id', null as any); return; }
+    setF(prev => ({
+      ...prev,
+      primary_course_id: id,
+      // Auto-fill if user hasn't customised yet
+      coachingDuration: prev.coachingDuration || c.duration || '6 months',
+    }));
+  };
 
   return (
     <div className="space-y-4">
