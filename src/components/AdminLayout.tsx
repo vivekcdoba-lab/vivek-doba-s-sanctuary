@@ -45,6 +45,7 @@ const adminNav: NavGroup[] = [
       { icon: FileText, label: 'Edit Programs', path: '/admin/edit-programs' },
       { icon: Crown, label: 'Program Coaches', path: '/admin/program-coaches' },
       { icon: BarChart3, label: 'Program Analytics', path: '/admin/program-analytics' },
+      { icon: Settings2, label: 'Session Rules', path: '/admin/session-rules' },
     ],
   },
   {
