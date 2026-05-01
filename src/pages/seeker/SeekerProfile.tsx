@@ -240,14 +240,43 @@ const SeekerProfile = () => {
               onPhoneChange={v => setProfile(p => ({ ...p, phone: v }))}
               label="Phone"
             />
-            <PhoneInput
-              countryCode={profile.whatsappCode}
-              phone={profile.whatsapp}
-              onCountryCodeChange={v => setProfile(p => ({ ...p, whatsappCode: v }))}
-              onPhoneChange={v => setProfile(p => ({ ...p, whatsapp: v }))}
-              label="WhatsApp"
-            />
+            <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={whatsappSameAsMobile}
+                onChange={e => {
+                  const checked = e.target.checked;
+                  setWhatsappSameAsMobile(checked);
+                  if (checked) {
+                    setProfile(p => ({ ...p, whatsappCode: p.phoneCode, whatsapp: p.phone }));
+                  }
+                }}
+                className="w-4 h-4 accent-primary"
+              />
+              WhatsApp same as Mobile number
+            </label>
+            {!whatsappSameAsMobile && (
+              <PhoneInput
+                countryCode={profile.whatsappCode}
+                phone={profile.whatsapp}
+                onCountryCodeChange={v => setProfile(p => ({ ...p, whatsappCode: v }))}
+                onPhoneChange={v => setProfile(p => ({ ...p, whatsapp: v }))}
+                label="WhatsApp"
+              />
+            )}
             <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Country</label>
+                <select
+                  value={profile.country}
+                  onChange={e => setProfile(p => ({ ...p, country: e.target.value }))}
+                  className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-sm mt-0.5"
+                >
+                  {COUNTRY_CODES.map(c => (
+                    <option key={c.name} value={c.name}>{c.flag} {c.name}</option>
+                  ))}
+                </select>
+              </div>
               <Field label="City" value={profile.city} field="city" />
               <Field label="Hometown" value={profile.hometown} field="hometown" />
             </div>
@@ -259,7 +288,17 @@ const SeekerProfile = () => {
             />
             <div className="grid grid-cols-2 gap-3">
               <Field label="Date of Birth" value={profile.dob} field="dob" type="date" />
-              <Field label="Gender" value={profile.gender} field="gender" />
+              <div>
+                <label className="text-xs text-muted-foreground">Gender</label>
+                <select
+                  value={profile.gender}
+                  onChange={e => setProfile(p => ({ ...p, gender: e.target.value }))}
+                  className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-sm mt-0.5"
+                >
+                  <option value="">Select gender</option>
+                  {GENDER_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </div>
               <Field label="Blood Group" value={profile.blood_group} field="blood_group" />
             </div>
           </div>
@@ -267,14 +306,26 @@ const SeekerProfile = () => {
           <div className="grid grid-cols-2 gap-3">
             <Field label="Full Name" value={profile.full_name} field="full_name" />
             <Field label="Email" value={profile.email} field="email" />
-            <div>
-              <label className="text-xs text-muted-foreground">Phone</label>
-              <p className="text-sm text-foreground font-medium">{profile.phone ? `${profile.phoneCode} ${profile.phone}` : '—'}</p>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">WhatsApp</label>
-              <p className="text-sm text-foreground font-medium">{profile.whatsapp ? `${profile.whatsappCode} ${profile.whatsapp}` : '—'}</p>
-            </div>
+            {whatsappSameAsMobile ? (
+              <div className="col-span-2">
+                <label className="text-xs text-muted-foreground">Phone / WhatsApp</label>
+                <p className="text-sm text-foreground font-medium">
+                  {profile.phone ? `${profile.phoneCode} ${profile.phone}` : '—'}
+                </p>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="text-xs text-muted-foreground">Phone</label>
+                  <p className="text-sm text-foreground font-medium">{profile.phone ? `${profile.phoneCode} ${profile.phone}` : '—'}</p>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">WhatsApp</label>
+                  <p className="text-sm text-foreground font-medium">{profile.whatsapp ? `${profile.whatsappCode} ${profile.whatsapp}` : '—'}</p>
+                </div>
+              </>
+            )}
+            <Field label="Country" value={profile.country} field="country" />
             <Field label="City" value={profile.city} field="city" />
             <Field label="State" value={profile.state} field="state" />
             <Field label="Date of Birth" value={profile.dob} field="dob" type="date" />
