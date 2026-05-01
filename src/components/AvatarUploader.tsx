@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Camera, Upload, Loader2, X } from 'lucide-react';
+import { Camera, Upload, Loader2, X, Pencil } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
 interface Props {
@@ -17,6 +17,8 @@ interface Props {
   /** Called after successful update with the new public URL */
   onChange?: (url: string) => void;
   size?: number;
+  /** When true, hide the side Upload/Camera buttons — clicking the avatar opens a chooser dialog */
+  compact?: boolean;
 }
 
 const MAX_DIM = 512;
@@ -50,12 +52,14 @@ export default function AvatarUploader({
   fallbackName,
   onChange,
   size = 96,
+  compact = false,
 }: Props) {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [busy, setBusy] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [chooserOpen, setChooserOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(avatarUrl ?? null);
 
   useEffect(() => setPreview(avatarUrl ?? null), [avatarUrl]);
@@ -133,33 +137,98 @@ export default function AvatarUploader({
     await upload(resized);
   };
 
+  const openChooser = () => {
+    if (busy) return;
+    setChooserOpen(true);
+  };
+  const pickUpload = () => { setChooserOpen(false); fileRef.current?.click(); };
+  const pickCamera = () => { setChooserOpen(false); setCameraOpen(true); };
+
+  const badgeSize = Math.max(28, Math.round(size / 3.5));
+  const iconSize = Math.max(14, Math.round(size / 7));
+
   return (
     <div className="flex items-center gap-4">
-      <div
-        className="rounded-full overflow-hidden bg-muted ring-2 ring-primary/20 flex items-center justify-center text-foreground font-semibold"
-        style={{ width: size, height: size, fontSize: size / 3 }}
-      >
-        {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt={fallbackName ?? 'Avatar'} className="w-full h-full object-cover" />
-        ) : (
-          <span>{initials(fallbackName)}</span>
-        )}
-      </div>
-      <div className="flex flex-col gap-2">
-        <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
-        <div className="flex gap-2 flex-wrap">
-          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => fileRef.current?.click()}>
-            {busy ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Upload className="w-4 h-4 mr-1" />}
-            Upload
-          </Button>
-          <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setCameraOpen(true)}>
-            <Camera className="w-4 h-4 mr-1" /> Camera
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground">JPG/PNG up to 20MB. Auto-resized.</p>
+      <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
+
+      <div className="relative shrink-0" style={{ width: size, height: size }}>
+        <button
+          type="button"
+          onClick={openChooser}
+          disabled={busy}
+          aria-label="Edit profile picture"
+          title="Click to update profile picture"
+          className="rounded-full overflow-hidden bg-muted ring-2 ring-primary/20 hover:ring-primary/50 transition flex items-center justify-center text-foreground font-semibold w-full h-full focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60 disabled:cursor-not-allowed relative"
+          style={{ fontSize: size / 3 }}
+        >
+          {preview ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={preview} alt={fallbackName ?? 'Avatar'} className="w-full h-full object-cover" />
+          ) : (
+            <span>{initials(fallbackName)}</span>
+          )}
+          {busy && (
+            <span className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 text-white animate-spin" />
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={openChooser}
+          disabled={busy}
+          aria-label="Edit profile picture"
+          title="Edit"
+          className="absolute -bottom-1 -right-1 rounded-full bg-primary text-primary-foreground shadow-md ring-2 ring-background flex items-center justify-center hover:scale-105 transition disabled:opacity-60"
+          style={{ width: badgeSize, height: badgeSize }}
+        >
+          <Pencil style={{ width: iconSize, height: iconSize }} />
+        </button>
       </div>
 
+      {!compact && (
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => fileRef.current?.click()}>
+              {busy ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Upload className="w-4 h-4 mr-1" />}
+              Upload
+            </Button>
+            <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setCameraOpen(true)}>
+              <Camera className="w-4 h-4 mr-1" /> Camera
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">JPG/PNG up to 20MB. Auto-resized.</p>
+        </div>
+      )}
+
+      {/* Chooser dialog: Upload or Camera */}
+      <Dialog open={chooserOpen} onOpenChange={setChooserOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Update profile picture</DialogTitle>
+            <DialogDescription>Choose how you want to set a new picture.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 py-2">
+            <Button type="button" variant="outline" className="h-24 flex-col gap-2" onClick={pickUpload}>
+              <Upload className="w-6 h-6" />
+              <span>Upload</span>
+            </Button>
+            <Button type="button" variant="outline" className="h-24 flex-col gap-2" onClick={pickCamera}>
+              <Camera className="w-6 h-6" />
+              <span>Camera</span>
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">JPG/PNG up to 20MB. Auto-resized to 512px.</p>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setChooserOpen(false)}>
+              <X className="w-4 h-4 mr-1" /> Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Camera dialog */}
       <Dialog open={cameraOpen} onOpenChange={setCameraOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>Take a photo</DialogTitle></DialogHeader>
