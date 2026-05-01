@@ -211,7 +211,7 @@ export default function CoachSchedule() {
       toast.error(hi ? 'साथी अलग होना चाहिए' : 'Partner must be a different seeker');
       return;
     }
-    createSession.mutate({
+    const commonPayload = {
       seeker_id: newForm.seeker_id,
       date: newForm.date,
       start_time: newForm.start_time,
@@ -223,17 +223,41 @@ export default function CoachSchedule() {
       partner_seeker_id: newForm.session_type === 'couple' ? newForm.partner_seeker_id : undefined,
       location_type: newForm.location_type,
       meeting_link: newForm.location_type === 'online' && newForm.meeting_link ? newForm.meeting_link : undefined,
-      start_at: toUtcIso(newForm.date, newForm.start_time, newForm.timezone),
-      end_at: toUtcIso(newForm.date, newForm.end_time, newForm.timezone),
       timezone: newForm.timezone,
-    } as any, {
-      onSuccess: () => {
-        setShowNewSession(false);
-        setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '', timezone: defaultTz, location_type: 'in_person', meeting_link: '' });
-        setLinkMode('default');
-        toast.success(newForm.session_type === 'couple' ? 'Couple session scheduled — invites sent' : 'Session scheduled — invite sent');
-      },
-    });
+    } as any;
+
+    const resetForm = () => {
+      setShowNewSession(false);
+      setNewForm({ seeker_id: '', course_id: '', coach_id: myCoachId, date: '', start_time: '10:00', end_time: '11:00', session_type: 'individual', partner_seeker_id: '', timezone: defaultTz, location_type: 'in_person', meeting_link: '', repeat: false, frequency: 'weekly', repeat_count: 4 });
+      setLinkMode('default');
+    };
+
+    if (newForm.repeat) {
+      const count = Math.min(24, Math.max(2, Number(newForm.repeat_count) || 2));
+      createRecurring.mutate({
+        ...commonPayload,
+        frequency: newForm.frequency,
+        count,
+        buildStartAt: (d: string) => toUtcIso(d, newForm.start_time, newForm.timezone),
+        buildEndAt: (d: string) => toUtcIso(d, newForm.end_time, newForm.timezone),
+      }, {
+        onSuccess: () => {
+          resetForm();
+          toast.success(`${count} sessions scheduled — invites sent`);
+        },
+      });
+    } else {
+      createSession.mutate({
+        ...commonPayload,
+        start_at: toUtcIso(newForm.date, newForm.start_time, newForm.timezone),
+        end_at: toUtcIso(newForm.date, newForm.end_time, newForm.timezone),
+      }, {
+        onSuccess: () => {
+          resetForm();
+          toast.success(newForm.session_type === 'couple' ? 'Couple session scheduled — invites sent' : 'Session scheduled — invite sent');
+        },
+      });
+    }
   };
 
   // ---- Reschedule / Delete handlers ----
