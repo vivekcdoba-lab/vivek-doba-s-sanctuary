@@ -160,10 +160,44 @@ export default function CoachSchedule() {
     const ds = toIsoDate(date);
     const start = `${String(hour).padStart(2, '0')}:00`;
     const end = `${String(hour + 1).padStart(2, '0')}:00`;
+    if (!isFutureLocal(ds, start, defaultTz)) {
+      toast.error(lang === 'hi' ? 'पिछले समय में पुनर्निर्धारित नहीं कर सकते' : 'Cannot reschedule into the past');
+      setDragSession(null);
+      return;
+    }
     updateSession.mutate({ id: dragSession, date: ds, start_time: start, end_time: end }, {
       onSuccess: () => toast.success('Session rescheduled'),
     });
     setDragSession(null);
+  };
+
+  // Open helpers — pre-fill with current local time so the scheduler always
+  // sees the real "now", and the no-past guard kicks in immediately.
+  const openNewSession = () => {
+    const tz = defaultTz;
+    const start = nowRoundedHHMM(tz, 15);
+    setNewForm((p) => ({
+      ...p,
+      coach_id: p.coach_id || myCoachId,
+      date: todayInTz(tz),
+      start_time: start,
+      end_time: addOneHourHHMM(start),
+      timezone: tz,
+    }));
+    setShowNewSession(true);
+  };
+
+  const openBlockTime = () => {
+    const tz = defaultTz;
+    const start = nowRoundedHHMM(tz, 15);
+    setBlockForm({
+      title: '',
+      date: todayInTz(tz),
+      start_time: start,
+      end_time: addOneHourHHMM(start),
+      timezone: tz,
+    });
+    setShowBlockTime(true);
   };
 
   const handleCreateSession = () => {
