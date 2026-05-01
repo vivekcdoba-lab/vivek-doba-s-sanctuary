@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 import { encryptField, decryptField } from '@/lib/encryption';
 import PhoneInput from '@/components/inputs/PhoneInput';
 import StatePincodeInput from '@/components/inputs/StatePincodeInput';
-import { parseE164, toE164, validatePhone, validatePincode, DEFAULT_COUNTRY_CODE, INDIAN_STATES } from '@/lib/phoneValidation';
+import { parseE164, toE164, validatePhone, validatePincode, DEFAULT_COUNTRY_CODE, INDIAN_STATES, COUNTRY_CODES } from '@/lib/phoneValidation';
 import AvatarUploader from '@/components/AvatarUploader';
 
 const SeekerProfile = () => {
