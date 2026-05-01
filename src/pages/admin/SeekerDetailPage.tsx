@@ -34,6 +34,8 @@ import {
 } from '@/hooks/useSeekerLinks';
 import { Badge } from '@/components/ui/badge';
 import { Link2, Unlink, Users } from 'lucide-react';
+import AvatarUploader from '@/components/AvatarUploader';
+import { useSeekerSessionCount } from '@/hooks/useSeekerSessionCount';
 
 import { formatDateDMY } from "@/lib/dateFormat";
 const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
