@@ -4547,6 +4547,53 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          admin_reply: string | null
+          category: string | null
+          created_at: string
+          description: string
+          id: string
+          kind: string
+          resolved_at: string | null
+          seeker_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_reply?: string | null
+          category?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          kind: string
+          resolved_at?: string | null
+          seeker_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_reply?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          kind?: string
+          resolved_at?: string | null
+          seeker_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -5273,6 +5320,10 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      notify_admins_of_ticket: {
+        Args: { _ticket_id: string }
+        Returns: undefined
       }
       purge_email_queue: { Args: { queue_name: string }; Returns: number }
       purge_old_submissions: { Args: never; Returns: number }
