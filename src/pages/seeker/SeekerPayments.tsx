@@ -180,6 +180,8 @@ const SeekerPayments = () => {
         </div>
       )}
 
+      <SeekerSignedDocuments />
+
       {invoiceModal && (
         <InvoiceModal open={!!invoiceModal} onClose={() => setInvoiceModal(null)} invoice={invoiceModal} />
       )}
