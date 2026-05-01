@@ -53,7 +53,7 @@ const adminNav: NavGroup[] = [
       { icon: Inbox, label: 'Applications Review', path: '/applications' },
       { icon: CheckCircle, label: 'All Enrollments', path: '/admin/enrollments' },
       { icon: UserPlus, label: 'New Enrollment', path: '/admin/new-enrollment' },
-      { icon: ClipboardList, label: 'LGT Application (In-Person)', path: '/admin/apply-lgt' },
+      { icon: ClipboardList, label: 'LGT Application — Information Gathering Session', path: '/admin/apply-lgt' },
       { icon: Users, label: 'Batch Management', path: '/admin/batches' },
       { icon: BarChart3, label: 'Enrollment Stats', path: '/admin/enrollment-stats' },
     ],
