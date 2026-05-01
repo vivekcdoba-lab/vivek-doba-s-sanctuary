@@ -9,6 +9,8 @@ import SendReminderModal from '@/components/SendReminderModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { todayInTz, nowRoundedHHMM, addOneHourHHMM, isFutureLocal, nowLabel } from '@/lib/scheduleTime';
+import { detectBrowserTz } from '@/lib/timezones';
 
 const SESSION_STATUS_CONFIG: Record<string, { label: string; emoji: string; color: string }> = {
   requested: { label: 'Requested', emoji: '📋', color: 'bg-muted text-muted-foreground' },
