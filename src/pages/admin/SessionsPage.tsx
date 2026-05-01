@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDbSessions, useCreateSession, useUpdateSession, useCoaches, useResendSessionInvite } from '@/hooks/useDbSessions';
+import { useDbSessions, useCreateSession, useUpdateSession, useCoaches, useResendSessionInvite, useCreateRecurringSessions, buildRecurrenceDates, type RecurrenceFrequency } from '@/hooks/useDbSessions';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { formatTime12 } from '@/data/mockData';
