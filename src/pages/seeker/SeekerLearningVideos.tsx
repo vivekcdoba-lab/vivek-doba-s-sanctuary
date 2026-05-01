@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { resolveMediaUrl } from '@/lib/resolveMediaUrl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/store/authStore';
@@ -74,6 +75,17 @@ export default function SeekerLearningVideos() {
   const [catFilter, setCatFilter] = useState('all');
   const [langFilter, setLangFilter] = useState('all');
   const [activeItem, setActiveItem] = useState<ContentItem | null>(null);
+  const [activeUrl, setActiveUrl] = useState<string>('');
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!activeItem) { setActiveUrl(''); return; }
+    (async () => {
+      const r = await resolveMediaUrl(activeItem.url, 3600);
+      if (!cancelled) setActiveUrl(r);
+    })();
+    return () => { cancelled = true; };
+  }, [activeItem]);
 
   // Fetch content
   const { data: content = [], isLoading } = useQuery({
@@ -406,15 +418,17 @@ export default function SeekerLearningVideos() {
                       allow="autoplay; fullscreen"
                       allowFullScreen
                     />
-                  ) : (
+                  ) : activeUrl ? (
                     <video
-                      src={activeItem.url}
+                      src={activeUrl}
                       controls
                       autoPlay
                       className="w-full h-full"
                       controlsList="nodownload noremoteplayback noplaybackrate"
                       disablePictureInPicture
                     />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-white text-sm">Loading…</div>
                   )}
                 </div>
                 {/* Info */}
