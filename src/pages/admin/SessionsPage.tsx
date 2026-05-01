@@ -170,8 +170,19 @@ const SessionsPage = () => {
   };
 
   const markMissed = (sessionId: string) => {
-    updateSession.mutate({ id: sessionId, status: 'missed' });
-    toast.info('Session marked as missed');
+    // No-show counts as a session attended/used unless admin later marks "excused"
+    updateSession.mutate({ id: sessionId, status: 'missed', attendance: 'no_show' } as any);
+    toast.info('Session marked as no-show (counts as attended)');
+  };
+
+  const setAttendance = (sessionId: string, value: 'present' | 'no_show' | 'excused') => {
+    updateSession.mutate({ id: sessionId, attendance: value } as any);
+    const labels: Record<string, string> = {
+      present: '✅ Marked Present (counts as attended)',
+      no_show: '🚫 Marked No-Show (counts as attended)',
+      excused: '🛡️ Marked Excused (does NOT count toward sessions)',
+    };
+    toast.success(labels[value]);
   };
 
   const getFlowStatus = (status: string) => [
@@ -329,8 +340,31 @@ const SessionsPage = () => {
 
         {/* Next Session, Targets, Rewards, Consequences */}
         <div className="bg-card rounded-xl p-4 border border-border">
-          <h3 className="font-semibold text-foreground text-sm mb-1">📅 Next Session Time</h3>
-          <input value={postData.nextSessionTime} onChange={e => setPostData(p => ({ ...p, nextSessionTime: e.target.value }))} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="e.g., Thursday 10:00 AM" />
+          <div className="flex items-center justify-between mb-1 gap-2">
+            <h3 className="font-semibold text-foreground text-sm">📅 Next Session Time</h3>
+            <button
+              type="button"
+              onClick={() => {
+                const nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + 7);
+                setNewSession(p => ({
+                  ...p,
+                  seeker_id: session?.seeker_id || '',
+                  coach_id: session?.coach_id || p.coach_id,
+                  course_id: session?.course_id || '',
+                  date: nextDate.toISOString().split('T')[0],
+                  start_time: session?.start_time?.slice(0, 5) || '10:00',
+                  end_time: session?.end_time?.slice(0, 5) || '11:00',
+                  notes: '',
+                }));
+                setShowSchedule(true);
+              }}
+              className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground hover:opacity-90 inline-flex items-center gap-1"
+            >
+              <Plus className="w-3 h-3" /> Schedule Now
+            </button>
+          </div>
+          <input value={postData.nextSessionTime} onChange={e => setPostData(p => ({ ...p, nextSessionTime: e.target.value }))} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="e.g., Thursday 10:00 AM (or click Schedule Now)" />
         </div>
         <div className="bg-card rounded-xl p-4 border border-border">
           <h3 className="font-semibold text-foreground text-sm mb-1">🎯 Targets</h3>
@@ -489,6 +523,20 @@ const SessionsPage = () => {
                           <button onClick={() => navigate(`/sessions/${session.id}/certify`)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-primary/10 text-primary flex items-center gap-1">
                             <Shield className="w-3 h-3" /> Sign
                           </button>
+                        )}
+                        {/* Attendance counter control */}
+                        {['completed', 'approved', 'submitted', 'reviewing', 'missed'].includes(session.status) && (
+                          <select
+                            value={session.attendance || ''}
+                            onChange={(e) => setAttendance(session.id, e.target.value as any)}
+                            title="Attendance — Excused does NOT count toward total sessions"
+                            className="px-1.5 py-1 rounded-lg text-[10px] font-medium border border-border bg-background"
+                          >
+                            <option value="">Attendance…</option>
+                            <option value="present">✅ Present (counts)</option>
+                            <option value="no_show">🚫 No-Show (counts)</option>
+                            <option value="excused">🛡️ Excused (free)</option>
+                          </select>
                         )}
                       </div>
                     </td>

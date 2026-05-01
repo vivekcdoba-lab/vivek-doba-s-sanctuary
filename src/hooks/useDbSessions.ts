@@ -5,6 +5,7 @@ export interface DbSession {
   id: string;
   seeker_id: string;
   course_id: string | null;
+  coach_id: string | null;
   session_number: number;
   date: string;
   start_time: string;

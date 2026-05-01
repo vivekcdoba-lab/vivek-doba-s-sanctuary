@@ -215,7 +215,7 @@ export default function SeekerProgressCharts() {
       session: `S${s.session_number || '?'}`,
       date: s.date,
       engagement: s.engagement_score || 0,
-      attended: s.attendance === 'present' ? 1 : 0,
+      attended: (s.attendance === 'present' || s.attendance === 'no_show') ? 1 : 0,
     }));
   }, [sessions]);
 

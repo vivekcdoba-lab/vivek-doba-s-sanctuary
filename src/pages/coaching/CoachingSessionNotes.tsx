@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Search, Filter, Calendar, Clock, MapPin, User, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDateDMY } from "@/lib/dateFormat";
+import { toast } from "sonner";
 
 const L = {
   title: { en: "Session Notes", hi: "सत्र नोट्स" },
@@ -43,9 +44,22 @@ const PILLAR_EMOJI: Record<string, string> = {
 export default function CoachingSessionNotes() {
   const { lang } = useCoachingLang();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const setAttendance = async (sessionId: string, value: 'present' | 'no_show' | 'excused') => {
+    const { error } = await supabase.from('sessions').update({ attendance: value }).eq('id', sessionId);
+    if (error) { toast.error(error.message); return; }
+    const labels: Record<string, string> = {
+      present: '✅ Marked Present (counts as attended)',
+      no_show: '🚫 Marked No-Show (counts as attended)',
+      excused: '🛡️ Marked Excused (does NOT count toward sessions)',
+    };
+    toast.success(labels[value]);
+    qc.invalidateQueries({ queryKey: ['coaching-sessions'] });
+  };
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ["coaching-sessions"],
@@ -176,6 +190,21 @@ export default function CoachingSessionNotes() {
                         <p className="text-sm text-foreground">{s.coach_private_notes}</p>
                       </div>
                     )}
+                    {/* Attendance — Excused does NOT count toward total sessions */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+                      <span className="text-xs font-semibold text-muted-foreground">Attendance:</span>
+                      <select
+                        value={s.attendance || ''}
+                        onChange={(e) => setAttendance(s.id, e.target.value as any)}
+                        title="Excused = strong acceptable reason; does not consume a session"
+                        className="text-xs px-2 py-1 rounded-md border border-border bg-background"
+                      >
+                        <option value="">— Select —</option>
+                        <option value="present">✅ Present (counts)</option>
+                        <option value="no_show">🚫 No-Show (counts)</option>
+                        <option value="excused">🛡️ Excused (free, does NOT count)</option>
+                      </select>
+                    </div>
                   </div>
                 )}
               </div>

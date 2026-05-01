@@ -8,6 +8,7 @@ import { usePayments } from '@/hooks/usePayments';
 import { useSeekerLinkGroup } from '@/hooks/useSeekerLinks';
 import FeeStructureForm from '@/components/FeeStructureForm';
 import { useFeeStructure } from '@/hooks/useFeeStructure';
+import { useSeekerSessionCount } from '@/hooks/useSeekerSessionCount';
 import SeekerSignedDocuments from '@/components/SeekerSignedDocuments';
 
 type FilterType = 'all' | 'individual' | 'joint';
@@ -88,6 +89,9 @@ const SeekerPayments = () => {
 
       {/* Fee structure — read-only (admin-managed) */}
       <FeeStructureReadOnlyCard seekerId={profile?.id} />
+
+      {/* Sessions remaining — counts attended (present + no-show) and excludes excused */}
+      <SessionsRemainingCard seekerId={profile?.id} />
 
       <div className="grid grid-cols-2 gap-3">
         {stats.map(s => (
@@ -198,6 +202,30 @@ function FeeStructureReadOnlyCard({ seekerId }: { seekerId?: string }) {
     <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
       <h2 className="text-sm font-semibold text-foreground mb-3">Fee Structure / फीस संरचना</h2>
       <FeeStructureForm seekerId={seekerId} readOnly />
+    </div>
+  );
+}
+
+function SessionsRemainingCard({ seekerId }: { seekerId?: string }) {
+  const { data: fee } = useFeeStructure(seekerId);
+  const { data: count } = useSeekerSessionCount(seekerId);
+  if (!seekerId || !fee || !count) return null;
+  const total = (fee as any).total_sessions ?? 0;
+  if (!total) return null;
+  const remaining = Math.max(0, total - count.attended);
+  return (
+    <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
+      <h2 className="text-sm font-semibold text-foreground mb-3">📅 Sessions / सत्र</h2>
+      <div className="grid grid-cols-4 gap-3 text-center">
+        <div><p className="text-[10px] text-muted-foreground">Total</p><p className="text-lg font-bold text-foreground">{total}</p></div>
+        <div><p className="text-[10px] text-muted-foreground">Attended</p><p className="text-lg font-bold text-primary">{count.attended}</p></div>
+        <div><p className="text-[10px] text-muted-foreground">Excused</p><p className="text-lg font-bold text-emerald-600">{count.excused}</p></div>
+        <div><p className="text-[10px] text-muted-foreground">Remaining</p><p className="text-lg font-bold text-saffron">{remaining}</p></div>
+      </div>
+      {count.hasLgtIgs && (
+        <p className="text-[10px] text-muted-foreground mt-2">✅ Includes Information Gathering Session (Session #1)</p>
+      )}
+      <p className="text-[10px] text-muted-foreground mt-1">No-show counts as attended unless coach/admin marks <strong>Excused</strong> (strong acceptable reason).</p>
     </div>
   );
 }
