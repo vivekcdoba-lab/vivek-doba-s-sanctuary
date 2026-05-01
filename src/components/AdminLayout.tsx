@@ -12,7 +12,7 @@ import {
   UserPlus, Crown, Search as SearchIcon, FileText, CheckCircle,
   Megaphone, Video, Headphones, Building2, Trophy, Award,
   PanelLeftClose, PanelLeft, Shield, Bell, Link2, Database, Palette,
-  DollarSign, UserCheck, RotateCcw, Banknote, CreditCard, Mail
+  DollarSign, UserCheck, RotateCcw, Banknote, CreditCard, Mail, Settings2
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
