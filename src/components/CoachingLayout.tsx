@@ -25,6 +25,7 @@ const coachNav: NavGroup[] = [
   {
     label: 'DASHBOARD', emoji: '🏠', items: [
       { icon: LayoutDashboard, label: 'Overview', path: '/coaching' },
+      { icon: Sun, label: 'Coach Day View', path: '/coaching/coach-day' },
     ],
   },
   {
