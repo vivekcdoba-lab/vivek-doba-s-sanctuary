@@ -1,86 +1,86 @@
-## Goals
+# Plan: Gate Weekly Review by Next Session Date
 
-1. Correct the support email shown on `/seeker/help`: change `support@vivekdoba.in` → **`info@vivekdoba.com`**.
-2. Fix what currently happens when a seeker clicks **Submit Issue** / **Submit Suggestion** — today the form just inserts a `notifications` row addressed to the seeker themselves, so no admin ever sees it.
+Make `/seeker/weekly-review` editable **only on the day before the seeker's next scheduled session**. On all other days, the form is read-only with a clear banner explaining when it unlocks. Also persist submitted reviews so prior entries can be displayed in read-only mode.
 
----
+## Behavior
 
-## Current behavior (what happens now)
+- **Editable window**: The calendar day immediately before the next upcoming session (date in seeker's local timezone). Example: next session on Wed → form editable all day Tue.
+- **Read-only mode (default)**:
+  - All inputs (stars, text fields, textareas, sliders) disabled.
+  - Submit button hidden/disabled.
+  - Banner at top: "🔒 Read-only — Weekly Review unlocks on {date} (one day before your next session on {sessionDate})."
+  - If a previously-submitted review exists for the current week, show its values.
+  - If no upcoming session is scheduled: "No upcoming session scheduled. Weekly Review will unlock the day before your next session."
+- **Editable mode**:
+  - Green banner: "✏️ Weekly Review is open today — your next session is tomorrow ({date})."
+  - Submit enabled; on submit, persist to DB.
 
-`SeekerHelp.tsx` `submitIssue()` and `submitFeature()` both run:
+## Data Source
 
+Read next session from existing `sessions` table:
 ```ts
-supabase.from('notifications').insert({
-  user_id: profile.id,                  // ← the seeker, not an admin
-  type: 'system',
-  title: '🐛 Issue Report: ...',
-  message: ...,
-});
+supabase.from('sessions')
+  .select('id, date, start_time, session_name')
+  .eq('seeker_id', profile.id)
+  .in('status', ['scheduled', 'confirmed', 'in_progress'])
+  .gte('date', todayISO)
+  .order('date').order('start_time')
+  .limit(1)
 ```
 
-Effects:
-- Toast says "✅ Issue reported!" — but the row lands in the seeker's own notification feed.
-- No admin notification, no inbox, no email, no record outside the seeker's bell icon.
-- No category/severity, no status (open/in-progress/resolved), no admin reply path.
+Compare `sessionDate - 1 day === today` to determine the editable flag.
 
-This is effectively a dead-end form. We will replace it with a real ticket pipeline.
+## Persistence
 
----
+Add a `weekly_reviews` table so submissions are saved (currently only toasts):
 
-## Proposed fix
+```sql
+create table public.weekly_reviews (
+  id uuid primary key default gen_random_uuid(),
+  seeker_id uuid not null,
+  session_id uuid references public.sessions(id) on delete set null,
+  week_start date not null,
+  week_end date not null,
+  rating int check (rating between 1 and 5),
+  wins jsonb default '[]'::jsonb,
+  challenge text,
+  learning text,
+  wheel_scores jsonb default '[]'::jsonb,
+  next_goals text,
+  need_from_coach text,
+  gratitude text,
+  submitted_at timestamptz default now(),
+  unique (seeker_id, week_start)
+);
+alter table public.weekly_reviews enable row level security;
+```
 
-### 1. New table `support_tickets`
+RLS policies:
+- Seeker can `select`/`insert`/`update` their own rows (`seeker_id = auth.uid()`-mapped via profile).
+- Admin full access via `is_admin(auth.uid())`.
+- Coach read access for assigned seekers (mirror existing pattern used for journals).
 
-| column | type | notes |
-|---|---|---|
-| id | uuid PK | |
-| seeker_id | uuid → profiles.id | who submitted |
-| kind | text check (`issue`,`feature`) | |
-| category | text nullable | issue type from dropdown |
-| description | text not null | |
-| status | text default `open` | `open`,`in_progress`,`resolved`,`closed` |
-| admin_reply | text nullable | |
-| resolved_at | timestamptz nullable | |
-| created_at / updated_at | timestamptz | |
+## UI Changes (`src/pages/seeker/SeekerWeeklyReview.tsx`)
 
-RLS:
-- Seekers: insert + select their own rows.
-- Admins: full access via `is_admin(auth.uid())`.
+1. Replace hard-coded `now = new Date(2025, 2, 31)` with real `new Date()`.
+2. Fetch next session via `useQuery`.
+3. Compute `isEditable = nextSession && diffInCalendarDays(parseISO(nextSession.date), today) === 1`.
+4. Fetch existing review for current week (by `week_start`) and prefill state.
+5. Add `disabled={!isEditable}` + `readOnly` to all inputs; wrap in a fieldset for cleanliness.
+6. Top banner reflects state (locked / unlocks-on / open-today / no-session).
+7. Submit handler upserts to `weekly_reviews` instead of just toasting.
 
-### 2. On submit (seeker side)
+## Edge Cases
 
-`submitIssue` / `submitFeature` in `SeekerHelp.tsx`:
-- Insert into `support_tickets` (kind = `issue` | `feature`).
-- Also insert a `notifications` row for **every admin** (loop or use a SECURITY DEFINER RPC `notify_admins_of_ticket(ticket_id)`) so admins see a bell alert linking to the new admin Support Inbox page.
-- Toast: "✅ Reported — our team has been notified."
+- Multiple sessions same week → use the **earliest upcoming** session for the unlock calculation.
+- Already-submitted review on the editable day → still editable (allows updates) until the session date arrives.
+- Session rescheduled after submission → previous review remains visible read-only.
+- Timezone: use seeker local date for "today" and "session date" comparison (date-only, no time).
 
-### 3. New admin page `/admin/support`
+## Files
 
-- Sidebar link: **Support Inbox** under Admin tools.
-- Table grouped by tabs: **Issues** / **Feature Requests** / **Resolved**.
-- Columns: Seeker, Category, Excerpt, Submitted, Status.
-- Row click → side panel with full description, seeker contact, dropdown to change status, textarea for admin reply.
-- Saving an admin reply also pushes a `notifications` row back to the seeker so they see it in their bell.
+- **Edit**: `src/pages/seeker/SeekerWeeklyReview.tsx`
+- **New migration**: `weekly_reviews` table + RLS policies
+- **Auto-updated**: `src/integrations/supabase/types.ts`
 
-### 4. Email update
-
-`SeekerHelp.tsx` line 135 + 139: replace `support@vivekdoba.in` (both the `mailto:` link and the visible label) with **`info@vivekdoba.com`**.
-
-### 5. Optional outbound email (uses existing Resend integration)
-
-When a ticket is created, fire a notification email to `info@vivekdoba.com` via the existing email infra so admins get an inbox copy too. If you'd rather keep it in-app only for now, we'll skip this — say the word.
-
----
-
-## Files to change
-
-- `supabase/migrations/<new>.sql` — create `support_tickets` table + RLS + `notify_admins_of_ticket` RPC.
-- `src/pages/seeker/SeekerHelp.tsx` — update email string + rewrite both `submitIssue` / `submitFeature` to use the new table and admin notify RPC.
-- `src/pages/admin/AdminSupportInbox.tsx` (new) — admin triage UI.
-- `src/App.tsx` — add `/admin/support` route.
-- `src/components/AdminLayout.tsx` (or admin sidebar source) — add "Support Inbox" link with a badge for unresolved count.
-
-## Out of scope
-
-- Live chat (already shown as "coming soon" placeholder — left untouched).
-- WhatsApp deep-linking the issue text (can be added later).
+No removals — purely additive per preservation policy.

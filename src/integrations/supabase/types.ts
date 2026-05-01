@@ -5127,6 +5127,75 @@ export type Database = {
           },
         ]
       }
+      weekly_reviews: {
+        Row: {
+          challenge: string | null
+          gratitude: string | null
+          id: string
+          learning: string | null
+          need_from_coach: string | null
+          next_goals: string | null
+          rating: number | null
+          seeker_id: string
+          session_id: string | null
+          submitted_at: string
+          updated_at: string
+          week_end: string
+          week_start: string
+          wheel_scores: Json
+          wins: Json
+        }
+        Insert: {
+          challenge?: string | null
+          gratitude?: string | null
+          id?: string
+          learning?: string | null
+          need_from_coach?: string | null
+          next_goals?: string | null
+          rating?: number | null
+          seeker_id: string
+          session_id?: string | null
+          submitted_at?: string
+          updated_at?: string
+          week_end: string
+          week_start: string
+          wheel_scores?: Json
+          wins?: Json
+        }
+        Update: {
+          challenge?: string | null
+          gratitude?: string | null
+          id?: string
+          learning?: string | null
+          need_from_coach?: string | null
+          next_goals?: string | null
+          rating?: number | null
+          seeker_id?: string
+          session_id?: string | null
+          submitted_at?: string
+          updated_at?: string
+          week_end?: string
+          week_start?: string
+          wheel_scores?: Json
+          wins?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_reviews_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_reviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wheel_of_life_assessments: {
         Row: {
           average_score: number | null
