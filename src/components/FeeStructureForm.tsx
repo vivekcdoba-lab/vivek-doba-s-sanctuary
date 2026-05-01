@@ -157,7 +157,7 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
 
   return (
     <div className="space-y-4">
-      {/* === NEW: Course Bundling, GST Toggle, Discount === */}
+      {/* === Top: Course Selection + GST Toggle (above invoice) === */}
       <div className="border border-[#1e3a5f]/30 rounded-lg p-4 bg-[#fafbfd] space-y-4">
         <h3 className="font-semibold text-[#1e3a5f] text-sm">Course Selection &amp; Pricing Rules</h3>
 
@@ -176,38 +176,6 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
               </option>
             ))}
           </select>
-        </div>
-
-        <div className="grid sm:grid-cols-[200px_1fr] gap-3 items-start">
-          <Label className="pt-2 text-sm">Bundled Courses (Free)</Label>
-          <div className="space-y-2">
-            <div className="flex flex-wrap gap-2">
-              {allCourses.filter(c => c.id !== f.primary_course_id).map(c => {
-                const checked = (f.bundled_course_ids || []).includes(c.id);
-                return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    disabled={readOnly}
-                    onClick={() => toggleBundled(c.id)}
-                    className={`text-xs px-3 py-1.5 rounded-full border transition ${
-                      checked
-                        ? 'bg-[#1D9E75] text-white border-[#1D9E75]'
-                        : 'bg-white text-foreground border-input hover:border-[#1D9E75]'
-                    }`}
-                  >
-                    {checked ? '✓ ' : '+ '}{c.name}
-                  </button>
-                );
-              })}
-            </div>
-            {bundledCourses.length > 0 && (
-              <p className="text-xs text-muted-foreground">
-                Included free — no charge added. Combined value:{' '}
-                <span className="font-semibold text-[#1D9E75]">{inrLabel(computed.bundledValue)}</span> (saved for the seeker).
-              </p>
-            )}
-          </div>
         </div>
 
         <div className="grid sm:grid-cols-[200px_1fr] gap-3 items-center">
@@ -237,51 +205,6 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
               </div>
             )}
           </div>
-        </div>
-
-        <div className="grid sm:grid-cols-[200px_1fr] gap-3 items-center">
-          <Label className="text-sm">Discount (₹)</Label>
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-            <Input
-              type="number"
-              placeholder="0"
-              value={f.discount_amount as any}
-              onChange={e => set('discount_amount', e.target.value === '' ? '' : Number(e.target.value) as any)}
-              disabled={readOnly}
-              className="h-9 w-32"
-            />
-            <Input
-              placeholder="Reason (optional) — e.g. early-bird, scholarship"
-              value={f.discount_reason || ''}
-              onChange={e => set('discount_reason', e.target.value)}
-              disabled={readOnly}
-              className="h-9 flex-1"
-            />
-          </div>
-        </div>
-
-        <div className="rounded-md bg-white border border-[#1e3a5f]/20 p-3 text-xs space-y-1">
-          <div className="flex justify-between"><span>Subtotal (sessions × fee)</span><span>{inrLabel(computed.subtotal)}</span></div>
-          {Number(f.discount_amount) > 0 && (
-            <div className="flex justify-between text-[#b91c1c]"><span>Discount</span><span>− {inrLabel(Number(f.discount_amount))}</span></div>
-          )}
-          <div className="flex justify-between">
-            <span>GST {computed.gstRate ? `@ ${computed.gstRate}%` : '(excluded)'}</span>
-            <span>{inrLabel(computed.gst)}</span>
-          </div>
-          <div className="flex justify-between font-bold text-[#1e3a5f] pt-1 border-t">
-            <span>Total Investment</span><span>{inrLabel(computed.total)}</span>
-          </div>
-          <div className="flex justify-between text-muted-foreground">
-            <span>Total sessions (incl. bundled)</span>
-            <span>{computed.totalSessions}</span>
-          </div>
-          {f.startDate && f.endDate && (
-            <div className="flex justify-between text-muted-foreground">
-              <span>Coaching window</span>
-              <span>{f.startDate} → {f.endDate}</span>
-            </div>
-          )}
         </div>
       </div>
       <div className="border-2 border-[#1e3a5f] rounded-lg overflow-hidden">
@@ -411,6 +334,96 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
             </div>
           );
         })}
+      </div>
+
+      {/* === Pricing Summary (below invoice): Bundled + Discount + Totals === */}
+      <div className="border border-[#1e3a5f]/30 rounded-lg p-4 bg-[#fafbfd] space-y-4">
+        <h3 className="font-semibold text-[#1e3a5f] text-sm">Pricing Summary</h3>
+
+        <div className="grid sm:grid-cols-[200px_1fr] gap-3 items-start">
+          <Label className="pt-2 text-sm">Bundled Courses (Free)</Label>
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
+              {allCourses.filter(c => c.id !== f.primary_course_id).map(c => {
+                const checked = (f.bundled_course_ids || []).includes(c.id);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    disabled={readOnly}
+                    onClick={() => toggleBundled(c.id)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                      checked
+                        ? 'bg-[#1D9E75] text-white border-[#1D9E75]'
+                        : 'bg-white text-foreground border-input hover:border-[#1D9E75]'
+                    }`}
+                  >
+                    {checked ? '✓ ' : '+ '}{c.name}
+                  </button>
+                );
+              })}
+            </div>
+            {bundledCourses.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Included free — no charge added. Combined value:{' '}
+                <span className="font-semibold text-[#1D9E75]">{inrLabel(computed.bundledValue)}</span> (saved for the seeker).
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-[200px_1fr] gap-3 items-center">
+          <Label className="text-sm">Discount (₹)</Label>
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <Input
+              type="number"
+              placeholder="0"
+              value={f.discount_amount as any}
+              onChange={e => set('discount_amount', e.target.value === '' ? '' : Number(e.target.value) as any)}
+              disabled={readOnly}
+              className="h-9 w-32"
+            />
+            <Input
+              placeholder="Reason (optional) — e.g. early-bird, scholarship"
+              value={f.discount_reason || ''}
+              onChange={e => set('discount_reason', e.target.value)}
+              disabled={readOnly}
+              className="h-9 flex-1"
+            />
+          </div>
+        </div>
+
+        <div className="rounded-md bg-white border border-[#1e3a5f]/20 p-3 text-xs space-y-1">
+          <div className="flex justify-between"><span>Subtotal (sessions × fee)</span><span>{inrLabel(computed.subtotal)}</span></div>
+          {Number(f.discount_amount) > 0 && (
+            <div className="flex justify-between text-[#b91c1c]"><span>Discount</span><span>− {inrLabel(Number(f.discount_amount))}</span></div>
+          )}
+          <div className="flex justify-between">
+            <span>GST {computed.gstRate ? `@ ${computed.gstRate}%` : '(excluded)'}</span>
+            <span>{inrLabel(computed.gst)}</span>
+          </div>
+          <div className="flex justify-between font-bold text-[#1e3a5f] pt-1 border-t">
+            <span>Total Investment</span><span>{inrLabel(computed.total)}</span>
+          </div>
+          <div className="flex justify-between text-muted-foreground">
+            <span>Total sessions (incl. bundled)</span>
+            <span>{computed.totalSessions}</span>
+          </div>
+          {(f.startDate || f.endDate || f.coachingDuration) && (
+            <div className="flex justify-between text-muted-foreground gap-2 flex-wrap">
+              <span>Coaching window</span>
+              <span className="text-right">
+                {f.startDate && (
+                  <>Start: {(() => { try { return fmtDate(parseISO(f.startDate), 'dd MMM yyyy'); } catch { return f.startDate; } })()}</>
+                )}
+                {f.endDate && (
+                  <> · End: {(() => { try { return fmtDate(parseISO(f.endDate), 'dd MMM yyyy'); } catch { return f.endDate; } })()}</>
+                )}
+                {f.coachingDuration && <> · Duration: {f.coachingDuration}</>}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {!readOnly && (
