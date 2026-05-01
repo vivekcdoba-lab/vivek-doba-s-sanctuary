@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/store/authStore';
@@ -15,6 +15,7 @@ import {
   Grid3X3, List, Filter, ExternalLink, Share2, X, Maximize2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { resolveMediaUrl } from '@/lib/resolveMediaUrl';
 
 const PDF_CATEGORIES = [
   { key: 'Workshop Handouts', emoji: '📋', color: 'bg-[hsl(var(--saffron))]/10 text-[hsl(var(--saffron))]' },
@@ -55,7 +56,19 @@ export default function SeekerLearningPdfs() {
   const [catFilter, setCatFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [viewingPdf, setViewingPdf] = useState<PdfItem | null>(null);
+  const [viewingUrl, setViewingUrl] = useState<string>('');
   const [fullscreen, setFullscreen] = useState(false);
+
+  // Resolve storage: URLs to signed URLs whenever a PDF opens
+  useEffect(() => {
+    let cancelled = false;
+    if (!viewingPdf) { setViewingUrl(''); return; }
+    (async () => {
+      const resolved = await resolveMediaUrl(viewingPdf.url, 3600);
+      if (!cancelled) setViewingUrl(resolved);
+    })();
+    return () => { cancelled = true; };
+  }, [viewingPdf]);
 
   // Fetch PDF content from learning_content + resources tables
   const { data: content = [], isLoading } = useQuery({
