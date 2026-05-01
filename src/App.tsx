@@ -386,6 +386,7 @@ const App = () => (
               <Route path="/admin/apply-lgt" element={<AdminApplyLgt />} />
               <Route path="/admin/batches" element={<AdminBatches />} />
               <Route path="/admin/support" element={<AdminSupportInbox />} />
+              <Route path="/admin/operation-docs" element={<AdminOperationDocs />} />
               <Route path="/admin/session-rules" element={<AdminCourseSessionRules />} />
               <Route path="/admin/enrollment-stats" element={<AdminEnrollmentStats />} />
               <Route path="/admin/add-lead" element={<AdminAddLead />} />
