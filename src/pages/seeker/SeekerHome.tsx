@@ -123,8 +123,8 @@ const SeekerHome = () => {
             className="flex-shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-primary-foreground/40 bg-primary-foreground/10 flex items-center justify-center hover:border-primary-foreground/80 transition-colors"
             aria-label="View profile"
           >
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt={displayName} className="w-full h-full object-cover" />
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
             ) : (
               <span className="text-xl font-bold text-primary-foreground">
                 {displayName.charAt(0).toUpperCase()}
