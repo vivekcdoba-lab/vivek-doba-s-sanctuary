@@ -572,9 +572,9 @@ const SessionsPage = () => {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground">Course *</label>
+              <label className="text-sm font-medium text-foreground">Course <span className="text-muted-foreground/70">(Optional)</span></label>
               <select value={newSession.course_id} onChange={e => setNewSession(p => ({ ...p, course_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
-                <option value="">Select Course</option>
+                <option value="">Optional</option>
                 {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
