@@ -145,11 +145,11 @@ export default function SeekerHelp() {
           </div>
         </a>
 
-        <a href="mailto:support@vivekdoba.in" className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow">
+        <a href="mailto:info@vivekdoba.com" className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow">
           <div className="p-2 rounded-lg bg-primary/10"><Mail className="w-5 h-5 text-primary" /></div>
           <div>
             <p className="font-semibold text-sm text-foreground">Email Support</p>
-            <p className="text-xs text-muted-foreground">support@vivekdoba.in</p>
+            <p className="text-xs text-muted-foreground">info@vivekdoba.com</p>
           </div>
         </a>
 
