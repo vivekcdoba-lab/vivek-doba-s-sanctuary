@@ -190,6 +190,21 @@ export default function CoachingSessionNotes() {
                         <p className="text-sm text-foreground">{s.coach_private_notes}</p>
                       </div>
                     )}
+                    {/* Attendance — Excused does NOT count toward total sessions */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+                      <span className="text-xs font-semibold text-muted-foreground">Attendance:</span>
+                      <select
+                        value={s.attendance || ''}
+                        onChange={(e) => setAttendance(s.id, e.target.value as any)}
+                        title="Excused = strong acceptable reason; does not consume a session"
+                        className="text-xs px-2 py-1 rounded-md border border-border bg-background"
+                      >
+                        <option value="">— Select —</option>
+                        <option value="present">✅ Present (counts)</option>
+                        <option value="no_show">🚫 No-Show (counts)</option>
+                        <option value="excused">🛡️ Excused (free, does NOT count)</option>
+                      </select>
+                    </div>
                   </div>
                 )}
               </div>
