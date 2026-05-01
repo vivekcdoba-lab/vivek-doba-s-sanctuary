@@ -19,6 +19,8 @@ import {
   Maximize2, Minimize2, Timer, Music, X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { resolveMediaUrl } from '@/lib/resolveMediaUrl';
+import { toast } from 'sonner';
 
 const AUDIO_CATEGORIES = [
   { key: 'Guided Meditations', label: 'Guided Meditations (ध्यान)', emoji: '🧘' },
@@ -98,6 +100,7 @@ export default function SeekerLearningAudio() {
   const [sleepTimeLeft, setSleepTimeLeft] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const sleepInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const urlCache = useRef<Map<string, string>>(new Map());
 
   // Fetch audio content
   const { data: content = [], isLoading } = useQuery({
@@ -151,7 +154,7 @@ export default function SeekerLearningAudio() {
   };
 
   // Audio controls
-  const playTrack = useCallback((item: AudioItem) => {
+  const playTrack = useCallback(async (item: AudioItem) => {
     if (currentTrack?.id === item.id && isPlaying) {
       audioRef.current?.pause();
       setIsPlaying(false);
@@ -160,13 +163,30 @@ export default function SeekerLearningAudio() {
     setCurrentTrack(item);
     setIsPlaying(true);
     setExpanded(false);
-    if (audioRef.current) {
-      audioRef.current.src = item.url;
+    if (!audioRef.current) return;
+    try {
+      let resolved = urlCache.current.get(item.id);
+      if (!resolved) {
+        resolved = await resolveMediaUrl(item.url, 3600);
+        if (resolved) urlCache.current.set(item.id, resolved);
+      }
+      if (!resolved) {
+        setIsPlaying(false);
+        toast.error('Audio failed to load — file is unavailable.');
+        return;
+      }
+      audioRef.current.src = resolved;
       const prog = progressMap[item.id];
       if (prog && prog.last_position_seconds > 0 && !prog.is_completed) {
         audioRef.current.currentTime = prog.last_position_seconds;
       }
-      audioRef.current.play().catch(() => setIsPlaying(false));
+      await audioRef.current.play().catch((e) => {
+        setIsPlaying(false);
+        toast.error('Could not play audio: ' + (e?.message || 'unknown error'));
+      });
+    } catch (e: any) {
+      setIsPlaying(false);
+      toast.error('Audio error: ' + (e?.message || 'unknown'));
     }
   }, [currentTrack, isPlaying, progressMap]);
 
