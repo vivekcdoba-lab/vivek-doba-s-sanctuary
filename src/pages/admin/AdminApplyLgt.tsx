@@ -340,8 +340,8 @@ const AdminApplyLgt = () => {
                             <Check className="w-3 h-3" /> Submitted
                           </span>
                         ) : submittedLegacy ? (
-                          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" title="Submitted via the old public form">
-                            <Check className="w-3 h-3" /> Submitted (legacy)
+                          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" title="Submitted via the public form">
+                            <Check className="w-3 h-3" /> Submitted
                           </span>
                         ) : hasActiveToken ? (
                           <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
