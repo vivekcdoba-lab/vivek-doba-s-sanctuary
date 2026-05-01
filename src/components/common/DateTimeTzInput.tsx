@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { fromZonedTime, toZonedTime, formatInTimeZone } from 'date-fns-tz';
 import TimezonePicker from './TimezonePicker';
 import { detectBrowserTz, offsetFor } from '@/lib/timezones';
+import { todayInTz, nowHHMM, nowLabel } from '@/lib/scheduleTime';
 
 interface DateTimeTzInputProps {
   /** Local date YYYY-MM-DD as the scheduler perceives it (in `timezone`). */
@@ -15,6 +16,8 @@ interface DateTimeTzInputProps {
   onChange: (next: { date: string; startTime: string; endTime: string; timezone: string }) => void;
   hideEnd?: boolean;
   showLabels?: boolean;
+  /** When true, prevent picking a date/time in the past and show the live current time. */
+  disablePast?: boolean;
 }
 
 /**
