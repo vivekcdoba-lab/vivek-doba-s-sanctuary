@@ -433,13 +433,14 @@ const SeekerDetailPage = () => {
       <div className="bg-card rounded-2xl p-6 shadow-md border border-border">
         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
           <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-primary-foreground flex-shrink-0 ring-4 ring-primary/30 ${
-              enrollment?.tier === 'chakravartin' ? 'shimmer-gold' :
-              enrollment?.tier === 'platinum' ? 'bg-gradient-to-br from-gray-400 to-gray-200 text-foreground' :
-              enrollment?.tier === 'premium' ? 'gradient-sacred' : 'gradient-chakravartin'
-            }`}>
-              {seeker.full_name.split(' ').map((n: string) => n[0]).join('')}
-            </div>
+            <AvatarUploader
+              profileId={seeker.id}
+              targetUserId={seeker.user_id}
+              avatarUrl={seeker.avatar_url}
+              fallbackName={seeker.full_name}
+              size={80}
+              onChange={(url) => setSeeker((s: any) => ({ ...s, avatar_url: url }))}
+            />
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-bold text-foreground">{seeker.full_name}</h1>
@@ -451,6 +452,7 @@ const SeekerDetailPage = () => {
               </div>
               <p className="text-sm text-muted-foreground">{course?.name || 'No course assigned'}</p>
               <p className="text-xs text-muted-foreground">{seeker.city}{seeker.state ? `, ${seeker.state}` : ''}</p>
+              <SessionCountChips seekerId={seeker.id} />
             </div>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
