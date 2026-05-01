@@ -147,6 +147,19 @@ export default function SeekerStreaks() {
           </div>
         </div>
 
+        {/* Quick action CTAs */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Link to="/seeker/worksheet" className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[hsl(var(--saffron))] text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
+            📝 Fill Today's Worksheet
+          </Link>
+          <Link to="/seeker/gratitude-wall" className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-card border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors">
+            🙏 Add Gratitude
+          </Link>
+          <Link to="/seeker/win-journal" className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-card border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors">
+            🏆 Log a Win
+          </Link>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
