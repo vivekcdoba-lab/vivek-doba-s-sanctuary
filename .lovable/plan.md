@@ -1,118 +1,91 @@
-# Plan: Operation Docs — Live Architecture Reference
+## Goal
+On both Admin schedule (`/admin/sessions`, used as the admin scheduler) and Coach schedule (`/coaching/schedule`):
+1. The "New Session" form must open pre-filled with the **current local date and time** (rounded up to the next 15 minutes), not a hardcoded `10:00`/empty date.
+2. Users must NOT be able to schedule a session in the past — neither past dates nor past times on today's date.
+3. Edit/Reschedule dialogs follow the same rule (cannot move a session into the past).
 
-Yes, this is fully possible. We'll generate a **comprehensive Operation Docs hub** at `/admin/operation-docs` (Admin → SYSTEM → Operation Docs), built from a curated, version-controlled markdown bundle that auto-refreshes on every build. All read-only. You'll have one page to scan the entire system before asking for changes.
+Block-Time and Calendar event creation get the same treatment.
 
-## What you'll see
+## Scope
+Files to modify:
+- `src/pages/coaching/CoachSchedule.tsx` — newForm, editForm, blockForm defaults + min-date/time guards.
+- `src/pages/admin/SessionsPage.tsx` — newSession defaults + min-date/time guards.
+- `src/pages/admin/CalendarPage.tsx` — newEvent defaults + min-date/time guards (since it shares the same scheduling concern).
+- `src/components/common/DateTimeTzInput.tsx` — add an optional `minDate`/`minTime` prop (or `disablePast` flag) so the composite control can enforce "no past" natively via the native `min` attribute on date/time inputs.
 
-A single admin page with a left sidebar of doc sections, a top search box, "Last updated" timestamp, and an "Export PDF / Markdown" button. Sections:
+## Behavior
 
-1. **Overview** — vision, stack, identity, terminology, preservation policy
-2. **Architecture Map** — Mermaid diagram of layers (UI → Hooks → Supabase → Edge Functions → External APIs)
-3. **Routes & Pages** — every URL grouped by role (Admin / Coach / Seeker / Public), with description + key file path
-4. **Sidebar Navigation** — the actual menu hierarchy for each role
-5. **Database Schema** — all 105 tables grouped by domain (Auth, Sessions, Assessments, Financial, Artha, Communication, etc.) — columns, FKs, RLS summary
-6. **Database Functions** — every `public.*` function: purpose, params, return, security
-7. **Edge Functions** — all 26 functions: trigger, inputs, outputs, secrets used
-8. **Storage Buckets** — avatars, signatures, resources, documents — public/private + folder layout
-9. **Cron / Automated Jobs** — daily reports, gratitude nudges, prep reminders, session heartbeat, key rotation
-10. **External Integrations** — Resend, Twilio/WhatsApp, Lovable AI, Google Fit
-11. **Auth & Roles** — RBAC matrix (admin/super_admin/coach/seeker), `is_admin` / `is_coach` / `is_assigned_coach` patterns
-12. **RLS Policy Catalog** — table-by-table policy summary in plain English
-13. **Business Rules** — LGT, Sampoorna points, attendance counter, journey progress, assessment thresholds, payment GST 18%
-14. **Workflows** — Onboarding, Enrollment, Session lifecycle, Assignment, Assessment, Support ticket, Document signing — each as a Mermaid sequence diagram
-15. **Feature Catalog** — 50+ features with status, owner files, related tables (one-line each)
-16. **Glossary** — Seeker, Sadhak, Guruji, Dharma, LGT, Vishnu Protocol, etc.
-17. **Change Log** — auto-appended entry on every build (commit hash + date + changed file count)
+### Defaults when opening the New Session dialog
+- `date` = today's local date in `YYYY-MM-DD` (in the selected timezone, defaulting to browser tz).
+- `start_time` = current local time rounded **up** to the next 15 min (e.g. 14:07 → 14:15).
+- `end_time` = `start_time + 1h`.
+- These are recomputed every time the dialog opens (not just on mount), so the time stays "fresh" if the user leaves the page open.
 
-## How "auto-update on every build" works
+### Past-date / past-time guards
+- The native `<input type="date">` gets `min={todayLocalISO}`.
+- The native `<input type="time">` gets `min={nowHHMM}` **only when the chosen date equals today**; otherwise no min.
+- On submit (`handleCreate`, recurring create, edit save, block-time save), validate: if computed start moment < `Date.now()`, show a toast ("Cannot schedule in the past — please pick a future time.") and abort.
+- For recurring series, only the first occurrence is checked (subsequent dates are by definition in the future).
 
-**Approach: Generated bundle + thin viewer.** The docs are real markdown files in `src/docs/operation/` shipped with the build. A Node script regenerates the dynamic sections from live source-of-truth artifacts (DB introspection snapshot, route table, edge function list, sidebar config) at build time.
+### Edit / Reschedule
+- Same min-date/min-time rule applies in the edit dialog and in drag-to-reschedule (`dragSession` handler) — if the drop target lands on a past slot, revert and toast.
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  prebuild script (runs on every build automatically)        │
-│  scripts/generate-operation-docs.ts                         │
-│   ├─ scans src/App.tsx → routes.json                        │
-│   ├─ scans src/components/*Layout.tsx → nav.json            │
-│   ├─ scans supabase/functions/* → edge-functions.json       │
-│   ├─ reads supabase/migrations/* → schema.json              │
-│   ├─ reads .lovable/plan.md history → changelog entry       │
-│   └─ writes src/docs/operation/_generated/*.md              │
-└─────────────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│  /admin/operation-docs (React page)                         │
-│   ├─ imports all .md as raw strings (Vite ?raw)             │
-│   ├─ renders with react-markdown + remark-gfm + mermaid     │
-│   ├─ search box (fuzzy across all sections)                 │
-│   └─ download buttons (.md zip, .pdf via print)             │
-└─────────────────────────────────────────────────────────────┘
+### Scheduler "current time" indicator
+- The day/week grid already uses `new Date()` for today highlighting — no change needed there.
+- In the New Session dialog header subtitle, show a small muted line: `Now: <DD-Mon-YYYY HH:mm> (<tz>)` so the scheduler can see the live current system time. Updated via a 60s interval while dialog is open.
+
+## Technical Details
+
+### Helper (new, in `src/lib/timezones.ts` or a new `src/lib/scheduleTime.ts`)
+```ts
+// Returns local YYYY-MM-DD in the given IANA tz.
+export function todayInTz(tz: string): string;
+
+// Returns HH:MM in the given IANA tz, rounded UP to the next `stepMin` minutes.
+export function nowRoundedHHMM(tz: string, stepMin = 15): string;
+
+// Returns true if a (date, HH:MM, tz) combo is strictly in the future.
+export function isFutureLocal(date: string, time: string, tz: string): boolean;
 ```
+Implemented with `date-fns-tz` (already a dep — used by `DateTimeTzInput`).
 
-**Wiring `prebuild`**: add `"prebuild": "tsx scripts/generate-operation-docs.ts"` to `package.json`. Vite/Lovable runs `npm run build` for every preview build, so docs regenerate automatically every deploy.
+### `DateTimeTzInput` change
+Add prop `disablePast?: boolean` (default false). When true:
+- `<input type="date">` gets `min={todayInTz(timezone)}`.
+- `<input type="time">` gets `min={nowRoundedHHMM(timezone)}` only if `date === todayInTz(timezone)`.
+- When the user changes the timezone, recompute the mins.
 
-**Hand-curated sections** (Overview, Business Rules, Workflows, Glossary) live as static `.md` files I write once and update when features change. **Generated sections** (Routes, Schema, Edge Functions, Changelog) regenerate from source on every build — they can never drift.
+### Open-dialog hook pattern
+Replace one-shot `useState({date:'', start_time:'10:00', ...})` with:
+```ts
+const openNewSession = () => {
+  const tz = defaultTz;
+  setNewForm(f => ({
+    ...f,
+    date: todayInTz(tz),
+    start_time: nowRoundedHHMM(tz, 15),
+    end_time: addOneHour(nowRoundedHHMM(tz, 15)),
+    timezone: tz,
+  }));
+  setShowNewSession(true);
+};
+```
+Wire this to every "New Session" / "+" / day-cell click that currently sets `showNewSession=true`.
 
-## Page UX
+### Submit-time guard
+Inside `useCreateSession` / `useCreateRecurringSessions` callers and the local `handleCreateSession` in `SessionsPage.tsx`:
+```ts
+if (!isFutureLocal(form.date, form.start_time, form.timezone ?? defaultTz)) {
+  toast.error('Cannot schedule a session in the past.');
+  return;
+}
+```
+Same check inside the edit-save handler and block-time create.
 
-- **Layout**: 3-column on desktop — left rail (table of contents, collapsible), center (markdown content with anchor links), right rail (this section's quick-jump headings).
-- **Read-only banner**: "📖 This is generated documentation. To change app behavior, ask in chat — docs will refresh on the next build."
-- **Search**: client-side fuzzy search across all loaded markdown; jumps to anchor on click.
-- **Print/Export**: a "Download" menu with "Markdown (.zip)" and "Print to PDF" (uses `window.print()` with a print stylesheet).
-- **Mermaid diagrams**: rendered inline using `mermaid` npm package on mount.
-- **Access**: admin-only route, protected by existing `RequireRole` wrapper.
+### Admin pages without `DateTimeTzInput`
+`SessionsPage.tsx` and `CalendarPage.tsx` use raw `<input type="date">` / `<input type="time">`. Add `min={...}` directly to those inputs using the helpers above.
 
-## Files to create
-
-- `src/pages/admin/AdminOperationDocs.tsx` — viewer page
-- `src/components/docs/MarkdownViewer.tsx` — markdown + mermaid renderer
-- `src/components/docs/DocsSidebar.tsx` — section index with search
-- `src/docs/operation/00-overview.md` (static)
-- `src/docs/operation/01-architecture.md` (static, with Mermaid map)
-- `src/docs/operation/02-roles-auth.md` (static)
-- `src/docs/operation/03-business-rules.md` (static)
-- `src/docs/operation/04-workflows.md` (static, Mermaid sequence diagrams)
-- `src/docs/operation/05-features.md` (static)
-- `src/docs/operation/06-integrations.md` (static)
-- `src/docs/operation/99-glossary.md` (static)
-- `src/docs/operation/_generated/routes.md` (generated)
-- `src/docs/operation/_generated/navigation.md` (generated)
-- `src/docs/operation/_generated/database-schema.md` (generated from `supabase/migrations`)
-- `src/docs/operation/_generated/database-functions.md` (generated)
-- `src/docs/operation/_generated/edge-functions.md` (generated by scanning `supabase/functions/`)
-- `src/docs/operation/_generated/storage-buckets.md` (generated)
-- `src/docs/operation/_generated/changelog.md` (appended each build)
-- `scripts/generate-operation-docs.ts` — the build-time generator
-- `src/components/AdminLayout.tsx` — add **📖 Operation Docs** link under SYSTEM
-- `src/App.tsx` — register `/admin/operation-docs` route
-- `package.json` — add `prebuild` script
-
-## Dependencies to add
-
-- `react-markdown`, `remark-gfm`, `rehype-slug`, `rehype-autolink-headings` — markdown rendering with anchored headings
-- `mermaid` — diagram rendering
-- `fuse.js` — client-side fuzzy search
-- `tsx` (dev) — run the generator script
-
-## What stays read-only
-
-The page never writes — no DB inserts, no settings toggles. It's purely a viewer over markdown shipped with the bundle. To change anything, you ask me in chat as usual; the next build re-runs the generator and the relevant section updates itself.
-
-## Limitations to be aware of
-
-- Generated sections reflect what's in the **codebase at build time**, not live DB state (which is what you actually want — the codebase is the source of truth for migrations).
-- "Live row counts" or runtime metrics are NOT included (those would need a live query and would make the page non-read-only). If you want a separate "Live System Stats" panel later, that can be added.
-- First page load includes ~200 KB of markdown — fine for admin tooling, fast on subsequent loads (cached).
-
-## Implementation order
-
-1. Add deps + scaffold the viewer page with a "Coming soon" stub and SYSTEM nav link.
-2. Write the static markdown sections (Overview, Architecture, Workflows, Glossary, Business Rules).
-3. Build the generator script for routes, navigation, edge functions, storage.
-4. Build the schema/db-function generator (parses migration SQL).
-5. Wire `prebuild`, render Mermaid + search + export.
-
-No removals, no DB changes (except optionally a `docs_changelog` table later if you want persistent changelog — not required for v1). Fully aligned with the Preservation Policy.
-
-**Confirm and I'll build it.**
+## Out of scope
+- No DB migrations.
+- Existing past-dated sessions are NOT modified or hidden — the rule is creation/edit-only.
+- Seeker-side scheduling (if any) is unchanged unless surfaced later.
