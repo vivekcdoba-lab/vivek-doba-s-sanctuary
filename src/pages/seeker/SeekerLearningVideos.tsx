@@ -418,15 +418,17 @@ export default function SeekerLearningVideos() {
                       allow="autoplay; fullscreen"
                       allowFullScreen
                     />
-                  ) : (
+                  ) : activeUrl ? (
                     <video
-                      src={activeItem.url}
+                      src={activeUrl}
                       controls
                       autoPlay
                       className="w-full h-full"
                       controlsList="nodownload noremoteplayback noplaybackrate"
                       disablePictureInPicture
                     />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-white text-sm">Loading…</div>
                   )}
                 </div>
                 {/* Info */}
