@@ -72,6 +72,7 @@ const SeekerProfile = () => {
           phone: phoneParsed.phone,
           whatsappCode: waParsed.code,
           whatsapp: waParsed.phone,
+          country: (data as any).country || 'India',
           city: data.city || '',
           state: data.state || '',
           occupation: data.occupation || '',
@@ -85,6 +86,10 @@ const SeekerProfile = () => {
           designation: data.designation || '',
           industry: data.industry || '',
         });
+        // Auto-detect "WhatsApp same as Mobile" when both stored numbers match
+        const phoneFull = data.phone || '';
+        const waFull = waPlain || '';
+        setWhatsappSameAsMobile(!!phoneFull && phoneFull === waFull);
       }
     } catch {
       toast({ title: 'Failed to load profile', variant: 'destructive' });
