@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { ChevronLeft, ChevronRight, Plus, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { todayInTz, nowRoundedHHMM, addOneHourHHMM, isFutureLocal, nowLabel } from '@/lib/scheduleTime';
+import { detectBrowserTz } from '@/lib/timezones';
 
 const eventTypeColors: Record<string, string> = {
   session: 'bg-blue-500', follow_up: 'bg-green-500', discovery: 'bg-purple-500', blocked: 'bg-gray-400', event: 'bg-orange-500',
