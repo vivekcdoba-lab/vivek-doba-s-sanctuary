@@ -267,9 +267,9 @@ const AdminApplyLgt = () => {
         <Link to="/admin" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-2">
           <ArrowLeft className="w-4 h-4" /> Back
         </Link>
-        <h1 className="text-2xl font-bold text-foreground">👑 LGT Application — Admin Entry</h1>
+        <h1 className="text-2xl font-bold text-foreground">👑 LGT Application — Information Gathering Session</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Select an approved seeker to fill the detailed Life's Golden Triangle application in person, or email them a personal link to complete it themselves.
+          The Information Gathering Session is the first session in every seeker's journey. Select an approved seeker to fill the detailed Life's Golden Triangle application in person, or email them a personal link to complete it themselves.
         </p>
       </div>
 
