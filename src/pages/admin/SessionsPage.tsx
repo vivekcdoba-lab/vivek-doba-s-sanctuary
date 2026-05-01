@@ -170,8 +170,19 @@ const SessionsPage = () => {
   };
 
   const markMissed = (sessionId: string) => {
-    updateSession.mutate({ id: sessionId, status: 'missed' });
-    toast.info('Session marked as missed');
+    // No-show counts as a session attended/used unless admin later marks "excused"
+    updateSession.mutate({ id: sessionId, status: 'missed', attendance: 'no_show' } as any);
+    toast.info('Session marked as no-show (counts as attended)');
+  };
+
+  const setAttendance = (sessionId: string, value: 'present' | 'no_show' | 'excused') => {
+    updateSession.mutate({ id: sessionId, attendance: value } as any);
+    const labels: Record<string, string> = {
+      present: '✅ Marked Present (counts as attended)',
+      no_show: '🚫 Marked No-Show (counts as attended)',
+      excused: '🛡️ Marked Excused (does NOT count toward sessions)',
+    };
+    toast.success(labels[value]);
   };
 
   const getFlowStatus = (status: string) => [
