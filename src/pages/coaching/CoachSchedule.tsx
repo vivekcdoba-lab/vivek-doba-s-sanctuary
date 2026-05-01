@@ -648,6 +648,7 @@ export default function CoachSchedule() {
                   timezone: v.timezone,
                 }))
               }
+              disablePast
             />
             {/* Recurring meeting */}
             <div className="rounded-lg border border-input p-3 space-y-2">
@@ -730,8 +731,16 @@ export default function CoachSchedule() {
                   timezone: v.timezone,
                 }))
               }
+              disablePast
             />
-            <Button className="w-full" onClick={() => blockForm.date && createBlockedTime.mutate(blockForm)}>
+            <Button className="w-full" onClick={() => {
+              if (!blockForm.date) return;
+              if (!isFutureLocal(blockForm.date, blockForm.start_time, blockForm.timezone)) {
+                toast.error(lang === 'hi' ? 'पिछले समय में अवरोधित नहीं कर सकते' : 'Cannot block a past time slot.');
+                return;
+              }
+              createBlockedTime.mutate(blockForm);
+            }}>
               {t('save')}
             </Button>
           </div>
@@ -768,6 +777,7 @@ export default function CoachSchedule() {
                     endTime={editForm.end_time}
                     timezone={editForm.timezone}
                     onChange={(v) => setEditForm(p => ({ ...p, date: v.date, start_time: v.startTime, end_time: v.endTime, timezone: v.timezone }))}
+                    disablePast
                   />
                   <div>
                     <label className="text-xs font-medium text-muted-foreground">
