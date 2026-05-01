@@ -17,6 +17,16 @@ export interface FeeStructureFields {
   modeOfPayment: string[];
   amountPaidToday: number | '';
   balanceDue: number | '';
+  // --- NEW (additive) ---
+  primary_course_id?: string | null;
+  bundled_course_ids?: string[];
+  include_gst?: boolean;
+  gst_rate?: number;
+  discount_amount?: number | '';
+  discount_reason?: string;
+  // computed snapshots, persisted for reporting
+  subtotal_amount?: number;
+  total_sessions?: number;
 }
 
 export const defaultFeeStructure: FeeStructureFields = {
@@ -35,6 +45,14 @@ export const defaultFeeStructure: FeeStructureFields = {
   modeOfPayment: [],
   amountPaidToday: '',
   balanceDue: '',
+  primary_course_id: null,
+  bundled_course_ids: [],
+  include_gst: true,
+  gst_rate: 18,
+  discount_amount: '',
+  discount_reason: '',
+  subtotal_amount: 0,
+  total_sessions: 0,
 };
 
 export function useFeeStructure(seekerId?: string | null) {

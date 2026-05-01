@@ -12,6 +12,7 @@ import { encryptField, decryptField } from '@/lib/encryption';
 import PhoneInput from '@/components/inputs/PhoneInput';
 import StatePincodeInput from '@/components/inputs/StatePincodeInput';
 import { parseE164, toE164, validatePhone, validatePincode, DEFAULT_COUNTRY_CODE, INDIAN_STATES } from '@/lib/phoneValidation';
+import AvatarUploader from '@/components/AvatarUploader';
 
 const SeekerProfile = () => {
   const { profile: authProfile, logout } = useAuthStore();
@@ -185,9 +186,11 @@ const SeekerProfile = () => {
     <div className="p-4 space-y-5 max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground text-xl font-bold">
-          {profile.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-        </div>
+        <AvatarUploader
+          profileId={seekerProfileId}
+          fallbackName={profile.full_name}
+          size={72}
+        />
         <div>
           <h1 className="text-lg font-bold text-foreground">Seeker - {profile.full_name}</h1>
           <p className="text-xs text-muted-foreground">{profile.email}</p>
