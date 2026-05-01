@@ -59,13 +59,14 @@ Deno.serve(async (req) => {
   for (const s of seekers ?? []) {
     if (s.daily_progress_email_enabled === false) { skipped++; continue; }
 
-    // Skip if already has a gratitude entry today
-    const { count: gratCount } = await supabase
-      .from("gratitude_entries")
-      .select("id", { count: "exact", head: true })
+    // Skip if today's worksheet already has at least one gratitude entry
+    const { data: ws } = await supabase
+      .from("daily_worksheets")
+      .select("gratitude_1,gratitude_2,gratitude_3")
       .eq("seeker_id", s.id)
-      .gte("created_at", `${today}T00:00:00Z`);
-    if ((gratCount ?? 0) > 0) { skipped++; continue; }
+      .eq("worksheet_date", today)
+      .maybeSingle();
+    if (ws && (ws.gratitude_1 || ws.gratitude_2 || ws.gratitude_3)) { skipped++; continue; }
 
     // Idempotency: skip if we already sent this nudge today
     const { count: sentCount } = await supabase
