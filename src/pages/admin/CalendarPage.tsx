@@ -175,12 +175,23 @@ const CalendarPage = () => {
                 <option value="">No seeker</option>
                 {seekers.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
               </select>
-              <input type="date" value={newEvent.date} onChange={e => setNewEvent(p => ({ ...p, date: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
-              <div className="flex gap-2">
-                <input type="time" value={newEvent.start_time} onChange={e => setNewEvent(p => ({ ...p, start_time: e.target.value }))} className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
-                <input type="time" value={newEvent.end_time} onChange={e => setNewEvent(p => ({ ...p, end_time: e.target.value }))} className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
+              <div className="text-[11px] text-muted-foreground bg-muted/30 border border-border rounded-md px-2 py-1 flex items-center justify-between">
+                <span>🕐 {nowLabel(adminTz)}</span>
+                <span className="opacity-70">{adminTz}</span>
               </div>
-              <button onClick={() => { if (!newEvent.title || !newEvent.date) return; createEvent.mutate(newEvent); }} disabled={createEvent.isPending} className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm disabled:opacity-50">
+              <input type="date" value={newEvent.date} min={todayLocal} onChange={e => setNewEvent(p => ({ ...p, date: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
+              <div className="flex gap-2">
+                <input type="time" value={newEvent.start_time} min={newEvent.date === todayLocal ? nowLocalHHMM : undefined} onChange={e => setNewEvent(p => ({ ...p, start_time: e.target.value }))} className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
+                <input type="time" value={newEvent.end_time} min={newEvent.date === todayLocal ? (newEvent.start_time || nowLocalHHMM) : newEvent.start_time || undefined} onChange={e => setNewEvent(p => ({ ...p, end_time: e.target.value }))} className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
+              </div>
+              <button onClick={() => {
+                if (!newEvent.title || !newEvent.date) return;
+                if (!isFutureLocal(newEvent.date, newEvent.start_time, adminTz)) {
+                  toast({ title: 'Cannot schedule in the past', description: 'Please pick a future date and time.', variant: 'destructive' });
+                  return;
+                }
+                createEvent.mutate(newEvent);
+              }} disabled={createEvent.isPending} className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm disabled:opacity-50">
                 {createEvent.isPending ? 'Saving...' : 'Save Event'}
               </button>
             </div>
