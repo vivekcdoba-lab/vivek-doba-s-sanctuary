@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Search, Filter, Calendar, Clock, MapPin, User, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDateDMY } from "@/lib/dateFormat";
+import { toast } from "sonner";
 
 const L = {
   title: { en: "Session Notes", hi: "सत्र नोट्स" },
