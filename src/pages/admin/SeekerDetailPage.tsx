@@ -335,35 +335,6 @@ const SeekerDetailPage = () => {
     }
 };
 
-function SessionCountChips({ seekerId }: { seekerId: string }) {
-  const { data: count } = useSeekerSessionCount(seekerId);
-  const { data: fee } = useFeeStructure(seekerId);
-  const total = Number((fee as any)?.fields_json?.numSessions ?? (fee as any)?.fields_json?.total_sessions ?? 0) || 0;
-  const attended = count?.attended ?? 0;
-  const remaining = total ? Math.max(0, total - attended) : null;
-  return (
-    <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-        ✅ Attended: {attended}
-      </span>
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-saffron/10 text-saffron border border-saffron/20">
-        ⏳ Remaining: {remaining ?? '—'}
-      </span>
-      {total > 0 && (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground border border-border">
-          Total: {total}
-        </span>
-      )}
-      {(count?.excused ?? 0) > 0 && (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-500/10 text-sky-600 border border-sky-500/20">
-          Excused: {count!.excused}
-        </span>
-      )}
-    </div>
-  );
-}
-
-
   const handleAwardBadge = async () => {
     if (!id) return;
     setBadgeAwarding(true);
