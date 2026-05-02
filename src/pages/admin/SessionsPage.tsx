@@ -648,11 +648,19 @@ const SessionsPage = () => {
                             <CalendarPlus className="w-3 h-3" /> {resendInvite.isPending ? 'Sending…' : 'Resend Invite'}
                           </button>
                         )}
-                        {['submitted', 'reviewing'].includes(session.status) && (
-                          <button onClick={() => approveSession(session.id)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-dharma-green/10 text-dharma-green flex items-center gap-1">
-                            <Check className="w-3 h-3" /> Approve
-                          </button>
-                        )}
+                        {['submitted', 'reviewing'].includes(session.status) && (() => {
+                          const ok = canApproveSession(session);
+                          return (
+                            <button
+                              onClick={() => approveSession(session.id)}
+                              disabled={!ok}
+                              title={ok ? 'Approve session' : 'Waiting for seeker to complete Session Notes + Post-Session Reflection and click Save Reflection'}
+                              className={`px-2 py-1 rounded-lg text-[10px] font-medium flex items-center gap-1 ${ok ? 'bg-dharma-green/10 text-dharma-green' : 'bg-muted text-muted-foreground cursor-not-allowed opacity-60'}`}
+                            >
+                              <Check className="w-3 h-3" /> {ok ? 'Approve' : 'Approve (locked)'}
+                            </button>
+                          );
+                        })()}
                         {['completed', 'submitted', 'reviewing', 'approved', 'revision_requested'].includes(session.status) && (
                           <button onClick={() => navigate(`/sessions/${session.id}/review`)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-chakra-indigo/10 text-chakra-indigo flex items-center gap-1">
                             <Eye className="w-3 h-3" /> Review
