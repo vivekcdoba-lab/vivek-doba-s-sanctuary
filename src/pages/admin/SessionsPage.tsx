@@ -302,6 +302,259 @@ const SessionsPage = () => {
     { key: 'completed', label: '🏆 Signed & Certified', done: status === 'completed' },
   ];
 
+  // Shared dialogs (Schedule + Reminder) — must be available in BOTH the
+  // live-session view AND the list view. Previously only rendered in the list
+  // view, so "📅 Schedule Now" inside a live session opened nothing.
+  const sharedDialogs = (
+    <>
+      {reminder && (
+        <SendReminderModal
+          open={!!reminder}
+          onClose={() => setReminder(null)}
+          seekerName={reminder.seekerName}
+          seekerPhone={reminder.seekerPhone}
+          seekerEmail={reminder.seekerEmail}
+          context="session"
+          contextData={{
+            sessionNumber: reminder.session.session_number,
+            sessionDate: reminder.session.date,
+            sessionTime: reminder.session.start_time,
+          }}
+        />
+      )}
+      <Dialog open={showSchedule} onOpenChange={setShowSchedule}>
+        <DialogContent className="max-w-md max-h-[90vh] flex flex-col">
+          <DialogHeader className="shrink-0">
+            <DialogTitle>📅 Schedule New Session</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto pr-1 -mr-1 space-y-3">
+            {templates.length > 0 && (
+              <div className="bg-muted/30 rounded-lg p-3 border border-dashed border-border">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" /> Apply Template
+                </label>
+                <select value={selectedTemplateId} onChange={e => applyTemplate(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                  <option value="">No template</option>
+                  {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </div>
+            )}
+            <div>
+              <label className="text-sm font-medium text-foreground">Booking Type</label>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                <button type="button"
+                  onClick={() => setNewSession(p => ({ ...p, booking_type: 'individual', partner_seeker_id: '' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newSession.booking_type === 'individual' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  👤 Individual
+                </button>
+                <button type="button"
+                  onClick={() => setNewSession(p => ({ ...p, booking_type: 'couple' }))}
+                  className={`px-3 py-2 rounded-lg text-sm border transition ${newSession.booking_type === 'couple' ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-input bg-background text-muted-foreground'}`}>
+                  💑 Couple
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">{newSession.booking_type === 'couple' ? 'Primary Seeker *' : 'Seeker *'}</label>
+              <select value={newSession.seeker_id} onChange={e => setNewSession(p => ({ ...p, seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="">Select Seeker</option>
+                {seekers.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+              </select>
+            </div>
+            {newSession.booking_type === 'couple' && (
+              <div>
+                <label className="text-sm font-medium text-foreground">Partner Seeker *</label>
+                <select value={newSession.partner_seeker_id} onChange={e => setNewSession(p => ({ ...p, partner_seeker_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                  <option value="">Select Partner</option>
+                  {seekers.filter(s => s.id !== newSession.seeker_id).map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                </select>
+              </div>
+            )}
+            <div>
+              <label className="text-sm font-medium text-foreground">Coach *</label>
+              <select value={newSession.coach_id} onChange={e => setNewSession(p => ({ ...p, coach_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="">Select Coach</option>
+                {coaches.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Course <span className="text-muted-foreground/70">(Optional)</span></label>
+              <select value={newSession.course_id} onChange={e => setNewSession(p => ({ ...p, course_id: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="">Optional</option>
+                {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div className="text-[11px] text-muted-foreground bg-muted/30 border border-border rounded-md px-2 py-1 flex items-center justify-between">
+              <span>🕐 {nowLabel(adminTz)}</span>
+              <span className="opacity-70">{adminTz}</span>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Date *</label>
+              <input type="date" value={newSession.date} min={todayLocal} onChange={e => setNewSession(p => ({ ...p, date: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground">Start *</label>
+                <input type="time" value={newSession.start_time} min={newSession.date === todayLocal ? nowLocal : undefined} onChange={e => setNewSession(p => ({ ...p, start_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground">End *</label>
+                <input type="time" value={newSession.end_time} min={newSession.date === todayLocal ? (newSession.start_time || nowLocal) : newSession.start_time || undefined} onChange={e => setNewSession(p => ({ ...p, end_time: e.target.value }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Type</label>
+              <select value={newSession.session_type} onChange={e => setNewSession(p => ({ ...p, session_type: e.target.value as 'video' | 'in_person' }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm">
+                <option value="video">📹 Video Call</option>
+                <option value="in_person">🏢 In Person</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Duration (min)</label>
+              <input type="number" value={newSession.duration_minutes} onChange={e => setNewSession(p => ({ ...p, duration_minutes: Number(e.target.value) }))} className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Notes</label>
+              <textarea value={newSession.notes} onChange={e => setNewSession(p => ({ ...p, notes: e.target.value }))} className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+            </div>
+            {/* Recurring meeting */}
+            <div className="rounded-lg border border-input p-3 space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newSession.repeat}
+                  onChange={(e) => setNewSession(p => ({ ...p, repeat: e.target.checked }))}
+                  className="h-4 w-4 rounded border-input"
+                />
+                🔁 Recurring meeting
+              </label>
+              {newSession.repeat && (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Frequency</label>
+                    <select
+                      value={newSession.frequency}
+                      onChange={(e) => setNewSession(p => ({ ...p, frequency: e.target.value as RecurrenceFrequency }))}
+                      className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background"
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="biweekly">Bi-weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Occurrences</label>
+                    <input
+                      type="number"
+                      min={2}
+                      max={24}
+                      value={newSession.repeat_count}
+                      onChange={(e) => setNewSession(p => ({ ...p, repeat_count: Math.min(24, Math.max(2, Number(e.target.value) || 2)) }))}
+                      className="w-full mt-1 border border-input rounded-lg px-3 py-2 text-sm bg-background"
+                    />
+                  </div>
+                  {newSession.date && (() => {
+                    const dates = buildRecurrenceDates(newSession.date, newSession.frequency, Math.min(24, Math.max(2, Number(newSession.repeat_count) || 2)));
+                    if (dates.length === 0) return null;
+                    return (
+                      <div className="col-span-2 text-[11px] text-muted-foreground bg-muted/40 rounded-lg px-2 py-1.5">
+                        {dates.length} sessions: {dates[0]} → {dates[dates.length - 1]}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="shrink-0 border-t pt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setShowSchedule(false)}
+              className="flex-1 py-2.5 rounded-xl border border-input bg-background text-foreground font-medium text-sm hover:bg-muted"
+            >
+              Cancel
+            </button>
+            <button
+              disabled={createSession.isPending || createRecurring.isPending}
+              onClick={() => {
+                if (!newSession.seeker_id || !newSession.date) {
+                  toast.error('Please fill Seeker and Date');
+                  return;
+                }
+                if (!newSession.coach_id) {
+                  toast.error('Please select a coach');
+                  return;
+                }
+                if (newSession.booking_type === 'couple') {
+                  if (!newSession.partner_seeker_id) {
+                    toast.error('Please select a partner seeker');
+                    return;
+                  }
+                  if (newSession.partner_seeker_id === newSession.seeker_id) {
+                    toast.error('Partner must be a different seeker');
+                    return;
+                  }
+                }
+                if (!isFutureLocal(newSession.date, newSession.start_time, adminTz)) {
+                  toast.error('Cannot schedule a session in the past — please pick a future time.');
+                  return;
+                }
+                const seekerSessions = sessions.filter(s => s.seeker_id === newSession.seeker_id);
+                const nextNum = seekerSessions.length > 0 ? Math.max(...seekerSessions.map(s => s.session_number)) + 1 : 1;
+                const commonPayload = {
+                  seeker_id: newSession.seeker_id,
+                  course_id: newSession.course_id || undefined,
+                  coach_id: newSession.coach_id,
+                  date: newSession.date,
+                  start_time: newSession.start_time,
+                  end_time: newSession.end_time,
+                  session_number: nextNum,
+                  location_type: newSession.session_type === 'video' ? 'online' : 'in_person',
+                  duration_minutes: newSession.duration_minutes,
+                  session_notes: newSession.notes || undefined,
+                  session_type: newSession.booking_type,
+                  partner_seeker_id: newSession.booking_type === 'couple' ? newSession.partner_seeker_id : undefined,
+                } as any;
+                // If we're scheduling DURING a live session, also reflect the
+                // chosen date/time back into the live post-session payload so
+                // the seeker sees "Next Session" in their email + page.
+                const friendlyNext = `${newSession.date} ${newSession.start_time}`;
+                const reset = () => {
+                  setShowSchedule(false);
+                  if (liveSession) {
+                    setPostData(p => ({ ...p, nextSessionTime: friendlyNext }));
+                  }
+                  setNewSession({ seeker_id: '', course_id: '', coach_id: coaches.length === 1 ? coaches[0].id : '', date: '', start_time: '10:00', end_time: '11:00', session_type: 'video', duration_minutes: 60, notes: '', booking_type: 'individual', partner_seeker_id: '', repeat: false, frequency: 'weekly', repeat_count: 4 });
+                  setSelectedTemplateId('');
+                };
+                if (newSession.repeat) {
+                  const count = Math.min(24, Math.max(2, Number(newSession.repeat_count) || 2));
+                  createRecurring.mutate({ ...commonPayload, frequency: newSession.frequency, count }, {
+                    onSuccess: () => {
+                      toast.success(`${count} sessions scheduled — invites sent`);
+                      reset();
+                    },
+                  });
+                } else {
+                  createSession.mutate(commonPayload, {
+                    onSuccess: () => {
+                      toast.success(newSession.booking_type === 'couple' ? 'Couple session scheduled — invites sent to both seekers' : 'Session scheduled — calendar invite sent');
+                      reset();
+                    },
+                  });
+                }
+              }}
+              className="flex-1 py-2.5 rounded-xl gradient-sacred text-primary-foreground font-medium text-sm disabled:opacity-50"
+            >
+              {(createSession.isPending || createRecurring.isPending) ? 'Scheduling...' : (newSession.repeat ? `Schedule ${Math.min(24, Math.max(2, Number(newSession.repeat_count) || 2))} Sessions` : 'Schedule Session')}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+
   if (isLoading) {
     return <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
