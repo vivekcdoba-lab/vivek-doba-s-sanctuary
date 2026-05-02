@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { sendEmail } from '../_shared/send-email.ts';
+import { requireAdminOrCron } from '../_shared/require-admin.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -110,6 +111,9 @@ async function sendOne(
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  const denied = await requireAdminOrCron(req, corsHeaders);
+  if (denied) return denied;
 
   try {
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
