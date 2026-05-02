@@ -425,11 +425,15 @@ const SessionReviewPage = () => {
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
-        {canApprove && (
+        {canApprove ? (
           <Button onClick={() => setShowApproveModal(true)} className="bg-dharma-green hover:bg-dharma-green/90 text-white gap-2">
             <Check className="w-4 h-4" /> Approve Session
           </Button>
-        )}
+        ) : approveLocked && ['completed', 'submitted', 'reviewing'].includes(session.status) ? (
+          <Button disabled variant="outline" className="gap-2 opacity-60 cursor-not-allowed" title="Waiting for seeker to complete Session Notes + Post-Session Reflection and click Save Reflection">
+            <Check className="w-4 h-4" /> Approve (locked — waiting on seeker reflection)
+          </Button>
+        ) : null}
         {canRequestRevision && (
           <Button onClick={() => setShowRevisionModal(true)} variant="outline" className="border-warning-amber text-warning-amber hover:bg-warning-amber/10 gap-2">
             <RotateCcw className="w-4 h-4" /> Request Revision
