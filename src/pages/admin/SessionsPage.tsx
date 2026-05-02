@@ -93,6 +93,7 @@ const SessionsPage = () => {
   // Live session state
   const [liveSession, setLiveSession] = useState<string | null>(null);
   const [liveNotes, setLiveNotes] = useState('');
+  const [customStory, setCustomStory] = useState('');
   const [liveTimer, setLiveTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [postData, setPostData] = useState({
