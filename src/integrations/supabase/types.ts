@@ -2169,6 +2169,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          email_hash: string | null
           id: string
           token: string
           used_at: string | null
@@ -2176,6 +2177,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          email_hash?: string | null
           id?: string
           token: string
           used_at?: string | null
@@ -2183,6 +2185,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          email_hash?: string | null
           id?: string
           token?: string
           used_at?: string | null
