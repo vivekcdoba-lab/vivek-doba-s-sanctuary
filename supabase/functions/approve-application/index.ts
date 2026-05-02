@@ -55,17 +55,27 @@ function stripNulls<T extends Record<string, any>>(obj: T): Partial<T> {
   return out as Partial<T>;
 }
 
+function secureRandomInt(maxExclusive: number): number {
+  if (maxExclusive <= 0) return 0;
+  const buf = new Uint32Array(1);
+  const limit = Math.floor(0xFFFFFFFF / maxExclusive) * maxExclusive;
+  while (true) {
+    crypto.getRandomValues(buf);
+    if (buf[0] < limit) return buf[0] % maxExclusive;
+  }
+}
+
 function randomTempPassword() {
   const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const lower = 'abcdefghjkmnpqrstuvwxyz';
   const digits = '23456789';
   const special = '@#$%&*!?_-+=';
   const all = upper + lower + digits + special;
-  const pick = (s: string) => s[Math.floor(Math.random() * s.length)];
+  const pick = (s: string) => s[secureRandomInt(s.length)];
   const chars = [pick(upper), pick(lower), pick(digits), pick(special)];
   for (let i = 0; i < 11; i++) chars.push(pick(all));
   for (let i = chars.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = secureRandomInt(i + 1);
     [chars[i], chars[j]] = [chars[j], chars[i]];
   }
   return chars.join('');
