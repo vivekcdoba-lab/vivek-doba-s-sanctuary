@@ -38,6 +38,9 @@ interface SessionData {
   seeker_what_learned: string | null;
   seeker_where_to_apply: string | null;
   seeker_how_to_apply: string | null;
+  seeker_what_learned_audio: string | null;
+  seeker_where_to_apply_audio: string | null;
+  seeker_how_to_apply_audio: string | null;
   seeker_accepted_at: string | null;
   seeker_id: string;
   course_id: string | null;
