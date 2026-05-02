@@ -755,7 +755,7 @@ const SessionsPage = () => {
               }}
               className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground hover:opacity-90 inline-flex items-center gap-1"
             >
-              <Plus className="w-3 h-3" /> Schedule Now
+              <Plus className="w-3.5 h-3.5" /> Schedule Now
             </button>
           </div>
           <input value={postData.nextSessionTime} onChange={e => setPostData(p => ({ ...p, nextSessionTime: e.target.value }))} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="e.g., Thursday 10:00 AM (or click Schedule Now)" />
@@ -877,28 +877,28 @@ const SessionsPage = () => {
                     <td className="p-3">
                       <div className="flex gap-1">
                         {canStart && (
-                          <button onClick={() => startSession(session.id)} className="px-2 py-1 rounded-lg text-[10px] font-medium gradient-sacred text-primary-foreground flex items-center gap-1">
-                            <Play className="w-3 h-3" /> Start
+                          <button onClick={() => startSession(session.id)} className="px-3 py-1.5 rounded-lg text-xs font-medium gradient-sacred text-primary-foreground flex items-center gap-1">
+                            <Play className="w-3.5 h-3.5" /> Start
                           </button>
                         )}
                         {session.status === 'in_progress' && (
                           <button
                             onClick={() => resumeSession(session.id)}
                             title="Resume the live session view"
-                            className="px-2 py-1 rounded-lg text-[10px] font-medium gradient-sacred text-primary-foreground flex items-center gap-1 animate-pulse"
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium gradient-sacred text-primary-foreground flex items-center gap-1 animate-pulse"
                           >
-                            <Play className="w-3 h-3" /> Resume
+                            <Play className="w-3.5 h-3.5" /> Resume
                           </button>
                         )}
                         {canStart && (
-                          <button onClick={() => markMissed(session.id)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-destructive/10 text-destructive flex items-center gap-1">
-                            <X className="w-3 h-3" /> No-Show
+                          <button onClick={() => markMissed(session.id)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-destructive/10 text-destructive flex items-center gap-1">
+                            <X className="w-3.5 h-3.5" /> No-Show
                           </button>
                         )}
                         {canRemind && seeker && (
                           <button onClick={() => setReminder({ seekerName: seeker.full_name, seekerPhone: seeker.phone || '', seekerEmail: seeker.email, session })}
-                            className="px-2 py-1 rounded-lg text-[10px] font-medium bg-sky-blue/10 text-sky-blue flex items-center gap-1">
-                            <Bell className="w-3 h-3" /> Remind
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-sky-blue/10 text-sky-blue flex items-center gap-1">
+                            <Bell className="w-3.5 h-3.5" /> Remind
                           </button>
                         )}
                         {['scheduled', 'confirmed'].includes(session.status) && (
@@ -913,8 +913,8 @@ const SessionsPage = () => {
                               });
                             }}
                             disabled={resendInvite.isPending}
-                            className="px-2 py-1 rounded-lg text-[10px] font-medium bg-saffron/10 text-saffron flex items-center gap-1 disabled:opacity-50">
-                            <CalendarPlus className="w-3 h-3" /> {resendInvite.isPending ? 'Sending…' : 'Resend Invite'}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-saffron/10 text-saffron flex items-center gap-1 disabled:opacity-50">
+                            <CalendarPlus className="w-3.5 h-3.5" /> {resendInvite.isPending ? 'Sending…' : 'Resend Invite'}
                           </button>
                         )}
                         {['submitted', 'reviewing'].includes(session.status) && (() => {
@@ -924,20 +924,20 @@ const SessionsPage = () => {
                               onClick={() => approveSession(session.id)}
                               disabled={!ok}
                               title={ok ? 'Approve session' : 'Waiting for seeker to complete Session Notes + Post-Session Reflection and click Save Reflection'}
-                              className={`px-2 py-1 rounded-lg text-[10px] font-medium flex items-center gap-1 ${ok ? 'bg-dharma-green/10 text-dharma-green' : 'bg-muted text-muted-foreground cursor-not-allowed opacity-60'}`}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 ${ok ? 'bg-dharma-green/10 text-dharma-green' : 'bg-muted text-muted-foreground cursor-not-allowed opacity-60'}`}
                             >
-                              <Check className="w-3 h-3" /> {ok ? 'Approve' : 'Approve (locked)'}
+                              <Check className="w-3.5 h-3.5" /> {ok ? 'Approve' : 'Approve (locked)'}
                             </button>
                           );
                         })()}
                         {['completed', 'submitted', 'reviewing', 'approved', 'revision_requested'].includes(session.status) && (
-                          <button onClick={() => navigate(`/sessions/${session.id}/review`)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-chakra-indigo/10 text-chakra-indigo flex items-center gap-1">
-                            <Eye className="w-3 h-3" /> Review
+                          <button onClick={() => navigate(`/sessions/${session.id}/review`)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-chakra-indigo/10 text-chakra-indigo flex items-center gap-1">
+                            <Eye className="w-3.5 h-3.5" /> Review
                           </button>
                         )}
                         {session.status === 'approved' && (
-                          <button onClick={() => navigate(`/sessions/${session.id}/certify`)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-primary/10 text-primary flex items-center gap-1">
-                            <Shield className="w-3 h-3" /> Sign
+                          <button onClick={() => navigate(`/sessions/${session.id}/certify`)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary/10 text-primary flex items-center gap-1">
+                            <Shield className="w-3.5 h-3.5" /> Sign
                           </button>
                         )}
                         {/* Attendance counter control */}
@@ -946,7 +946,7 @@ const SessionsPage = () => {
                             value={session.attendance || ''}
                             onChange={(e) => setAttendance(session.id, e.target.value as any)}
                             title="Attendance — Excused does NOT count toward total sessions"
-                            className="px-1.5 py-1 rounded-lg text-[10px] font-medium border border-border bg-background"
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium border border-border bg-background"
                           >
                             <option value="">Attendance…</option>
                             <option value="present">✅ Present (counts)</option>
@@ -960,7 +960,7 @@ const SessionsPage = () => {
                             value={session.status}
                             onChange={(e) => changeStatus(session.id, e.target.value)}
                             title="Admin: change session status manually"
-                            className="px-1.5 py-1 rounded-lg text-[10px] font-medium border border-primary/40 bg-primary/5 text-primary"
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium border border-primary/40 bg-primary/5 text-primary"
                           >
                             {ALL_STATUSES.map((st) => {
                               const cfg = SESSION_STATUS_CONFIG[st];
