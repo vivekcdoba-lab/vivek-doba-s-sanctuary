@@ -278,7 +278,15 @@ const SessionReviewPage = () => {
     );
   }
 
-  const canApprove = ['completed', 'submitted', 'reviewing'].includes(session.status);
+  const s: any = session;
+  const seekerHasReflection =
+    (s.seeker_what_learned && String(s.seeker_what_learned).trim()) ||
+    !!s.seeker_what_learned_audio;
+  const approveLocked =
+    !s.session_notes || !String(s.session_notes).trim() ||
+    !seekerHasReflection ||
+    !s.seeker_accepted_at;
+  const canApprove = ['completed', 'submitted', 'reviewing'].includes(session.status) && !approveLocked;
   const canRequestRevision = ['completed', 'submitted', 'reviewing'].includes(session.status);
 
   const renderSection = (
@@ -417,11 +425,15 @@ const SessionReviewPage = () => {
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
-        {canApprove && (
+        {canApprove ? (
           <Button onClick={() => setShowApproveModal(true)} className="bg-dharma-green hover:bg-dharma-green/90 text-white gap-2">
             <Check className="w-4 h-4" /> Approve Session
           </Button>
-        )}
+        ) : approveLocked && ['completed', 'submitted', 'reviewing'].includes(session.status) ? (
+          <Button disabled variant="outline" className="gap-2 opacity-60 cursor-not-allowed" title="Waiting for seeker to complete Session Notes + Post-Session Reflection and click Save Reflection">
+            <Check className="w-4 h-4" /> Approve (locked — waiting on seeker reflection)
+          </Button>
+        ) : null}
         {canRequestRevision && (
           <Button onClick={() => setShowRevisionModal(true)} variant="outline" className="border-warning-amber text-warning-amber hover:bg-warning-amber/10 gap-2">
             <RotateCcw className="w-4 h-4" /> Request Revision

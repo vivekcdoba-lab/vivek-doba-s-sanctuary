@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/store/authStore';
 import DigitalSignature from '@/components/DigitalSignature';
 import SessionNotesPanel from '@/components/SessionNotesPanel';
+import VoiceNoteRecorder from '@/components/VoiceNoteRecorder';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Shield, BookOpen, Target, Award, Zap, CheckCircle2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,9 @@ interface SessionData {
   seeker_what_learned: string | null;
   seeker_where_to_apply: string | null;
   seeker_how_to_apply: string | null;
+  seeker_what_learned_audio: string | null;
+  seeker_where_to_apply_audio: string | null;
+  seeker_how_to_apply_audio: string | null;
   seeker_accepted_at: string | null;
   seeker_id: string;
   course_id: string | null;
@@ -64,6 +68,9 @@ const SeekerSessionDetail = () => {
   const [whatLearned, setWhatLearned] = useState('');
   const [whereToApply, setWhereToApply] = useState('');
   const [howToApply, setHowToApply] = useState('');
+  const [whatLearnedAudio, setWhatLearnedAudio] = useState<string | null>(null);
+  const [whereToApplyAudio, setWhereToApplyAudio] = useState<string | null>(null);
+  const [howToApplyAudio, setHowToApplyAudio] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) loadSession();
@@ -112,6 +119,9 @@ const SeekerSessionDetail = () => {
         seeker_what_learned: (data as any).seeker_what_learned,
         seeker_where_to_apply: (data as any).seeker_where_to_apply,
         seeker_how_to_apply: (data as any).seeker_how_to_apply,
+        seeker_what_learned_audio: (data as any).seeker_what_learned_audio ?? null,
+        seeker_where_to_apply_audio: (data as any).seeker_where_to_apply_audio ?? null,
+        seeker_how_to_apply_audio: (data as any).seeker_how_to_apply_audio ?? null,
         seeker_accepted_at: (data as any).seeker_accepted_at,
       } as SessionData;
 
@@ -119,6 +129,9 @@ const SeekerSessionDetail = () => {
       setWhatLearned(s.seeker_what_learned || '');
       setWhereToApply(s.seeker_where_to_apply || '');
       setHowToApply(s.seeker_how_to_apply || '');
+      setWhatLearnedAudio(s.seeker_what_learned_audio);
+      setWhereToApplyAudio(s.seeker_where_to_apply_audio);
+      setHowToApplyAudio(s.seeker_how_to_apply_audio);
 
       if (data.course_id) {
         const { data: course } = await supabase.from('courses').select('name').eq('id', data.course_id).single();
@@ -135,8 +148,11 @@ const SeekerSessionDetail = () => {
   };
 
   const handleSubmitReflection = async () => {
-    if (!session || !whatLearned.trim()) {
-      toast.error('Please fill "What I Learned Today"');
+    if (!session) return;
+    const hasText = !!whatLearned.trim();
+    const hasAudio = !!whatLearnedAudio;
+    if (!hasText && !hasAudio) {
+      toast.error('Please type or record "What I Learned Today"');
       return;
     }
     setSaving(true);
@@ -147,11 +163,22 @@ const SeekerSessionDetail = () => {
           seeker_what_learned: whatLearned,
           seeker_where_to_apply: whereToApply,
           seeker_how_to_apply: howToApply,
+          seeker_what_learned_audio: whatLearnedAudio,
+          seeker_where_to_apply_audio: whereToApplyAudio,
+          seeker_how_to_apply_audio: howToApplyAudio,
         } as any)
         .eq('id', session.id);
       if (error) throw error;
 
-      setSession({ ...session, seeker_what_learned: whatLearned, seeker_where_to_apply: whereToApply, seeker_how_to_apply: howToApply });
+      setSession({
+        ...session,
+        seeker_what_learned: whatLearned,
+        seeker_where_to_apply: whereToApply,
+        seeker_how_to_apply: howToApply,
+        seeker_what_learned_audio: whatLearnedAudio,
+        seeker_where_to_apply_audio: whereToApplyAudio,
+        seeker_how_to_apply_audio: howToApplyAudio,
+      });
       toast.success('Reflection saved! ✨');
     } catch (err) {
       toast.error('Failed to save reflection');
@@ -384,8 +411,16 @@ const SeekerSessionDetail = () => {
             value={whatLearned}
             onChange={e => setWhatLearned(e.target.value)}
             className="mt-1 w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm"
-            placeholder="What was the biggest learning from today's session?"
+            placeholder="What was the biggest learning from today's session? (you can also record a voice note below)"
             disabled={!!session.seeker_accepted_at}
+          />
+          <VoiceNoteRecorder
+            sessionId={session.id}
+            seekerProfileId={session.seeker_id}
+            field="what_learned"
+            existingPath={whatLearnedAudio}
+            disabled={!!session.seeker_accepted_at}
+            onChange={setWhatLearnedAudio}
           />
         </div>
         <div>
@@ -397,6 +432,14 @@ const SeekerSessionDetail = () => {
             placeholder="In which areas of your life will you apply this?"
             disabled={!!session.seeker_accepted_at}
           />
+          <VoiceNoteRecorder
+            sessionId={session.id}
+            seekerProfileId={session.seeker_id}
+            field="where_to_apply"
+            existingPath={whereToApplyAudio}
+            disabled={!!session.seeker_accepted_at}
+            onChange={setWhereToApplyAudio}
+          />
         </div>
         <div>
           <label className="text-sm font-medium text-foreground">How to Apply</label>
@@ -406,6 +449,14 @@ const SeekerSessionDetail = () => {
             className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm"
             placeholder="What specific steps will you take?"
             disabled={!!session.seeker_accepted_at}
+          />
+          <VoiceNoteRecorder
+            sessionId={session.id}
+            seekerProfileId={session.seeker_id}
+            field="how_to_apply"
+            existingPath={howToApplyAudio}
+            disabled={!!session.seeker_accepted_at}
+            onChange={setHowToApplyAudio}
           />
         </div>
 

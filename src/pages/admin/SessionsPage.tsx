@@ -93,6 +93,7 @@ const SessionsPage = () => {
   // Live session state
   const [liveSession, setLiveSession] = useState<string | null>(null);
   const [liveNotes, setLiveNotes] = useState('');
+  const [customStory, setCustomStory] = useState('');
   const [liveTimer, setLiveTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [postData, setPostData] = useState({
@@ -182,29 +183,43 @@ const SessionsPage = () => {
 
   const submitToSeeker = (sessionId: string) => {
     setTimerRunning(false);
-    updateSession.mutate({
-      id: sessionId,
-      status: 'submitted',
-      session_name: postData.sessionName || null,
-      pillar: postData.pillar !== 'all' ? postData.pillar : null,
-      topics_covered: postData.topics.split(',').map(t => t.trim()).filter(Boolean),
-      key_insights: postData.insights || null,
-      breakthroughs: postData.breakthroughs || null,
-      session_notes: liveNotes || null,
-      engagement_score: postData.engagement,
-      seeker_mood: postData.mood,
-      stories_used: postData.stories.length ? postData.stories : null,
-      client_good_things: postData.clientGoodThings.filter(Boolean),
-      client_growth_json: postData.clientGrowth,
-      major_win: postData.majorWin || null,
-      therapy_given: postData.therapyGiven || null,
-      next_week_assignments: postData.nextWeekAssignments || null,
-      next_session_time: postData.nextSessionTime || null,
-      pending_assignments_review: postData.pendingAssignments || null,
-      punishments: postData.punishments || null,
-      rewards: postData.rewards || null,
-      targets: postData.targets || null,
-    });
+    updateSession.mutate(
+      {
+        id: sessionId,
+        status: 'submitted',
+        session_name: postData.sessionName || null,
+        pillar: postData.pillar !== 'all' ? postData.pillar : null,
+        topics_covered: postData.topics.split(',').map(t => t.trim()).filter(Boolean),
+        key_insights: postData.insights || null,
+        breakthroughs: postData.breakthroughs || null,
+        session_notes: liveNotes || null,
+        engagement_score: postData.engagement,
+        seeker_mood: postData.mood,
+        stories_used: postData.stories.length ? postData.stories : null,
+        client_good_things: postData.clientGoodThings.filter(Boolean),
+        client_growth_json: postData.clientGrowth,
+        major_win: postData.majorWin || null,
+        therapy_given: postData.therapyGiven || null,
+        next_week_assignments: postData.nextWeekAssignments || null,
+        next_session_time: postData.nextSessionTime || null,
+        pending_assignments_review: postData.pendingAssignments || null,
+        punishments: postData.punishments || null,
+        rewards: postData.rewards || null,
+        targets: postData.targets || null,
+      },
+      {
+        onSuccess: async () => {
+          // Email + in-app notify the seeker that the session is awaiting their reflection
+          try {
+            await supabase.functions.invoke('notify-session-submitted', {
+              body: { session_id: sessionId },
+            });
+          } catch (e) {
+            // Non-fatal — session already submitted
+          }
+        },
+      },
+    );
     // Save coach's private notes into the coach/admin-only table (not visible to seekers)
     if (postData.privateNotes) {
       supabase
@@ -215,18 +230,42 @@ const SessionsPage = () => {
         });
     }
     setLiveSession(null);
-    toast.success('✅ Session submitted to seeker!');
+    toast.success('✅ Session submitted to seeker — they have been emailed to complete their reflection');
     resetPostData();
   };
 
   const resetPostData = () => {
     setPostData({ sessionName: '', pillar: 'all', topics: '', insights: '', breakthroughs: '', challenges: '', therapyGiven: '', mood: '😊', engagement: 7, energy: 7, openness: 7, stories: [], clientGoodThings: ['', '', ''], clientGrowth: { dharma: '', artha: '', kama: '', moksha: '' }, majorWin: '', assignments: '', pendingAssignments: '', privateNotes: '', focusNext: '', nextSessionTime: '', nextWeekAssignments: '', punishments: '', rewards: '', targets: '' });
     setLiveNotes('');
+    setCustomStory('');
   };
 
   const approveSession = (sessionId: string) => {
+    const s = sessions.find((x: any) => x.id === sessionId);
+    if (!s) return;
+    if (!canApproveSession(s)) {
+      toast.error('Approve is locked: seeker must complete Session Notes + Post-Session Reflection and click Save Reflection.');
+      return;
+    }
     updateSession.mutate({ id: sessionId, status: 'approved' });
     toast.success('✅ Session approved!');
+  };
+
+  // Approve is unlocked only when:
+  //  1) Coach has submitted (status >= submitted)
+  //  2) Coach session_notes is non-empty
+  //  3) Seeker has filled "What I Learned" (text or audio) — proxy: seeker_what_learned OR seeker_what_learned_audio
+  //  4) Seeker has clicked Save Reflection (seeker_accepted_at is set)
+  const canApproveSession = (s: any): boolean => {
+    if (!s) return false;
+    if (!['submitted', 'reviewing', 'completed'].includes(s.status)) return false;
+    if (!s.session_notes || !String(s.session_notes).trim()) return false;
+    const seekerHasReflection =
+      (s.seeker_what_learned && String(s.seeker_what_learned).trim()) ||
+      !!s.seeker_what_learned_audio;
+    if (!seekerHasReflection) return false;
+    if (!s.seeker_accepted_at) return false;
+    return true;
   };
 
   const markMissed = (sessionId: string) => {
@@ -344,6 +383,37 @@ const SessionsPage = () => {
               </button>
             ))}
           </div>
+          {/* Custom story / free-text reference */}
+          <div className="mt-3 flex gap-2">
+            <input
+              value={customStory}
+              onChange={e => setCustomStory(e.target.value)}
+              placeholder="Add custom story / reference..."
+              className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const v = customStory.trim();
+                if (!v) return;
+                setPostData(p => p.stories.includes(v) ? p : ({ ...p, stories: [...p.stories, v] }));
+                setCustomStory('');
+              }}
+              className="px-3 py-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground"
+            >
+              + Add
+            </button>
+          </div>
+          {postData.stories.filter(s => !["Ram's Exile","Hanuman's Leap","Sita's Strength","Lakshman Rekha","Arjuna's Dilemma","Karna's Loyalty","Krishna's Flute","Eklavya's Dedication","Vibhishan's Choice","Ram's Bridge","Draupadi's Courage","Bhishma's Vow","Shabari's Devotion","Jatayu's Sacrifice","Ahilya's Redemption","Krishna's Vishwaroop"].includes(s)).length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {postData.stories.filter(s => !["Ram's Exile","Hanuman's Leap","Sita's Strength","Lakshman Rekha","Arjuna's Dilemma","Karna's Loyalty","Krishna's Flute","Eklavya's Dedication","Vibhishan's Choice","Ram's Bridge","Draupadi's Courage","Bhishma's Vow","Shabari's Devotion","Jatayu's Sacrifice","Ahilya's Redemption","Krishna's Vishwaroop"].includes(s)).map(s => (
+                <span key={s} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-saffron/10 text-saffron">
+                  📖 {s}
+                  <button type="button" onClick={() => setPostData(p => ({ ...p, stories: p.stories.filter(x => x !== s) }))} className="ml-1 text-saffron/70 hover:text-saffron">×</button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Mood */}
@@ -578,11 +648,19 @@ const SessionsPage = () => {
                             <CalendarPlus className="w-3 h-3" /> {resendInvite.isPending ? 'Sending…' : 'Resend Invite'}
                           </button>
                         )}
-                        {['submitted', 'reviewing'].includes(session.status) && (
-                          <button onClick={() => approveSession(session.id)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-dharma-green/10 text-dharma-green flex items-center gap-1">
-                            <Check className="w-3 h-3" /> Approve
-                          </button>
-                        )}
+                        {['submitted', 'reviewing'].includes(session.status) && (() => {
+                          const ok = canApproveSession(session);
+                          return (
+                            <button
+                              onClick={() => approveSession(session.id)}
+                              disabled={!ok}
+                              title={ok ? 'Approve session' : 'Waiting for seeker to complete Session Notes + Post-Session Reflection and click Save Reflection'}
+                              className={`px-2 py-1 rounded-lg text-[10px] font-medium flex items-center gap-1 ${ok ? 'bg-dharma-green/10 text-dharma-green' : 'bg-muted text-muted-foreground cursor-not-allowed opacity-60'}`}
+                            >
+                              <Check className="w-3 h-3" /> {ok ? 'Approve' : 'Approve (locked)'}
+                            </button>
+                          );
+                        })()}
                         {['completed', 'submitted', 'reviewing', 'approved', 'revision_requested'].includes(session.status) && (
                           <button onClick={() => navigate(`/sessions/${session.id}/review`)} className="px-2 py-1 rounded-lg text-[10px] font-medium bg-chakra-indigo/10 text-chakra-indigo flex items-center gap-1">
                             <Eye className="w-3 h-3" /> Review

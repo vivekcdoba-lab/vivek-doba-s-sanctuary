@@ -4253,10 +4253,13 @@ export type Database = {
           seeker_accepted_at: string | null
           seeker_feedback_json: Json | null
           seeker_how_to_apply: string | null
+          seeker_how_to_apply_audio: string | null
           seeker_id: string
           seeker_mood: string | null
           seeker_what_learned: string | null
+          seeker_what_learned_audio: string | null
           seeker_where_to_apply: string | null
+          seeker_where_to_apply_audio: string | null
           session_name: string | null
           session_notes: string | null
           session_number: number
@@ -4303,10 +4306,13 @@ export type Database = {
           seeker_accepted_at?: string | null
           seeker_feedback_json?: Json | null
           seeker_how_to_apply?: string | null
+          seeker_how_to_apply_audio?: string | null
           seeker_id: string
           seeker_mood?: string | null
           seeker_what_learned?: string | null
+          seeker_what_learned_audio?: string | null
           seeker_where_to_apply?: string | null
+          seeker_where_to_apply_audio?: string | null
           session_name?: string | null
           session_notes?: string | null
           session_number?: number
@@ -4353,10 +4359,13 @@ export type Database = {
           seeker_accepted_at?: string | null
           seeker_feedback_json?: Json | null
           seeker_how_to_apply?: string | null
+          seeker_how_to_apply_audio?: string | null
           seeker_id?: string
           seeker_mood?: string | null
           seeker_what_learned?: string | null
+          seeker_what_learned_audio?: string | null
           seeker_where_to_apply?: string | null
+          seeker_where_to_apply_audio?: string | null
           session_name?: string | null
           session_notes?: string | null
           session_number?: number
