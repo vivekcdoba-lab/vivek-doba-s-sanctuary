@@ -68,6 +68,9 @@ const SeekerSessionDetail = () => {
   const [whatLearned, setWhatLearned] = useState('');
   const [whereToApply, setWhereToApply] = useState('');
   const [howToApply, setHowToApply] = useState('');
+  const [whatLearnedAudio, setWhatLearnedAudio] = useState<string | null>(null);
+  const [whereToApplyAudio, setWhereToApplyAudio] = useState<string | null>(null);
+  const [howToApplyAudio, setHowToApplyAudio] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) loadSession();
