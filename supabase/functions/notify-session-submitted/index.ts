@@ -185,7 +185,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ ok: true, email: emailResult }),
+      JSON.stringify({ ok: true, email: emailResult, in_app: inAppResult }),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
