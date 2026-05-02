@@ -6,6 +6,20 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Browser fingerprint: SHA-256 of UA + Accept-Language. Stable for the same
+// browser/device, different across browsers — so a stolen access token
+// replayed elsewhere will fail the next heartbeat and the session will close.
+async function computeFingerprint(req: Request): Promise<string> {
+  const ua = req.headers.get("user-agent") || "";
+  const lang = req.headers.get("accept-language") || "";
+  const buf = new TextEncoder().encode(`${ua}|${lang}`);
+  const hash = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
