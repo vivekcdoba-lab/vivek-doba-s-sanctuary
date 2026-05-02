@@ -383,6 +383,37 @@ const SessionsPage = () => {
               </button>
             ))}
           </div>
+          {/* Custom story / free-text reference */}
+          <div className="mt-3 flex gap-2">
+            <input
+              value={customStory}
+              onChange={e => setCustomStory(e.target.value)}
+              placeholder="Add custom story / reference..."
+              className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const v = customStory.trim();
+                if (!v) return;
+                setPostData(p => p.stories.includes(v) ? p : ({ ...p, stories: [...p.stories, v] }));
+                setCustomStory('');
+              }}
+              className="px-3 py-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground"
+            >
+              + Add
+            </button>
+          </div>
+          {postData.stories.filter(s => !["Ram's Exile","Hanuman's Leap","Sita's Strength","Lakshman Rekha","Arjuna's Dilemma","Karna's Loyalty","Krishna's Flute","Eklavya's Dedication","Vibhishan's Choice","Ram's Bridge","Draupadi's Courage","Bhishma's Vow","Shabari's Devotion","Jatayu's Sacrifice","Ahilya's Redemption","Krishna's Vishwaroop"].includes(s)).length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {postData.stories.filter(s => !["Ram's Exile","Hanuman's Leap","Sita's Strength","Lakshman Rekha","Arjuna's Dilemma","Karna's Loyalty","Krishna's Flute","Eklavya's Dedication","Vibhishan's Choice","Ram's Bridge","Draupadi's Courage","Bhishma's Vow","Shabari's Devotion","Jatayu's Sacrifice","Ahilya's Redemption","Krishna's Vishwaroop"].includes(s)).map(s => (
+                <span key={s} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-saffron/10 text-saffron">
+                  📖 {s}
+                  <button type="button" onClick={() => setPostData(p => ({ ...p, stories: p.stories.filter(x => x !== s) }))} className="ml-1 text-saffron/70 hover:text-saffron">×</button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Mood */}
