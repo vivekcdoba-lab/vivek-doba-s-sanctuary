@@ -80,7 +80,52 @@ serve(async (req) => {
       });
     }
 
-    const toNumber = to.startsWith("+") ? to : `+91${to}`;
+    if (typeof to !== "string" || typeof message !== "string") {
+      return new Response(JSON.stringify({ error: "Invalid input types" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (message.length > 1600) {
+      return new Response(JSON.stringify({ error: "Message exceeds 1600 character limit" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!/^\+?[0-9\s\-]{7,20}$/.test(to)) {
+      return new Response(JSON.stringify({ error: "Invalid phone number format" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const toNumber = to.startsWith("+") ? to : `+91${to.replace(/\D/g, "")}`;
+    const toDigits = toNumber.replace(/\D/g, "");
+
+    // Verify destination belongs to a registered profile (seeker/lead) — prevents
+    // arbitrary outbound messaging via VDTS's Twilio number.
+    const { data: matches, error: lookupError } = await supabaseAuth
+      .from("profiles")
+      .select("id, phone, whatsapp")
+      .or(`phone.eq.${toNumber},phone.eq.${toDigits},whatsapp.eq.${toNumber},whatsapp.eq.${toDigits}`)
+      .limit(1);
+
+    if (lookupError) {
+      console.error("Destination lookup error:", lookupError);
+      return new Response(JSON.stringify({ error: "Destination validation failed" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!matches || matches.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Destination number is not a registered profile" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
     const auth = btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`);
