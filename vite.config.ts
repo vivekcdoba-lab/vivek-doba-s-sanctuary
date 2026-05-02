@@ -13,7 +13,6 @@ function operationDocsPlugin(): Plugin {
         cwd: __dirname,
       });
     } catch (e) {
-      // Non-fatal: docs regeneration should never break the build.
       console.warn("[operation-docs] generation failed:", (e as Error).message);
     }
   };
@@ -24,6 +23,27 @@ function operationDocsPlugin(): Plugin {
     },
     configureServer() {
       run();
+    },
+  };
+}
+
+// Build-time guard: fail the build if a service-role reference leaks into
+// client code. Runs once at buildStart in production.
+function serviceRoleGuardPlugin(): Plugin {
+  return {
+    name: "service-role-guard",
+    apply: "build",
+    buildStart() {
+      try {
+        execSync("node --import tsx scripts/check-no-service-role.ts", {
+          stdio: "inherit",
+          cwd: __dirname,
+        });
+      } catch (e) {
+        throw new Error(
+          "Service-role guard failed — refusing to ship a bundle that may leak the service-role key."
+        );
+      }
     },
   };
 }
@@ -40,6 +60,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     operationDocsPlugin(),
+    serviceRoleGuardPlugin(),
     mode === "development" && componentTagger(),
   ].filter(Boolean),
   resolve: {
@@ -47,5 +68,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
+  },
+  // Strip console/debugger from production bundle. Dev keeps logs.
+  esbuild: mode === "production" ? { drop: ["console", "debugger"] } : undefined,
+  build: {
+    sourcemap: "hidden",
   },
 }));
