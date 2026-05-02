@@ -862,6 +862,9 @@ const SessionsPage = () => {
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${config.color}`}>
                         {config.emoji} {config.label}
                       </span>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        Session #{session.session_number} for {seeker?.full_name || 'Seeker'}
+                      </p>
                       {['submitted', 'reviewing', 'approved'].includes(session.status) && (
                         <div className="flex gap-0.5 mt-1.5">
                           {getFlowStatus(session.status).map((step) => (
