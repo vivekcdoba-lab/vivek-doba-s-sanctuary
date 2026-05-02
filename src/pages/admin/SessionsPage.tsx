@@ -802,9 +802,9 @@ const SessionsPage = () => {
           </button>
         </div>
       </div>
-      </div>
       {sharedDialogs}
       </>
+    );
   }
 
   return (
