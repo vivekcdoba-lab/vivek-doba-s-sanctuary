@@ -211,11 +211,21 @@ const SessionsPage = () => {
         onSuccess: async () => {
           // Email + in-app notify the seeker that the session is awaiting their reflection
           try {
-            await supabase.functions.invoke('notify-session-submitted', {
+            const { data, error } = await supabase.functions.invoke('notify-session-submitted', {
               body: { session_id: sessionId },
             });
-          } catch (e) {
-            // Non-fatal — session already submitted
+            if (error) {
+              console.warn('notify-session-submitted invoke error:', error);
+              toast.warning(`Session submitted, but seeker email could not be sent: ${error.message || 'unknown'}`);
+            } else if (data && (data as any).error) {
+              console.warn('notify-session-submitted returned error:', (data as any).error);
+              toast.warning(`Session submitted, but seeker email could not be sent: ${(data as any).error}`);
+            } else if (data && (data as any).email && (data as any).email.skipped) {
+              toast.warning('Session submitted — seeker has no email on file, no email sent.');
+            }
+          } catch (e: any) {
+            console.warn('notify-session-submitted failed:', e);
+            toast.warning(`Session submitted, but seeker email could not be sent: ${e?.message || 'unknown'}`);
           }
         },
       },
