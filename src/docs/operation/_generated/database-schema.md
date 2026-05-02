@@ -1,6 +1,6 @@
 # Database Schema
 
-_Generated: 2026-05-02T10:04:30.883Z_
+_Generated: 2026-05-02T10:28:25.631Z_
 
 Tables: **104** • Functions: **49**
 
@@ -16,7 +16,7 @@ Tables: **104** • Functions: **49**
 
 ### `user_sessions`
 
-**Columns** (12): `id`, `user_id`, `profile_id`, `role`, `status`, `login_at`, `last_activity_at`, `logout_at`, `logout_reason`, `ip_address`, `user_agent`, `duration_seconds`
+**Columns** (13): `id`, `user_id`, `profile_id`, `role`, `status`, `login_at`, `last_activity_at`, `logout_at`, `logout_reason`, `ip_address`, `user_agent`, `duration_seconds`, `fingerprint_hash`
 
 **RLS policies** (4): _Admins manage all sessions_; _Users insert own sessions_; _Users view own sessions_; _Users update own sessions_
 
@@ -528,7 +528,7 @@ Tables: **104** • Functions: **49**
 
 **Columns** (8): `id`, `message_id`, `template_name`, `recipient_email`, `status`, `error_message`, `metadata`, `created_at`
 
-**RLS policies** (4): _Service role can read send log_; _Service role can insert send log_; _Service role can update send log_; _Admins can view email send log_
+**RLS policies** (5): _Service role can read send log_; _Service role can insert send log_; _Service role can update send log_; _Admins can view email send log_; _Restrict email_send_log reads to admins and service role_
 
 ### `email_send_state`
 

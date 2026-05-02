@@ -247,9 +247,26 @@ function appendChangelog() {
   writeFileSync(path, header + '\n' + entry + rest);
 }
 
+// ───────────────────────────── SECURITY POSTURE ─────────────────────────────
+function generateSecurityPosture() {
+  const headersPath = join(ROOT, 'public/_headers');
+  const headersExcerpt = existsSync(headersPath)
+    ? readFileSync(headersPath, 'utf-8').split('\n').slice(0, 20).join('\n')
+    : '_(public/_headers not found)_';
+
+  const md = `# Security Posture\n\n${stamp}_Auto-generated. Edit \`scripts/generate-operation-docs.ts\` to change._\n\n` +
+`## Public by design (visible in browser source — this is normal)\n\n- The bundled JavaScript (every web app exposes this).\n- \`VITE_SUPABASE_URL\` and \`VITE_SUPABASE_PUBLISHABLE_KEY\` (anon key). The anon key is meant to be public; it has no privileges beyond what RLS allows.\n- Route paths and component names.\n\n` +
+`## Protected (cannot be derived from source)\n\n- Database rows — gated by RLS on every table.\n- Service-role key — only in edge function secrets; build fails if it appears in \`src/\` (\`scripts/check-no-service-role.ts\`).\n- PII (email/phone) — encrypted at rest with rotating DEKs.\n- Privileged operations — only callable from edge functions that validate an admin JWT or the \`CRON_SECRET\` header.\n\n` +
+`## Session security\n\n- **Fingerprint binding**: each \`user_sessions\` row stores SHA-256(user-agent + accept-language). Heartbeat re-checks every cycle; mismatch closes the session.\n- Idle timeouts: seekers 30 min, coaches/admins 60 min. Absolute cap 12 h.\n- Single-device enforcement for seekers.\n\n` +
+`## HTTP security headers (\`public/_headers\` excerpt)\n\n\`\`\`\n${headersExcerpt}\n\`\`\`\n\n` +
+`## Production build hardening\n\n- \`esbuild.drop: ['console', 'debugger']\` — no \`console.*\` in prod bundle.\n- \`build.sourcemap: 'hidden'\` — sourcemaps generated for crash reports but not linked from JS.\n- Service-role guard runs at \`buildStart\`.\n\n` +
+`## Manual one-time setup (super admin)\n\n- Enable **Leaked Password Protection (HIBP)** in Cloud → Users → Auth Settings → Email settings.\n`;
+  writeFileSync(join(OUT_DIR, 'security-posture.md'), md);
+}
+
 // ───────────────────────────── INDEX ─────────────────────────────
 function generateIndex() {
-  const md = `# Operation Docs Index\n\n${stamp}This bundle is the single source of truth for "what the app does". Sections:\n\n1. Overview\n2. Architecture Map\n3. Roles & Auth\n4. Business Rules\n5. Workflows\n6. Feature Catalog\n7. Integrations\n8. Routes & Pages _(generated)_\n9. Sidebar Navigation _(generated)_\n10. Database Schema _(generated)_\n11. Database Functions _(generated)_\n12. Edge Functions _(generated)_\n13. Storage Buckets _(generated)_\n14. Glossary\n15. Build Changelog _(generated)_\n`;
+  const md = `# Operation Docs Index\n\n${stamp}This bundle is the single source of truth for "what the app does". Sections:\n\n1. Overview\n2. Architecture Map\n3. Roles & Auth\n4. Business Rules\n5. Workflows\n6. Feature Catalog\n7. Integrations\n8. Routes & Pages _(generated)_\n9. Sidebar Navigation _(generated)_\n10. Database Schema _(generated)_\n11. Database Functions _(generated)_\n12. Edge Functions _(generated)_\n13. Storage Buckets _(generated)_\n14. Security Posture _(generated)_\n15. Glossary\n16. Build Changelog _(generated)_\n`;
   writeFileSync(join(OUT_DIR, '_index.md'), md);
 }
 
@@ -259,6 +276,7 @@ generateEdgeFunctions();
 generateDatabaseSchema();
 generateStorage();
 generateNavigation();
+generateSecurityPosture();
 appendChangelog();
 generateIndex();
 console.log('[operation-docs] done.');

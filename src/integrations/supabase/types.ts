@@ -4973,6 +4973,7 @@ export type Database = {
       user_sessions: {
         Row: {
           duration_seconds: number | null
+          fingerprint_hash: string | null
           id: string
           ip_address: string | null
           last_activity_at: string
@@ -4987,6 +4988,7 @@ export type Database = {
         }
         Insert: {
           duration_seconds?: number | null
+          fingerprint_hash?: string | null
           id?: string
           ip_address?: string | null
           last_activity_at?: string
@@ -5001,6 +5003,7 @@ export type Database = {
         }
         Update: {
           duration_seconds?: number | null
+          fingerprint_hash?: string | null
           id?: string
           ip_address?: string | null
           last_activity_at?: string

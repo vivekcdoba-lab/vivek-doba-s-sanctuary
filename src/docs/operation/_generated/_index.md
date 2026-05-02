@@ -1,6 +1,6 @@
 # Operation Docs Index
 
-_Generated: 2026-05-02T10:04:30.883Z_
+_Generated: 2026-05-02T10:28:25.631Z_
 
 This bundle is the single source of truth for "what the app does". Sections:
 
@@ -17,5 +17,6 @@ This bundle is the single source of truth for "what the app does". Sections:
 11. Database Functions _(generated)_
 12. Edge Functions _(generated)_
 13. Storage Buckets _(generated)_
-14. Glossary
-15. Build Changelog _(generated)_
+14. Security Posture _(generated)_
+15. Glossary
+16. Build Changelog _(generated)_

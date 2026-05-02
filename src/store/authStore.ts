@@ -186,7 +186,12 @@ async function validateSessionOnInit(userId: string, accessToken: string, userEm
     } else {
       const data = await response.json().catch(() => null);
       if (!response.ok || !data?.active) {
-        if (response.status === 401 || data?.reason === 'invalid_token' || data?.active === false) {
+        if (
+          response.status === 401 ||
+          data?.reason === 'invalid_token' ||
+          data?.reason === 'fingerprint_mismatch' ||
+          data?.active === false
+        ) {
           await supabase.auth.signOut();
           clearAllAuthStorage();
           useAuthStore.getState().setAuth(null, null);

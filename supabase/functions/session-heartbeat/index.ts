@@ -6,6 +6,20 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Browser fingerprint: SHA-256 of UA + Accept-Language. Stable for the same
+// browser/device, different across browsers — so a stolen access token
+// replayed elsewhere will fail the next heartbeat and the session will close.
+async function computeFingerprint(req: Request): Promise<string> {
+  const ua = req.headers.get("user-agent") || "";
+  const lang = req.headers.get("accept-language") || "";
+  const buf = new TextEncoder().encode(`${ua}|${lang}`);
+  const hash = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -146,7 +160,8 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Insert new session
+      // Insert new session (with browser fingerprint binding)
+      const fp = await computeFingerprint(req);
       const { data: newSession, error: insertError } = await supabaseAdmin
         .from("user_sessions")
         .insert({
@@ -156,6 +171,7 @@ Deno.serve(async (req) => {
           status: "active",
           ip_address: ipAddress,
           user_agent: userAgent,
+          fingerprint_hash: fp,
         })
         .select("id")
         .single();
@@ -190,7 +206,7 @@ Deno.serve(async (req) => {
       // Check if this session is still active
       const { data: session } = await supabaseAdmin
         .from("user_sessions")
-        .select("status, logout_reason")
+        .select("status, logout_reason, fingerprint_hash")
         .eq("id", session_id)
         .eq("user_id", userId)
         .maybeSingle();
@@ -205,11 +221,37 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Update last activity
-      await supabaseAdmin
-        .from("user_sessions")
-        .update({ last_activity_at: new Date().toISOString() })
-        .eq("id", session_id);
+      // Fingerprint check: a stolen token replayed from another browser
+      // will not match. Close the session and force re-login.
+      const fpNow = await computeFingerprint(req);
+      if (session.fingerprint_hash && session.fingerprint_hash !== fpNow) {
+        await supabaseAdmin
+          .from("user_sessions")
+          .update({
+            status: "closed",
+            logout_reason: "fingerprint_mismatch",
+            logout_at: new Date().toISOString(),
+          })
+          .eq("id", session_id)
+          .eq("status", "active");
+        return new Response(
+          JSON.stringify({ active: false, reason: "fingerprint_mismatch" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Backfill fingerprint for sessions started before this rollout
+      if (!session.fingerprint_hash) {
+        await supabaseAdmin
+          .from("user_sessions")
+          .update({ fingerprint_hash: fpNow, last_activity_at: new Date().toISOString() })
+          .eq("id", session_id);
+      } else {
+        await supabaseAdmin
+          .from("user_sessions")
+          .update({ last_activity_at: new Date().toISOString() })
+          .eq("id", session_id);
+      }
 
       return new Response(JSON.stringify({ active: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
