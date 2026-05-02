@@ -182,29 +182,43 @@ const SessionsPage = () => {
 
   const submitToSeeker = (sessionId: string) => {
     setTimerRunning(false);
-    updateSession.mutate({
-      id: sessionId,
-      status: 'submitted',
-      session_name: postData.sessionName || null,
-      pillar: postData.pillar !== 'all' ? postData.pillar : null,
-      topics_covered: postData.topics.split(',').map(t => t.trim()).filter(Boolean),
-      key_insights: postData.insights || null,
-      breakthroughs: postData.breakthroughs || null,
-      session_notes: liveNotes || null,
-      engagement_score: postData.engagement,
-      seeker_mood: postData.mood,
-      stories_used: postData.stories.length ? postData.stories : null,
-      client_good_things: postData.clientGoodThings.filter(Boolean),
-      client_growth_json: postData.clientGrowth,
-      major_win: postData.majorWin || null,
-      therapy_given: postData.therapyGiven || null,
-      next_week_assignments: postData.nextWeekAssignments || null,
-      next_session_time: postData.nextSessionTime || null,
-      pending_assignments_review: postData.pendingAssignments || null,
-      punishments: postData.punishments || null,
-      rewards: postData.rewards || null,
-      targets: postData.targets || null,
-    });
+    updateSession.mutate(
+      {
+        id: sessionId,
+        status: 'submitted',
+        session_name: postData.sessionName || null,
+        pillar: postData.pillar !== 'all' ? postData.pillar : null,
+        topics_covered: postData.topics.split(',').map(t => t.trim()).filter(Boolean),
+        key_insights: postData.insights || null,
+        breakthroughs: postData.breakthroughs || null,
+        session_notes: liveNotes || null,
+        engagement_score: postData.engagement,
+        seeker_mood: postData.mood,
+        stories_used: postData.stories.length ? postData.stories : null,
+        client_good_things: postData.clientGoodThings.filter(Boolean),
+        client_growth_json: postData.clientGrowth,
+        major_win: postData.majorWin || null,
+        therapy_given: postData.therapyGiven || null,
+        next_week_assignments: postData.nextWeekAssignments || null,
+        next_session_time: postData.nextSessionTime || null,
+        pending_assignments_review: postData.pendingAssignments || null,
+        punishments: postData.punishments || null,
+        rewards: postData.rewards || null,
+        targets: postData.targets || null,
+      },
+      {
+        onSuccess: async () => {
+          // Email + in-app notify the seeker that the session is awaiting their reflection
+          try {
+            await supabase.functions.invoke('notify-session-submitted', {
+              body: { session_id: sessionId },
+            });
+          } catch (e) {
+            // Non-fatal — session already submitted
+          }
+        },
+      },
+    );
     // Save coach's private notes into the coach/admin-only table (not visible to seekers)
     if (postData.privateNotes) {
       supabase
@@ -215,18 +229,42 @@ const SessionsPage = () => {
         });
     }
     setLiveSession(null);
-    toast.success('✅ Session submitted to seeker!');
+    toast.success('✅ Session submitted to seeker — they have been emailed to complete their reflection');
     resetPostData();
   };
 
   const resetPostData = () => {
     setPostData({ sessionName: '', pillar: 'all', topics: '', insights: '', breakthroughs: '', challenges: '', therapyGiven: '', mood: '😊', engagement: 7, energy: 7, openness: 7, stories: [], clientGoodThings: ['', '', ''], clientGrowth: { dharma: '', artha: '', kama: '', moksha: '' }, majorWin: '', assignments: '', pendingAssignments: '', privateNotes: '', focusNext: '', nextSessionTime: '', nextWeekAssignments: '', punishments: '', rewards: '', targets: '' });
     setLiveNotes('');
+    setCustomStory('');
   };
 
   const approveSession = (sessionId: string) => {
+    const s = sessions.find((x: any) => x.id === sessionId);
+    if (!s) return;
+    if (!canApproveSession(s)) {
+      toast.error('Approve is locked: seeker must complete Session Notes + Post-Session Reflection and click Save Reflection.');
+      return;
+    }
     updateSession.mutate({ id: sessionId, status: 'approved' });
     toast.success('✅ Session approved!');
+  };
+
+  // Approve is unlocked only when:
+  //  1) Coach has submitted (status >= submitted)
+  //  2) Coach session_notes is non-empty
+  //  3) Seeker has filled "What I Learned" (text or audio) — proxy: seeker_what_learned OR seeker_what_learned_audio
+  //  4) Seeker has clicked Save Reflection (seeker_accepted_at is set)
+  const canApproveSession = (s: any): boolean => {
+    if (!s) return false;
+    if (!['submitted', 'reviewing', 'completed'].includes(s.status)) return false;
+    if (!s.session_notes || !String(s.session_notes).trim()) return false;
+    const seekerHasReflection =
+      (s.seeker_what_learned && String(s.seeker_what_learned).trim()) ||
+      !!s.seeker_what_learned_audio;
+    if (!seekerHasReflection) return false;
+    if (!s.seeker_accepted_at) return false;
+    return true;
   };
 
   const markMissed = (sessionId: string) => {
