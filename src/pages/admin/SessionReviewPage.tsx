@@ -278,7 +278,15 @@ const SessionReviewPage = () => {
     );
   }
 
-  const canApprove = ['completed', 'submitted', 'reviewing'].includes(session.status);
+  const s: any = session;
+  const seekerHasReflection =
+    (s.seeker_what_learned && String(s.seeker_what_learned).trim()) ||
+    !!s.seeker_what_learned_audio;
+  const approveLocked =
+    !s.session_notes || !String(s.session_notes).trim() ||
+    !seekerHasReflection ||
+    !s.seeker_accepted_at;
+  const canApprove = ['completed', 'submitted', 'reviewing'].includes(session.status) && !approveLocked;
   const canRequestRevision = ['completed', 'submitted', 'reviewing'].includes(session.status);
 
   const renderSection = (
