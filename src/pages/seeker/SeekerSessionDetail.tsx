@@ -148,8 +148,11 @@ const SeekerSessionDetail = () => {
   };
 
   const handleSubmitReflection = async () => {
-    if (!session || !whatLearned.trim()) {
-      toast.error('Please fill "What I Learned Today"');
+    if (!session) return;
+    const hasText = !!whatLearned.trim();
+    const hasAudio = !!whatLearnedAudio;
+    if (!hasText && !hasAudio) {
+      toast.error('Please type or record "What I Learned Today"');
       return;
     }
     setSaving(true);
@@ -160,11 +163,22 @@ const SeekerSessionDetail = () => {
           seeker_what_learned: whatLearned,
           seeker_where_to_apply: whereToApply,
           seeker_how_to_apply: howToApply,
+          seeker_what_learned_audio: whatLearnedAudio,
+          seeker_where_to_apply_audio: whereToApplyAudio,
+          seeker_how_to_apply_audio: howToApplyAudio,
         } as any)
         .eq('id', session.id);
       if (error) throw error;
 
-      setSession({ ...session, seeker_what_learned: whatLearned, seeker_where_to_apply: whereToApply, seeker_how_to_apply: howToApply });
+      setSession({
+        ...session,
+        seeker_what_learned: whatLearned,
+        seeker_where_to_apply: whereToApply,
+        seeker_how_to_apply: howToApply,
+        seeker_what_learned_audio: whatLearnedAudio,
+        seeker_where_to_apply_audio: whereToApplyAudio,
+        seeker_how_to_apply_audio: howToApplyAudio,
+      });
       toast.success('Reflection saved! ✨');
     } catch (err) {
       toast.error('Failed to save reflection');
