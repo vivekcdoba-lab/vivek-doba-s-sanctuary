@@ -119,6 +119,9 @@ const SeekerSessionDetail = () => {
         seeker_what_learned: (data as any).seeker_what_learned,
         seeker_where_to_apply: (data as any).seeker_where_to_apply,
         seeker_how_to_apply: (data as any).seeker_how_to_apply,
+        seeker_what_learned_audio: (data as any).seeker_what_learned_audio ?? null,
+        seeker_where_to_apply_audio: (data as any).seeker_where_to_apply_audio ?? null,
+        seeker_how_to_apply_audio: (data as any).seeker_how_to_apply_audio ?? null,
         seeker_accepted_at: (data as any).seeker_accepted_at,
       } as SessionData;
 
@@ -126,6 +129,9 @@ const SeekerSessionDetail = () => {
       setWhatLearned(s.seeker_what_learned || '');
       setWhereToApply(s.seeker_where_to_apply || '');
       setHowToApply(s.seeker_how_to_apply || '');
+      setWhatLearnedAudio(s.seeker_what_learned_audio);
+      setWhereToApplyAudio(s.seeker_where_to_apply_audio);
+      setHowToApplyAudio(s.seeker_how_to_apply_audio);
 
       if (data.course_id) {
         const { data: course } = await supabase.from('courses').select('name').eq('id', data.course_id).single();
