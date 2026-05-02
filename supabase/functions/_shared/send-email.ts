@@ -43,11 +43,13 @@ export async function sendEmail(
   if (!args?.html) return { ok: false, error: "missing 'html'" };
 
   try {
-    // 1. Get-or-create unsubscribe token
+    // 1. Get-or-create unsubscribe token (token kept for legacy URL compatibility,
+    //    token_hash is what we look up against in new flows so the raw value is
+    //    not required at rest going forward).
     let unsubToken: string | null = null;
     const { data: existing } = await supabase
       .from("email_unsubscribe_tokens")
-      .select("token")
+      .select("token, token_hash")
       .eq("email", args.to)
       .maybeSingle();
 
@@ -57,9 +59,11 @@ export async function sendEmail(
       const newToken =
         crypto.randomUUID().replace(/-/g, "") +
         crypto.randomUUID().replace(/-/g, "");
+      // Compute token_hash server-side via the existing hash_token RPC
+      const { data: tokenHash } = await supabase.rpc("hash_token", { _token: newToken });
       const { data: inserted, error: insErr } = await supabase
         .from("email_unsubscribe_tokens")
-        .insert({ email: args.to, token: newToken })
+        .insert({ email: args.to, token: newToken, token_hash: tokenHash })
         .select("token")
         .single();
       if (insErr) {
