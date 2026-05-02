@@ -1,6 +1,7 @@
 // Daily 7 PM IST nudge to seekers: complete tasks + write gratitude.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { sendEmail } from "../_shared/send-email.ts";
+import { requireAdminOrCron } from "../_shared/require-admin.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,6 +37,9 @@ function html(name: string, lang: Lang) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  const denied = await requireAdminOrCron(req, corsHeaders);
+  if (denied) return denied;
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
