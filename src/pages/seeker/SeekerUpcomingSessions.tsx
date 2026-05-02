@@ -113,9 +113,7 @@ export default function SeekerUpcomingSessions() {
           <EmptyState
             emoji="📅"
             title="Your schedule is clear!"
-            description="Book a session with your Coach to continue your transformation journey."
-            actionLabel="Schedule Session"
-            actionPath="/seeker/upcoming-sessions"
+            description="Your coach will schedule your next session. You will be notified by email once it is booked."
           />
         )
       ) : (
