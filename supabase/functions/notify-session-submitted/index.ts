@@ -114,20 +114,40 @@ serve(async (req) => {
       sessionRow.session_name || `Session #${sessionRow.session_number}`;
     const reviewUrl = `${APP_PUBLIC_URL}/seeker/sessions/${sessionRow.id}`;
 
-    // In-app notification
+    console.log("notify-session-submitted", {
+      session_id: sessionRow.id,
+      seeker_id: session.seeker_id,
+      has_user_id: !!seeker?.user_id,
+      has_email: !!seeker?.email,
+    });
+
+    // In-app notification — try the specific type, fall back to 'system' if a
+    // CHECK constraint rejects it (so the email path still runs).
+    let inAppResult: any = { skipped: true };
     if (seeker?.user_id) {
-      await admin.from("notifications").insert({
+      const baseRow = {
         user_id: seeker.user_id,
-        type: "session_submitted",
         title: `📝 ${sessionLabel} — Action Required`,
         message:
           "Your coach has submitted this session. Please complete your Session Notes and Post-Session Reflection.",
         action_url: `/seeker/sessions/${sessionRow.id}`,
-      });
+      };
+      const first = await admin
+        .from("notifications")
+        .insert({ ...baseRow, type: "session_submitted" });
+      if (first.error) {
+        console.warn("notification insert failed, falling back to type=system", first.error.message);
+        const second = await admin
+          .from("notifications")
+          .insert({ ...baseRow, type: "system" });
+        inAppResult = second.error ? { ok: false, error: second.error.message } : { ok: true, type: "system" };
+      } else {
+        inAppResult = { ok: true, type: "session_submitted" };
+      }
     }
 
     // Email
-    let emailResult: any = { skipped: true };
+    let emailResult: any = { skipped: "no_email" };
     if (seeker?.email) {
       const html = `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#333">
