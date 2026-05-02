@@ -206,6 +206,22 @@ Deno.serve(async (req) => {
     const fd = (sub.form_data as Record<string, any>) || {};
     const isRegistration = sub.form_type === "registration";
 
+    // Decrypt the registration password (now stored encrypted by trigger).
+    // Falls back to legacy plaintext fd.password if migration backfill missed it.
+    if (!fd.password && fd.password_enc) {
+      try {
+        const { data: pw, error: pwErr } = await supabaseAdmin.rpc(
+          "get_submission_password",
+          { _submission_id: submission_id },
+        );
+        if (!pwErr && typeof pw === "string" && pw.length > 0) {
+          fd.password = pw;
+        }
+      } catch (e) {
+        console.error("get_submission_password failed", e);
+      }
+    }
+
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(
       (u: any) => u.email === sub.email
@@ -325,6 +341,7 @@ Deno.serve(async (req) => {
     // Sanitize and mark approved
     const sanitizedFormData = { ...fd };
     delete sanitizedFormData.password;
+    delete sanitizedFormData.password_enc;
     await supabaseAdmin
       .from("submissions")
       .update({ status: "approved", form_data: sanitizedFormData })

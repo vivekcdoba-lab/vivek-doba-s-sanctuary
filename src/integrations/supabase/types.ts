@@ -714,6 +714,7 @@ export type Database = {
           pan_hash: string | null
           revenue_enc: string | null
           revenue_range: string | null
+          revenue_range_enc: string | null
           seeker_id: string
           tagline: string | null
           team_size: number | null
@@ -735,6 +736,7 @@ export type Database = {
           pan_hash?: string | null
           revenue_enc?: string | null
           revenue_range?: string | null
+          revenue_range_enc?: string | null
           seeker_id: string
           tagline?: string | null
           team_size?: number | null
@@ -756,6 +758,7 @@ export type Database = {
           pan_hash?: string | null
           revenue_enc?: string | null
           revenue_range?: string | null
+          revenue_range_enc?: string | null
           seeker_id?: string
           tagline?: string | null
           team_size?: number | null
@@ -2172,6 +2175,7 @@ export type Database = {
           email_hash: string | null
           id: string
           token: string
+          token_hash: string | null
           used_at: string | null
         }
         Insert: {
@@ -2180,6 +2184,7 @@ export type Database = {
           email_hash?: string | null
           id?: string
           token: string
+          token_hash?: string | null
           used_at?: string | null
         }
         Update: {
@@ -2188,6 +2193,7 @@ export type Database = {
           email_hash?: string | null
           id?: string
           token?: string
+          token_hash?: string | null
           used_at?: string | null
         }
         Relationships: []
@@ -2549,12 +2555,16 @@ export type Database = {
           current_challenge: string | null
           days_in_pipeline: number | null
           email: string | null
+          email_enc: string | null
+          email_hash: string | null
           id: string
           interested_course_id: string | null
           name: string
           next_followup_date: string | null
           notes: string | null
           phone: string | null
+          phone_enc: string | null
+          phone_hash: string | null
           priority: string | null
           source: string | null
           stage: string | null
@@ -2566,12 +2576,16 @@ export type Database = {
           current_challenge?: string | null
           days_in_pipeline?: number | null
           email?: string | null
+          email_enc?: string | null
+          email_hash?: string | null
           id?: string
           interested_course_id?: string | null
           name: string
           next_followup_date?: string | null
           notes?: string | null
           phone?: string | null
+          phone_enc?: string | null
+          phone_hash?: string | null
           priority?: string | null
           source?: string | null
           stage?: string | null
@@ -2583,12 +2597,16 @@ export type Database = {
           current_challenge?: string | null
           days_in_pipeline?: number | null
           email?: string | null
+          email_enc?: string | null
+          email_hash?: string | null
           id?: string
           interested_course_id?: string | null
           name?: string
           next_followup_date?: string | null
           notes?: string | null
           phone?: string | null
+          phone_enc?: string | null
+          phone_hash?: string | null
           priority?: string | null
           source?: string | null
           stage?: string | null
@@ -2681,6 +2699,7 @@ export type Database = {
           invite_email_sent_at: string | null
           invite_token: string | null
           invite_token_expires_at: string | null
+          invite_token_hash: string | null
           invited_at: string | null
           invited_by: string | null
           last_emailed_at: string | null
@@ -2698,6 +2717,7 @@ export type Database = {
           invite_email_sent_at?: string | null
           invite_token?: string | null
           invite_token_expires_at?: string | null
+          invite_token_hash?: string | null
           invited_at?: string | null
           invited_by?: string | null
           last_emailed_at?: string | null
@@ -2715,6 +2735,7 @@ export type Database = {
           invite_email_sent_at?: string | null
           invite_token?: string | null
           invite_token_expires_at?: string | null
+          invite_token_hash?: string | null
           invited_at?: string | null
           invited_by?: string | null
           last_emailed_at?: string | null
@@ -5335,6 +5356,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      find_unsubscribe_token: { Args: { _token: string }; Returns: string }
       get_daily_session_report: { Args: never; Returns: Json }
       get_encryption_status: { Args: never; Returns: Json }
       get_leaderboard_data: {
@@ -5386,6 +5408,10 @@ export type Database = {
           storage_path: string
           typed_name: string
         }[]
+      }
+      get_submission_password: {
+        Args: { _submission_id: string }
+        Returns: string
       }
       hash_for_lookup: { Args: { _value: string }; Returns: string }
       hash_token: { Args: { _token: string }; Returns: string }

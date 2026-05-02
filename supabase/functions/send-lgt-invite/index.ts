@@ -84,6 +84,10 @@ Deno.serve(async (req) => {
     const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
     const now = new Date().toISOString();
 
+    // Hash the token for at-rest lookup (raw token kept transiently for backward
+    // compatibility with active links; new lookups go through invite_token_hash).
+    const { data: tokenHash } = await admin.rpc("hash_token", { _token: token });
+
     // Upsert lgt_application row (status stays 'pending'; clear stale tokens)
     const { error: upsertErr } = await admin
       .from("lgt_applications")
@@ -92,6 +96,7 @@ Deno.serve(async (req) => {
           seeker_id: seekerId,
           status: "pending",
           invite_token: token,
+          invite_token_hash: tokenHash,
           invite_token_expires_at: expiresAt,
           invited_by: userData.user.id,
           invited_at: now,

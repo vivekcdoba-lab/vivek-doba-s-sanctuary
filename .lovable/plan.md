@@ -1,63 +1,94 @@
-## Two bugs on `/admin/sessions`
+## Goal
+Eliminate plaintext storage of sensitive data (passwords, emails, mobiles, revenue, tokens) by reusing the existing server-side `encrypt_field` / `decrypt_field` / `hash_for_lookup` / `hash_token` system that already protects most PII.
 
-### Bug 1 — "Schedule Now" does nothing during a live session
+## Audit Findings
 
-**Root cause.** `SessionsPage.tsx` has two return branches:
+What is **already** safe:
+- `profiles`: dob, gender, pincode, whatsapp, hometown, linkedin, blood_group, address, emergency_contact, anniversary, PAN, Aadhaar — all stored in `*_enc` bytea columns + searchable via `*_hash`. (`email` and `phone` are intentionally kept plaintext for auth lookups but are also hashed.)
+- `business_profiles`: gst_number, pan, bank_account, ifsc, **revenue** — all encrypted.
+- `signature_requests.token_hash` — hashed, not raw.
+- `submissions`: passwords are deleted from `form_data` after approval.
 
-- Line 300–541: live-session view (rendered when `liveSession` is set)
-- Line 544+: list view, which contains the `<Dialog open={showSchedule}>` (line 732)
+What is **NOT** safe and will be fixed:
 
-Clicking the new "📅 Schedule Now" button in the live session sets `showSchedule = true`, but the dialog is only rendered inside the **list-view** branch — so nothing visible happens.
+| Table | Column(s) | Issue | Fix |
+|---|---|---|---|
+| `submissions.form_data` | `password` (jsonb key) | Plaintext password sits in row from submit until admin approval | Encrypt on insert, decrypt only inside `approve-application` edge function |
+| `leads` | `email`, `phone` | Plaintext PII for every lead, no hash | Add `email_enc`, `phone_enc`, `email_hash`, `phone_hash`; drop plaintext after backfill |
+| `business_profiles` | `revenue_range` | Plaintext revenue bracket | Add `revenue_range_enc`, drop plaintext |
+| `email_unsubscribe_tokens` | `token`, `email` | Raw token + raw email stored; service-role only but still PII at rest | Replace `token` with `token_hash`; drop plaintext `email` (keep `email_hash` already present) |
+| `lgt_applications` | `invite_token` | Raw invite token stored | Replace with `invite_token_hash` |
 
-**Fix.** Lift the schedule dialog (and the related "Reminder" dialog if it has the same problem) so it renders in BOTH branches. Cleanest approach: extract the JSX block at lines 732–~870 into a local `<ScheduleDialog />` sub-component (defined OUTSIDE the parent render to comply with our focus-loss rule) and render it in both the live-session return and the list-view return. Same for the `reminder` dialog block (lines 715–730).
+## Migration (single SQL migration)
 
-After the dialog confirms (existing `createSession` mutation), also reflect the new date/time string back into `postData.nextSessionTime` so it persists into `sessions.next_session_time` when the coach submits.
+1. **Leads PII**
+   ```sql
+   ALTER TABLE public.leads
+     ADD COLUMN email_enc bytea,
+     ADD COLUMN phone_enc bytea,
+     ADD COLUMN email_hash text,
+     ADD COLUMN phone_hash text;
+   -- Backfill existing rows using encrypt_field / hash_for_lookup
+   UPDATE public.leads SET
+     email_enc  = public.encrypt_field(email),
+     phone_enc  = public.encrypt_field(phone),
+     email_hash = public.hash_for_lookup(email),
+     phone_hash = public.hash_for_lookup(phone);
+   ALTER TABLE public.leads DROP COLUMN email, DROP COLUMN phone;
+   CREATE INDEX leads_email_hash_idx ON public.leads(email_hash);
+   CREATE INDEX leads_phone_hash_idx ON public.leads(phone_hash);
+   ```
 
-### Bug 2 — No email after "End & Submit to Seeker"
+2. **Business revenue bracket**
+   ```sql
+   ALTER TABLE public.business_profiles ADD COLUMN revenue_range_enc bytea;
+   UPDATE public.business_profiles SET revenue_range_enc = public.encrypt_field(revenue_range);
+   ALTER TABLE public.business_profiles DROP COLUMN revenue_range;
+   ```
 
-**Root cause(s).**
+3. **Unsubscribe tokens** — store hash only
+   ```sql
+   ALTER TABLE public.email_unsubscribe_tokens ADD COLUMN token_hash text;
+   UPDATE public.email_unsubscribe_tokens SET token_hash = public.hash_token(token);
+   ALTER TABLE public.email_unsubscribe_tokens
+     DROP COLUMN token,
+     DROP COLUMN email;     -- email_hash already maintained by trigger
+   CREATE UNIQUE INDEX email_unsubscribe_tokens_hash_key ON public.email_unsubscribe_tokens(token_hash);
+   ```
 
-1. `notify-session-submitted` edge function exists in the repo but has zero invocations in logs (`supabase--edge_function_logs` returned none). It was created last turn and may not have been deployed — once deployed, calls will start landing.
-2. Even if it deploys, the call is wrapped in a silent `try/catch` with no toast and no console error. If the email path fails (suppression, sender domain, RLS), the coach sees "submitted" success but no email lands and there is no diagnostic.
-3. The toast text already promises "they have been emailed" — currently misleading.
+4. **LGT invite tokens**
+   ```sql
+   ALTER TABLE public.lgt_applications ADD COLUMN invite_token_hash text;
+   UPDATE public.lgt_applications SET invite_token_hash = public.hash_token(invite_token) WHERE invite_token IS NOT NULL;
+   ALTER TABLE public.lgt_applications DROP COLUMN invite_token;
+   CREATE UNIQUE INDEX lgt_applications_invite_token_hash_key ON public.lgt_applications(invite_token_hash) WHERE invite_token_hash IS NOT NULL;
+   ```
+   Update RPC `get_lgt_application_by_token` and `submit_lgt_application_by_token` to look up by `hash_token(_token)`.
 
-**Fix.**
+5. **Submissions password** — encrypt the `password` field within `form_data` JSON
+   - Add trigger `encrypt_submission_password` BEFORE INSERT/UPDATE on `submissions` that, if `form_data ? 'password'`, replaces it with `{ password_enc: encode(encrypt_field(...), 'hex') }` and removes the plaintext key.
+   - Approve flow decrypts via `decrypt_field`.
 
-1. Deploy `notify-session-submitted` (happens automatically on next save / can be triggered explicitly).
-2. In `submitToSeeker`'s `onSuccess`, capture the function response:
-   - On `data?.error` or invoke `error`, show `toast.warning('Session submitted — but seeker email could not be sent: <reason>')` and `console.warn`.
-   - On success, keep the existing success toast.
-3. In the edge function:
-   - Add a couple of `console.log` markers (`session_id`, seeker email present?, `sendEmail` result) so future debugging is trivial via `edge_function_logs`.
-   - If `seeker.email` is missing, return `{ ok: true, email: { skipped: 'no_email' } }` (already partially handled — make it explicit so the client can warn the coach).
-   - Verify the `session_submitted` notification type is allowed by the `notifications` table check constraint; if not, fall back to a permitted type (`system`) so the in-app insert never fails silently.
-4. Quick sanity check via `supabase--read_query` after the first real submission to confirm a row in `email_send_log` / queue row in `transactional_emails`.
+## Code changes
 
-### Out of scope / preserved
-- LGT IGS = Session #1 attendance rule untouched.
-- All existing fields / statuses / approval gating untouched.
-- The unrelated React `forwardRef` warning surfaced in console for `SessionReviewPage`'s `DialogFooter` is a separate cosmetic warning — not part of this fix.
+- **`src/pages/RegisterPage.tsx`** — no client change needed (server trigger handles encryption transparently).
+- **`src/hooks/useDbLeads.ts`** + any leads list/detail pages — switch reads to a new `get_leads_decrypted()` SECURITY DEFINER view/RPC that returns plaintext for admins only; on insert call `encrypt_field` via existing `encryptField()` helper or rely on a BEFORE INSERT trigger on `leads` (preferred — mirrors the profile pattern).
+- **`src/pages/admin/AdminAddLead.tsx`**, **`AdminAllLeads.tsx`**, **`AdminHotLeads.tsx`**, **`LeadsPage.tsx`** — read decrypted values via the new RPC; write plain strings (trigger encrypts).
+- **`src/hooks/useBusinessProfile.ts`** + **`CoachBusinessNotes.tsx`** + admin business pages — add `revenue_range` to the encrypted payload helper.
+- **`supabase/functions/approve-application/index.ts`** — read `form_data.password_enc` and call `decrypt_field` RPC instead of `fd.password`.
+- **`supabase/functions/send-notification/index.ts`** + unsubscribe flow — generate token, store only its `hash_token` digest; lookup by hash on click.
+- **`supabase/functions/send-lgt-invite/index.ts`** + LGT pages — same hashed-token pattern.
 
----
+## Triggers (added in same migration)
+- `encrypt_submission_password` on `public.submissions`
+- `maintain_leads_pii` on `public.leads` (mirrors `maintain_profile_hashes`, but also encrypts)
 
-## Technical section
+## Verification
+After deploy:
+- `SELECT email, phone FROM leads LIMIT 1;` → columns no longer exist.
+- `SELECT form_data->'password' FROM submissions WHERE status='pending' LIMIT 1;` → null.
+- `SELECT token FROM email_unsubscribe_tokens LIMIT 1;` → column no longer exists.
+- Re-run security scan; expect zero "plaintext sensitive data" findings.
 
-### Files to edit
-- `src/pages/admin/SessionsPage.tsx`
-  - Extract `<ScheduleDialog />` (and optionally `<ReminderDialog />`) outside the component.
-  - Render both in the live-session branch AND the list-view branch.
-  - In the "Schedule Now" handler (line 477) and in `createSession.onSuccess`, write a friendly `nextSessionTime` string into `postData` (e.g. `"Thu, 09 May 2026 10:00 IST"`).
-  - In `submitToSeeker.onSuccess`, await the invoke and surface failures via toast + console.
-- `supabase/functions/notify-session-submitted/index.ts`
-  - Add `console.log` checkpoints (gated so prod-strip leaves them — these are server-side logs, not client).
-  - Make the in-app `notifications.type` resilient: try `'session_submitted'`, on insert error fall back to `'system'`.
-  - Return `{ ok, email, in_app }` so the client can warn precisely.
-
-### No DB migration required
-All needed columns (`next_session_time`, audio columns, `seeker_accepted_at`, etc.) already exist.
-
-### Verification
-1. Open a session → live view → click "Schedule Now" → dialog should now appear pre-filled (+7 days).
-2. End & Submit → check `supabase--edge_function_logs` for `notify-session-submitted` boot + log lines.
-3. `select * from email_send_log order by created_at desc limit 5;` → row with `label = 'session_submitted'`.
-4. Seeker inbox shows the branded email with the `/seeker/sessions/<id>` CTA.
+## Out of scope (intentional)
+- `profiles.email` and `profiles.phone` plaintext — required by Supabase Auth lookups and existing unique constraints; their hashes already exist and RLS restricts read access. Leaving as-is unless you want a deeper refactor.
