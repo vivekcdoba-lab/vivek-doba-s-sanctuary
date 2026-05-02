@@ -55,7 +55,10 @@ serve(async (req) => {
       }
     }
 
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    // Cryptographically secure 6-digit OTP via Web Crypto (not Math.random)
+    const otpBuf = new Uint8Array(4);
+    crypto.getRandomValues(otpBuf);
+    const otp = String((new DataView(otpBuf.buffer).getUint32(0) % 900000) + 100000);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
