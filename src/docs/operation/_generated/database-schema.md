@@ -1,6 +1,6 @@
 # Database Schema
 
-_Generated: 2026-05-02T12:26:53.238Z_
+_Generated: 2026-05-02T18:20:51.656Z_
 
 Tables: **104** • Functions: **49**
 
@@ -234,7 +234,7 @@ Tables: **104** • Functions: **49**
 
 **Columns** (9): `id`, `seeker_id`, `type`, `period`, `scores_json`, `analysis_text`, `notes`, `created_at`, `updated_at`
 
-**RLS policies** (2): _Admins can manage seeker assessments_; _Seekers can view own assessments_
+**RLS policies** (5): _Admins can manage seeker assessments_; _Seekers can view own assessments_; _Assigned coaches insert seeker assessments_; _Assigned coaches update seeker assessments_; _Assigned coaches view seeker assessments_
 
 ### `lgt_applications`
 
@@ -248,7 +248,7 @@ Tables: **104** • Functions: **49**
 
 **Columns** (54): `id`, `seeker_id`, `worksheet_date`, `morning_intention`, `morning_mood`, `morning_clarity_score`, `morning_energy_score`, `morning_peace_score`, `morning_readiness_score`, `evening_mood`, `evening_mental_peace`, `evening_emotional_satisfaction`, `evening_fulfillment`, `evening_fulfillment_score`, `what_went_well`, `what_i_learned`, `do_differently`, `gratitude_1`, `gratitude_2`, `gratitude_3`, `gratitude_4`, `gratitude_5`, `todays_win_1`, `todays_win_2`, `todays_win_3`, `aha_moment`, `dharma_score`, `artha_score`, `kama_score`, `moksha_score`, `lgt_balance_score`, `sampoorna_din_score`, `tomorrow_sankalp`, `tomorrow_prep_score`, `share_with_buddy`, `water_intake_glasses`, `steps_taken`, `sleep_hours`, `sleep_quality`, `body_weight_kg`, `supplements_taken`, `screen_time_hours`, `end_energy_level`, `workout_done`, `workout_type`, `workout_duration_minutes`, `non_negotiables_completed`, `non_negotiables_total`, `coach_weekly_challenge_done`, `completion_rate_percent`, `is_submitted`, `is_draft`, `created_at`, `updated_at`
 
-**RLS policies** (2): _Seekers can manage own worksheets_; _Admins can manage all worksheets_
+**RLS policies** (3): _Seekers can manage own worksheets_; _Admins can manage all worksheets_; _Assigned coaches view seeker worksheets_
 
 ### `daily_lgt_checkins`
 
@@ -340,7 +340,7 @@ Tables: **104** • Functions: **49**
 
 **Columns** (10): `id`, `coach_id`, `seeker_id`, `challenge_text`, `challenge_description`, `lgt_pillar`, `week_start_date`, `week_end_date`, `is_active`, `created_at`
 
-**RLS policies** (2): _Seekers view own challenges_; _Admins manage challenges_
+**RLS policies** (6): _Seekers view own challenges_; _Admins manage challenges_; _Coaches insert own weekly challenges_; _Coaches update own weekly challenges_; _Coaches view own weekly challenges_; _Coaches delete own weekly challenges_
 
 ## Gamification
 
