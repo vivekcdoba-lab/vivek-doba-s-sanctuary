@@ -411,8 +411,16 @@ const SeekerSessionDetail = () => {
             value={whatLearned}
             onChange={e => setWhatLearned(e.target.value)}
             className="mt-1 w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm"
-            placeholder="What was the biggest learning from today's session?"
+            placeholder="What was the biggest learning from today's session? (you can also record a voice note below)"
             disabled={!!session.seeker_accepted_at}
+          />
+          <VoiceNoteRecorder
+            sessionId={session.id}
+            seekerProfileId={session.seeker_id}
+            field="what_learned"
+            existingPath={whatLearnedAudio}
+            disabled={!!session.seeker_accepted_at}
+            onChange={setWhatLearnedAudio}
           />
         </div>
         <div>
@@ -424,6 +432,14 @@ const SeekerSessionDetail = () => {
             placeholder="In which areas of your life will you apply this?"
             disabled={!!session.seeker_accepted_at}
           />
+          <VoiceNoteRecorder
+            sessionId={session.id}
+            seekerProfileId={session.seeker_id}
+            field="where_to_apply"
+            existingPath={whereToApplyAudio}
+            disabled={!!session.seeker_accepted_at}
+            onChange={setWhereToApplyAudio}
+          />
         </div>
         <div>
           <label className="text-sm font-medium text-foreground">How to Apply</label>
@@ -433,6 +449,14 @@ const SeekerSessionDetail = () => {
             className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm"
             placeholder="What specific steps will you take?"
             disabled={!!session.seeker_accepted_at}
+          />
+          <VoiceNoteRecorder
+            sessionId={session.id}
+            seekerProfileId={session.seeker_id}
+            field="how_to_apply"
+            existingPath={howToApplyAudio}
+            disabled={!!session.seeker_accepted_at}
+            onChange={setHowToApplyAudio}
           />
         </div>
 
