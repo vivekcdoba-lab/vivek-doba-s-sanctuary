@@ -155,6 +155,19 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Field too long" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Authorization: non-admin coaches may only act on their assigned seekers
+    if (callerProfile.role !== "admin") {
+      const { data: assigned } = await admin
+        .from("coach_seekers")
+        .select("id")
+        .eq("coach_id", callerProfile.id)
+        .eq("seeker_id", seeker_id)
+        .maybeSingle();
+      if (!assigned) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
     const { data: seeker, error: seekerErr } = await admin.from("profiles").select("id, full_name, email, phone").eq("id", seeker_id).single();
     if (seekerErr || !seeker) {
       return new Response(JSON.stringify({ error: "Seeker not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
