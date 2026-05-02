@@ -341,6 +341,7 @@ Deno.serve(async (req) => {
     // Sanitize and mark approved
     const sanitizedFormData = { ...fd };
     delete sanitizedFormData.password;
+    delete sanitizedFormData.password_enc;
     await supabaseAdmin
       .from("submissions")
       .update({ status: "approved", form_data: sanitizedFormData })
