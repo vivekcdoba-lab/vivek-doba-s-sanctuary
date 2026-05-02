@@ -1,10 +1,10 @@
 # Routes & Pages
 
-_Generated: 2026-05-01T19:05:59.940Z_
+_Generated: 2026-05-02T10:04:30.883Z_
 
-Total routes: **249**
+Total routes: **250**
 
-## Admin (66)
+## Admin (67)
 
 | Path | Component |
 |---|---|
@@ -54,6 +54,7 @@ Total routes: **249**
 | `/admin/messages` | Navigate |
 | `/admin/new-enrollment` | AdminNewEnrollment |
 | `/admin/notifications` | AdminNotificationsPage |
+| `/admin/operation-docs` | AdminOperationDocs |
 | `/admin/overdue-payments` | AdminOverduePayments |
 | `/admin/payments` | Navigate |
 | `/admin/program-analytics` | AdminProgramAnalytics |
