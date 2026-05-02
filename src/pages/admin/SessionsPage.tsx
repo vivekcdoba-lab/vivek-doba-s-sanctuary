@@ -566,6 +566,7 @@ const SessionsPage = () => {
     const course = courses.find(c => c.id === session?.course_id);
 
     return (
+      <>
       <div className="space-y-4">
         <div className="gradient-sacred rounded-2xl p-6 text-primary-foreground">
           <div className="flex items-center justify-between">
@@ -801,7 +802,9 @@ const SessionsPage = () => {
           </button>
         </div>
       </div>
-    );
+      </div>
+      {sharedDialogs}
+      </>
   }
 
   return (
