@@ -89,6 +89,14 @@ serve(async (req) => {
 
     if (storeError) {
       console.error("OTP store error:", storeError);
+      // Surface cooldown as 429 Too Many Requests
+      const msg = (storeError as any)?.message || "";
+      if (msg.includes("OTP_COOLDOWN")) {
+        return new Response(JSON.stringify({ error: "Please wait a moment before requesting another OTP." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       return new Response(JSON.stringify({ error: "Failed to generate OTP" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

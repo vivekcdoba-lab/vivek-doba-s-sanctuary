@@ -4544,11 +4544,15 @@ export type Database = {
           country_code: string | null
           created_at: string
           email: string
+          email_enc: string | null
+          email_hash: string | null
           form_data: Json
           form_type: string
           full_name: string
           id: string
           mobile: string | null
+          mobile_enc: string | null
+          mobile_hash: string | null
           status: Database["public"]["Enums"]["submission_status"]
           updated_at: string
         }
@@ -4557,11 +4561,15 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           email: string
+          email_enc?: string | null
+          email_hash?: string | null
           form_data?: Json
           form_type: string
           full_name: string
           id?: string
           mobile?: string | null
+          mobile_enc?: string | null
+          mobile_hash?: string | null
           status?: Database["public"]["Enums"]["submission_status"]
           updated_at?: string
         }
@@ -4570,11 +4578,15 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           email?: string
+          email_enc?: string | null
+          email_hash?: string | null
           form_data?: Json
           form_type?: string
           full_name?: string
           id?: string
           mobile?: string | null
+          mobile_enc?: string | null
+          mobile_hash?: string | null
           status?: Database["public"]["Enums"]["submission_status"]
           updated_at?: string
         }
