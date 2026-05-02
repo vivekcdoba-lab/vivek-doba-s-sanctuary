@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/store/authStore';
 import DigitalSignature from '@/components/DigitalSignature';
 import SessionNotesPanel from '@/components/SessionNotesPanel';
+import VoiceNoteRecorder from '@/components/VoiceNoteRecorder';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Shield, BookOpen, Target, Award, Zap, CheckCircle2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
