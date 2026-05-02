@@ -1,6 +1,8 @@
 # Security Posture
 
-_This file is regenerated on every dev start and production build by `scripts/generate-operation-docs.ts`._
+_Generated: 2026-05-02T10:28:25.631Z_
+
+_Auto-generated. Edit `scripts/generate-operation-docs.ts` to change._
 
 ## Public by design (visible in browser source — this is normal)
 
@@ -10,38 +12,47 @@ _This file is regenerated on every dev start and production build by `scripts/ge
 
 ## Protected (cannot be derived from source)
 
-- Database rows — gated by Row-Level Security policies on every table.
-- Service-role key — lives only in edge function secrets; a build-time guard (`scripts/check-no-service-role.ts`) fails the build if it ever appears in `src/`.
+- Database rows — gated by RLS on every table.
+- Service-role key — only in edge function secrets; build fails if it appears in `src/` (`scripts/check-no-service-role.ts`).
 - PII (email/phone) — encrypted at rest with rotating DEKs.
 - Privileged operations — only callable from edge functions that validate an admin JWT or the `CRON_SECRET` header.
 
 ## Session security
 
-- Access tokens stored in `sessionStorage` (or `localStorage` only if "Remember me" was checked).
-- **Fingerprint binding**: each `user_sessions` row stores `SHA-256(user-agent + accept-language)`. The heartbeat re-checks every cycle; mismatch → session closed, force re-login.
+- **Fingerprint binding**: each `user_sessions` row stores SHA-256(user-agent + accept-language). Heartbeat re-checks every cycle; mismatch closes the session.
 - Idle timeouts: seekers 30 min, coaches/admins 60 min. Absolute cap 12 h.
-- Single-device enforcement for seekers — login on a new device closes prior active sessions.
+- Single-device enforcement for seekers.
 
-## HTTP security headers (`public/_headers`)
+## HTTP security headers (`public/_headers` excerpt)
 
-- `Content-Security-Policy` — restricts script/style/connect/frame origins.
-- `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`.
-- `X-Frame-Options: DENY` + `frame-ancestors 'none'` — clickjacking-proof.
-- `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`.
-- `Permissions-Policy` disables camera, microphone, payment, USB by default.
-- `/assets/*` → `Cache-Control: public, max-age=31536000, immutable` (Vite hashes filenames).
+```
+# Security & cache headers (Lovable static hosting honors this Netlify-style file).
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=(), usb=(), interest-cohort=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+  X-DNS-Prefetch-Control: on
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://*.lovable.app https://*.lovable.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https://*.supabase.co https://storage.googleapis.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.resend.com https://www.google-analytics.com; frame-src 'self' https://www.youtube.com https://youtube.com https://www.google.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+
+# Vite-hashed immutable assets — cache aggressively
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/manifest.json
+  Cache-Control: public, max-age=300
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+```
 
 ## Production build hardening
 
-- `esbuild.drop: ['console', 'debugger']` — no `console.*` calls reach prod bundle.
+- `esbuild.drop: ['console', 'debugger']` — no `console.*` in prod bundle.
 - `build.sourcemap: 'hidden'` — sourcemaps generated for crash reports but not linked from JS.
-- `serviceRoleGuardPlugin` runs at `buildStart` and aborts the build on any service-role reference.
-
-## What we deliberately do NOT do
-
-- Disable right-click / View Source — security theater; doesn't stop DevTools or `curl`.
-- Move tokens to httpOnly cookies — Supabase JS SDK requires JS-readable storage; switching needs a custom server session layer.
-- Custom JS obfuscation beyond standard minification — hurts perf without slowing real attackers.
+- Service-role guard runs at `buildStart`.
 
 ## Manual one-time setup (super admin)
 
