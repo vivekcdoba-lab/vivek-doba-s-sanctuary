@@ -8,19 +8,30 @@ const corsHeaders = {
 
 const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%&*!?_\-+=]).{12,}$/;
 
+function secureRandomInt(maxExclusive: number): number {
+  // Rejection-sampled unbiased random integer in [0, maxExclusive)
+  if (maxExclusive <= 0) return 0;
+  const buf = new Uint32Array(1);
+  const limit = Math.floor(0xFFFFFFFF / maxExclusive) * maxExclusive;
+  while (true) {
+    crypto.getRandomValues(buf);
+    if (buf[0] < limit) return buf[0] % maxExclusive;
+  }
+}
+
 function randomPassword() {
-  // Generate a 14-char password guaranteed to satisfy PASSWORD_REGEX
+  // Generate a 14-char password guaranteed to satisfy PASSWORD_REGEX, using CSPRNG
   const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const lower = 'abcdefghjkmnpqrstuvwxyz';
   const digits = '23456789';
   const special = '@#$%&*!?_-+=';
   const all = upper + lower + digits + special;
-  const pick = (s: string) => s[Math.floor(Math.random() * s.length)];
+  const pick = (s: string) => s[secureRandomInt(s.length)];
   let chars = [pick(upper), pick(digits), pick(special)];
   for (let i = 0; i < 11; i++) chars.push(pick(all));
-  // shuffle
+  // Fisher-Yates shuffle with CSPRNG
   for (let i = chars.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = secureRandomInt(i + 1);
     [chars[i], chars[j]] = [chars[j], chars[i]];
   }
   const pwd = chars.join('');
