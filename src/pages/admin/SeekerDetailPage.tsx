@@ -1095,10 +1095,16 @@ const SeekerDetailPage = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Link2 className="w-5 h-5 text-primary" /> Link {seeker?.full_name || 'this seeker'} to another profile
+              <Link2 className="w-5 h-5 text-primary" />
+              {linkedPartner ? `Edit link for ${seeker?.full_name || 'this seeker'}` : `Link ${seeker?.full_name || 'this seeker'} to another profile`}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            {linkedPartner && (
+              <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground">
+                Currently linked to <span className="font-semibold">{linkedPartner.seeker?.full_name}</span> ({RELATIONSHIP_LABELS[linkedPartner.relationship]}). Changing the partner or relationship will replace the existing link.
+              </div>
+            )}
             <div>
               <Label>Partner Seeker *</Label>
               <Select value={linkForm.partner_seeker_id} onValueChange={v => setLinkForm(p => ({ ...p, partner_seeker_id: v }))}>
@@ -1109,7 +1115,11 @@ const SeekerDetailPage = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-[11px] text-muted-foreground mt-1">If a seeker is already linked, the link attempt will fail — unlink them first.</p>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                {linkedPartner
+                  ? 'Selecting a different seeker will remove the existing link and create a new one.'
+                  : 'If the chosen partner is already linked elsewhere, that link will be replaced.'}
+              </p>
             </div>
             <div>
               <Label>Relationship *</Label>
@@ -1140,7 +1150,7 @@ const SeekerDetailPage = () => {
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="outline" onClick={() => setLinkDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleLinkSubmit} disabled={linkSeekers.isPending}>
-              {linkSeekers.isPending ? 'Linking…' : 'Link Profiles'}
+              {linkSeekers.isPending ? 'Saving…' : linkedPartner ? 'Update Link' : 'Link Profiles'}
             </Button>
           </div>
         </DialogContent>
