@@ -175,7 +175,7 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
             className="h-9 rounded-md border border-input bg-white px-3 text-sm w-full"
           >
             <option value="">— Select primary course —</option>
-            {allCourses.map(c => (
+            {selectableCourses.map(c => (
               <option key={c.id} value={c.id}>
                 {c.name} {c.tier ? `(${c.tier})` : ''} — ₹{Number(c.price).toLocaleString('en-IN')}
               </option>
