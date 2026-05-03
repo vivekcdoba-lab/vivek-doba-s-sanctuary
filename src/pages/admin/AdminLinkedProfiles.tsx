@@ -156,7 +156,7 @@ const AdminLinkedProfiles = () => {
                         {formatDateDMY(r0?.created_at || '')}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => handleUnlink(g.group_id)}>
+                        <Button variant="ghost" size="sm" onClick={() => setUnlinkTarget(g.group_id)}>
                           <Unlink className="w-4 h-4 mr-1" /> Unlink
                         </Button>
                       </TableCell>
