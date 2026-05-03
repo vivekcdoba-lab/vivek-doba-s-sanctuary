@@ -218,6 +218,7 @@ const SessionReviewPage = () => {
 
   const handleApprove = async () => {
     if (!session) return;
+    if (!assertActiveRow()) return;
     setSaving(true);
     try {
       const { error } = await supabase
