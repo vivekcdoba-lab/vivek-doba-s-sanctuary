@@ -557,7 +557,12 @@ const SessionReviewPage = () => {
         >
           <Shield className="w-4 h-4" /> Certify & Sign
         </button>
-        <button onClick={() => setShowDeleteModal(true)} className="text-sm text-destructive hover:underline ml-auto">
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          disabled={['approved', 'signed_off'].includes(session.status)}
+          title={['approved', 'signed_off'].includes(session.status) ? 'Locked — this row is approved/signed' : 'Delete session'}
+          className="text-sm text-destructive hover:underline ml-auto disabled:opacity-40 disabled:no-underline disabled:cursor-not-allowed"
+        >
           Delete Session
         </button>
       </div>
