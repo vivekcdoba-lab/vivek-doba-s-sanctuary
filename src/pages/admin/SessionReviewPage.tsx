@@ -170,8 +170,22 @@ const SessionReviewPage = () => {
     setEditingSection(null);
   };
 
+  /**
+   * Couple-session safety: ensure the row we're about to write is the row
+   * matching the URL. Prevents notes/insights from leaking to a sibling
+   * after a fast tab switch.
+   */
+  const assertActiveRow = () => {
+    if (!session || !id || session.id !== id) {
+      toast.error('Row changed — please re-open this tab and retry');
+      return false;
+    }
+    return true;
+  };
+
   const saveEdit = async (section: string) => {
     if (!session) return;
+    if (!assertActiveRow()) return;
     setSaving(true);
     try {
       const oldValue = (session as any)[section] || '';
@@ -204,6 +218,7 @@ const SessionReviewPage = () => {
 
   const handleApprove = async () => {
     if (!session) return;
+    if (!assertActiveRow()) return;
     setSaving(true);
     try {
       const { error } = await supabase
@@ -239,6 +254,7 @@ const SessionReviewPage = () => {
 
   const handleRevisionRequest = async () => {
     if (!session || revisionNote.length < 20) return;
+    if (!assertActiveRow()) return;
     setSaving(true);
     try {
       const { error } = await supabase
@@ -276,6 +292,7 @@ const SessionReviewPage = () => {
 
   const handleDelete = async () => {
     if (!session) return;
+    if (!assertActiveRow()) return;
     setSaving(true);
     try {
       await supabase.from('session_audit_log').insert({
@@ -337,24 +354,32 @@ const SessionReviewPage = () => {
         </h3>
         <div className="flex items-center gap-1">
           <SessionComments sessionId={session.id} sectionName={sectionKey} sectionLabel={label} />
-          {editingSection !== sectionKey ? (
-            <button
-              onClick={() => startEdit(sectionKey, value || '')}
-              className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
-              aria-label={`Edit ${label}`}
-            >
-              <Pencil className="w-4 h-4" />
-            </button>
-          ) : (
-            <div className="flex gap-1">
-              <button onClick={() => saveEdit(sectionKey)} disabled={saving} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20" aria-label="Save">
-                <Save className="w-4 h-4" />
-              </button>
-              <button onClick={cancelEdit} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground" aria-label="Cancel">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          )}
+          {(() => {
+            const rowLocked = ['approved', 'signed_off'].includes(session.status);
+            if (editingSection !== sectionKey) {
+              return (
+                <button
+                  onClick={() => !rowLocked && startEdit(sectionKey, value || '')}
+                  disabled={rowLocked}
+                  title={rowLocked ? 'This seeker’s row is locked (approved/signed)' : `Edit ${label}`}
+                  className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label={`Edit ${label}`}
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+              );
+            }
+            return (
+              <div className="flex gap-1">
+                <button onClick={() => saveEdit(sectionKey)} disabled={saving} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20" aria-label="Save">
+                  <Save className="w-4 h-4" />
+                </button>
+                <button onClick={cancelEdit} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground" aria-label="Cancel">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            );
+          })()}
         </div>
       </div>
       {editingSection === sectionKey ? (
@@ -388,26 +413,56 @@ const SessionReviewPage = () => {
       </div>
 
       {/* Couple Session — per-seeker tabs */}
-      {coupleTabs.length > 1 && (
-        <div className="bg-card rounded-xl border-2 border-primary/30 p-3">
-          <p className="text-xs text-muted-foreground mb-2 px-1">
-            💑 Couple session — fill each seeker's reflection separately. Each tab is approved independently.
-          </p>
-          <Tabs value={session.id} onValueChange={(v) => navigate(`/sessions/${v}/review`)}>
-            <TabsList className="w-full grid grid-cols-2">
-              {coupleTabs.map((t, i) => (
-                <TabsTrigger key={t.id} value={t.id} className="flex flex-col gap-0.5 h-auto py-2">
-                  <span className="text-xs font-semibold">
-                    Seeker {i + 1} ({t.role === 'primary' ? 'Primary' : 'Partner'})
-                  </span>
-                  <span className="text-sm">{t.seeker_name}</span>
-                  <span className="text-[10px] text-muted-foreground capitalize">{t.status.replace(/_/g, ' ')}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
-      )}
+      {coupleTabs.length > 1 && (() => {
+        const sibling = coupleTabs.find((t) => t.id !== session.id);
+        const LOCKED = new Set(['approved', 'signed_off']);
+        const handleTabChange = (v: string) => {
+          if (v === session.id) return;
+          if (editingSection) {
+            const targetName = coupleTabs.find((t) => t.id === v)?.seeker_name || 'sibling';
+            // eslint-disable-next-line no-alert
+            const ok = window.confirm(`Discard unsaved edits before switching to ${targetName}'s tab?`);
+            if (!ok) return;
+            setEditingSection(null);
+          }
+          navigate(`/sessions/${v}/review`);
+        };
+        return (
+          <div className="bg-card rounded-xl border-2 border-primary/30 p-3 space-y-2">
+            <p className="text-xs text-muted-foreground px-1">
+              💑 Couple session — each seeker's notes/insights are saved independently and approved separately.
+            </p>
+            <Tabs value={session.id} onValueChange={handleTabChange}>
+              <TabsList className="w-full grid grid-cols-2">
+                {coupleTabs.map((t, i) => {
+                  const locked = LOCKED.has(t.status);
+                  return (
+                    <TabsTrigger
+                      key={t.id}
+                      value={t.id}
+                      aria-disabled={locked && t.id !== session.id ? true : undefined}
+                      className="flex flex-col gap-0.5 h-auto py-2"
+                    >
+                      <span className="text-xs font-semibold flex items-center gap-1">
+                        {locked && <span aria-label="Locked">🔒</span>}
+                        Seeker {i + 1} ({t.role === 'primary' ? 'Primary' : 'Partner'})
+                      </span>
+                      <span className="text-sm">{t.seeker_name}</span>
+                      <span className="text-[10px] text-muted-foreground capitalize">{t.status.replace(/_/g, ' ')}</span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
+            {sibling && (
+              <p className="text-xs text-muted-foreground px-1">
+                {sibling.role === 'primary' ? 'Primary' : 'Partner'}: <span className="font-medium text-foreground">{sibling.seeker_name}</span> — <span className="capitalize">{sibling.status.replace(/_/g, ' ')}</span>
+                {LOCKED.has(sibling.status) && ' 🔒'}
+              </p>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Status Stepper */}
       <div className="bg-card rounded-xl border border-border p-5">
@@ -502,7 +557,12 @@ const SessionReviewPage = () => {
         >
           <Shield className="w-4 h-4" /> Certify & Sign
         </button>
-        <button onClick={() => setShowDeleteModal(true)} className="text-sm text-destructive hover:underline ml-auto">
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          disabled={['approved', 'signed_off'].includes(session.status)}
+          title={['approved', 'signed_off'].includes(session.status) ? 'Locked — this row is approved/signed' : 'Delete session'}
+          className="text-sm text-destructive hover:underline ml-auto disabled:opacity-40 disabled:no-underline disabled:cursor-not-allowed"
+        >
           Delete Session
         </button>
       </div>
