@@ -1,5 +1,12 @@
 ## Fix
-The back link points to `/admin` which doesn't exist (404). Change it to `/seekers` so it lands on Seekers > Overview as requested.
+Replace the back link with a "Back" button using `navigate(-1)` so it returns to the previous page (e.g., a specific seeker's overview like `Seekers > Chandrakant Wanare`) rather than always landing on the seekers list.
 
 ## File
-`src/pages/admin/AdminLinkedProfiles.tsx` — change `to="/admin"` → `to="/seekers"` and label from "Back to Admin" → "Back to Seekers".
+`src/pages/admin/AdminLinkedProfiles.tsx`
+
+## Changes
+- Import `useNavigate` from `react-router-dom`.
+- Replace the `<RouterLink to="/seekers">` with a `<button onClick={() => navigate(-1)}>` styled identically.
+- Label: "Back".
+
+This preserves browser history context so the admin returns wherever they came from (Seeker detail page, registry, etc.).
