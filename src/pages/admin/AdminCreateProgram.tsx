@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useCreateCourse } from '@/hooks/useDbCourses';
+import { useCreateCourse, useAllDbCourses } from '@/hooks/useDbCourses';
 import { ArrowLeft, ArrowRight, Check, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,7 +24,10 @@ const STEPS = ['Basic Info', 'Details & Pricing', 'Appearance', 'Review'];
 const AdminCreateProgram = () => {
   const navigate = useNavigate();
   const createCourse = useCreateCourse();
+  const { data: allCourses = [] } = useAllDbCourses();
   const [step, setStep] = useState(0);
+  const [copyFromId, setCopyFromId] = useState<string>('none');
+  const [copiedFromName, setCopiedFromName] = useState<string>('');
   const [form, setForm] = useState({
     name: '', tagline: '', description: '', duration: '', format: 'Workshop',
     tier: 'standard', price: '', max_participants: '50', gradient_index: 0,
@@ -33,6 +36,30 @@ const AdminCreateProgram = () => {
 
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
   const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
+
+  const handleCopyFrom = (id: string) => {
+    setCopyFromId(id);
+    if (id === 'none') { setCopiedFromName(''); return; }
+    const src = allCourses.find(c => c.id === id);
+    if (!src) return;
+    const srcColors = Array.isArray(src.gradient_colors) ? src.gradient_colors : [];
+    const gIdx = GRADIENT_PRESETS.findIndex(g => g[0] === srcColors[0] && g[1] === srcColors[1]);
+    setForm({
+      name: `${src.name} (Copy)`,
+      tagline: src.tagline || '',
+      description: src.description || '',
+      duration: src.duration || '',
+      format: src.format || 'Workshop',
+      tier: src.tier || 'standard',
+      price: src.price != null ? String(src.price) : '',
+      max_participants: src.max_participants != null ? String(src.max_participants) : '50',
+      gradient_index: gIdx >= 0 ? gIdx : 0,
+      event_date: '',
+      location: src.location || '',
+      location_type: src.location_type || 'in_person',
+    });
+    setCopiedFromName(src.name);
+  };
 
   const canNext = () => {
     if (step === 0) return form.name && form.duration;
@@ -79,6 +106,19 @@ const AdminCreateProgram = () => {
       <Card>
         <CardContent className="pt-6 space-y-4">
           {step === 0 && (<>
+            <div className="space-y-2 p-3 rounded-lg border border-dashed border-border bg-muted/30">
+              <Label>Copy from existing program (optional)</Label>
+              <Select value={copyFromId} onValueChange={handleCopyFrom}>
+                <SelectTrigger><SelectValue placeholder="— None —" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— None —</SelectItem>
+                  {allCourses.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {copiedFromName && (
+                <p className="text-xs text-muted-foreground">Pre-filled from <span className="font-medium">{copiedFromName}</span>. You can edit any field before creating.</p>
+              )}
+            </div>
             <div className="space-y-2"><Label>Program Name *</Label><Input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. LGT PLATINUM™" /></div>
             <div className="space-y-2"><Label>Tagline</Label><Input value={form.tagline} onChange={e => set('tagline', e.target.value)} placeholder="Short description" /></div>
             <div className="space-y-2"><Label>Description</Label><Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Detailed program description..." rows={4} /></div>
