@@ -52,6 +52,11 @@ const parseFee = (s: string): number => {
 export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSaved }: Props) {
   const { data: existing, isLoading } = useFeeStructure(seekerId);
   const { data: allCourses = [] } = useAllDbCourses();
+  // Hide deactivated programs from dropdown LOVs (still resolvable by id for existing records)
+  const selectableCourses = useMemo(
+    () => allCourses.filter((c: any) => (c.lifecycle_status ?? 'active') !== 'deactivated'),
+    [allCourses]
+  );
   const upsert = useUpsertFeeStructure();
   const [f, setF] = useState<FeeStructureFields>(defaultFeeStructure);
 
