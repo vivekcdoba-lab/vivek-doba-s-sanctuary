@@ -52,6 +52,11 @@ const parseFee = (s: string): number => {
 export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSaved }: Props) {
   const { data: existing, isLoading } = useFeeStructure(seekerId);
   const { data: allCourses = [] } = useAllDbCourses();
+  // Hide deactivated programs from dropdown LOVs (still resolvable by id for existing records)
+  const selectableCourses = useMemo(
+    () => allCourses.filter((c: any) => (c.lifecycle_status ?? 'active') !== 'deactivated'),
+    [allCourses]
+  );
   const upsert = useUpsertFeeStructure();
   const [f, setF] = useState<FeeStructureFields>(defaultFeeStructure);
 
@@ -170,7 +175,7 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
             className="h-9 rounded-md border border-input bg-white px-3 text-sm w-full"
           >
             <option value="">— Select primary course —</option>
-            {allCourses.map(c => (
+            {selectableCourses.map(c => (
               <option key={c.id} value={c.id}>
                 {c.name} {c.tier ? `(${c.tier})` : ''} — ₹{Number(c.price).toLocaleString('en-IN')}
               </option>
@@ -315,7 +320,7 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
           <Label className="pt-2 text-sm">Bundled Courses (Free)</Label>
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
-              {allCourses.filter(c => c.id !== f.primary_course_id).map(c => {
+              {selectableCourses.filter(c => c.id !== f.primary_course_id).map(c => {
                 const checked = (f.bundled_course_ids || []).includes(c.id);
                 return (
                   <button

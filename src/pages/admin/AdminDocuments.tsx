@@ -6,6 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, FileText, Trash2, Download, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +26,7 @@ const AdminDocuments = () => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("agreement");
   const [file, setFile] = useState<File | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -74,7 +79,6 @@ const AdminDocuments = () => {
     load();
   };
   const remove = async (id: string) => {
-    if (!confirm("Delete this document?")) return;
     await supabase.from("documents").delete().eq("id", id);
     load();
   };
@@ -110,7 +114,7 @@ const AdminDocuments = () => {
               <div className="flex gap-2 mt-4">
                 <Button size="sm" variant="outline" onClick={() => download(d.storage_path)}><Download className="w-3 h-3" /></Button>
                 <Button size="sm" variant="outline" onClick={() => toggleActive(d.id, d.is_active)}>{d.is_active ? "Deactivate" : "Activate"}</Button>
-                <Button size="sm" variant="ghost" onClick={() => remove(d.id)}><Trash2 className="w-3 h-3 text-destructive" /></Button>
+                <Button size="sm" variant="ghost" onClick={() => setPendingDeleteId(d.id)}><Trash2 className="w-3 h-3 text-destructive" /></Button>
               </div>
             </Card>
           ))}
@@ -151,6 +155,26 @@ const AdminDocuments = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(o) => !o && setPendingDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this document?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The document will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { if (pendingDeleteId) { const id = pendingDeleteId; setPendingDeleteId(null); remove(id); } }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

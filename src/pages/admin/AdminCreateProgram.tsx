@@ -112,7 +112,7 @@ const AdminCreateProgram = () => {
                 <SelectTrigger><SelectValue placeholder="— None —" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">— None —</SelectItem>
-                  {allCourses.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  {allCourses.filter(c => ((c as any).lifecycle_status ?? 'active') !== 'deactivated').map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
               {copiedFromName && (
