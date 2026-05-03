@@ -139,6 +139,24 @@ Deno.serve(async (req: Request) => {
     // RESEND_API_KEY no longer used — emails go through Lovable Emails queue
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
+    // ---- Auth guard: require admin or assigned coach ----
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (!token) {
+      return new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { data: userData, error: userErr } = await supabase.auth.getUser(token);
+    if (userErr || !userData?.user) {
+      return new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const callerId = userData.user.id;
+
     const body = (await req.json()) as InvitePayload;
     if (!body?.session_id) {
       return new Response(JSON.stringify({ error: "session_id required" }), {
@@ -158,6 +176,23 @@ Deno.serve(async (req: Request) => {
     if (sErr || !session) {
       return new Response(JSON.stringify({ error: "session not found", details: sErr?.message }), {
         status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Authorization: admin OR assigned coach for this session's seeker
+    const { data: isAdminData } = await supabase.rpc("is_admin", { _user_id: callerId });
+    let allowed = !!isAdminData;
+    if (!allowed) {
+      const { data: assigned } = await supabase.rpc("is_assigned_coach", {
+        _user_id: callerId,
+        _seeker_profile_id: session.seeker_id,
+      });
+      allowed = !!assigned;
+    }
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: "forbidden" }), {
+        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
