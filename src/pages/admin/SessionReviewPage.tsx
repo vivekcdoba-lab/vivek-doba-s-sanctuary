@@ -405,26 +405,56 @@ const SessionReviewPage = () => {
       </div>
 
       {/* Couple Session — per-seeker tabs */}
-      {coupleTabs.length > 1 && (
-        <div className="bg-card rounded-xl border-2 border-primary/30 p-3">
-          <p className="text-xs text-muted-foreground mb-2 px-1">
-            💑 Couple session — fill each seeker's reflection separately. Each tab is approved independently.
-          </p>
-          <Tabs value={session.id} onValueChange={(v) => navigate(`/sessions/${v}/review`)}>
-            <TabsList className="w-full grid grid-cols-2">
-              {coupleTabs.map((t, i) => (
-                <TabsTrigger key={t.id} value={t.id} className="flex flex-col gap-0.5 h-auto py-2">
-                  <span className="text-xs font-semibold">
-                    Seeker {i + 1} ({t.role === 'primary' ? 'Primary' : 'Partner'})
-                  </span>
-                  <span className="text-sm">{t.seeker_name}</span>
-                  <span className="text-[10px] text-muted-foreground capitalize">{t.status.replace(/_/g, ' ')}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
-      )}
+      {coupleTabs.length > 1 && (() => {
+        const sibling = coupleTabs.find((t) => t.id !== session.id);
+        const LOCKED = new Set(['approved', 'signed_off']);
+        const handleTabChange = (v: string) => {
+          if (v === session.id) return;
+          if (editingSection) {
+            const targetName = coupleTabs.find((t) => t.id === v)?.seeker_name || 'sibling';
+            // eslint-disable-next-line no-alert
+            const ok = window.confirm(`Discard unsaved edits before switching to ${targetName}'s tab?`);
+            if (!ok) return;
+            setEditingSection(null);
+          }
+          navigate(`/sessions/${v}/review`);
+        };
+        return (
+          <div className="bg-card rounded-xl border-2 border-primary/30 p-3 space-y-2">
+            <p className="text-xs text-muted-foreground px-1">
+              💑 Couple session — each seeker's notes/insights are saved independently and approved separately.
+            </p>
+            <Tabs value={session.id} onValueChange={handleTabChange}>
+              <TabsList className="w-full grid grid-cols-2">
+                {coupleTabs.map((t, i) => {
+                  const locked = LOCKED.has(t.status);
+                  return (
+                    <TabsTrigger
+                      key={t.id}
+                      value={t.id}
+                      aria-disabled={locked && t.id !== session.id ? true : undefined}
+                      className="flex flex-col gap-0.5 h-auto py-2"
+                    >
+                      <span className="text-xs font-semibold flex items-center gap-1">
+                        {locked && <span aria-label="Locked">🔒</span>}
+                        Seeker {i + 1} ({t.role === 'primary' ? 'Primary' : 'Partner'})
+                      </span>
+                      <span className="text-sm">{t.seeker_name}</span>
+                      <span className="text-[10px] text-muted-foreground capitalize">{t.status.replace(/_/g, ' ')}</span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
+            {sibling && (
+              <p className="text-xs text-muted-foreground px-1">
+                {sibling.role === 'primary' ? 'Primary' : 'Partner'}: <span className="font-medium text-foreground">{sibling.seeker_name}</span> — <span className="capitalize">{sibling.status.replace(/_/g, ' ')}</span>
+                {LOCKED.has(sibling.status) && ' 🔒'}
+              </p>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Status Stepper */}
       <div className="bg-card rounded-xl border border-border p-5">
