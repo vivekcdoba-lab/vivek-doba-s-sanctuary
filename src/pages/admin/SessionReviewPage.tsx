@@ -32,6 +32,8 @@ interface SessionData {
   course_id: string | null;
   revision_note: string | null;
   updated_at: string;
+  couple_group_id?: string | null;
+  couple_role?: string | null;
 }
 
 interface AuditEntry {
