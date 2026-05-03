@@ -622,7 +622,7 @@ const SeekerDetailPage = () => {
                 <Users className="w-5 h-5 text-primary" /> Linked Profile
               </h3>
               <div className="flex items-center gap-2">
-                {!linkedPartner ? (
+                {!isAlreadyLinked ? (
                   <Button size="sm" variant="outline" onClick={openLinkDialog} className="gap-1">
                     <Link2 className="w-3.5 h-3.5" /> Link Seeker
                   </Button>
