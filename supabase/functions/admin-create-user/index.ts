@@ -342,9 +342,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Compose login URL — derived from request origin so it works on preview & prod
-    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || 'https://vivekdoba.com';
-    const loginUrl = `${origin.replace(/\/$/, '')}/login`;
+    // Hardcoded login URL to prevent phishing via attacker-controlled Origin/Referer headers
+    const loginUrl = 'https://vivekdoba.com/login';
 
     // Send credentials email via Lovable Emails queue (non-blocking failure → still return success)
     const emailResult = await sendCredentialsEmail(admin, {
