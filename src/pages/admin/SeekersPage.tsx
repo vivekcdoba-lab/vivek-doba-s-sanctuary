@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
-import { Search, Plus, Grid3X3, List } from 'lucide-react';
+import { Search, Plus, Grid3X3, List, Link2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -76,9 +76,17 @@ const SeekersPage = () => {
           <h1 className="text-2xl font-bold text-foreground">Your Seekers</h1>
           <p className="text-sm text-muted-foreground">{seekers.length} seekers in your journey</p>
         </div>
-        <button onClick={() => setShowAddDialog(true)} className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 hover:opacity-90">
-          <Plus className="w-4 h-4" /> Add New Seeker
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/admin/linked-profiles"
+            className="px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 border border-border bg-card hover:bg-muted text-foreground"
+          >
+            <Link2 className="w-4 h-4" /> Manage all linked profiles
+          </Link>
+          <button onClick={() => setShowAddDialog(true)} className="gradient-chakravartin text-primary-foreground px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 hover:opacity-90">
+            <Plus className="w-4 h-4" /> Add New Seeker
+          </button>
+        </div>
       </div>
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
