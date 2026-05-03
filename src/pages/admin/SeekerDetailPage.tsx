@@ -247,13 +247,19 @@ const SeekerDetailPage = () => {
 
   const handleUnlink = async () => {
     if (!linkGroupId) return;
-    if (!confirm('Unlink these profiles? Existing joint payments will remain visible only to the original payer.')) return;
+    setUnlinkConfirmOpen(true);
+  };
+
+  const confirmUnlink = async () => {
+    if (!linkGroupId) return;
     try {
       await unlinkSeekers.mutateAsync(linkGroupId);
       toast.success('✅ Unlinked');
       refetchLink();
     } catch {
       toast.error('Failed to unlink');
+    } finally {
+      setUnlinkConfirmOpen(false);
     }
   };
 
