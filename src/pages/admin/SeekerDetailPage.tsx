@@ -198,14 +198,28 @@ const SeekerDetailPage = () => {
         relationship: linkForm.relationship,
         relationship_label: linkForm.relationship === 'custom' ? linkForm.relationship_label : undefined,
         linked_by: adminProfile?.id || '',
+        replace: !!linkedPartner, // replace existing link if there is one
       });
-      toast.success('✅ Profiles linked');
+      toast.success(linkedPartner ? '✅ Link updated' : '✅ Profiles linked');
       setLinkDialogOpen(false);
       setLinkForm({ partner_seeker_id: '', relationship: 'spouse', relationship_label: '' });
       refetchLink();
     } catch (e: any) {
       toast.error(e?.message || 'Failed to link');
     }
+  };
+
+  const openLinkDialog = () => {
+    if (linkedPartner) {
+      setLinkForm({
+        partner_seeker_id: linkedPartner.seeker_id,
+        relationship: linkedPartner.relationship,
+        relationship_label: linkedPartner.relationship_label || '',
+      });
+    } else {
+      setLinkForm({ partner_seeker_id: '', relationship: 'spouse', relationship_label: '' });
+    }
+    setLinkDialogOpen(true);
   };
 
   const handleUnlink = async () => {
@@ -587,9 +601,13 @@ const SeekerDetailPage = () => {
                 <Users className="w-5 h-5 text-primary" /> Linked Profile
               </h3>
               <div className="flex items-center gap-2">
-                {!linkedPartner && (
-                  <Button size="sm" variant="outline" onClick={() => setLinkDialogOpen(true)} className="gap-1">
+                {!linkedPartner ? (
+                  <Button size="sm" variant="outline" onClick={openLinkDialog} className="gap-1">
                     <Link2 className="w-3.5 h-3.5" /> Link Seeker
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={openLinkDialog} className="gap-1">
+                    <Edit className="w-3.5 h-3.5" /> Edit Link
                   </Button>
                 )}
               </div>
@@ -1077,10 +1095,16 @@ const SeekerDetailPage = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Link2 className="w-5 h-5 text-primary" /> Link {seeker?.full_name || 'this seeker'} to another profile
+              <Link2 className="w-5 h-5 text-primary" />
+              {linkedPartner ? `Edit link for ${seeker?.full_name || 'this seeker'}` : `Link ${seeker?.full_name || 'this seeker'} to another profile`}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            {linkedPartner && (
+              <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground">
+                Currently linked to <span className="font-semibold">{linkedPartner.seeker?.full_name}</span> ({RELATIONSHIP_LABELS[linkedPartner.relationship]}). Changing the partner or relationship will replace the existing link.
+              </div>
+            )}
             <div>
               <Label>Partner Seeker *</Label>
               <Select value={linkForm.partner_seeker_id} onValueChange={v => setLinkForm(p => ({ ...p, partner_seeker_id: v }))}>
@@ -1091,7 +1115,11 @@ const SeekerDetailPage = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-[11px] text-muted-foreground mt-1">If a seeker is already linked, the link attempt will fail — unlink them first.</p>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                {linkedPartner
+                  ? 'Selecting a different seeker will remove the existing link and create a new one.'
+                  : 'If the chosen partner is already linked elsewhere, that link will be replaced.'}
+              </p>
             </div>
             <div>
               <Label>Relationship *</Label>
@@ -1122,7 +1150,7 @@ const SeekerDetailPage = () => {
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="outline" onClick={() => setLinkDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleLinkSubmit} disabled={linkSeekers.isPending}>
-              {linkSeekers.isPending ? 'Linking…' : 'Link Profiles'}
+              {linkSeekers.isPending ? 'Saving…' : linkedPartner ? 'Update Link' : 'Link Profiles'}
             </Button>
           </div>
         </DialogContent>
