@@ -1,6 +1,6 @@
 # Database Schema
 
-_Generated: 2026-05-03T07:10:21.741Z_
+_Generated: 2026-05-03T10:32:32.287Z_
 
 Tables: **104** • Functions: **57**
 
@@ -528,7 +528,7 @@ Tables: **104** • Functions: **57**
 
 **Columns** (8): `id`, `message_id`, `template_name`, `recipient_email`, `status`, `error_message`, `metadata`, `created_at`
 
-**RLS policies** (6): _Service role can read send log_; _Service role can insert send log_; _Service role can update send log_; _Admins can view email send log_; _Restrict email_send_log reads to admins and service role_; _Super admins and service role can read email send log_
+**RLS policies** (7): _Service role can read send log_; _Service role can insert send log_; _Service role can update send log_; _Admins can view email send log_; _Restrict email_send_log reads to admins and service role_; _Super admins and service role can read email send log_; _Super admins can delete old email send log entries_
 
 ### `email_send_state`
 
