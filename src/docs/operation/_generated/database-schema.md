@@ -1,6 +1,6 @@
 # Database Schema
 
-_Generated: 2026-05-03T10:32:32.287Z_
+_Generated: 2026-05-03T12:53:06.902Z_
 
 Tables: **104** • Functions: **57**
 
@@ -98,7 +98,7 @@ Tables: **104** • Functions: **57**
 
 ### `sessions`
 
-**Columns** (32): `id`, `seeker_id`, `course_id`, `session_number`, `date`, `start_time`, `end_time`, `duration_minutes`, `location_type`, `meeting_link`, `status`, `attendance`, `topics_covered`, `key_insights`, `seeker_mood`, `engagement_score`, `session_notes`, `breakthroughs`, `coach_private_notes`, `post_session_feedback`, `reschedule_reason`, `missed_reason`, `created_at`, `updated_at`, `revision_note`, `session_name`, `seeker_feedback_json`, `coach_id`, `session_type`, `start_at`, `recurrence_group_id`, `seeker_what_learned_audio`
+**Columns** (33): `id`, `seeker_id`, `course_id`, `session_number`, `date`, `start_time`, `end_time`, `duration_minutes`, `location_type`, `meeting_link`, `status`, `attendance`, `topics_covered`, `key_insights`, `seeker_mood`, `engagement_score`, `session_notes`, `breakthroughs`, `coach_private_notes`, `post_session_feedback`, `reschedule_reason`, `missed_reason`, `created_at`, `updated_at`, `revision_note`, `session_name`, `seeker_feedback_json`, `coach_id`, `session_type`, `start_at`, `recurrence_group_id`, `seeker_what_learned_audio`, `couple_group_id`
 
 **RLS policies** (9): _Admins can manage sessions_; _Seekers can view own sessions_; _Seekers can update own session reflections_; _Coaches view their sessions_; _Coaches update their sessions_; _Coaches view sessions of assigned seekers_; _Coaches insert sessions for assigned seekers_; _Coaches update sessions of assigned seekers_; _Coaches delete their sessions_
 

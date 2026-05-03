@@ -1,6 +1,6 @@
 # Security Posture
 
-_Generated: 2026-05-03T10:32:32.287Z_
+_Generated: 2026-05-03T12:53:06.902Z_
 
 _Auto-generated. Edit `scripts/generate-operation-docs.ts` to change._
 
