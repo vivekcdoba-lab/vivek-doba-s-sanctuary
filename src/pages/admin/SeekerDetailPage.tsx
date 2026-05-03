@@ -631,6 +631,9 @@ const SeekerDetailPage = () => {
                     <Edit className="w-3.5 h-3.5" /> Edit Link
                   </Button>
                 )}
+                <Link to="/admin/linked-profiles" className="text-xs text-primary hover:underline whitespace-nowrap">
+                  View all links →
+                </Link>
               </div>
             </div>
             {linkedPartner ? (
