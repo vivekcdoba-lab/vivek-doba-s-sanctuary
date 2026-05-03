@@ -110,6 +110,36 @@ const SessionReviewPage = () => {
         setCourseName(course?.name || '');
       }
 
+      // Couple-session: discover sibling rows sharing the same couple_group_id
+      const coupleGroupId = (s as any).couple_group_id as string | null;
+      if (coupleGroupId) {
+        const { data: siblings } = await supabase
+          .from('sessions')
+          .select('id, seeker_id, couple_role, status')
+          .eq('couple_group_id', coupleGroupId);
+        if (siblings && siblings.length) {
+          const seekerIds = siblings.map((r: any) => r.seeker_id);
+          const { data: sProfiles } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', seekerIds);
+          const nameMap = new Map((sProfiles || []).map((p: any) => [p.id, p.full_name]));
+          const tabs = siblings
+            .map((r: any) => ({
+              id: r.id,
+              seeker_name: nameMap.get(r.seeker_id) || 'Seeker',
+              role: r.couple_role || 'primary',
+              status: r.status,
+            }))
+            .sort((a, b) => (a.role === 'primary' ? -1 : 1));
+          setCoupleTabs(tabs);
+        } else {
+          setCoupleTabs([]);
+        }
+      } else {
+        setCoupleTabs([]);
+      }
+
       // Load audit log
       const { data: audit } = await supabase
         .from('session_audit_log')
