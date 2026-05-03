@@ -351,8 +351,8 @@ Deno.serve(async (req) => {
     let emailSent = false;
     let emailError: string | null = null;
     if (credentialsForEmail) {
-      const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || 'https://vivekdoba.com';
-      const loginUrl = `${origin.replace(/\/$/, '')}/login`;
+      // Hardcoded login URL to prevent phishing via attacker-controlled Origin/Referer headers
+      const loginUrl = 'https://vivekdoba.com/login';
       const result = await sendCredentialsEmail(supabaseAdmin, {
         to: sub.email,
         name: sub.full_name,
