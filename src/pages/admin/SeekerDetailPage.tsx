@@ -82,6 +82,33 @@ function SessionCountChips({ seekerId }: { seekerId: string }) {
   );
 }
 
+function LinkedPartnerStats({ partnerId }: { partnerId: string }) {
+  const { data: count } = useSeekerSessionCount(partnerId);
+  const { payments } = usePayments(partnerId);
+  const totalPaid = (payments || []).filter((p: any) => p.status === 'paid').reduce((s: number, p: any) => s + Number(p.total_amount || 0), 0);
+  const lastPayment = (payments || []).find((p: any) => p.status === 'paid');
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
+      <div className="rounded-lg border border-border bg-background/50 p-2 text-center">
+        <p className="text-[10px] text-muted-foreground uppercase">Sessions</p>
+        <p className="text-sm font-bold text-foreground">{count?.attended ?? 0}</p>
+      </div>
+      <div className="rounded-lg border border-border bg-background/50 p-2 text-center">
+        <p className="text-[10px] text-muted-foreground uppercase">Paid</p>
+        <p className="text-sm font-bold text-dharma-green">₹{totalPaid.toLocaleString('en-IN')}</p>
+      </div>
+      <div className="rounded-lg border border-border bg-background/50 p-2 text-center">
+        <p className="text-[10px] text-muted-foreground uppercase">Last Payment</p>
+        <p className="text-xs font-semibold text-foreground">{lastPayment?.payment_date ? formatDateDMY(new Date(lastPayment.payment_date)) : '—'}</p>
+      </div>
+      <div className="rounded-lg border border-border bg-background/50 p-2 text-center">
+        <p className="text-[10px] text-muted-foreground uppercase">Excused</p>
+        <p className="text-sm font-bold text-foreground">{count?.excused ?? 0}</p>
+      </div>
+    </div>
+  );
+}
+
 
 const SeekerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -560,9 +587,6 @@ const SeekerDetailPage = () => {
                 <Users className="w-5 h-5 text-primary" /> Linked Profile
               </h3>
               <div className="flex items-center gap-2">
-                <Link to="/admin/linked-profiles" className="text-xs text-primary hover:underline whitespace-nowrap">
-                  View all links →
-                </Link>
                 {!linkedPartner && (
                   <Button size="sm" variant="outline" onClick={() => setLinkDialogOpen(true)} className="gap-1">
                     <Link2 className="w-3.5 h-3.5" /> Link Seeker
@@ -571,22 +595,36 @@ const SeekerDetailPage = () => {
               </div>
             </div>
             {linkedPartner ? (
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                <span className="text-3xl">{RELATIONSHIP_EMOJIS[linkedPartner.relationship]}</span>
-                <div className="flex-1">
-                  <Link to={`/seekers/${linkedPartner.seeker_id}`} className="text-sm font-semibold text-primary hover:underline">
-                    {linkedPartner.seeker?.full_name || '—'}
-                  </Link>
-                  <p className="text-xs text-muted-foreground">{linkedPartner.seeker?.email}</p>
+              <div className="p-3 rounded-lg bg-muted/30 space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{RELATIONSHIP_EMOJIS[linkedPartner.relationship]}</span>
+                  <div className="flex-1 min-w-0">
+                    <Link to={`/seekers/${linkedPartner.seeker_id}`} className="text-sm font-semibold text-primary hover:underline">
+                      {linkedPartner.seeker?.full_name || '—'}
+                    </Link>
+                    <p className="text-xs text-muted-foreground truncate">{linkedPartner.seeker?.email}</p>
+                  </div>
+                  <Badge variant="outline" className="border-primary/30 text-primary">
+                    {linkedPartner.relationship === 'custom'
+                      ? linkedPartner.relationship_label || 'Custom'
+                      : RELATIONSHIP_LABELS[linkedPartner.relationship]}
+                  </Badge>
+                  <Button size="sm" variant="ghost" onClick={handleUnlink} disabled={unlinkSeekers.isPending}>
+                    <Unlink className="w-4 h-4 mr-1" /> Unlink
+                  </Button>
                 </div>
-                <Badge variant="outline" className="border-primary/30 text-primary">
-                  {linkedPartner.relationship === 'custom'
-                    ? linkedPartner.relationship_label || 'Custom'
-                    : RELATIONSHIP_LABELS[linkedPartner.relationship]}
-                </Badge>
-                <Button size="sm" variant="ghost" onClick={handleUnlink} disabled={unlinkSeekers.isPending}>
-                  <Unlink className="w-4 h-4 mr-1" /> Unlink
-                </Button>
+                <LinkedPartnerStats partnerId={linkedPartner.seeker_id} />
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-dharma-green/10 text-dharma-green border border-dharma-green/20">
+                    💰 Joint payments enabled
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
+                    👥 Couple-session pairing active
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border">
+                    Group: {linkedPartner.group_id.slice(0, 8)}
+                  </span>
+                </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-3">
