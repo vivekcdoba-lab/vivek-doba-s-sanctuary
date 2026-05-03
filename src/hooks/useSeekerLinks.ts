@@ -53,7 +53,9 @@ export function useAllSeekerLinks() {
   });
 }
 
-/** Admin: link two seekers. Creates a new group_id and inserts both rows. */
+/** Admin: link two seekers. Creates a new group_id and inserts both rows.
+ *  When `replace = true`, any existing link group containing either seeker is
+ *  removed first, so admins can update/replace links without manual unlink. */
 export function useLinkSeekers() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -63,17 +65,28 @@ export function useLinkSeekers() {
       relationship: 'spouse' | 'parent' | 'child' | 'sibling' | 'custom';
       relationship_label?: string;
       linked_by: string; // admin profile id
+      replace?: boolean;
     }) => {
       if (input.primary_seeker_id === input.partner_seeker_id) {
         throw new Error('Cannot link a seeker to themselves');
       }
-      // Reject if either seeker already in a group
+      // Find existing group_ids for either seeker
       const { data: existing } = await supabase
         .from('seeker_links')
-        .select('seeker_id')
+        .select('seeker_id, group_id')
         .in('seeker_id', [input.primary_seeker_id, input.partner_seeker_id]);
+
       if (existing && existing.length > 0) {
-        throw new Error('One of the selected seekers is already linked. Unlink them first.');
+        if (!input.replace) {
+          throw new Error('One of the selected seekers is already linked. Unlink them first.');
+        }
+        // Replace flow: delete all existing groups touching either seeker
+        const groupIds = Array.from(new Set(existing.map(r => r.group_id)));
+        const { error: delErr } = await supabase
+          .from('seeker_links')
+          .delete()
+          .in('group_id', groupIds);
+        if (delErr) throw delErr;
       }
 
       // Generate a shared group_id (uuid v4 from crypto)
