@@ -1,8 +1,8 @@
 # Database Schema
 
-_Generated: 2026-05-02T18:20:51.656Z_
+_Generated: 2026-05-03T07:10:21.741Z_
 
-Tables: **104** • Functions: **49**
+Tables: **104** • Functions: **57**
 
 > Schema is reconstructed from migration files in `supabase/migrations/`. Source of truth is the running database; migrations are the authoritative change log.
 
@@ -98,7 +98,7 @@ Tables: **104** • Functions: **49**
 
 ### `sessions`
 
-**Columns** (31): `id`, `seeker_id`, `course_id`, `session_number`, `date`, `start_time`, `end_time`, `duration_minutes`, `location_type`, `meeting_link`, `status`, `attendance`, `topics_covered`, `key_insights`, `seeker_mood`, `engagement_score`, `session_notes`, `breakthroughs`, `coach_private_notes`, `post_session_feedback`, `reschedule_reason`, `missed_reason`, `created_at`, `updated_at`, `revision_note`, `session_name`, `seeker_feedback_json`, `coach_id`, `session_type`, `start_at`, `recurrence_group_id`
+**Columns** (32): `id`, `seeker_id`, `course_id`, `session_number`, `date`, `start_time`, `end_time`, `duration_minutes`, `location_type`, `meeting_link`, `status`, `attendance`, `topics_covered`, `key_insights`, `seeker_mood`, `engagement_score`, `session_notes`, `breakthroughs`, `coach_private_notes`, `post_session_feedback`, `reschedule_reason`, `missed_reason`, `created_at`, `updated_at`, `revision_note`, `session_name`, `seeker_feedback_json`, `coach_id`, `session_type`, `start_at`, `recurrence_group_id`, `seeker_what_learned_audio`
 
 **RLS policies** (9): _Admins can manage sessions_; _Seekers can view own sessions_; _Seekers can update own session reflections_; _Coaches view their sessions_; _Coaches update their sessions_; _Coaches view sessions of assigned seekers_; _Coaches insert sessions for assigned seekers_; _Coaches update sessions of assigned seekers_; _Coaches delete their sessions_
 
@@ -238,7 +238,7 @@ Tables: **104** • Functions: **49**
 
 ### `lgt_applications`
 
-**Columns** (14): `id`, `seeker_id`, `status`, `form_data`, `invite_token`, `invite_token_expires_at`, `invited_by`, `invited_at`, `invite_email_sent_at`, `filled_by_role`, `submitted_at`, `created_at`, `updated_at`, `version`
+**Columns** (15): `id`, `seeker_id`, `status`, `form_data`, `invite_token`, `invite_token_expires_at`, `invited_by`, `invited_at`, `invite_email_sent_at`, `filled_by_role`, `submitted_at`, `created_at`, `updated_at`, `version`, `invite_token_hash`
 
 **RLS policies** (3): _Admins manage all lgt applications_; _Seekers view own lgt application_; _Seekers update own pending lgt application_
 
@@ -314,7 +314,7 @@ Tables: **104** • Functions: **49**
 
 ### `submissions`
 
-**Columns** (10): `id`, `form_type`, `full_name`, `email`, `mobile`, `country_code`, `form_data`, `admin_notes`, `created_at`, `updated_at`
+**Columns** (11): `id`, `form_type`, `full_name`, `email`, `mobile`, `country_code`, `form_data`, `admin_notes`, `created_at`, `updated_at`, `email_enc`
 
 **RLS policies** (7): _Anyone can submit forms_; _Authenticated users can view submissions_; _Authenticated users can update submissions_; _Admin can update submissions_; _Admins can view submissions_; _Admins can delete submissions_; _Validated public submissions_
 
@@ -410,7 +410,7 @@ Tables: **104** • Functions: **49**
 
 ### `business_profiles`
 
-**Columns** (13): `id`, `seeker_id`, `business_name`, `industry`, `tagline`, `founded_year`, `team_size`, `revenue_range`, `website`, `logo_url`, `created_at`, `updated_at`, `gst_number_enc`
+**Columns** (14): `id`, `seeker_id`, `business_name`, `industry`, `tagline`, `founded_year`, `team_size`, `revenue_range`, `website`, `logo_url`, `created_at`, `updated_at`, `gst_number_enc`, `revenue_range_enc`
 
 **RLS policies** (2): _Seekers manage own business profile_; _Admins manage all business profiles_
 
@@ -528,7 +528,7 @@ Tables: **104** • Functions: **49**
 
 **Columns** (8): `id`, `message_id`, `template_name`, `recipient_email`, `status`, `error_message`, `metadata`, `created_at`
 
-**RLS policies** (5): _Service role can read send log_; _Service role can insert send log_; _Service role can update send log_; _Admins can view email send log_; _Restrict email_send_log reads to admins and service role_
+**RLS policies** (6): _Service role can read send log_; _Service role can insert send log_; _Service role can update send log_; _Admins can view email send log_; _Restrict email_send_log reads to admins and service role_; _Super admins and service role can read email send log_
 
 ### `email_send_state`
 
@@ -538,7 +538,7 @@ Tables: **104** • Functions: **49**
 
 ### `email_unsubscribe_tokens`
 
-**Columns** (5): `id`, `token`, `email`, `created_at`, `used_at`
+**Columns** (7): `id`, `token`, `email`, `created_at`, `used_at`, `email_hash`, `token_hash`
 
 **RLS policies** (3): _Service role can read tokens_; _Service role can insert tokens_; _Service role can mark tokens as used_
 
@@ -602,7 +602,7 @@ Tables: **104** • Functions: **49**
 
 ### `leads`
 
-**Columns** (15): `id`, `name`, `phone`, `email`, `source`, `interested_course_id`, `priority`, `stage`, `current_challenge`, `notes`, `next_followup_date`, `days_in_pipeline`, `created_at`, `updated_at`, `country`
+**Columns** (16): `id`, `name`, `phone`, `email`, `source`, `interested_course_id`, `priority`, `stage`, `current_challenge`, `notes`, `next_followup_date`, `days_in_pipeline`, `created_at`, `updated_at`, `country`, `email_enc`
 
 **RLS policies** (1): _Admins can manage leads_
 

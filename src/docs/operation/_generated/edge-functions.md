@@ -1,8 +1,8 @@
 # Edge Functions
 
-_Generated: 2026-05-02T18:20:51.656Z_
+_Generated: 2026-05-03T07:10:21.741Z_
 
-Total: **25** serverless functions deployed via Lovable Cloud.
+Total: **26** serverless functions deployed via Lovable Cloud.
 
 | Function | Purpose (from header) | Secrets used |
 |---|---|---|
@@ -12,6 +12,7 @@ Total: **25** serverless functions deployed via Lovable Cloud.
 | `daily-session-report` | — | CRON_SECRET |
 | `delete-seeker` | — | — |
 | `get-signature-request` | — | — |
+| `notify-session-submitted` | Notify a seeker (email + in-app notification) that their coach has submitted | APP_PUBLIC_URL |
 | `process-email-queue` | Check if an error is a rate-limit (429) response. | LOVABLE_API_KEY, LOVABLE_SEND_URL |
 | `request-document-signature` | — | APP_PUBLIC_URL |
 | `resend-document-signature` | — | APP_PUBLIC_URL |
