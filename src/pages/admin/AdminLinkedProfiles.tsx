@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Link2, Unlink, Plus, Loader2, Users } from 'lucide-react';
+import { Search, Link2, Unlink, Plus, Loader2, Users, ArrowLeft } from 'lucide-react';
+import { Link as RouterLink } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { useAllSeekerLinks, useLinkSeekers, useUnlinkSeekers, RELATIONSHIP_EMOJIS, RELATIONSHIP_LABELS, type SeekerLinkRow } from '@/hooks/useSeekerLinks';
@@ -89,6 +90,13 @@ const AdminLinkedProfiles = () => {
 
   return (
     <div className="space-y-6">
+      <RouterLink
+        to="/admin"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Admin
+      </RouterLink>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
