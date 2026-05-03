@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Link2, Unlink, Plus, Loader2, Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -23,6 +24,7 @@ const AdminLinkedProfiles = () => {
 
   const [search, setSearch] = useState('');
   const [showDialog, setShowDialog] = useState(false);
+  const [unlinkTarget, setUnlinkTarget] = useState<string | null>(null);
   const [form, setForm] = useState({
     primary_seeker_id: '', partner_seeker_id: '',
     relationship: 'spouse' as SeekerLinkRow['relationship'],
@@ -73,13 +75,15 @@ const AdminLinkedProfiles = () => {
     }
   };
 
-  const handleUnlink = async (group_id: string) => {
-    if (!confirm('Unlink these profiles? Existing joint payments will remain visible only to the original payer.')) return;
+  const handleUnlink = async () => {
+    if (!unlinkTarget) return;
     try {
-      await unlinkSeekers.mutateAsync(group_id);
+      await unlinkSeekers.mutateAsync(unlinkTarget);
       toast({ title: '✅ Unlinked' });
     } catch {
       toast({ title: 'Failed to unlink', variant: 'destructive' });
+    } finally {
+      setUnlinkTarget(null);
     }
   };
 
@@ -152,7 +156,7 @@ const AdminLinkedProfiles = () => {
                         {formatDateDMY(r0?.created_at || '')}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => handleUnlink(g.group_id)}>
+                        <Button variant="ghost" size="sm" onClick={() => setUnlinkTarget(g.group_id)}>
                           <Unlink className="w-4 h-4 mr-1" /> Unlink
                         </Button>
                       </TableCell>
@@ -227,6 +231,28 @@ const AdminLinkedProfiles = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!unlinkTarget} onOpenChange={(o) => !o && setUnlinkTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unlink these profiles?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Existing joint payments will remain visible only to the original payer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={unlinkSeekers.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleUnlink(); }}
+              disabled={unlinkSeekers.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {unlinkSeekers.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Unlink
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

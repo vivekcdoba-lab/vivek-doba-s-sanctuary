@@ -10,6 +10,7 @@ import LgtReport from '@/components/lgt/LgtReport';
 import { generateLgtReportPdf, downloadBlob } from '@/lib/lgtPdfExport';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -140,6 +141,7 @@ const SeekerDetailPage = () => {
   const linkSeekers = useLinkSeekers();
   const unlinkSeekers = useUnlinkSeekers();
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [unlinkConfirmOpen, setUnlinkConfirmOpen] = useState(false);
   const [linkForm, setLinkForm] = useState<{
     partner_seeker_id: string;
     relationship: SeekerLinkRow['relationship'];
@@ -245,13 +247,19 @@ const SeekerDetailPage = () => {
 
   const handleUnlink = async () => {
     if (!linkGroupId) return;
-    if (!confirm('Unlink these profiles? Existing joint payments will remain visible only to the original payer.')) return;
+    setUnlinkConfirmOpen(true);
+  };
+
+  const confirmUnlink = async () => {
+    if (!linkGroupId) return;
     try {
       await unlinkSeekers.mutateAsync(linkGroupId);
       toast.success('✅ Unlinked');
       refetchLink();
     } catch {
       toast.error('Failed to unlink');
+    } finally {
+      setUnlinkConfirmOpen(false);
     }
   };
 
@@ -1179,6 +1187,27 @@ const SeekerDetailPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={unlinkConfirmOpen} onOpenChange={setUnlinkConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unlink these profiles?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Existing joint payments will remain visible only to the original payer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={unlinkSeekers.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); confirmUnlink(); }}
+              disabled={unlinkSeekers.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {unlinkSeekers.isPending ? 'Unlinking…' : 'Unlink'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
