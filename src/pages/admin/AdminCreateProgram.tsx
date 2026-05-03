@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useCreateCourse } from '@/hooks/useDbCourses';
+import { useCreateCourse, useAllDbCourses } from '@/hooks/useDbCourses';
 import { ArrowLeft, ArrowRight, Check, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
