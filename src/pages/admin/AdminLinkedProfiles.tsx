@@ -17,6 +17,7 @@ import { useAuthStore } from '@/store/authStore';
 import { formatDateDMY } from "@/lib/dateFormat";
 
 const AdminLinkedProfiles = () => {
+  const navigate = useNavigate();
   const { profile } = useAuthStore();
   const { data: seekers = [] } = useSeekerProfiles();
   const { data: allLinks = [], isLoading } = useAllSeekerLinks();
