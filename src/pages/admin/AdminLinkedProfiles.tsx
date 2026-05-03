@@ -7,8 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Link2, Unlink, Plus, Loader2, Users, ChevronLeft } from 'lucide-react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Search, Link2, Unlink, Plus, Loader2, Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import { useAllSeekerLinks, useLinkSeekers, useUnlinkSeekers, RELATIONSHIP_EMOJIS, RELATIONSHIP_LABELS, type SeekerLinkRow } from '@/hooks/useSeekerLinks';
@@ -86,9 +85,6 @@ const AdminLinkedProfiles = () => {
 
   return (
     <div className="space-y-6">
-      <RouterLink to="/seekers" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
-        <ChevronLeft className="w-3.5 h-3.5" /> Back to Seekers
-      </RouterLink>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
