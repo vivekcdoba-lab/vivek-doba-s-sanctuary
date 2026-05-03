@@ -57,12 +57,18 @@ Deno.serve(async (req) => {
 
     // Auth: either an admin caller, or public mode with a matching submitted application
     if (publicMode) {
-      // Verify the inviteToken (if supplied) matches a submitted/recently-submitted app for this seeker.
-      // We don't require the token to still be live (it's nulled on submit), so just confirm the
-      // seeker has a submitted lgt_application — sufficient to prevent abuse here.
+      // Public-mode requires a valid invite token that matches the stored
+      // hash on the seeker's submitted LGT application. Without this check,
+      // anyone who knows a seeker's profile UUID could spam admin inboxes
+      // with arbitrary PDFs.
+      if (!inviteToken || typeof inviteToken !== "string") {
+        return new Response(JSON.stringify({ error: "inviteToken required" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const { data: app } = await admin
         .from("lgt_applications")
-        .select("seeker_id, status")
+        .select("seeker_id, status, invite_token_hash")
         .eq("seeker_id", seekerId)
         .maybeSingle();
       if (!app || app.status !== "submitted") {
@@ -70,8 +76,12 @@ Deno.serve(async (req) => {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      // inviteToken is accepted but not strictly required at this stage
-      void inviteToken;
+      const { data: tokenHash, error: hashErr } = await admin.rpc("hash_token", { _token: inviteToken });
+      if (hashErr || !tokenHash || !app.invite_token_hash || app.invite_token_hash !== tokenHash) {
+        return new Response(JSON.stringify({ error: "Invalid invite token" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     } else {
       const authHeader = req.headers.get("Authorization");
       if (!authHeader?.startsWith("Bearer ")) {
