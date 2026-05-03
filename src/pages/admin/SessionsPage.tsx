@@ -545,31 +545,38 @@ const SessionsPage = () => {
                   // Recurring couple sessions: create per-occurrence pairs so each
                   // occurrence has its OWN couple_group_id linking that day's two rows.
                   if (isCouple) {
-                    const dates = buildRecurrenceDates(newSession.date, newSession.frequency, count);
-                    const tasks: Promise<any>[] = [];
-                    dates.forEach((d, idx) => {
-                      const occGroupId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-                        ? crypto.randomUUID()
-                        : undefined;
-                      tasks.push(createSession.mutateAsync({
-                        ...baseCommon,
-                        date: d,
-                        seeker_id: newSession.seeker_id,
-                        session_number: nextNum + idx,
+                    let pairs;
+                    try {
+                      pairs = buildCouplePairs({
+                        primary_seeker_id: newSession.seeker_id,
                         partner_seeker_id: newSession.partner_seeker_id,
-                        couple_group_id: occGroupId,
-                        couple_role: 'primary',
-                      }));
-                      tasks.push(createSession.mutateAsync({
+                        start_date: newSession.date,
+                        frequency: newSession.frequency,
+                        count,
+                        primary_start_number: nextNum,
+                        partner_start_number: partnerNextNum,
+                      });
+                    } catch (err: any) {
+                      toast.error(err?.message || 'Invalid couple session input');
+                      return;
+                    }
+                    const errors = verifyCouplePairs(pairs);
+                    if (errors.length) {
+                      console.error('Couple pair sync check failed:', errors);
+                      toast.error('Couple session sync check failed — please retry');
+                      return;
+                    }
+                    const tasks = pairs.map((row) =>
+                      createSession.mutateAsync({
                         ...baseCommon,
-                        date: d,
-                        seeker_id: newSession.partner_seeker_id,
-                        session_number: partnerNextNum + idx,
-                        partner_seeker_id: newSession.seeker_id,
-                        couple_group_id: occGroupId,
-                        couple_role: 'partner',
-                      }));
-                    });
+                        date: row.date,
+                        seeker_id: row.seeker_id,
+                        session_number: row.session_number,
+                        partner_seeker_id: row.partner_seeker_id,
+                        couple_group_id: row.couple_group_id,
+                        couple_role: row.couple_role,
+                      }),
+                    );
                     Promise.all(tasks).then(() => {
                       toast.success(`${count} couple sessions scheduled — invites sent to both seekers`);
                       reset();
