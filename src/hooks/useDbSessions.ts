@@ -104,6 +104,9 @@ export function useCreateSession() {
       end_at?: string | null;
       /** IANA timezone the scheduler used (e.g. 'Asia/Kolkata'). */
       timezone?: string | null;
+      /** Couple-session linkage (one shared id across both seeker rows). */
+      couple_group_id?: string | null;
+      couple_role?: 'primary' | 'partner' | null;
     }) => {
       const sessionType = session.session_type || 'individual';
       const { data, error } = await supabase.from('sessions').insert({
@@ -122,6 +125,8 @@ export function useCreateSession() {
         start_at: session.start_at ?? null,
         end_at: session.end_at ?? null,
         timezone: session.timezone ?? null,
+        couple_group_id: session.couple_group_id ?? null,
+        couple_role: session.couple_role ?? null,
       } as any).select().single();
       if (error) throw error;
 
