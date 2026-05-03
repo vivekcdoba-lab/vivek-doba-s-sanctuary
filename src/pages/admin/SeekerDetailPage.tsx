@@ -182,6 +182,27 @@ const SeekerDetailPage = () => {
   const linkedPartner = linkGroup.find(r => r.seeker_id !== id);
   const linkGroupId = linkGroup[0]?.group_id;
 
+  // Fallback: detect this seeker's own seeker_links row even if the partner
+  // row failed to load. This lets us still show "already linked" UX and
+  // route the submit through the replace flow.
+  const [hasOwnLinkRow, setHasOwnLinkRow] = useState(false);
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('seeker_links')
+        .select('id')
+        .eq('seeker_id', id)
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled) setHasOwnLinkRow(!!data);
+    })();
+    return () => { cancelled = true; };
+  }, [id, linkGroup.length]);
+
+  const isAlreadyLinked = !!linkedPartner || hasOwnLinkRow;
+
   const handleLinkSubmit = async () => {
     if (!id || !linkForm.partner_seeker_id) {
       toast.error('Select a partner seeker');
@@ -198,7 +219,7 @@ const SeekerDetailPage = () => {
         relationship: linkForm.relationship,
         relationship_label: linkForm.relationship === 'custom' ? linkForm.relationship_label : undefined,
         linked_by: adminProfile?.id || '',
-        replace: !!linkedPartner, // replace existing link if there is one
+        replace: true, // always replace any existing link from this profile page
       });
       toast.success(linkedPartner ? '✅ Link updated' : '✅ Profiles linked');
       setLinkDialogOpen(false);
@@ -601,7 +622,7 @@ const SeekerDetailPage = () => {
                 <Users className="w-5 h-5 text-primary" /> Linked Profile
               </h3>
               <div className="flex items-center gap-2">
-                {!linkedPartner ? (
+                {!isAlreadyLinked ? (
                   <Button size="sm" variant="outline" onClick={openLinkDialog} className="gap-1">
                     <Link2 className="w-3.5 h-3.5" /> Link Seeker
                   </Button>
@@ -644,6 +665,10 @@ const SeekerDetailPage = () => {
                   </span>
                 </div>
               </div>
+            ) : isAlreadyLinked ? (
+              <p className="text-sm text-warning-amber text-center py-3">
+                This seeker has an existing link, but the partner profile could not be loaded. Use "Edit Link" to replace it.
+              </p>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-3">
                 Not linked to any other seeker. Use "Link Seeker" to connect this seeker with a spouse, parent, sibling, or other relation.
