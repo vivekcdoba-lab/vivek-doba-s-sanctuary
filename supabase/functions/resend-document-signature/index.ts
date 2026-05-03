@@ -71,6 +71,6 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response((console.error('edge function error', e), JSON.stringify({ error: 'Internal server error' })), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
