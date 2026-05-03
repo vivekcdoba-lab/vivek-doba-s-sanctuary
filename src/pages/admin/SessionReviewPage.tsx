@@ -292,6 +292,7 @@ const SessionReviewPage = () => {
 
   const handleDelete = async () => {
     if (!session) return;
+    if (!assertActiveRow()) return;
     setSaving(true);
     try {
       await supabase.from('session_audit_log').insert({
