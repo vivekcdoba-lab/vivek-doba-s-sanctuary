@@ -75,13 +75,15 @@ const AdminLinkedProfiles = () => {
     }
   };
 
-  const handleUnlink = async (group_id: string) => {
-    if (!confirm('Unlink these profiles? Existing joint payments will remain visible only to the original payer.')) return;
+  const handleUnlink = async () => {
+    if (!unlinkTarget) return;
     try {
-      await unlinkSeekers.mutateAsync(group_id);
+      await unlinkSeekers.mutateAsync(unlinkTarget);
       toast({ title: '✅ Unlinked' });
     } catch {
       toast({ title: 'Failed to unlink', variant: 'destructive' });
+    } finally {
+      setUnlinkTarget(null);
     }
   };
 
