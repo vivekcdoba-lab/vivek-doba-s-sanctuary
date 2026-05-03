@@ -141,6 +141,7 @@ const SeekerDetailPage = () => {
   const linkSeekers = useLinkSeekers();
   const unlinkSeekers = useUnlinkSeekers();
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [unlinkConfirmOpen, setUnlinkConfirmOpen] = useState(false);
   const [linkForm, setLinkForm] = useState<{
     partner_seeker_id: string;
     relationship: SeekerLinkRow['relationship'];
