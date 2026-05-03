@@ -219,32 +219,86 @@ serve(async (req) => {
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
       );
 
+      // Resolve recipient from a trusted source (submission_id or registered profile/submission)
+      // to prevent using this endpoint as an arbitrary email relay.
+      let recipientEmail: string | null = null;
+      let recipientMobile: string | null = data.applicant_mobile ?? null;
+      let recipientName: string = data.applicant_name;
+
+      if (data.submission_id) {
+        const { data: sub } = await supabaseAdmin
+          .from("submissions")
+          .select("email, mobile, full_name")
+          .eq("id", data.submission_id)
+          .maybeSingle();
+        if (sub?.email) {
+          recipientEmail = sub.email;
+          recipientMobile = sub.mobile || recipientMobile;
+          recipientName = sub.full_name || recipientName;
+        }
+      }
+
+      if (!recipientEmail && data.applicant_email) {
+        const candidate = String(data.applicant_email).trim().toLowerCase();
+        const { data: prof } = await supabaseAdmin
+          .from("profiles")
+          .select("email, phone, full_name")
+          .ilike("email", candidate)
+          .maybeSingle();
+        if (prof?.email) {
+          recipientEmail = prof.email;
+          recipientMobile = prof.phone || recipientMobile;
+          recipientName = prof.full_name || recipientName;
+        } else {
+          const { data: sub } = await supabaseAdmin
+            .from("submissions")
+            .select("email, mobile, full_name")
+            .ilike("email", candidate)
+            .limit(1)
+            .maybeSingle();
+          if (sub?.email) {
+            recipientEmail = sub.email;
+            recipientMobile = sub.mobile || recipientMobile;
+            recipientName = sub.full_name || recipientName;
+          }
+        }
+      }
+
+      if (!recipientEmail) {
+        return new Response(
+          JSON.stringify({ error: "Recipient must be a registered seeker or known submission" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const safeData = { ...data, applicant_name: recipientName };
       const r = await sendEmail(supabaseAdmin, {
-        to: data.applicant_email,
+        to: recipientEmail,
         subject: subjectMap[data.status || "approved"],
-        html: buildApplicantEmailHtml(data),
+        html: buildApplicantEmailHtml(safeData),
         label: `status_update_${data.status || "approved"}`,
       });
       if (!r.ok) throw new Error(`Email enqueue failed: ${r.error}`);
 
-      // Also send WhatsApp notification if mobile number is available
-      if (data.applicant_mobile) {
-        try {
-          const supabaseAdmin = createClient(
-            Deno.env.get("SUPABASE_URL")!,
-            Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-          );
+      // Sanitize admin_notes for WhatsApp (strip control chars, cap length)
+      const sanitizedNotes = data.admin_notes
+        ? String(data.admin_notes).replace(/[\r\n\t]+/g, " ").replace(/[\x00-\x1F\x7F]/g, "").slice(0, 500)
+        : "";
+      const safeName = String(recipientName).replace(/[\r\n]+/g, " ").slice(0, 100);
 
+      // Also send WhatsApp notification if mobile number is available
+      if (recipientMobile) {
+        try {
           const whatsappMessages: Record<string, string> = {
-            approved: `🪷 Namaste ${data.applicant_name}!\n\n✅ Great news! Your application with Vivek Doba Training Solutions has been *approved*.\n\n${data.form_type === "registration" ? "You can now log in to your account using the email and password you registered with." : "Our team will reach out to you shortly with next steps."}\n\nFor questions: 📞 9607050111\n\n🙏 Welcome to your transformation journey!`,
-            rejected: `🪷 Namaste ${data.applicant_name},\n\n🙏 Thank you for your interest in Vivek Doba Training Solutions.\n\nAfter careful review, we are unable to proceed with your application at this time.${data.admin_notes ? `\n\nNote: ${data.admin_notes}` : ""}\n\nFor questions: 📞 9607050111`,
-            info_requested: `🪷 Namaste ${data.applicant_name},\n\n📋 We need some additional information regarding your application.\n\n${data.admin_notes || "Please check your email for details."}\n\nFor questions: 📞 9607050111`,
+            approved: `🪷 Namaste ${safeName}!\n\n✅ Great news! Your application with Vivek Doba Training Solutions has been *approved*.\n\n${data.form_type === "registration" ? "You can now log in to your account using the email and password you registered with." : "Our team will reach out to you shortly with next steps."}\n\nFor questions: 📞 9607050111\n\n🙏 Welcome to your transformation journey!`,
+            rejected: `🪷 Namaste ${safeName},\n\n🙏 Thank you for your interest in Vivek Doba Training Solutions.\n\nAfter careful review, we are unable to proceed with your application at this time.${sanitizedNotes ? `\n\nNote: ${sanitizedNotes}` : ""}\n\nFor questions: 📞 9607050111`,
+            info_requested: `🪷 Namaste ${safeName},\n\n📋 We need some additional information regarding your application.\n\n${sanitizedNotes || "Please check your email for details."}\n\nFor questions: 📞 9607050111`,
           };
 
           const message = whatsappMessages[data.status || "approved"];
           if (message) {
             await supabaseAdmin.functions.invoke("send-whatsapp", {
-              body: { to: data.applicant_mobile, message },
+              body: { to: recipientMobile, message },
             });
           }
         } catch (whatsappErr) {
@@ -256,7 +310,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
     return new Response(JSON.stringify({ error: "Invalid notification type" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
