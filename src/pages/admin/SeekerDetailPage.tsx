@@ -1187,6 +1187,27 @@ const SeekerDetailPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={unlinkConfirmOpen} onOpenChange={setUnlinkConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unlink these profiles?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Existing joint payments will remain visible only to the original payer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={unlinkSeekers.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); confirmUnlink(); }}
+              disabled={unlinkSeekers.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {unlinkSeekers.isPending ? 'Unlinking…' : 'Unlink'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
