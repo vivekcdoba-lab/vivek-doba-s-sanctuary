@@ -182,6 +182,27 @@ const SeekerDetailPage = () => {
   const linkedPartner = linkGroup.find(r => r.seeker_id !== id);
   const linkGroupId = linkGroup[0]?.group_id;
 
+  // Fallback: detect this seeker's own seeker_links row even if the partner
+  // row failed to load. This lets us still show "already linked" UX and
+  // route the submit through the replace flow.
+  const [hasOwnLinkRow, setHasOwnLinkRow] = useState(false);
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('seeker_links')
+        .select('id')
+        .eq('seeker_id', id)
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled) setHasOwnLinkRow(!!data);
+    })();
+    return () => { cancelled = true; };
+  }, [id, linkGroup.length]);
+
+  const isAlreadyLinked = !!linkedPartner || hasOwnLinkRow;
+
   const handleLinkSubmit = async () => {
     if (!id || !linkForm.partner_seeker_id) {
       toast.error('Select a partner seeker');
