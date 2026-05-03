@@ -170,8 +170,22 @@ const SessionReviewPage = () => {
     setEditingSection(null);
   };
 
+  /**
+   * Couple-session safety: ensure the row we're about to write is the row
+   * matching the URL. Prevents notes/insights from leaking to a sibling
+   * after a fast tab switch.
+   */
+  const assertActiveRow = () => {
+    if (!session || !id || session.id !== id) {
+      toast.error('Row changed — please re-open this tab and retry');
+      return false;
+    }
+    return true;
+  };
+
   const saveEdit = async (section: string) => {
     if (!session) return;
+    if (!assertActiveRow()) return;
     setSaving(true);
     try {
       const oldValue = (session as any)[section] || '';
