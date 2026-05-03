@@ -502,23 +502,35 @@ const SessionsPage = () => {
                 }
                 const seekerSessions = sessions.filter(s => s.seeker_id === newSession.seeker_id);
                 const nextNum = seekerSessions.length > 0 ? Math.max(...seekerSessions.map(s => s.session_number)) + 1 : 1;
-                const commonPayload = {
-                  seeker_id: newSession.seeker_id,
+                const isCouple = newSession.booking_type === 'couple';
+                const coupleGroupId = isCouple
+                  ? (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : undefined)
+                  : undefined;
+                const partnerSessions = isCouple
+                  ? sessions.filter(s => s.seeker_id === newSession.partner_seeker_id)
+                  : [];
+                const partnerNextNum = isCouple
+                  ? (partnerSessions.length > 0 ? Math.max(...partnerSessions.map(s => s.session_number)) + 1 : 1)
+                  : nextNum;
+                const baseCommon = {
                   course_id: newSession.course_id || undefined,
                   coach_id: newSession.coach_id,
                   date: newSession.date,
                   start_time: newSession.start_time,
                   end_time: newSession.end_time,
-                  session_number: nextNum,
                   location_type: newSession.session_type === 'video' ? 'online' : 'in_person',
                   duration_minutes: newSession.duration_minutes,
                   session_notes: newSession.notes || undefined,
                   session_type: newSession.booking_type,
-                  partner_seeker_id: newSession.booking_type === 'couple' ? newSession.partner_seeker_id : undefined,
                 } as any;
-                // If we're scheduling DURING a live session, also reflect the
-                // chosen date/time back into the live post-session payload so
-                // the seeker sees "Next Session" in their email + page.
+                const commonPayload = {
+                  ...baseCommon,
+                  seeker_id: newSession.seeker_id,
+                  session_number: nextNum,
+                  partner_seeker_id: isCouple ? newSession.partner_seeker_id : undefined,
+                  couple_group_id: coupleGroupId,
+                  couple_role: isCouple ? 'primary' : undefined,
+                };
                 const friendlyNext = `${newSession.date} ${newSession.start_time}`;
                 const reset = () => {
                   setShowSchedule(false);
@@ -530,16 +542,52 @@ const SessionsPage = () => {
                 };
                 if (newSession.repeat) {
                   const count = Math.min(24, Math.max(2, Number(newSession.repeat_count) || 2));
-                  createRecurring.mutate({ ...commonPayload, frequency: newSession.frequency, count }, {
-                    onSuccess: () => {
-                      toast.success(`${count} sessions scheduled — invites sent`);
+                  // Recurring couple sessions: create two parallel series, one per seeker.
+                  if (isCouple) {
+                    Promise.all([
+                      createRecurring.mutateAsync({ ...commonPayload, frequency: newSession.frequency, count }),
+                      createRecurring.mutateAsync({
+                        ...baseCommon,
+                        seeker_id: newSession.partner_seeker_id,
+                        session_number: partnerNextNum,
+                        partner_seeker_id: newSession.seeker_id,
+                        couple_group_id: coupleGroupId,
+                        couple_role: 'partner',
+                        frequency: newSession.frequency,
+                        count,
+                      }),
+                    ]).then(() => {
+                      toast.success(`${count} couple sessions scheduled — invites sent to both seekers`);
                       reset();
-                    },
-                  });
+                    }).catch(() => toast.error('Failed to schedule couple sessions'));
+                  } else {
+                    createRecurring.mutate({ ...commonPayload, frequency: newSession.frequency, count }, {
+                      onSuccess: () => {
+                        toast.success(`${count} sessions scheduled — invites sent`);
+                        reset();
+                      },
+                    });
+                  }
+                } else if (isCouple) {
+                  // Create two linked rows — one per seeker — sharing couple_group_id.
+                  Promise.all([
+                    createSession.mutateAsync(commonPayload),
+                    createSession.mutateAsync({
+                      ...baseCommon,
+                      seeker_id: newSession.partner_seeker_id,
+                      session_number: partnerNextNum,
+                      partner_seeker_id: newSession.seeker_id,
+                      couple_group_id: coupleGroupId,
+                      couple_role: 'partner',
+                    }),
+                  ]).then(() => {
+                    toast.success('Couple session scheduled — invites sent to both seekers');
+                    reset();
+                  }).catch(() => toast.error('Failed to schedule couple session'));
                 } else {
                   createSession.mutate(commonPayload, {
                     onSuccess: () => {
-                      toast.success(newSession.booking_type === 'couple' ? 'Couple session scheduled — invites sent to both seekers' : 'Session scheduled — calendar invite sent');
+                      toast.success('Session scheduled — calendar invite sent');
                       reset();
                     },
                   });
