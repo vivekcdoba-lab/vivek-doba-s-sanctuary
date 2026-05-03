@@ -65,7 +65,7 @@ export default function AdminOperationDocs() {
   const [query, setQuery] = useState('');
 
   useEffect(() => {
-    mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+    mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'strict' });
   }, []);
 
   const fuse = useMemo(() => new Fuse(SECTIONS, { keys: ['title', 'body'], threshold: 0.4, ignoreLocation: true }), []);
