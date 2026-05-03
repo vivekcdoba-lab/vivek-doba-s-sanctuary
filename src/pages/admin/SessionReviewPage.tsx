@@ -14,6 +14,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface SessionData {
   id: string;
@@ -31,6 +32,8 @@ interface SessionData {
   course_id: string | null;
   revision_note: string | null;
   updated_at: string;
+  couple_group_id?: string | null;
+  couple_role?: string | null;
 }
 
 interface AuditEntry {
@@ -61,6 +64,8 @@ const SessionReviewPage = () => {
   const [courseName, setCourseName] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  // Couple session: list of all rows in this couple_group, ordered primary first.
+  const [coupleTabs, setCoupleTabs] = useState<Array<{ id: string; seeker_name: string; role: string; status: string }>>([]);
 
   // Inline editing
   const [editingSection, setEditingSection] = useState<string | null>(null);
@@ -103,6 +108,36 @@ const SessionReviewPage = () => {
       if (s.course_id) {
         const { data: course } = await supabase.from('courses').select('name').eq('id', s.course_id).single();
         setCourseName(course?.name || '');
+      }
+
+      // Couple-session: discover sibling rows sharing the same couple_group_id
+      const coupleGroupId = (s as any).couple_group_id as string | null;
+      if (coupleGroupId) {
+        const { data: siblings } = await supabase
+          .from('sessions')
+          .select('id, seeker_id, couple_role, status')
+          .eq('couple_group_id', coupleGroupId);
+        if (siblings && siblings.length) {
+          const seekerIds = siblings.map((r: any) => r.seeker_id);
+          const { data: sProfiles } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', seekerIds);
+          const nameMap = new Map((sProfiles || []).map((p: any) => [p.id, p.full_name]));
+          const tabs = siblings
+            .map((r: any) => ({
+              id: r.id,
+              seeker_name: nameMap.get(r.seeker_id) || 'Seeker',
+              role: r.couple_role || 'primary',
+              status: r.status,
+            }))
+            .sort((a, b) => (a.role === 'primary' ? -1 : 1));
+          setCoupleTabs(tabs);
+        } else {
+          setCoupleTabs([]);
+        }
+      } else {
+        setCoupleTabs([]);
       }
 
       // Load audit log
@@ -351,6 +386,28 @@ const SessionReviewPage = () => {
           <p className="text-sm text-muted-foreground">{seekerName} · {session.date}</p>
         </div>
       </div>
+
+      {/* Couple Session — per-seeker tabs */}
+      {coupleTabs.length > 1 && (
+        <div className="bg-card rounded-xl border-2 border-primary/30 p-3">
+          <p className="text-xs text-muted-foreground mb-2 px-1">
+            💑 Couple session — fill each seeker's reflection separately. Each tab is approved independently.
+          </p>
+          <Tabs value={session.id} onValueChange={(v) => navigate(`/sessions/${v}/review`)}>
+            <TabsList className="w-full grid grid-cols-2">
+              {coupleTabs.map((t, i) => (
+                <TabsTrigger key={t.id} value={t.id} className="flex flex-col gap-0.5 h-auto py-2">
+                  <span className="text-xs font-semibold">
+                    Seeker {i + 1} ({t.role === 'primary' ? 'Primary' : 'Partner'})
+                  </span>
+                  <span className="text-sm">{t.seeker_name}</span>
+                  <span className="text-[10px] text-muted-foreground capitalize">{t.status.replace(/_/g, ' ')}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
 
       {/* Status Stepper */}
       <div className="bg-card rounded-xl border border-border p-5">

@@ -4251,6 +4251,8 @@ export type Database = {
           client_good_things: Json | null
           client_growth_json: Json | null
           coach_id: string | null
+          couple_group_id: string | null
+          couple_role: string | null
           course_id: string | null
           created_at: string
           date: string
@@ -4304,6 +4306,8 @@ export type Database = {
           client_good_things?: Json | null
           client_growth_json?: Json | null
           coach_id?: string | null
+          couple_group_id?: string | null
+          couple_role?: string | null
           course_id?: string | null
           created_at?: string
           date: string
@@ -4357,6 +4361,8 @@ export type Database = {
           client_good_things?: Json | null
           client_growth_json?: Json | null
           coach_id?: string | null
+          couple_group_id?: string | null
+          couple_role?: string | null
           course_id?: string | null
           created_at?: string
           date?: string
