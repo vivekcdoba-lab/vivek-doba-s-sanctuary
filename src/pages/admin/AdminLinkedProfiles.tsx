@@ -24,6 +24,7 @@ const AdminLinkedProfiles = () => {
 
   const [search, setSearch] = useState('');
   const [showDialog, setShowDialog] = useState(false);
+  const [unlinkTarget, setUnlinkTarget] = useState<string | null>(null);
   const [form, setForm] = useState({
     primary_seeker_id: '', partner_seeker_id: '',
     relationship: 'spouse' as SeekerLinkRow['relationship'],
