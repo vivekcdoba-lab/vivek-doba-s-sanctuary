@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAllDbCourses } from "@/hooks/useDbCourses";
 import { Card } from "@/components/ui/card";
@@ -9,8 +9,13 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, Save, Settings2 } from "lucide-react";
+import { LIFECYCLE_BADGE_CLASSES, LIFECYCLE_LABELS } from "@/lib/programLifecycle";
 
 interface Rule {
   id: string;
@@ -42,6 +47,13 @@ export default function AdminCourseSessionRules() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [draft, setDraft] = useState<Omit<Rule, "id"> | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  // Dropdown source: never show deactivated programs in LOVs
+  const selectableCourses = useMemo(
+    () => courses.filter(c => (c.lifecycle_status ?? "active") !== "deactivated"),
+    [courses]
+  );
 
   const load = async () => {
     setLoading(true);
@@ -58,6 +70,9 @@ export default function AdminCourseSessionRules() {
 
   const courseName = (id: string | null) =>
     id ? courses.find(c => c.id === id)?.name ?? "(unknown)" : "—";
+
+  const courseStatus = (id: string | null): string =>
+    id ? (courses.find(c => c.id === id)?.lifecycle_status ?? "active") : "active";
 
   const updateRule = (id: string, patch: Partial<Rule>) =>
     setRules(rs => rs.map(r => r.id === id ? { ...r, ...patch } : r));
@@ -82,8 +97,10 @@ export default function AdminCourseSessionRules() {
     else toast({ title: "Rule saved" });
   };
 
-  const deleteRule = async (id: string) => {
-    if (!confirm("Delete this rule?")) return;
+  const confirmDelete = async () => {
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
     const { error } = await supabase.from("course_session_rules").delete().eq("id", id);
     if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
     else { toast({ title: "Rule deleted" }); load(); }
@@ -99,6 +116,81 @@ export default function AdminCourseSessionRules() {
     else { toast({ title: "Rule created" }); setDraft(null); load(); }
   };
 
+  const activeRules = rules.filter(r => courseStatus(r.course_id) !== "deactivated");
+  const deactivatedRules = rules.filter(r => courseStatus(r.course_id) === "deactivated");
+
+  const renderTable = (list: Rule[], muted = false) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Course</TableHead>
+          <TableHead>Free</TableHead>
+          <TableHead>Discounted</TableHead>
+          <TableHead>Disc. Rate (₹)</TableHead>
+          <TableHead>Paid After</TableHead>
+          <TableHead>Trigger Enrollment</TableHead>
+          <TableHead>Active</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {list.map(r => {
+          const status = courseStatus(r.course_id);
+          return (
+            <TableRow key={r.id} className={muted ? "opacity-70" : ""}>
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span>{courseName(r.course_id)}</span>
+                  {status === "deactivated" && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${LIFECYCLE_BADGE_CLASSES.deactivated}`}>
+                      {LIFECYCLE_LABELS.deactivated}
+                    </span>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell>
+                <Input type="number" min={0} value={r.free_sessions}
+                  onChange={(e) => updateRule(r.id, { free_sessions: +e.target.value || 0 })}
+                  className="w-20" />
+              </TableCell>
+              <TableCell>
+                <Input type="number" min={0} value={r.discounted_sessions}
+                  onChange={(e) => updateRule(r.id, { discounted_sessions: +e.target.value || 0 })}
+                  className="w-20" />
+              </TableCell>
+              <TableCell>
+                <Input type="number" min={0} value={r.discounted_rate_inr}
+                  onChange={(e) => updateRule(r.id, { discounted_rate_inr: +e.target.value || 0 })}
+                  className="w-24" />
+              </TableCell>
+              <TableCell>
+                <Input type="number" min={0} value={r.paid_after}
+                  onChange={(e) => updateRule(r.id, { paid_after: +e.target.value || 0 })}
+                  className="w-20" />
+              </TableCell>
+              <TableCell className="text-xs text-muted-foreground">
+                {courseName(r.trigger_enrollment_course_id)}
+              </TableCell>
+              <TableCell>
+                <Switch checked={r.is_active}
+                  onCheckedChange={(v) => updateRule(r.id, { is_active: v })} />
+              </TableCell>
+              <TableCell className="text-right space-x-1">
+                <Button size="sm" variant="outline" disabled={saving === r.id}
+                  onClick={() => saveRule(r)}>
+                  <Save className="w-3 h-3 mr-1" /> Save
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setPendingDeleteId(r.id)}>
+                  <Trash2 className="w-3 h-3 text-destructive" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -111,7 +203,7 @@ export default function AdminCourseSessionRules() {
           </p>
         </div>
         {!draft && (
-          <Button onClick={() => setDraft(emptyRule(courses[0]?.id ?? ""))}>
+          <Button onClick={() => setDraft(emptyRule(selectableCourses[0]?.id ?? ""))}>
             <Plus className="w-4 h-4 mr-2" /> Add Rule
           </Button>
         )}
@@ -122,7 +214,7 @@ export default function AdminCourseSessionRules() {
           <h3 className="font-semibold mb-4">New Session Rule</h3>
           <RuleEditor
             value={draft}
-            courses={courses}
+            courses={selectableCourses}
             onChange={(p) => setDraft({ ...draft, ...p })}
           />
           <div className="flex gap-2 mt-4">
@@ -137,68 +229,45 @@ export default function AdminCourseSessionRules() {
           <div className="py-12 text-center text-muted-foreground">
             <Loader2 className="w-5 h-5 animate-spin inline mr-2" /> Loading…
           </div>
-        ) : rules.length === 0 ? (
-          <div className="py-12 text-center text-muted-foreground">No session rules configured yet.</div>
+        ) : activeRules.length === 0 ? (
+          <div className="py-12 text-center text-muted-foreground">No active session rules configured yet.</div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Course</TableHead>
-                <TableHead>Free</TableHead>
-                <TableHead>Discounted</TableHead>
-                <TableHead>Disc. Rate (₹)</TableHead>
-                <TableHead>Paid After</TableHead>
-                <TableHead>Trigger Enrollment</TableHead>
-                <TableHead>Active</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rules.map(r => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-medium">{courseName(r.course_id)}</TableCell>
-                  <TableCell>
-                    <Input type="number" min={0} value={r.free_sessions}
-                      onChange={(e) => updateRule(r.id, { free_sessions: +e.target.value || 0 })}
-                      className="w-20" />
-                  </TableCell>
-                  <TableCell>
-                    <Input type="number" min={0} value={r.discounted_sessions}
-                      onChange={(e) => updateRule(r.id, { discounted_sessions: +e.target.value || 0 })}
-                      className="w-20" />
-                  </TableCell>
-                  <TableCell>
-                    <Input type="number" min={0} value={r.discounted_rate_inr}
-                      onChange={(e) => updateRule(r.id, { discounted_rate_inr: +e.target.value || 0 })}
-                      className="w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <Input type="number" min={0} value={r.paid_after}
-                      onChange={(e) => updateRule(r.id, { paid_after: +e.target.value || 0 })}
-                      className="w-20" />
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {courseName(r.trigger_enrollment_course_id)}
-                  </TableCell>
-                  <TableCell>
-                    <Switch checked={r.is_active}
-                      onCheckedChange={(v) => updateRule(r.id, { is_active: v })} />
-                  </TableCell>
-                  <TableCell className="text-right space-x-1">
-                    <Button size="sm" variant="outline" disabled={saving === r.id}
-                      onClick={() => saveRule(r)}>
-                      <Save className="w-3 h-3 mr-1" /> Save
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => deleteRule(r.id)}>
-                      <Trash2 className="w-3 h-3 text-destructive" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          renderTable(activeRules)
         )}
       </Card>
+
+      {!loading && deactivatedRules.length > 0 && (
+        <Card className="p-0 overflow-hidden border-dashed">
+          <details>
+            <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-2">
+              <span className={`text-[10px] px-2 py-0.5 rounded ${LIFECYCLE_BADGE_CLASSES.deactivated}`}>
+                {LIFECYCLE_LABELS.deactivated}
+              </span>
+              Deactivated Program Rules ({deactivatedRules.length})
+            </summary>
+            <div className="border-t border-border">
+              {renderTable(deactivatedRules, true)}
+            </div>
+          </details>
+        </Card>
+      )}
+
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(o) => !o && setPendingDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this rule?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The session rule will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
