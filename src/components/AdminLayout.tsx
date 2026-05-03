@@ -30,7 +30,6 @@ const adminNav: NavGroup[] = [
     label: 'USERS', emoji: '👥', dividerBefore: 'USER MANAGEMENT', items: [
       { icon: Users, label: 'All Seekers', path: '/seekers' },
       { icon: Crown, label: 'All Coaches', path: '/admin/coaches' },
-      { icon: Link2, label: 'Linked Profiles', path: '/admin/linked-profiles' },
       { icon: UserCheck, label: 'Coach ↔ Seeker', path: '/admin/coach-seekers' },
       { icon: Shield, label: 'Admins', path: '/admin/admins' },
       { icon: UserPlus, label: 'Add User', path: '/admin/add-user' },
