@@ -668,10 +668,6 @@ const SeekerDetailPage = () => {
                   </span>
                 </div>
               </div>
-            ) : isAlreadyLinked ? (
-              <p className="text-sm text-warning-amber text-center py-3">
-                This seeker has an existing link, but the partner profile could not be loaded. Use "Edit Link" to replace it.
-              </p>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-3">
                 Not linked to any other seeker. Use "Link Seeker" to connect this seeker with a spouse, parent, sibling, or other relation.
