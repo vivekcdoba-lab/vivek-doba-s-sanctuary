@@ -559,11 +559,16 @@ const SeekerDetailPage = () => {
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" /> Linked Profile
               </h3>
-              {!linkedPartner && (
-                <Button size="sm" variant="outline" onClick={() => setLinkDialogOpen(true)} className="gap-1">
-                  <Link2 className="w-3.5 h-3.5" /> Link Seeker
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                <Link to="/admin/linked-profiles" className="text-xs text-primary hover:underline whitespace-nowrap">
+                  View all links →
+                </Link>
+                {!linkedPartner && (
+                  <Button size="sm" variant="outline" onClick={() => setLinkDialogOpen(true)} className="gap-1">
+                    <Link2 className="w-3.5 h-3.5" /> Link Seeker
+                  </Button>
+                )}
+              </div>
             </div>
             {linkedPartner ? (
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
