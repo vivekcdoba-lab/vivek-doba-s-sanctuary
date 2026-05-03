@@ -320,7 +320,7 @@ export default function FeeStructureForm({ seekerId, readOnly, lang = 'en', onSa
           <Label className="pt-2 text-sm">Bundled Courses (Free)</Label>
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
-              {allCourses.filter(c => c.id !== f.primary_course_id).map(c => {
+              {selectableCourses.filter(c => c.id !== f.primary_course_id).map(c => {
                 const checked = (f.bundled_course_ids || []).includes(c.id);
                 return (
                   <button
