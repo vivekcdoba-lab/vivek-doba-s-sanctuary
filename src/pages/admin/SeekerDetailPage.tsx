@@ -219,7 +219,7 @@ const SeekerDetailPage = () => {
         relationship: linkForm.relationship,
         relationship_label: linkForm.relationship === 'custom' ? linkForm.relationship_label : undefined,
         linked_by: adminProfile?.id || '',
-        replace: !!linkedPartner, // replace existing link if there is one
+        replace: true, // always replace any existing link from this profile page
       });
       toast.success(linkedPartner ? '✅ Link updated' : '✅ Profiles linked');
       setLinkDialogOpen(false);
