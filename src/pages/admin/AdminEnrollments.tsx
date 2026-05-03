@@ -11,6 +11,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -33,6 +37,7 @@ const AdminEnrollments = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [editEnrollment, setEditEnrollment] = useState<any>(null);
   const [editStatus, setEditStatus] = useState('');
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const { data: enrollments = [], isLoading } = useQuery({
     queryKey: ['all-enrollments'],
@@ -134,7 +139,7 @@ const AdminEnrollments = () => {
                         <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setEditEnrollment(e); setEditStatus(e.status); }}>
                           <Edit className="w-3.5 h-3.5" />
                         </Button>
-                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => { if (confirm('Delete this enrollment?')) deleteMutation.mutate(e.id); }}>
+                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => setPendingDeleteId(e.id)}>
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
@@ -163,6 +168,26 @@ const AdminEnrollments = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(o) => !o && setPendingDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this enrollment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The enrollment will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { if (pendingDeleteId) { deleteMutation.mutate(pendingDeleteId); setPendingDeleteId(null); } }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
