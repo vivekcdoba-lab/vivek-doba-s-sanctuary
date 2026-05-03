@@ -198,14 +198,28 @@ const SeekerDetailPage = () => {
         relationship: linkForm.relationship,
         relationship_label: linkForm.relationship === 'custom' ? linkForm.relationship_label : undefined,
         linked_by: adminProfile?.id || '',
+        replace: !!linkedPartner, // replace existing link if there is one
       });
-      toast.success('✅ Profiles linked');
+      toast.success(linkedPartner ? '✅ Link updated' : '✅ Profiles linked');
       setLinkDialogOpen(false);
       setLinkForm({ partner_seeker_id: '', relationship: 'spouse', relationship_label: '' });
       refetchLink();
     } catch (e: any) {
       toast.error(e?.message || 'Failed to link');
     }
+  };
+
+  const openLinkDialog = () => {
+    if (linkedPartner) {
+      setLinkForm({
+        partner_seeker_id: linkedPartner.seeker_id,
+        relationship: linkedPartner.relationship,
+        relationship_label: linkedPartner.relationship_label || '',
+      });
+    } else {
+      setLinkForm({ partner_seeker_id: '', relationship: 'spouse', relationship_label: '' });
+    }
+    setLinkDialogOpen(true);
   };
 
   const handleUnlink = async () => {
