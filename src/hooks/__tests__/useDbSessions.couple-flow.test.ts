@@ -3,10 +3,12 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
-// Mock supabase BEFORE importing the hook under test
-const insertSingle = vi.fn();
-const participantsInsert = vi.fn().mockResolvedValue({ error: null });
-const fnInvoke = vi.fn().mockResolvedValue({ data: {}, error: null });
+const mocks = vi.hoisted(() => ({
+  insertSingle: vi.fn(),
+  participantsInsert: vi.fn().mockResolvedValue({ error: null }),
+  fnInvoke: vi.fn().mockResolvedValue({ data: {}, error: null }),
+}));
+const { insertSingle, participantsInsert, fnInvoke } = mocks;
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -14,16 +16,16 @@ vi.mock('@/integrations/supabase/client', () => ({
       if (table === 'sessions') {
         return {
           insert: (_row: any) => ({
-            select: () => ({ single: () => insertSingle() }),
+            select: () => ({ single: () => mocks.insertSingle() }),
           }),
         };
       }
       if (table === 'session_participants') {
-        return { insert: participantsInsert };
+        return { insert: mocks.participantsInsert };
       }
       return {};
     },
-    functions: { invoke: fnInvoke },
+    functions: { invoke: mocks.fnInvoke },
   },
 }));
 
