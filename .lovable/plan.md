@@ -1,58 +1,38 @@
-## Goal
+I found the issue: the database already has Chandrakant Wanare linked to Sunita K, but the current seeker card can still show “Not linked” because the seeker-specific fetch relies on the partner-only RPC result. Also, when a link already exists, the dialog only attempts to create a new link and fails instead of letting you update/replace it from the same “Linked Profile” section.
 
-Yes — that works well and is simpler. Skip the global registry shortcuts and instead make the **Linked Profile** card on Seeker Overview a self-contained mini-profile of the linked partner. The admin sees everything they need about the linked seeker without leaving the current seeker's 360 page.
+Plan:
 
-## What changes
+1. Make the “Linked Profile” card read the full existing link reliably
+   - Add/adjust a backend read helper that returns the current seeker’s link group, including both the current seeker row and partner row, for admins.
+   - Keep seeker privacy rules intact: admins can manage all links; seekers can only view their own linked group.
+   - Update the hook so `useSeekerLinkGroup(id)` always includes enough data to show the current link under the current seeker profile.
 
-### `src/pages/admin/SeekerDetailPage.tsx` — Linked Profile card (around line 556)
+2. Show the existing linked profile clearly under “Linked Profile”
+   - If the seeker is already linked, always show the partner mini-profile instead of the “Not linked” message.
+   - Show partner name, email, relationship, joint payment/session badges, group ID, session count, paid amount, and last payment.
+   - Add a clear “Update Link” action next to “Unlink” in the existing card.
 
-Replace the current minimal row (avatar emoji + name + email + relationship badge + Unlink) with an enriched inline panel when a partner exists:
+3. Fix the link dialog behavior for existing links
+   - Rename the dialog action dynamically:
+     - “Link Profiles” when there is no existing link.
+     - “Update Link” when the seeker already has a link.
+   - In update mode, preselect the existing partner and relationship.
+   - If the admin selects a new partner while the current seeker already has a link, perform a safe replace flow:
+     - delete the old link group first,
+     - then create the new link group,
+     - refresh the card.
+   - If only the relationship changes with the same partner, still save it cleanly.
 
-- **Header row** (kept): relationship emoji, partner name (link to their 360), email, relationship badge, Unlink button.
-- **Add: partner stats row** — fetched lightly for the linked partner:
-  - Program / enrollment status
-  - Sessions completed (count)
-  - Total paid (formatted INR) + last payment date
-  - Worksheet streak / last activity date
-  - Risk / health indicator (Green/Yellow/Red) if available
-- **Add: joint context strip** — small badges showing what is shared by virtue of the link:
-  - "Joint payments enabled"
-  - "Couple-session pairing active"
-  - "Shared group_id: <short>"
-- **Remove** the "View all links →" link added in the previous pass — the card is now self-sufficient.
+4. Improve selectable partner list and messaging
+   - Hide seekers already linked to someone else, except the currently linked partner in update mode.
+   - Replace the confusing “If a seeker is already linked, the link attempt will fail” note with clear text like: “This seeker already has a link. Updating will replace the existing link.”
+   - If a selected partner is linked elsewhere, show a helpful validation message before submit.
 
-When no partner is linked, keep the existing empty-state copy + "Link Seeker" button (unchanged).
+5. Refresh related cached data after changes
+   - Invalidate both the current seeker’s link query and global link query after link/update/unlink.
+   - This should make the card update immediately without needing a page reload.
 
-### `src/pages/admin/SeekersPage.tsx`
-- Remove the "Manage all linked profiles" toolbar button and its `Link2` import (added in the previous pass). The registry is no longer surfaced from here.
-
-### `src/pages/admin/AdminLinkedProfiles.tsx`
-- Remove the "Back to Seekers" header link added in the previous pass. The page remains reachable by direct URL only (audit/troubleshooting).
-
-### Data fetching
-
-For partner stats, reuse existing hooks/queries scoped to `linkedPartner.seeker_id`:
-- `useSeekerSessionCount(partnerId)` for sessions
-- A small `usePayments` filter or direct supabase query for total paid + last payment
-- `useStreakCount(partnerId)` for worksheet streak
-- Enrollment lookup via existing pattern used in this page
-
-All reads go through hooks that already respect RLS — no new policies, no new tables.
-
-## What stays the same
-
-- `seeker_links` table, RLS, joint-payment behaviour.
-- `useLinkSeekers` / `useUnlinkSeekers` hooks.
-- `/admin/linked-profiles` route + `AdminLinkedProfiles.tsx` (preservation policy).
-- Sidebar (already cleaned in the previous pass).
-
-## Files to edit
-
-- `src/pages/admin/SeekerDetailPage.tsx` — enrich the Linked Profile card.
-- `src/pages/admin/SeekersPage.tsx` — remove the toolbar shortcut.
-- `src/pages/admin/AdminLinkedProfiles.tsx` — remove the back-to-Seekers link.
-
-## Out of scope
-
-- No DB migrations.
-- No changes to linking logic, joint payments, RLS, or the registry page itself.
+Files/areas to update after approval:
+- `src/hooks/useSeekerLinks.ts`
+- `src/pages/admin/SeekerDetailPage.tsx`
+- Possibly one small database migration for a more reliable admin-safe link-group read/update helper, if needed after implementation review.
