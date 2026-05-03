@@ -370,15 +370,16 @@ const SessionReviewPage = () => {
               );
             }
             return (
-            <div className="flex gap-1">
-              <button onClick={() => saveEdit(sectionKey)} disabled={saving} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20" aria-label="Save">
-                <Save className="w-4 h-4" />
-              </button>
-              <button onClick={cancelEdit} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground" aria-label="Cancel">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          )}
+              <div className="flex gap-1">
+                <button onClick={() => saveEdit(sectionKey)} disabled={saving} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20" aria-label="Save">
+                  <Save className="w-4 h-4" />
+                </button>
+                <button onClick={cancelEdit} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground" aria-label="Cancel">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            );
+          })()}
         </div>
       </div>
       {editingSection === sectionKey ? (
