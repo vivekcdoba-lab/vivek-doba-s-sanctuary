@@ -91,13 +91,14 @@ const AdminLinkedProfiles = () => {
 
   return (
     <div className="space-y-6">
-      <RouterLink
-        to="/seekers"
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Seekers
-      </RouterLink>
+        Back
+      </button>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
