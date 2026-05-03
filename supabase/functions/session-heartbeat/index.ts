@@ -285,7 +285,8 @@ Deno.serve(async (req) => {
           logout_at: new Date().toISOString(),
           duration_seconds: duration,
         })
-        .eq("id", session_id);
+        .eq("id", session_id)
+        .eq("user_id", userId);
 
       return new Response(JSON.stringify({ closed: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
