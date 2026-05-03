@@ -106,6 +106,19 @@ const AdminCreateProgram = () => {
       <Card>
         <CardContent className="pt-6 space-y-4">
           {step === 0 && (<>
+            <div className="space-y-2 p-3 rounded-lg border border-dashed border-border bg-muted/30">
+              <Label>Copy from existing program (optional)</Label>
+              <Select value={copyFromId} onValueChange={handleCopyFrom}>
+                <SelectTrigger><SelectValue placeholder="— None —" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— None —</SelectItem>
+                  {allCourses.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {copiedFromName && (
+                <p className="text-xs text-muted-foreground">Pre-filled from <span className="font-medium">{copiedFromName}</span>. You can edit any field before creating.</p>
+              )}
+            </div>
             <div className="space-y-2"><Label>Program Name *</Label><Input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. LGT PLATINUM™" /></div>
             <div className="space-y-2"><Label>Tagline</Label><Input value={form.tagline} onChange={e => set('tagline', e.target.value)} placeholder="Short description" /></div>
             <div className="space-y-2"><Label>Description</Label><Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Detailed program description..." rows={4} /></div>
