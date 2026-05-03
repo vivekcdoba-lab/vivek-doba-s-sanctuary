@@ -6,6 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, FileText, Trash2, Download, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +26,7 @@ const AdminDocuments = () => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("agreement");
   const [file, setFile] = useState<File | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -74,7 +79,6 @@ const AdminDocuments = () => {
     load();
   };
   const remove = async (id: string) => {
-    if (!confirm("Delete this document?")) return;
     await supabase.from("documents").delete().eq("id", id);
     load();
   };
