@@ -64,6 +64,8 @@ const SessionReviewPage = () => {
   const [courseName, setCourseName] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  // Couple session: list of all rows in this couple_group, ordered primary first.
+  const [coupleTabs, setCoupleTabs] = useState<Array<{ id: string; seeker_name: string; role: string; status: string }>>([]);
 
   // Inline editing
   const [editingSection, setEditingSection] = useState<string | null>(null);
