@@ -387,6 +387,28 @@ const SessionReviewPage = () => {
         </div>
       </div>
 
+      {/* Couple Session — per-seeker tabs */}
+      {coupleTabs.length > 1 && (
+        <div className="bg-card rounded-xl border-2 border-primary/30 p-3">
+          <p className="text-xs text-muted-foreground mb-2 px-1">
+            💑 Couple session — fill each seeker's reflection separately. Each tab is approved independently.
+          </p>
+          <Tabs value={session.id} onValueChange={(v) => navigate(`/sessions/${v}/review`)}>
+            <TabsList className="w-full grid grid-cols-2">
+              {coupleTabs.map((t, i) => (
+                <TabsTrigger key={t.id} value={t.id} className="flex flex-col gap-0.5 h-auto py-2">
+                  <span className="text-xs font-semibold">
+                    Seeker {i + 1} ({t.role === 'primary' ? 'Primary' : 'Partner'})
+                  </span>
+                  <span className="text-sm">{t.seeker_name}</span>
+                  <span className="text-[10px] text-muted-foreground capitalize">{t.status.replace(/_/g, ' ')}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
+
       {/* Status Stepper */}
       <div className="bg-card rounded-xl border border-border p-5">
         <SessionReviewStatus status={session.status} revisionNote={session.revision_note} />
