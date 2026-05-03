@@ -254,6 +254,7 @@ const SessionReviewPage = () => {
 
   const handleRevisionRequest = async () => {
     if (!session || revisionNote.length < 20) return;
+    if (!assertActiveRow()) return;
     setSaving(true);
     try {
       const { error } = await supabase
