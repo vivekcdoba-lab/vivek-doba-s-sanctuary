@@ -184,6 +184,101 @@ export function buildRecurrenceDates(
   return out;
 }
 
+/**
+ * Build per-occurrence couple-session row pairs for a recurring couple booking.
+ * Each occurrence gets a fresh `couple_group_id` shared by exactly two rows
+ * (primary + partner) on the same date, guaranteeing each seeker receives a
+ * distinct calendar invite while sibling rows can be looked up reliably.
+ */
+export interface CouplePairInput {
+  primary_seeker_id: string;
+  partner_seeker_id: string;
+  start_date: string;
+  frequency: RecurrenceFrequency;
+  count: number;
+  primary_start_number: number;
+  partner_start_number: number;
+}
+export interface CouplePairRow {
+  date: string;
+  seeker_id: string;
+  partner_seeker_id: string;
+  session_number: number;
+  couple_group_id: string;
+  couple_role: 'primary' | 'partner';
+}
+export function buildCouplePairs(input: CouplePairInput): CouplePairRow[] {
+  if (!input.primary_seeker_id || !input.partner_seeker_id) {
+    throw new Error('Couple session requires both seeker ids');
+  }
+  if (input.primary_seeker_id === input.partner_seeker_id) {
+    throw new Error('Couple session requires two distinct seekers');
+  }
+  const dates = buildRecurrenceDates(input.start_date, input.frequency, input.count);
+  const newId = () =>
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}-${Math.random()}`;
+  const rows: CouplePairRow[] = [];
+  dates.forEach((d, idx) => {
+    const groupId = newId();
+    rows.push({
+      date: d,
+      seeker_id: input.primary_seeker_id,
+      partner_seeker_id: input.partner_seeker_id,
+      session_number: input.primary_start_number + idx,
+      couple_group_id: groupId,
+      couple_role: 'primary',
+    });
+    rows.push({
+      date: d,
+      seeker_id: input.partner_seeker_id,
+      partner_seeker_id: input.primary_seeker_id,
+      session_number: input.partner_start_number + idx,
+      couple_group_id: groupId,
+      couple_role: 'partner',
+    });
+  });
+  return rows;
+}
+
+/**
+ * Verify a couple-pair series: every group_id must contain exactly two rows
+ * with distinct seeker ids, matching dates, and one of each role.
+ * Returns the list of integrity errors (empty array = healthy).
+ */
+export function verifyCouplePairs(rows: CouplePairRow[]): string[] {
+  const errors: string[] = [];
+  const byGroup = new Map<string, CouplePairRow[]>();
+  rows.forEach((r) => {
+    if (!r.couple_group_id) {
+      errors.push(`row for ${r.seeker_id} on ${r.date} is missing couple_group_id`);
+      return;
+    }
+    const list = byGroup.get(r.couple_group_id) ?? [];
+    list.push(r);
+    byGroup.set(r.couple_group_id, list);
+  });
+  byGroup.forEach((list, gid) => {
+    if (list.length !== 2) {
+      errors.push(`group ${gid} has ${list.length} rows (expected 2)`);
+      return;
+    }
+    const [a, b] = list;
+    if (a.seeker_id === b.seeker_id) {
+      errors.push(`group ${gid} has duplicate seeker ${a.seeker_id}`);
+    }
+    if (a.date !== b.date) {
+      errors.push(`group ${gid} date mismatch (${a.date} vs ${b.date})`);
+    }
+    const roles = new Set([a.couple_role, b.couple_role]);
+    if (!(roles.has('primary') && roles.has('partner'))) {
+      errors.push(`group ${gid} missing primary/partner role pair`);
+    }
+  });
+  return errors;
+}
+
 export function useCreateRecurringSessions() {
   const queryClient = useQueryClient();
   return useMutation({

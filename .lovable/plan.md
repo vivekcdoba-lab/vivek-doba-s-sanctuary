@@ -1,66 +1,75 @@
 
-# Couple Sessions — Dual Form Tabs
+# Couple Session — Sync Check, UI Safeguards, Automated Tests
 
-Goal: when a session is marked **Couple**, the create/review forms expose **two tabs** (Seeker 1 — Primary, Seeker 2 — Partner). Each tab captures its own session content. Submitting saves data for both seekers individually and emails each seeker. Individual sessions and the existing approval workflow remain unchanged.
+Three targeted additions on top of the just-shipped couple-session feature. No existing behavior is removed.
 
-## Approach (data model)
+## 1. Recurring couple sync check
 
-Today, a couple session = **one** `sessions` row + entries in `session_participants`. All notes/insights live on that single row, so per-seeker data isn't possible.
+**Goal:** guarantee that for a recurring couple booking, every occurrence pair reuses *the same* `couple_group_id` for its two seeker rows, those two rows belong to **distinct** seekers, and each row produces its own calendar invite.
 
-We will create **two linked session rows** for couple bookings — one per seeker — joined by a new `couple_group_id uuid` column on `sessions`. Each row owns its own `session_notes`, `key_insights`, `breakthroughs`, `targets`, etc., and flows through the existing per-session approval pipeline independently.
+**Implementation (`src/hooks/useDbSessions.ts`):**
+- Extract the per-occurrence pair-building logic out of the inline loop in `SessionsPage.tsx` into a pure helper:
+  - `buildCouplePairs({ primary_seeker_id, partner_seeker_id, start_date, frequency, count, primary_start_number, partner_start_number }) → CouplePairRow[]`
+  - Throws if the two seekers are identical.
+  - Generates a fresh `couple_group_id` per occurrence and emits two rows with `couple_role: 'primary' | 'partner'`.
+- Add a verifier `verifyCouplePairs(rows)` that returns the list of integrity problems (wrong group size, duplicate seeker in a group, role missing, date mismatch). Empty array = healthy.
+- `SessionsPage.tsx` recurring-couple branch refactored to:
+  1. Call `buildCouplePairs(...)`.
+  2. Run `verifyCouplePairs(...)` — abort with a toast if it returns errors (defensive).
+  3. Insert each row via `createSession.mutateAsync(...)`, which already fires its own `send-session-invite` per row → distinct invites for each seeker.
 
-- Individual sessions: unchanged (1 row, no `couple_group_id`).
-- Couple sessions: 2 rows sharing a `couple_group_id`, each `session_type='couple'`, with `seeker_id` set to that seeker (primary/partner). `session_participants` continues to be written for backward compatibility.
+This keeps the existing single-row create flow untouched.
 
-```text
-booking_type=couple
-   ├── sessions row A   seeker_id=Chandrakant   couple_group_id=G   session_role=primary
-   └── sessions row B   seeker_id=Sunita        couple_group_id=G   session_role=partner
-```
+## 2. UI safeguards on the review page
 
-## Changes
+**Goal:** prevent destructive operations on the couple tabs once a seeker's row has been approved/signed-off, and make sure each tab's edits are written only to that tab's `sessions` row.
 
-### 1. Database migration
-- Add columns to `public.sessions`:
-  - `couple_group_id uuid null`
-  - `couple_role text null` (`'primary' | 'partner'`)
-- Index on `couple_group_id`.
-- No RLS changes (existing seeker/coach/admin policies already filter by `seeker_id`).
+**Implementation (`src/pages/admin/SessionReviewPage.tsx`):**
+- The tab UI already navigates to the sibling row via `navigate(/sessions/:id/review)`, so `saveEdit`, `handleApprove`, `handleRevisionRequest`, comments, and audit log already write to the active row's `id`. Add explicit guards to make this safe:
+  - **Locked-tab indicator:** if a sibling tab's `status ∈ {approved, signed_off}`, render its `TabsTrigger` with a 🔒 badge and `aria-disabled`. Clicking it still navigates (read-only is allowed) but the destination row's edit/approve/revision/delete buttons are disabled when its own status is locked (this already happens via the existing `canApprove` / `canRequestRevision` checks; we add the same lock to inline section edits and Delete).
+  - **Cross-tab confirmation:** when admin clicks a sibling tab while the current tab has unsaved edits (`editingSection !== null`), show a `confirm()` dialog ("Discard unsaved edits to {seeker}'s notes?"). On cancel, stay on the current tab.
+  - **Misroute guard:** in `saveEdit` / `handleApprove` / `handleRevisionRequest` / `handleDelete`, assert `session.id === id` (the URL param) before issuing the Supabase write. If they diverge (e.g. a stale closure during a fast tab switch), abort and show a toast — this guarantees notes/insights cannot leak to the wrong sibling.
+  - **Banner:** add a small read-only banner above the form summarising sibling status ("Partner: Sunita — approved ✅") so the admin sees the other seeker's progress without leaving the tab.
 
-### 2. Create flow — `src/pages/admin/SessionsPage.tsx`
-- When `booking_type='couple'`, on submit:
-  - Generate `couple_group_id = crypto.randomUUID()`.
-  - Insert two `sessions` rows (one per seeker) with the same date/time/coach/course/duration/location, each tagged with `couple_group_id` and the appropriate `couple_role`.
-  - Continue to insert `session_participants` for each row.
-  - Send calendar invite for each row (existing `send-session-invite` already emails the row's seeker).
-- Individual flow unchanged.
-- Recurring + couple: each occurrence creates its own pair of linked rows sharing a per-occurrence `couple_group_id`.
+## 3. Automated tests
 
-### 3. Review flow — `src/pages/admin/SessionReviewPage.tsx`
-- On load, if `session.couple_group_id` is set, fetch the **sibling session** (same `couple_group_id`, different `id`).
-- Render a `Tabs` component above the content sections:
-  - Tab 1: Seeker 1 (Primary) — name from primary row's seeker.
-  - Tab 2: Seeker 2 (Partner) — name from partner row's seeker.
-- Switching tabs swaps the active session row being edited; all existing section editors, comments, audit log, approve/revision/delete buttons operate on the active row.
-- Approve / Request Revision / Certify & Sign apply only to the active tab's row (each seeker has independent status). A small banner shows the partner row's status for context.
-- Individual sessions (no `couple_group_id`) render exactly as today — no tabs.
+**Goal:** lock in the contract — couple bookings produce two linked rows with two emails, and per-seeker approval is independent.
 
-### 4. Coach review pages (if they reach review page via `/sessions/:id`)
-Same `SessionReviewPage` is reused, so coach-side gets dual tabs automatically.
+**New files:**
 
-### 5. Emails
-No new email code: the existing `send-session-invite` and review notifications already key off `session.seeker_id`, so creating two rows automatically yields one email per seeker.
+- `src/hooks/useDbSessions.couple.test.ts` (vitest, pure logic):
+  - `buildCouplePairs` returns `2 × count` rows.
+  - Each occurrence's two rows share one `couple_group_id`.
+  - Different occurrences use *different* `couple_group_id`s.
+  - Roles are exactly `{primary, partner}` per group.
+  - Throws when both seekers are the same id.
+  - `verifyCouplePairs` returns `[]` for valid output and reports each injected defect (duplicate seeker, missing role, mismatched dates, single-row group).
 
-### 6. Types
-Regenerate `src/integrations/supabase/types.ts` after migration (auto).
+- `src/pages/admin/__tests__/SessionsPage.couple.test.tsx`:
+  - Mocks `useDbSessions` hooks (`useCreateSession`) and the supabase client.
+  - Renders the schedule dialog, picks two distinct seekers in couple mode, submits.
+  - Asserts `createSession.mutateAsync` is called **exactly twice** with matching `couple_group_id`, opposing `couple_role`, and distinct `seeker_id`.
+  - Asserts the underlying calendar-invite invocation (`supabase.functions.invoke('send-session-invite', ...)`) is called twice — once per inserted row.
 
-## Out of scope / preserved
-- Individual sessions: zero changes.
-- Existing `session_participants`, attendance counters, RLS, approval workflow, audit log — all unchanged.
-- Historical couple sessions (single-row) keep working in single-form mode (no `couple_group_id` → no tabs).
+- `src/pages/admin/__tests__/SessionReviewPage.couple.test.tsx`:
+  - Mocks supabase to return a primary session row + a sibling partner row sharing `couple_group_id`.
+  - Asserts both tabs render with seeker names and status pills.
+  - Approving the active tab updates **only** that row (mock asserts `update().eq('id', primary.id)` was called with no call against partner.id).
+  - Sibling tab's status remains untouched after approval.
+
+**Test infra:** project already has vitest configured (`vitest.config.ts`, `src/test/setup.ts`); no setup changes needed.
 
 ## Files touched
-- `supabase/migrations/<new>.sql` (add columns + index)
-- `src/pages/admin/SessionsPage.tsx` (couple submit creates two linked rows)
-- `src/pages/admin/SessionReviewPage.tsx` (load sibling, render tabs, scope actions to active row)
-- `src/hooks/useDbSessions.ts` (small helper to create a linked pair; optional)
+
+- `src/hooks/useDbSessions.ts` — add `buildCouplePairs` + `verifyCouplePairs` helpers.
+- `src/pages/admin/SessionsPage.tsx` — recurring-couple branch uses helpers + verifier.
+- `src/pages/admin/SessionReviewPage.tsx` — locked-tab badges, unsaved-edit confirmation, sibling banner, id-mismatch guards in write handlers.
+- `src/hooks/useDbSessions.couple.test.ts` — new.
+- `src/pages/admin/__tests__/SessionsPage.couple.test.tsx` — new.
+- `src/pages/admin/__tests__/SessionReviewPage.couple.test.tsx` — new.
+
+## Out of scope / preserved
+
+- Individual session flow — unchanged.
+- Existing approval pipeline, audit log, RLS — unchanged.
+- DB schema — no new migration (uses the columns added in the previous step).
