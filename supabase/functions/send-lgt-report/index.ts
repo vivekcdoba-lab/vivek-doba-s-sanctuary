@@ -115,10 +115,19 @@ Deno.serve(async (req) => {
     const adminEmails = (adminProfiles || [])
       .map((a: any) => a.email).filter((e: string | null): e is string => !!e);
 
+    // Only allow extraRecipients from authenticated admin callers, validated as
+    // strict email format and capped at 5. Ignored entirely in publicMode.
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const safeExtras = (!publicMode && Array.isArray(extraRecipients))
+      ? extraRecipients
+          .filter((e): e is string => typeof e === "string" && emailRegex.test(e))
+          .slice(0, 5)
+      : [];
+
     const recipients = Array.from(new Set([
       ...(seeker.email ? [seeker.email] : []),
       ...adminEmails,
-      ...((extraRecipients || []).filter(Boolean)),
+      ...safeExtras,
     ]));
 
     if (recipients.length === 0) {
