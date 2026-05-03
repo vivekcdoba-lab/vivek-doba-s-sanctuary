@@ -542,21 +542,35 @@ const SessionsPage = () => {
                 };
                 if (newSession.repeat) {
                   const count = Math.min(24, Math.max(2, Number(newSession.repeat_count) || 2));
-                  // Recurring couple sessions: create two parallel series, one per seeker.
+                  // Recurring couple sessions: create per-occurrence pairs so each
+                  // occurrence has its OWN couple_group_id linking that day's two rows.
                   if (isCouple) {
-                    Promise.all([
-                      createRecurring.mutateAsync({ ...commonPayload, frequency: newSession.frequency, count }),
-                      createRecurring.mutateAsync({
+                    const dates = buildRecurrenceDates(newSession.date, newSession.frequency, count);
+                    const tasks: Promise<any>[] = [];
+                    dates.forEach((d, idx) => {
+                      const occGroupId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+                        ? crypto.randomUUID()
+                        : undefined;
+                      tasks.push(createSession.mutateAsync({
                         ...baseCommon,
+                        date: d,
+                        seeker_id: newSession.seeker_id,
+                        session_number: nextNum + idx,
+                        partner_seeker_id: newSession.partner_seeker_id,
+                        couple_group_id: occGroupId,
+                        couple_role: 'primary',
+                      }));
+                      tasks.push(createSession.mutateAsync({
+                        ...baseCommon,
+                        date: d,
                         seeker_id: newSession.partner_seeker_id,
-                        session_number: partnerNextNum,
+                        session_number: partnerNextNum + idx,
                         partner_seeker_id: newSession.seeker_id,
-                        couple_group_id: coupleGroupId,
+                        couple_group_id: occGroupId,
                         couple_role: 'partner',
-                        frequency: newSession.frequency,
-                        count,
-                      }),
-                    ]).then(() => {
+                      }));
+                    });
+                    Promise.all(tasks).then(() => {
                       toast.success(`${count} couple sessions scheduled — invites sent to both seekers`);
                       reset();
                     }).catch(() => toast.error('Failed to schedule couple sessions'));
