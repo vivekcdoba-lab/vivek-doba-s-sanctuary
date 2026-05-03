@@ -1,8 +1,8 @@
 # Database Functions
 
-_Generated: 2026-05-02T18:20:51.656Z_
+_Generated: 2026-05-03T07:10:21.741Z_
 
-Total: **49** functions in `public` schema (from migrations).
+Total: **57** functions in `public` schema (from migrations).
 
 - `_current_dek()`
 - `_dek_for_version()`
@@ -17,8 +17,11 @@ Total: **49** functions in `public` schema (from migrations).
 - `decrypt_many()`
 - `delete_email()`
 - `encrypt_field()`
+- `encrypt_submission_password()`
+- `enforce_otp_cooldown()`
 - `enforce_profile_insert_safety()`
 - `enqueue_email()`
+- `find_unsubscribe_token()`
 - `get_daily_session_report()`
 - `get_encryption_status()`
 - `get_leaderboard_data()`
@@ -27,6 +30,7 @@ Total: **49** functions in `public` schema (from migrations).
 - `get_seeker_daily_summary()`
 - `get_seeker_link_group()`
 - `get_session_signatures()`
+- `get_submission_password()`
 - `handle_new_user()`
 - `hash_for_lookup()`
 - `hash_token()`
@@ -34,7 +38,11 @@ Total: **49** functions in `public` schema (from migrations).
 - `is_assigned_coach()`
 - `is_coach()`
 - `is_super_admin()`
+- `maintain_business_revenue_range_enc()`
+- `maintain_lead_pii()`
 - `maintain_profile_hashes()`
+- `maintain_submission_pii()`
+- `maintain_unsubscribe_token_email_hash()`
 - `move_to_dlq()`
 - `notify_admins_of_ticket()`
 - `prevent_admin_level_escalation()`
