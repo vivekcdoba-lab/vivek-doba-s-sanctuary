@@ -20,11 +20,28 @@ export function useSeekerLinkGroup(seekerId: string | null | undefined) {
     queryKey: ['seeker-link-group', seekerId],
     enabled: !!seekerId,
     queryFn: async (): Promise<SeekerLinkRow[]> => {
-      const { data, error } = await supabase.rpc('get_linked_seekers_basic', {
+      // Step 1: find this seeker's own seeker_links row to get the group_id.
+      // Admins have full SELECT via RLS; seekers can read their own row.
+      const { data: own } = await supabase
+        .from('seeker_links')
+        .select('group_id')
+        .eq('seeker_id', seekerId!)
+        .maybeSingle();
+
+      if (own?.group_id) {
+        const { data: rows, error: rowsErr } = await supabase
+          .from('seeker_links')
+          .select('id, group_id, seeker_id, relationship, relationship_label, linked_by, created_at, seeker:seeker_id(id, full_name, email)')
+          .eq('group_id', own.group_id);
+        if (rowsErr) throw rowsErr;
+        return (rows as any[]) as SeekerLinkRow[];
+      }
+
+      // Fallback: SECURITY DEFINER RPC (covers cases where direct SELECT is restricted).
+      const { data: rpcData } = await supabase.rpc('get_linked_seekers_basic', {
         _seeker_id: seekerId!,
       });
-      if (error) throw error;
-      return ((data || []) as any[]).map(r => ({
+      return ((rpcData || []) as any[]).map(r => ({
         id: r.link_id,
         group_id: r.group_id,
         seeker_id: r.partner_id,
