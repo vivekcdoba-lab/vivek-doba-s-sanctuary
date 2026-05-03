@@ -82,6 +82,33 @@ function SessionCountChips({ seekerId }: { seekerId: string }) {
   );
 }
 
+function LinkedPartnerStats({ partnerId }: { partnerId: string }) {
+  const { data: count } = useSeekerSessionCount(partnerId);
+  const { payments } = usePayments(partnerId);
+  const totalPaid = (payments || []).filter((p: any) => p.status === 'paid').reduce((s: number, p: any) => s + Number(p.total_amount || 0), 0);
+  const lastPayment = (payments || []).find((p: any) => p.status === 'paid');
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
+      <div className="rounded-lg border border-border bg-background/50 p-2 text-center">
+        <p className="text-[10px] text-muted-foreground uppercase">Sessions</p>
+        <p className="text-sm font-bold text-foreground">{count?.attended ?? 0}</p>
+      </div>
+      <div className="rounded-lg border border-border bg-background/50 p-2 text-center">
+        <p className="text-[10px] text-muted-foreground uppercase">Paid</p>
+        <p className="text-sm font-bold text-dharma-green">₹{totalPaid.toLocaleString('en-IN')}</p>
+      </div>
+      <div className="rounded-lg border border-border bg-background/50 p-2 text-center">
+        <p className="text-[10px] text-muted-foreground uppercase">Last Payment</p>
+        <p className="text-xs font-semibold text-foreground">{lastPayment?.payment_date ? formatDateDMY(new Date(lastPayment.payment_date)) : '—'}</p>
+      </div>
+      <div className="rounded-lg border border-border bg-background/50 p-2 text-center">
+        <p className="text-[10px] text-muted-foreground uppercase">Excused</p>
+        <p className="text-sm font-bold text-foreground">{count?.excused ?? 0}</p>
+      </div>
+    </div>
+  );
+}
+
 
 const SeekerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
