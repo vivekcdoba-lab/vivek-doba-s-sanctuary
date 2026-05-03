@@ -1,11 +1,22 @@
-Update the "Linked Profile" card on the Seeker Detail page:
+## Goal
+Replace the native browser `confirm(...)` popup (shown in screenshot with "An embedded page at ...lovableproject.com says") with an in-application confirmation dialog so it stays within the app's UI styling.
 
-1. Keep the partner detail block as-is (avatar/emoji, name, email, relationship badge, partner stats, joint-payment chips).
-2. Remove the warning message about "existing link / partner could not be loaded" — no more stale-link banner.
-3. In the card header, alongside the Link/Edit button, add a `View all links →` link that navigates to `/admin/linked-profiles`, where the admin can see, add, update, or remove any link.
-4. When no partner is linked, keep the simple "Not linked" placeholder and still show the `View all links →` shortcut.
+## Affected Files
+- `src/pages/admin/AdminLinkedProfiles.tsx` — unlink action (line 77)
+- `src/pages/admin/SeekerDetailPage.tsx` — unlink action (line 248)
 
-File to edit:
-- `src/pages/admin/SeekerDetailPage.tsx` (Linked Profile section only)
+## Approach
+Use the existing shadcn `AlertDialog` component (`@/components/ui/alert-dialog`) which is already used elsewhere in the project.
 
-No backend or schema changes.
+### Changes per file
+1. Add state: `const [unlinkTarget, setUnlinkTarget] = useState<string | null>(null);`
+2. Replace the `if (!confirm(...)) return;` flow:
+   - Trigger button now calls `setUnlinkTarget(group_id)` instead of `handleUnlink(group_id)` directly.
+   - Move actual unlink mutation into a `confirmUnlink()` handler invoked by AlertDialog's action button.
+3. Render an `<AlertDialog open={!!unlinkTarget} onOpenChange={(o) => !o && setUnlinkTarget(null)}>` with:
+   - Title: "Unlink these profiles?"
+   - Description: "Existing joint payments will remain visible only to the original payer."
+   - Cancel + Confirm (destructive variant) buttons.
+
+## Outcome
+The unlink confirmation now appears as a styled modal within the app, matching brand UI, instead of the native browser dialog showing the lovableproject.com URL.
