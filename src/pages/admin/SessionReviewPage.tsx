@@ -354,15 +354,22 @@ const SessionReviewPage = () => {
         </h3>
         <div className="flex items-center gap-1">
           <SessionComments sessionId={session.id} sectionName={sectionKey} sectionLabel={label} />
-          {editingSection !== sectionKey ? (
-            <button
-              onClick={() => startEdit(sectionKey, value || '')}
-              className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
-              aria-label={`Edit ${label}`}
-            >
-              <Pencil className="w-4 h-4" />
-            </button>
-          ) : (
+          {(() => {
+            const rowLocked = ['approved', 'signed_off'].includes(session.status);
+            if (editingSection !== sectionKey) {
+              return (
+                <button
+                  onClick={() => !rowLocked && startEdit(sectionKey, value || '')}
+                  disabled={rowLocked}
+                  title={rowLocked ? 'This seeker’s row is locked (approved/signed)' : `Edit ${label}`}
+                  className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label={`Edit ${label}`}
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+              );
+            }
+            return (
             <div className="flex gap-1">
               <button onClick={() => saveEdit(sectionKey)} disabled={saving} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20" aria-label="Save">
                 <Save className="w-4 h-4" />
