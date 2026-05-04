@@ -293,7 +293,7 @@ const SessionNotesPanel = ({ sessionId, sessionTitle, sessionDate, coachName, vi
                     </div>
                     <div className="flex items-center gap-1">
                       {/* Edit & Privacy toggles for note owner */}
-                      {note.author_id === profile?.id && (
+                      {note.author_id === profile?.id && !isSeekerLocked && (
                         <>
                           {viewMode === 'coach' && (
                             <Button
