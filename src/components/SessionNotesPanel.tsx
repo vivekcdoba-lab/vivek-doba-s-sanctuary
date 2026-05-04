@@ -373,9 +373,11 @@ const SessionNotesPanel = ({ sessionId, sessionTitle, sessionDate, coachName, vi
                 ? 'Add preparation notes before your session or reflections after'
                 : 'Add coaching notes, insights, and action items'}
             </p>
-            <Button className="mt-4" onClick={() => setShowNewForm(true)}>
-              + Add First Note
-            </Button>
+            {!isSeekerLocked && (
+              <Button className="mt-4" onClick={() => setShowNewForm(true)}>
+                + Add First Note
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}
