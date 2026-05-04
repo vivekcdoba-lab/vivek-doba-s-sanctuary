@@ -182,17 +182,25 @@ const SessionNotesPanel = ({ sessionId, sessionTitle, sessionDate, coachName, vi
             </p>
           )}
         </div>
-        <Button
-          onClick={() => setShowNewForm(!showNewForm)}
-          size="sm"
-          variant={showNewForm ? 'secondary' : 'default'}
-        >
-          {showNewForm ? 'Cancel' : '+ Add Note'}
-        </Button>
+        {!isSeekerLocked && (
+          <Button
+            onClick={() => setShowNewForm(!showNewForm)}
+            size="sm"
+            variant={showNewForm ? 'secondary' : 'default'}
+          >
+            {showNewForm ? 'Cancel' : '+ Add Note'}
+          </Button>
+        )}
       </div>
 
+      {isSeekerLocked && (
+        <div className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground flex items-center gap-2">
+          <Lock className="h-3.5 w-3.5" /> Notes locked — your reflection has been submitted.
+        </div>
+      )}
+
       {/* New Note Form */}
-      {showNewForm && (
+      {showNewForm && !isSeekerLocked && (
         <Card className="border-primary/30 shadow-lg animate-in slide-in-from-top-2">
           <CardContent className="p-4 space-y-3">
             {/* Note Type Selector */}
