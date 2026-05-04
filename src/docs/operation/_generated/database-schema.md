@@ -1,6 +1,6 @@
 # Database Schema
 
-_Generated: 2026-05-04T07:26:46.603Z_
+_Generated: 2026-05-04T10:34:26.792Z_
 
 Tables: **104** • Functions: **57**
 
@@ -504,7 +504,7 @@ Tables: **104** • Functions: **57**
 
 **Columns** (12): `id`, `title`, `content`, `type`, `priority`, `audience`, `course_id`, `starts_at`, `expires_at`, `created_by`, `created_at`, `is_pinned`
 
-**RLS policies** (2): _Anyone can view announcements_; _Admins manage announcements_
+**RLS policies** (3): _Anyone can view announcements_; _Admins manage announcements_; _Users view targeted announcements_
 
 ### `announcement_reads`
 
