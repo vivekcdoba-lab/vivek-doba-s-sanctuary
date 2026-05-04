@@ -334,10 +334,13 @@ const SessionReviewPage = () => {
   const seekerHasReflection =
     (s.seeker_what_learned && String(s.seeker_what_learned).trim()) ||
     !!s.seeker_what_learned_audio;
-  const approveLocked =
-    !s.session_notes || !String(s.session_notes).trim() ||
-    !seekerHasReflection ||
-    !s.seeker_accepted_at;
+  const coachNotesMissing = !s.session_notes || !String(s.session_notes).trim();
+  const approveLocked = coachNotesMissing || !seekerHasReflection;
+  const lockReason = coachNotesMissing && !seekerHasReflection
+    ? 'Waiting for coach Session Notes and seeker Reflection.'
+    : coachNotesMissing
+      ? 'Waiting for the coach to write Session Notes.'
+      : 'Waiting for the seeker to save their Post-Session Reflection.';
   const canApprove = ['completed', 'submitted', 'reviewing'].includes(session.status) && !approveLocked;
   const canRequestRevision = ['completed', 'submitted', 'reviewing'].includes(session.status);
 
