@@ -1,6 +1,6 @@
 # Sidebar Navigation
 
-_Generated: 2026-05-03T20:12:20.597Z_
+_Generated: 2026-05-04T07:19:52.959Z_
 
 ## Admin (`src/components/AdminLayout.tsx`)
 
@@ -11,7 +11,6 @@ _Generated: 2026-05-03T20:12:20.597Z_
 ### USERS
 
 - All Coaches → `/admin/coaches`
-- Linked Profiles → `/admin/linked-profiles`
 - Coach ↔ Seeker → `/admin/coach-seekers`
 - Admins → `/admin/admins`
 - Add User → `/admin/add-user`

@@ -1,6 +1,6 @@
 # Database Schema
 
-_Generated: 2026-05-03T20:12:20.597Z_
+_Generated: 2026-05-04T07:19:52.959Z_
 
 Tables: **104** • Functions: **57**
 
@@ -522,7 +522,7 @@ Tables: **104** • Functions: **57**
 
 **Columns** (8): `id`, `seed_run_id`, `recipients`, `subject`, `status`, `resend_message_id`, `error_message`, `sent_at`
 
-**RLS policies** (5): _Admins read email log_; _No client INSERT to email_log_; _No client UPDATE to email_log_; _No client DELETE from email_log_; _Super admins read email log_
+**RLS policies** (6): _Admins read email log_; _No client INSERT to email_log_; _No client UPDATE to email_log_; _No client DELETE from email_log_; _Super admins read email log_; _Deny non-super-admin select email_log_
 
 ### `email_send_log`
 
@@ -546,7 +546,7 @@ Tables: **104** • Functions: **57**
 
 **Columns** (5): `id`, `email`, `reason`, `metadata`, `created_at`
 
-**RLS policies** (3): _Service role can read suppressed emails_; _Service role can insert suppressed emails_; _Admins can read suppressed emails_
+**RLS policies** (4): _Service role can read suppressed emails_; _Service role can insert suppressed emails_; _Admins can read suppressed emails_; _Super admins can read suppressed emails_
 
 ### `worksheet_notifications`
 
