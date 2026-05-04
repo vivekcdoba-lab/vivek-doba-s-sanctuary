@@ -1,0 +1,156 @@
+name: Security Scanning
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Weekly Monday 03:00 UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write   # required to upload SARIF
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------
+  # Dependency vulnerabilities (npm + transitive via OSV)
+  # ---------------------------------------------------------------
+  dependencies:
+    name: Dependency Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: bun audit (high+critical)
+        run: bun audit --audit-level=high || true
+        # `|| true` so OSV step still runs; OSV is the gating signal.
+
+      - name: OSV Scanner (lockfile + manifest)
+        uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@main
+        with:
+          scan-args: |-
+            --recursive
+            --skip-git
+            ./
+        continue-on-error: false
+
+  # ---------------------------------------------------------------
+  # SAST — CodeQL
+  # ---------------------------------------------------------------
+  codeql:
+    name: SAST · CodeQL
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended,security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
+
+  # ---------------------------------------------------------------
+  # SAST — Semgrep (OWASP Top 10 + React + TS rulesets)
+  # ---------------------------------------------------------------
+  semgrep:
+    name: SAST · Semgrep
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: |
+          semgrep scan \
+            --config=p/owasp-top-ten \
+            --config=p/react \
+            --config=p/typescript \
+            --config=p/javascript \
+            --config=p/secrets \
+            --config=p/supabase \
+            --severity=ERROR --severity=WARNING \
+            --sarif --output=semgrep.sarif \
+            --error \
+            --exclude='node_modules' --exclude='dist' --exclude='.lovable' \
+            || true
+
+      - name: Upload Semgrep SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+  # ---------------------------------------------------------------
+  # Secret scanning — Gitleaks
+  # ---------------------------------------------------------------
+  secrets:
+    name: Secret Scan · Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: true
+
+  # ---------------------------------------------------------------
+  # Project-specific guards (service-role key, lint)
+  # ---------------------------------------------------------------
+  guards:
+    name: Project Guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: No service-role key in client bundle
+        run: bun run --bun tsx scripts/check-no-service-role.ts || bun run scripts/check-no-service-role.ts || npx tsx scripts/check-no-service-role.ts
+      - name: ESLint
+        run: bun run lint
+
+  # ---------------------------------------------------------------
+  # Basic DAST — OWASP ZAP baseline (passive only) — weekly
+  # ---------------------------------------------------------------
+  dast:
+    name: DAST · ZAP Baseline (weekly)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.13.0
+        with:
+          target: 'https://vivek-doba.lovable.app'
+          fail_action: false
+          allow_issue_writing: false
+          cmd_options: '-a -j -m 5 -T 10'
