@@ -86,6 +86,20 @@ const SessionReviewPage = () => {
     if (id) loadAll();
   }, [id]);
 
+  // Live refresh: re-fetch when the seeker (or anyone) updates this session
+  useEffect(() => {
+    if (!id) return;
+    const ch = supabase
+      .channel(`session-review-${id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'sessions', filter: `id=eq.${id}` },
+        () => { loadAll(); },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [id]);
+
   const loadAll = async () => {
     setLoading(true);
     try {
@@ -334,10 +348,13 @@ const SessionReviewPage = () => {
   const seekerHasReflection =
     (s.seeker_what_learned && String(s.seeker_what_learned).trim()) ||
     !!s.seeker_what_learned_audio;
-  const approveLocked =
-    !s.session_notes || !String(s.session_notes).trim() ||
-    !seekerHasReflection ||
-    !s.seeker_accepted_at;
+  const coachNotesMissing = !s.session_notes || !String(s.session_notes).trim();
+  const approveLocked = coachNotesMissing || !seekerHasReflection;
+  const lockReason = coachNotesMissing && !seekerHasReflection
+    ? 'Waiting for coach Session Notes and seeker Reflection.'
+    : coachNotesMissing
+      ? 'Waiting for the coach to write Session Notes.'
+      : 'Waiting for the seeker to save their Post-Session Reflection.';
   const canApprove = ['completed', 'submitted', 'reviewing'].includes(session.status) && !approveLocked;
   const canRequestRevision = ['completed', 'submitted', 'reviewing'].includes(session.status);
 
@@ -542,8 +559,8 @@ const SessionReviewPage = () => {
             <Check className="w-4 h-4" /> Approve Session
           </Button>
         ) : approveLocked && ['completed', 'submitted', 'reviewing'].includes(session.status) ? (
-          <Button disabled variant="outline" className="gap-2 opacity-60 cursor-not-allowed" title="Waiting for seeker to complete Session Notes + Post-Session Reflection and click Save Reflection">
-            <Check className="w-4 h-4" /> Approve (locked — waiting on seeker reflection)
+          <Button disabled variant="outline" className="gap-2 opacity-60 cursor-not-allowed" title={lockReason}>
+            <Check className="w-4 h-4" /> Approve (locked — {coachNotesMissing ? 'coach notes missing' : 'waiting on seeker reflection'})
           </Button>
         ) : null}
         {canRequestRevision && (
