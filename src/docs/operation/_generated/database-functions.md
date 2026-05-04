@@ -1,6 +1,6 @@
 # Database Functions
 
-_Generated: 2026-05-04T07:26:46.603Z_
+_Generated: 2026-05-04T10:34:26.792Z_
 
 Total: **57** functions in `public` schema (from migrations).
 
