@@ -545,8 +545,8 @@ const SessionReviewPage = () => {
             <Check className="w-4 h-4" /> Approve Session
           </Button>
         ) : approveLocked && ['completed', 'submitted', 'reviewing'].includes(session.status) ? (
-          <Button disabled variant="outline" className="gap-2 opacity-60 cursor-not-allowed" title="Waiting for seeker to complete Session Notes + Post-Session Reflection and click Save Reflection">
-            <Check className="w-4 h-4" /> Approve (locked — waiting on seeker reflection)
+          <Button disabled variant="outline" className="gap-2 opacity-60 cursor-not-allowed" title={lockReason}>
+            <Check className="w-4 h-4" /> Approve (locked — {coachNotesMissing ? 'coach notes missing' : 'waiting on seeker reflection'})
           </Button>
         ) : null}
         {canRequestRevision && (
