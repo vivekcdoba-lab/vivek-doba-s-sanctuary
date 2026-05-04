@@ -43,7 +43,8 @@ const NOTE_TYPES = [
   { value: 'action_items', label: 'Action Items', icon: CheckCircle2, emoji: '✅', color: 'bg-green-500/10 text-green-600' },
 ];
 
-const SessionNotesPanel = ({ sessionId, sessionTitle, sessionDate, coachName, viewMode }: SessionNotesPanelProps) => {
+const SessionNotesPanel = ({ sessionId, sessionTitle, sessionDate, coachName, viewMode, lockSeekerNotes = false }: SessionNotesPanelProps) => {
+  const isSeekerLocked = viewMode === 'seeker' && lockSeekerNotes;
   const { profile } = useAuthStore();
   const [notes, setNotes] = useState<SessionNote[]>([]);
   const [loading, setLoading] = useState(true);
