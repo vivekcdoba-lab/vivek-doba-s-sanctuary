@@ -149,12 +149,18 @@ const SeekerSessionDetail = () => {
 
   const handleSubmitReflection = async () => {
     if (!session) return;
-    const hasText = !!whatLearned.trim();
-    const hasAudio = !!whatLearnedAudio;
-    if (!hasText && !hasAudio) {
-      toast.error('Please type or record "What I Learned Today"');
+    const hasWhatLearned = !!whatLearned.trim() || !!whatLearnedAudio;
+    const hasWhereToApply = !!whereToApply.trim() || !!whereToApplyAudio;
+    const hasHowToApply = !!howToApply.trim() || !!howToApplyAudio;
+    if (!hasWhatLearned || !hasWhereToApply || !hasHowToApply) {
+      toast.error('Please fill in all three reflection fields (text or voice note) before saving.');
       return;
     }
+    const confirmed = window.confirm(
+      'Once you save your reflection, you will not be able to edit Session Notes or your Post-Session Reflection. Continue?'
+    );
+    if (!confirmed) return;
+
     setSaving(true);
     try {
       const { error } = await supabase
@@ -179,7 +185,7 @@ const SeekerSessionDetail = () => {
         seeker_where_to_apply_audio: whereToApplyAudio,
         seeker_how_to_apply_audio: howToApplyAudio,
       });
-      toast.success('Reflection saved ✨ Your coach can now approve this session.');
+      toast.success('Reflection saved & locked 🔒 Your coach can now approve this session.');
     } catch (err) {
       toast.error('Failed to save reflection');
     } finally {
