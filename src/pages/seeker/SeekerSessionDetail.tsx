@@ -179,7 +179,7 @@ const SeekerSessionDetail = () => {
         seeker_where_to_apply_audio: whereToApplyAudio,
         seeker_how_to_apply_audio: howToApplyAudio,
       });
-      toast.success('Reflection saved! ✨');
+      toast.success('Reflection saved ✨ Your coach can now approve this session.');
     } catch (err) {
       toast.error('Failed to save reflection');
     } finally {
