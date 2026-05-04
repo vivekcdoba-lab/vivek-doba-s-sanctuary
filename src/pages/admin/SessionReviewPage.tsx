@@ -86,6 +86,20 @@ const SessionReviewPage = () => {
     if (id) loadAll();
   }, [id]);
 
+  // Live refresh: re-fetch when the seeker (or anyone) updates this session
+  useEffect(() => {
+    if (!id) return;
+    const ch = supabase
+      .channel(`session-review-${id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'sessions', filter: `id=eq.${id}` },
+        () => { loadAll(); },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [id]);
+
   const loadAll = async () => {
     setLoading(true);
     try {
