@@ -19,6 +19,8 @@ interface SessionNotesPanelProps {
   sessionDate?: string;
   coachName?: string;
   viewMode: 'seeker' | 'coach';
+  /** When true and viewMode is 'seeker', hides add/edit controls (read-only). */
+  lockSeekerNotes?: boolean;
 }
 
 interface SessionNote {
@@ -41,7 +43,8 @@ const NOTE_TYPES = [
   { value: 'action_items', label: 'Action Items', icon: CheckCircle2, emoji: '✅', color: 'bg-green-500/10 text-green-600' },
 ];
 
-const SessionNotesPanel = ({ sessionId, sessionTitle, sessionDate, coachName, viewMode }: SessionNotesPanelProps) => {
+const SessionNotesPanel = ({ sessionId, sessionTitle, sessionDate, coachName, viewMode, lockSeekerNotes = false }: SessionNotesPanelProps) => {
+  const isSeekerLocked = viewMode === 'seeker' && lockSeekerNotes;
   const { profile } = useAuthStore();
   const [notes, setNotes] = useState<SessionNote[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,17 +182,25 @@ const SessionNotesPanel = ({ sessionId, sessionTitle, sessionDate, coachName, vi
             </p>
           )}
         </div>
-        <Button
-          onClick={() => setShowNewForm(!showNewForm)}
-          size="sm"
-          variant={showNewForm ? 'secondary' : 'default'}
-        >
-          {showNewForm ? 'Cancel' : '+ Add Note'}
-        </Button>
+        {!isSeekerLocked && (
+          <Button
+            onClick={() => setShowNewForm(!showNewForm)}
+            size="sm"
+            variant={showNewForm ? 'secondary' : 'default'}
+          >
+            {showNewForm ? 'Cancel' : '+ Add Note'}
+          </Button>
+        )}
       </div>
 
+      {isSeekerLocked && (
+        <div className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground flex items-center gap-2">
+          <Lock className="h-3.5 w-3.5" /> Notes locked — your reflection has been submitted.
+        </div>
+      )}
+
       {/* New Note Form */}
-      {showNewForm && (
+      {showNewForm && !isSeekerLocked && (
         <Card className="border-primary/30 shadow-lg animate-in slide-in-from-top-2">
           <CardContent className="p-4 space-y-3">
             {/* Note Type Selector */}
@@ -282,7 +293,7 @@ const SessionNotesPanel = ({ sessionId, sessionTitle, sessionDate, coachName, vi
                     </div>
                     <div className="flex items-center gap-1">
                       {/* Edit & Privacy toggles for note owner */}
-                      {note.author_id === profile?.id && (
+                      {note.author_id === profile?.id && !isSeekerLocked && (
                         <>
                           {viewMode === 'coach' && (
                             <Button
@@ -362,9 +373,11 @@ const SessionNotesPanel = ({ sessionId, sessionTitle, sessionDate, coachName, vi
                 ? 'Add preparation notes before your session or reflections after'
                 : 'Add coaching notes, insights, and action items'}
             </p>
-            <Button className="mt-4" onClick={() => setShowNewForm(true)}>
-              + Add First Note
-            </Button>
+            {!isSeekerLocked && (
+              <Button className="mt-4" onClick={() => setShowNewForm(true)}>
+                + Add First Note
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}

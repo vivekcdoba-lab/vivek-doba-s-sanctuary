@@ -149,12 +149,18 @@ const SeekerSessionDetail = () => {
 
   const handleSubmitReflection = async () => {
     if (!session) return;
-    const hasText = !!whatLearned.trim();
-    const hasAudio = !!whatLearnedAudio;
-    if (!hasText && !hasAudio) {
-      toast.error('Please type or record "What I Learned Today"');
+    const hasWhatLearned = !!whatLearned.trim() || !!whatLearnedAudio;
+    const hasWhereToApply = !!whereToApply.trim() || !!whereToApplyAudio;
+    const hasHowToApply = !!howToApply.trim() || !!howToApplyAudio;
+    if (!hasWhatLearned || !hasWhereToApply || !hasHowToApply) {
+      toast.error('Please fill in all three reflection fields (text or voice note) before saving.');
       return;
     }
+    const confirmed = window.confirm(
+      'Once you save your reflection, you will not be able to edit Session Notes or your Post-Session Reflection. Continue?'
+    );
+    if (!confirmed) return;
+
     setSaving(true);
     try {
       const { error } = await supabase
@@ -179,7 +185,7 @@ const SeekerSessionDetail = () => {
         seeker_where_to_apply_audio: whereToApplyAudio,
         seeker_how_to_apply_audio: howToApplyAudio,
       });
-      toast.success('Reflection saved ✨ Your coach can now approve this session.');
+      toast.success('Reflection saved & locked 🔒 Your coach can now approve this session.');
     } catch (err) {
       toast.error('Failed to save reflection');
     } finally {
@@ -396,80 +402,110 @@ const SeekerSessionDetail = () => {
         sessionTitle={session.session_name || `Session #${session.session_number}`}
         sessionDate={session.date}
         viewMode="seeker"
+        lockSeekerNotes={!!session.seeker_what_learned || !!session.seeker_what_learned_audio || !!session.seeker_accepted_at}
       />
 
       {/* Seeker Reflection Section */}
+      {(() => {
+        const reflectionLocked = !!session.seeker_what_learned || !!session.seeker_what_learned_audio || !!session.seeker_accepted_at;
+        return (
       <div className="bg-card rounded-xl border-2 border-chakra-indigo/20 p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <Zap className="w-4 h-4 text-chakra-indigo" /> Your Post-Session Reflection
-        </h3>
-        <p className="text-xs text-muted-foreground">Share what you learned and how you plan to apply it</p>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Zap className="w-4 h-4 text-chakra-indigo" /> Your Post-Session Reflection
+          </h3>
+          {reflectionLocked && (
+            <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full">
+              🔒 Saved — locked
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {reflectionLocked
+            ? 'Your reflection has been saved and is now read-only.'
+            : 'All three fields are required (text or voice note). Once saved, you cannot edit them.'}
+        </p>
 
         <div>
-          <label className="text-sm font-medium text-foreground">What I Learned Today *</label>
+          <label className="text-sm font-medium text-foreground">
+            What I Learned Today <span className="text-destructive">*</span>{' '}
+            <span className="text-xs text-muted-foreground">(required)</span>
+          </label>
           <textarea
             value={whatLearned}
             onChange={e => setWhatLearned(e.target.value)}
-            className="mt-1 w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            className="mt-1 w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
             placeholder="What was the biggest learning from today's session? (you can also record a voice note below)"
-            disabled={!!session.seeker_accepted_at}
+            disabled={reflectionLocked}
+            readOnly={reflectionLocked}
           />
           <VoiceNoteRecorder
             sessionId={session.id}
             seekerProfileId={session.seeker_id}
             field="what_learned"
             existingPath={whatLearnedAudio}
-            disabled={!!session.seeker_accepted_at}
+            disabled={reflectionLocked}
             onChange={setWhatLearnedAudio}
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">Where to Apply</label>
+          <label className="text-sm font-medium text-foreground">
+            Where to Apply <span className="text-destructive">*</span>{' '}
+            <span className="text-xs text-muted-foreground">(required)</span>
+          </label>
           <textarea
             value={whereToApply}
             onChange={e => setWhereToApply(e.target.value)}
-            className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
             placeholder="In which areas of your life will you apply this?"
-            disabled={!!session.seeker_accepted_at}
+            disabled={reflectionLocked}
+            readOnly={reflectionLocked}
           />
           <VoiceNoteRecorder
             sessionId={session.id}
             seekerProfileId={session.seeker_id}
             field="where_to_apply"
             existingPath={whereToApplyAudio}
-            disabled={!!session.seeker_accepted_at}
+            disabled={reflectionLocked}
             onChange={setWhereToApplyAudio}
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">How to Apply</label>
+          <label className="text-sm font-medium text-foreground">
+            How to Apply <span className="text-destructive">*</span>{' '}
+            <span className="text-xs text-muted-foreground">(required)</span>
+          </label>
           <textarea
             value={howToApply}
             onChange={e => setHowToApply(e.target.value)}
-            className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            className="mt-1 w-full min-h-[60px] rounded-lg border border-input bg-background px-3 py-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
             placeholder="What specific steps will you take?"
-            disabled={!!session.seeker_accepted_at}
+            disabled={reflectionLocked}
+            readOnly={reflectionLocked}
           />
           <VoiceNoteRecorder
             sessionId={session.id}
             seekerProfileId={session.seeker_id}
             field="how_to_apply"
             existingPath={howToApplyAudio}
-            disabled={!!session.seeker_accepted_at}
+            disabled={reflectionLocked}
             onChange={setHowToApplyAudio}
           />
         </div>
 
-        {!session.seeker_accepted_at && (
+        {!reflectionLocked && (
           <div className="flex gap-3">
             <Button onClick={handleSubmitReflection} disabled={saving} className="gap-2">
               <Send className="w-4 h-4" /> Save Reflection
             </Button>
-            {session.seeker_what_learned && (
-              <Button onClick={handleAcceptSession} disabled={saving} variant="outline" className="border-dharma-green text-dharma-green hover:bg-dharma-green/10 gap-2">
-                <CheckCircle2 className="w-4 h-4" /> Accept & Proceed to Sign
-              </Button>
-            )}
+          </div>
+        )}
+
+        {reflectionLocked && !session.seeker_accepted_at && (
+          <div className="flex gap-3">
+            <Button onClick={handleAcceptSession} disabled={saving} variant="outline" className="border-dharma-green text-dharma-green hover:bg-dharma-green/10 gap-2">
+              <CheckCircle2 className="w-4 h-4" /> Accept & Proceed to Sign
+            </Button>
           </div>
         )}
 
@@ -479,6 +515,8 @@ const SeekerSessionDetail = () => {
           </div>
         )}
       </div>
+        );
+      })()}
 
       {/* Digital Signature */}
       {session.seeker_accepted_at && (

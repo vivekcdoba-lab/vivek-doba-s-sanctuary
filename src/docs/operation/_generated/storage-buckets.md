@@ -1,6 +1,6 @@
 # Storage Buckets
 
-_Generated: 2026-05-04T10:34:26.792Z_
+_Generated: 2026-05-04T12:11:15.959Z_
 
 | Bucket | Public | Purpose |
 |---|---|---|
