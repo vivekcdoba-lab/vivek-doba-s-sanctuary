@@ -19,6 +19,8 @@ interface SessionNotesPanelProps {
   sessionDate?: string;
   coachName?: string;
   viewMode: 'seeker' | 'coach';
+  /** When true and viewMode is 'seeker', hides add/edit controls (read-only). */
+  lockSeekerNotes?: boolean;
 }
 
 interface SessionNote {
