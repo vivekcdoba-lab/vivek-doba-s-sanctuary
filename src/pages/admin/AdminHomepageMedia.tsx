@@ -218,11 +218,11 @@ const AdminHomepageMedia = () => {
 
   const upsert = useMutation({
     mutationFn: async (payload: Partial<MediaRow>) => {
-      // Auto-suggest YouTube thumbnail if missing
+      // Save-time fallback: derive thumbnail from URL if still empty
       let thumb = payload.thumbnail_url || '';
-      if (!thumb && payload.platform === 'youtube' && payload.external_url) {
-        const id = youtubeIdFromUrl(payload.external_url);
-        if (id) thumb = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+      if (!thumb && payload.external_url) {
+        const d = detectFromUrl(payload.external_url);
+        if (d.thumbnail) thumb = d.thumbnail;
       }
       const data = {
         title: payload.title?.trim() || '',
