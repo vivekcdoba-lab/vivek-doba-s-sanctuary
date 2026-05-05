@@ -73,8 +73,8 @@ Deno.serve(async (req) => {
       const { sendEmail } = await import("../_shared/send-email.ts");
       const r = await sendEmail(admin, {
         to: seeker.email,
-        subject: `Reminder: Sign your ${doc?.title}`,
-        html: `<p>Dear ${seeker.full_name},</p><p>This is a reminder to sign your <strong>${doc?.title}</strong>.</p>
+        subject: `Reminder: Sign your ${doc?.title ?? "document"}`,
+        html: `<p>Dear ${escapeHtml(seeker.full_name ?? "Seeker")},</p><p>This is a reminder to sign your <strong>${escapeHtml(doc?.title ?? "")}</strong>.</p>
           <p><a href="${link}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none">Sign Now</a></p>
           <p style="font-size:12px;color:#6b7280">Link expires in 7 days.</p>`,
         label: "signature_reminder",
