@@ -402,6 +402,7 @@ const App = () => (
               <Route path="/admin/export-financials" element={<AdminExportFinancials />} />
               <Route path="/admin/videos" element={<AdminVideos />} />
               <Route path="/admin/audios" element={<AdminAudios />} />
+              <Route path="/admin/homepage-media" element={<AdminHomepageMedia />} />
               <Route path="/admin/upload-resource" element={<AdminUploadResource />} />
               <Route path="/admin/categories" element={<AdminCategories />} />
               <Route path="/admin/question-bank" element={<AdminQuestionBank />} />
