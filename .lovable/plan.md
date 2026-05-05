@@ -1,51 +1,79 @@
-## Goal
+# Homepage Media Showcase Section
 
-After a seeker clicks **Save Reflection**, both the **Session Notes** panel and the **Your Post-Session Reflection** section must become permanently read-only for the seeker. Also enforce that all three reflection fields are filled before save (mandatory).
+Add a new "Featured Media" section to the public homepage between the FAQ and "Coaching Across India" sections, displaying clickable thumbnails of YouTube videos, Instagram reels/posts, Facebook posts, X posts, and other social content. Admins manage the entries from a new admin page.
 
-## What changes
+## What gets built
 
-### 1. `src/pages/seeker/SeekerSessionDetail.tsx`
+### 1. Database (new table: `homepage_media`)
 
-**Reflection — make all 3 fields mandatory + lock-on-save**
+Migration creates:
 
-- Update `handleSubmitReflection`:
-  - Require all three fields (each can be text **or** voice note): `What I Learned`, `Where to Apply`, `How to Apply`. If any is empty, show an error toast and abort.
-  - Show a confirmation dialog: *"Once saved, you cannot edit Session Notes or your Post-Session Reflection. Continue?"*
-  - On success: toast `Reflection saved & locked 🔒 Your coach can now approve this session.`
+```text
+homepage_media
+  id              uuid PK
+  title           text          -- caption shown under thumbnail
+  platform        text          -- 'youtube' | 'instagram' | 'facebook' | 'x' | 'linkedin' | 'other'
+  content_type    text          -- 'video' | 'reel' | 'post' | 'short' | 'ad'
+  external_url    text          -- where the click sends the user
+  thumbnail_url   text          -- public image URL (uploaded or pasted)
+  description     text nullable
+  display_order   int default 0
+  is_active       bool default true
+  created_at, updated_at, created_by
+```
 
-**Lock the reflection UI as soon as it's been saved (not just after Accept)**
+RLS:
+- SELECT: public/anon (`USING true`) — needed so the homepage works for logged-out visitors.
+- INSERT/UPDATE/DELETE: admins only via `is_admin(auth.uid())` (matches the project's standardized helper pattern, consistent with the security memory).
 
-- Compute `reflectionLocked = !!session.seeker_what_learned || !!session.seeker_what_learned_audio || !!session.seeker_accepted_at`.
-- Replace `disabled={!!session.seeker_accepted_at}` on every reflection `<textarea>` and `<VoiceNoteRecorder>` (6 spots) with `disabled={reflectionLocked}`.
-- Add red asterisks `*` and `(required)` hints to all three field labels.
-- Hide the **Save Reflection** button once `reflectionLocked` is true; show a small badge: `🔒 Reflection saved — locked`.
-- Keep the **Accept & Proceed to Sign** button visible when `reflectionLocked && !seeker_accepted_at` (so the signing flow still works).
+A new `homepage-media` storage bucket (public) is created so admins can upload thumbnails directly. They can also paste external image URLs (e.g. YouTube `i.ytimg.com` thumb).
 
-**Lock the Session Notes panel for the seeker after reflection save**
+### 2. Public homepage section — `src/pages/Index.tsx`
 
-- Pass a new prop to `SessionNotesPanel`: `lockSeekerNotes={reflectionLocked}`.
+Inserted between line 245 (end of FAQ) and line 247 (start of "Coaching Across India").
 
-### 2. `src/components/SessionNotesPanel.tsx`
+Layout:
+- Section heading: "Featured Videos & Social Highlights"
+- Subheading: short tagline
+- Responsive grid (1 col mobile, 2 cols tablet, 3 cols desktop) of cards
+- Each card: 16:9 thumbnail with a platform badge overlay (YouTube/Instagram/etc. icon + color), play-icon overlay for videos, title below, and content-type chip
+- Whole card is a link that opens the `external_url` in a new tab using the existing `openExternal()` helper from `src/lib/openExternal.ts` (already handles the iframe escape).
+- Data fetched via TanStack Query from `homepage_media` where `is_active = true`, ordered by `display_order, created_at desc`, limited to e.g. 12.
+- If no rows exist, the entire section is hidden (no empty state on public site).
 
-- Add optional prop `lockSeekerNotes?: boolean` (default `false`).
-- When `viewMode === 'seeker' && lockSeekerNotes`:
-  - Hide the `+ Add Note` / `Cancel` button in the header.
-  - Force `showNewForm = false` (don't render the new-note form).
-  - Hide the seeker's **Edit** pencil button on their own notes (line ~297-308). Coach edit/privacy controls stay unaffected.
-  - Show a small inline notice at the top: `🔒 Notes locked — your reflection has been submitted.`
-- Coach view (`viewMode === 'coach'`) is completely unaffected — coach can still add/edit notes as before.
+### 3. Admin management page — `src/pages/admin/AdminHomepageMedia.tsx`
 
-### 3. Admin approve gate stays as-is
+New route `/admin/homepage-media`. Mirrors the style of `AdminVideos.tsx`:
+- Header with count badge
+- Search by title
+- Table: Thumbnail preview · Title · Platform · Type · URL · Order · Active · Actions
+- "Add Media" button opens a dialog form with fields:
+  - Title (required)
+  - Platform (select)
+  - Content type (select)
+  - External URL (required, validated)
+  - Thumbnail: tabbed input — Upload (to `homepage-media` bucket) or Paste URL
+  - Description (optional)
+  - Display order (number)
+  - Active toggle
+- Row actions: Edit, Toggle active, Delete (with confirm)
+- Auto-suggest YouTube thumbnail: if URL matches `youtube.com/watch?v=ID` or `youtu.be/ID`, prefill `https://i.ytimg.com/vi/ID/hqdefault.jpg` when thumbnail is empty.
 
-The admin's `approveLocked` (already updated last turn) only requires coach `session_notes` + seeker reflection. Since the new mandatory rule guarantees the seeker reflection exists once saved, the Approve button will unlock immediately on save — no further admin-side change needed.
+### 4. Wiring
 
-## Files touched
+- `src/App.tsx`: lazy-import `AdminHomepageMedia`, add route `/admin/homepage-media` inside the existing admin route group.
+- Sidebar: add a "Homepage Media" link under the admin Content section (alongside Videos/Audios) so admins can find it.
 
-- `src/pages/seeker/SeekerSessionDetail.tsx` — reflection mandatory, lock-on-save, pass new prop
-- `src/components/SessionNotesPanel.tsx` — accept and honor `lockSeekerNotes` prop
+## Technical notes
+
+- All admin actions go through Supabase client with RLS enforcing admin-only writes. No edge function needed.
+- Storage bucket policies: public read; admin-only insert/update/delete.
+- Click-throughs use `openExternal()` to escape the Lovable preview iframe (Instagram/Facebook deny embedding).
+- Platform badges use existing brand-aware colors; icons from `lucide-react` (`Youtube`, `Instagram`, `Facebook`, `Twitter`, `Linkedin`, `Link`).
+- No changes to existing tables, components, or features — purely additive (per project preservation policy).
 
 ## Out of scope
 
-- Coach-side notes panel behaviour
-- DB schema / RLS (already prevent seeker from editing once accepted; UI lock is the additional UX guard)
-- Existing `Accept & Proceed to Sign` + signature flow — unchanged
+- Embedding actual video players inline (cards only link out, per requirement).
+- Auto-fetching post metadata from social platforms (admin pastes URL + thumbnail).
+- Analytics on click-through (can be added later).

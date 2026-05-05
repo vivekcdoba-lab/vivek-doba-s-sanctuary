@@ -109,6 +109,7 @@ const AdminRevenue = lazyWithReload(() => import("./pages/admin/AdminRevenue"));
 const AdminExportFinancials = lazyWithReload(() => import("./pages/admin/AdminExportFinancials"));
 const AdminVideos = lazyWithReload(() => import("./pages/admin/AdminVideos"));
 const AdminAudios = lazyWithReload(() => import("./pages/admin/AdminAudios"));
+const AdminHomepageMedia = lazyWithReload(() => import("./pages/admin/AdminHomepageMedia"));
 const AdminUploadResource = lazyWithReload(() => import("./pages/admin/AdminUploadResource"));
 const AdminCategories = lazyWithReload(() => import("./pages/admin/AdminCategories"));
 const AdminQuestionBank = lazyWithReload(() => import("./pages/admin/AdminQuestionBank"));
@@ -401,6 +402,7 @@ const App = () => (
               <Route path="/admin/export-financials" element={<AdminExportFinancials />} />
               <Route path="/admin/videos" element={<AdminVideos />} />
               <Route path="/admin/audios" element={<AdminAudios />} />
+              <Route path="/admin/homepage-media" element={<AdminHomepageMedia />} />
               <Route path="/admin/upload-resource" element={<AdminUploadResource />} />
               <Route path="/admin/categories" element={<AdminCategories />} />
               <Route path="/admin/question-bank" element={<AdminQuestionBank />} />

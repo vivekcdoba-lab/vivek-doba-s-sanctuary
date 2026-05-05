@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Phone, MessageSquare, Lock, ChevronRight, Instagram, Youtube, Linkedin, Facebook } from 'lucide-react';
 import vivekDobaPhoto from '@/assets/vivek-doba.png';
 import { openWhatsApp } from '@/lib/openExternal';
+import HomepageMediaSection from '@/components/HomepageMediaSection';
 
 const stats = [
   { value: '80,000+', label: 'Lives Transformed' },
@@ -243,6 +244,9 @@ const Index = () => (
         ))}
       </div>
     </section>
+
+    {/* Featured Videos & Social Highlights */}
+    <HomepageMediaSection />
 
     {/* SEO: Coaching Across India */}
     <section className="bg-muted/30 py-16 sm:py-20 border-t border-border">
