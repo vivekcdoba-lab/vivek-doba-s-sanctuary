@@ -485,7 +485,25 @@ const AdminHomepageMedia = () => {
                 </TabsContent>
               </Tabs>
               {form.thumbnail_url && (
-                <img src={form.thumbnail_url} alt="preview" className="mt-2 w-40 aspect-video object-cover rounded border border-border" />
+                <img
+                  src={form.thumbnail_url}
+                  alt="preview"
+                  className="mt-2 w-40 aspect-video object-cover rounded border border-border"
+                  onError={(e) => {
+                    // YouTube fallback chain: maxres -> hq -> mq -> default
+                    const img = e.currentTarget as HTMLImageElement;
+                    const src = img.src;
+                    const ytMatch = src.match(/i\.ytimg\.com\/vi\/([\w-]+)\/(\w+)\.jpg/);
+                    if (!ytMatch) return;
+                    const id = ytMatch[1];
+                    const current = ytMatch[2];
+                    const chain = ['maxresdefault', 'hqdefault', 'mqdefault', 'default'];
+                    const idx = chain.indexOf(current);
+                    if (idx >= 0 && idx < chain.length - 1) {
+                      img.src = `https://i.ytimg.com/vi/${id}/${chain[idx + 1]}.jpg`;
+                    }
+                  }}
+                />
               )}
             </div>
 
