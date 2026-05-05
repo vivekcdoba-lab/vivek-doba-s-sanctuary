@@ -57,19 +57,105 @@ function getPlatformIcon(platform: string) {
   return PLATFORMS.find(p => p.value === platform)?.Icon ?? LinkIcon;
 }
 
-function youtubeIdFromUrl(url: string): string | null {
+function youtubeIdFromUrl(url: string): { id: string; isShort: boolean } | null {
   if (!url) return null;
   try {
     const u = new URL(url);
-    if (u.hostname.includes('youtu.be')) return u.pathname.slice(1) || null;
+    if (u.hostname.includes('youtu.be')) {
+      const id = u.pathname.slice(1);
+      return id ? { id, isShort: false } : null;
+    }
     if (u.hostname.includes('youtube.com')) {
       const v = u.searchParams.get('v');
-      if (v) return v;
+      if (v) return { id: v, isShort: false };
       const m = u.pathname.match(/\/(shorts|embed)\/([\w-]+)/);
-      if (m) return m[2];
+      if (m) return { id: m[2], isShort: m[1] === 'shorts' };
     }
   } catch { /* noop */ }
   return null;
+}
+
+type Detected = {
+  platform?: string;
+  contentType?: string;
+  thumbnail?: string;
+  noThumbHint?: boolean;
+};
+
+function detectFromUrl(url: string): Detected {
+  if (!url || !url.trim()) return {};
+  const trimmed = url.trim();
+  let u: URL;
+  try { u = new URL(trimmed); } catch { return {}; }
+  const host = u.hostname.toLowerCase();
+
+  // YouTube
+  const yt = youtubeIdFromUrl(trimmed);
+  if (yt) {
+    return {
+      platform: 'youtube',
+      contentType: yt.isShort ? 'short' : 'video',
+      thumbnail: `https://i.ytimg.com/vi/${yt.id}/hqdefault.jpg`,
+    };
+  }
+
+  // Vimeo
+  if (host.includes('vimeo.com')) {
+    const m = u.pathname.match(/\/(\d+)/);
+    if (m) {
+      return {
+        platform: 'other',
+        contentType: 'video',
+        thumbnail: `https://vumbnail.com/${m[1]}.jpg`,
+      };
+    }
+  }
+
+  // Instagram
+  if (host.includes('instagram.com')) {
+    const m = u.pathname.match(/\/(reel|reels|p|tv)\/([\w-]+)/);
+    if (m) {
+      const isReel = m[1] === 'reel' || m[1] === 'reels';
+      return {
+        platform: 'instagram',
+        contentType: isReel ? 'reel' : 'post',
+        thumbnail: `https://www.instagram.com/p/${m[2]}/media/?size=l`,
+      };
+    }
+    return { platform: 'instagram', contentType: 'post' };
+  }
+
+  // Facebook
+  if (host.includes('facebook.com') || host.includes('fb.watch')) {
+    const reelM = u.pathname.match(/\/reel\/(\d+)/);
+    if (reelM) return {
+      platform: 'facebook', contentType: 'reel',
+      thumbnail: `https://graph.facebook.com/${reelM[1]}/picture?type=large`,
+    };
+    const vidM = u.pathname.match(/\/videos\/(\d+)/);
+    if (vidM) return {
+      platform: 'facebook', contentType: 'video',
+      thumbnail: `https://graph.facebook.com/${vidM[1]}/picture?type=large`,
+    };
+    const watchV = u.searchParams.get('v');
+    if (watchV) return {
+      platform: 'facebook', contentType: 'video',
+      thumbnail: `https://graph.facebook.com/${watchV}/picture?type=large`,
+    };
+    return { platform: 'facebook', contentType: 'post', noThumbHint: true };
+  }
+
+  // X / Twitter
+  if (host === 'x.com' || host.endsWith('.x.com') || host.includes('twitter.com')) {
+    return { platform: 'x', contentType: 'post', noThumbHint: true };
+  }
+
+  // LinkedIn
+  if (host.includes('linkedin.com')) {
+    return { platform: 'linkedin', contentType: 'post', noThumbHint: true };
+  }
+
+  return {};
 }
 
 const emptyForm: Partial<MediaRow> = {
