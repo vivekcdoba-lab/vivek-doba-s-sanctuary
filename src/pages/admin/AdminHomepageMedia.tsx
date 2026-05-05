@@ -284,6 +284,7 @@ const AdminHomepageMedia = () => {
       const { error } = await supabase.storage.from('homepage-media').upload(path, file, { upsert: false });
       if (error) throw error;
       const { data } = supabase.storage.from('homepage-media').getPublicUrl(path);
+      autoThumbRef.current = false;
       setForm(f => ({ ...f, thumbnail_url: data.publicUrl }));
       toast({ title: '✅ Thumbnail uploaded' });
     } catch (e: any) {
