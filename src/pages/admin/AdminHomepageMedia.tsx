@@ -471,9 +471,9 @@ const AdminHomepageMedia = () => {
                 <TabsContent value="url" className="space-y-2">
                   <Input
                     type="url"
-                    placeholder="https://... (leave empty for YouTube auto)"
+                    placeholder="Auto-filled from link — override here if needed"
                     value={form.thumbnail_url || ''}
-                    onChange={e => setForm(f => ({ ...f, thumbnail_url: e.target.value }))}
+                    onChange={e => { autoThumbRef.current = false; setForm(f => ({ ...f, thumbnail_url: e.target.value })); }}
                   />
                 </TabsContent>
                 <TabsContent value="upload" className="space-y-2">
