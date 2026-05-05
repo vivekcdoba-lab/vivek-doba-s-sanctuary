@@ -426,7 +426,7 @@ const AdminHomepageMedia = () => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Platform</Label>
-                <Select value={form.platform} onValueChange={(v) => setForm(f => ({ ...f, platform: v }))}>
+                <Select value={form.platform} onValueChange={(v) => { manualPlatformRef.current = true; setForm(f => ({ ...f, platform: v })); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {PLATFORMS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
