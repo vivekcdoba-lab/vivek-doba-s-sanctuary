@@ -435,7 +435,7 @@ const AdminHomepageMedia = () => {
               </div>
               <div>
                 <Label>Type</Label>
-                <Select value={form.content_type} onValueChange={(v) => setForm(f => ({ ...f, content_type: v }))}>
+                <Select value={form.content_type} onValueChange={(v) => { manualTypeRef.current = true; setForm(f => ({ ...f, content_type: v })); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {CONTENT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
