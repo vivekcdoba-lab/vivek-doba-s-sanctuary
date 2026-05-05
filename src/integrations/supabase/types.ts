@@ -2477,6 +2477,51 @@ export type Database = {
           },
         ]
       }
+      homepage_media: {
+        Row: {
+          content_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_order: number
+          external_url: string
+          id: string
+          is_active: boolean
+          platform: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          external_url: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          external_url?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       japa_log: {
         Row: {
           created_at: string
