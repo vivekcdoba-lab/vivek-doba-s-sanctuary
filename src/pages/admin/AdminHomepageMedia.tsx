@@ -453,7 +453,12 @@ const AdminHomepageMedia = () => {
                 onChange={e => setForm(f => ({ ...f, external_url: e.target.value }))}
                 required
               />
-              <p className="text-xs text-muted-foreground mt-1">Where the user goes when they click the card.</p>
+              <p className="text-xs text-muted-foreground mt-1">Where the user goes when they click the card. We'll auto-pick a thumbnail from the link when possible.</p>
+              {detected.noThumbHint && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  This platform doesn't expose a public thumbnail — please upload one below.
+                </p>
+              )}
             </div>
 
             <div>
