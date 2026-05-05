@@ -1,6 +1,6 @@
 # Operation Docs Index
 
-_Generated: 2026-05-04T12:55:25.035Z_
+_Generated: 2026-05-05T16:00:13.989Z_
 
 This bundle is the single source of truth for "what the app does". Sections:
 
