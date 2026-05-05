@@ -245,6 +245,9 @@ const Index = () => (
       </div>
     </section>
 
+    {/* Featured Videos & Social Highlights */}
+    <HomepageMediaSection />
+
     {/* SEO: Coaching Across India */}
     <section className="bg-muted/30 py-16 sm:py-20 border-t border-border">
       <div className="max-w-5xl mx-auto px-4">
