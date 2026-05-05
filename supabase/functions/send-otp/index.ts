@@ -10,6 +10,15 @@ const ALLOWED_ORIGINS = [
   "https://www.vivekdoba.com",
 ];
 
+function escapeHtml(s: string): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function getCorsHeaders(origin: string | null) {
   const allowed = origin && ALLOWED_ORIGINS.some(o => origin.startsWith(o)) ? origin : ALLOWED_ORIGINS[0];
   return {
@@ -111,7 +120,7 @@ serve(async (req) => {
         const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h2 style="color: #B8860B;">VDTS - Verification Code</h2>
-            <p>Dear ${full_name || "Seeker"},</p>
+            <p>Dear ${escapeHtml(full_name) || "Seeker"},</p>
             <p>OTP for Signin request is <strong style="font-size: 24px; color: #B8860B;">${otp}</strong>.</p>
             <p>This OTP is valid for 15 minutes or 1 successful attempt whichever is earlier.</p>
             <p>Please do not share this One Time Password with anyone.</p>

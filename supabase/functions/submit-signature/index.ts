@@ -25,6 +25,15 @@ function bytesToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
+function escapeHtml(s: unknown): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function makeVerificationId() {
   const bytes = new Uint8Array(6);
   crypto.getRandomValues(bytes);
@@ -182,12 +191,12 @@ Deno.serve(async (req) => {
         subject: "Thank You for Signing the Agreement",
         label: "signature_signed_seeker",
         html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937">
-            <p>Dear ${seeker?.full_name ?? full_name},</p>
+            <p>Dear ${escapeHtml(seeker?.full_name ?? full_name)},</p>
             <p>Thank you for signing the agreement.</p>
             <p>We appreciate your prompt response and look forward to working together. Please let me know if there is anything further required from my side.</p>
             <p style="background:#FFF8F0;padding:12px;border-radius:8px;border-left:4px solid #FF6B00;font-size:14px">
-              <strong>Document:</strong> ${doc?.title}<br/>
-              <strong>Verification ID:</strong> ${verificationId}
+              <strong>Document:</strong> ${escapeHtml(doc?.title ?? "")}<br/>
+              <strong>Verification ID:</strong> ${escapeHtml(verificationId)}
             </p>
             ${downloadUrl ? `<p style="text-align:center;margin:24px 0">
               <a href="${downloadUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">📄 Download your signed copy</a>
@@ -205,10 +214,10 @@ Deno.serve(async (req) => {
       for (const adminEmail of adminEmails) {
         const r2 = await sendEmail(admin, {
           to: adminEmail,
-          subject: `Signed: ${seeker?.full_name ?? "Seeker"} → ${doc?.title}`,
+          subject: `Signed: ${seeker?.full_name ?? "Seeker"} → ${doc?.title ?? ""}`,
           label: "signature_signed_admin",
-          html: `<p>${seeker?.full_name} signed <strong>${doc?.title}</strong> at ${timestamp}.</p>
-              <p>Verification ID: <strong>${verificationId}</strong></p>
+          html: `<p>${escapeHtml(seeker?.full_name ?? "")} signed <strong>${escapeHtml(doc?.title ?? "")}</strong> at ${escapeHtml(timestamp)}.</p>
+              <p>Verification ID: <strong>${escapeHtml(verificationId)}</strong></p>
               ${downloadUrl ? `<p><a href="${downloadUrl}">Download signed PDF</a> (valid 7 days)</p>` : ""}`,
         });
         if (!r2.ok) console.error("admin email failed", adminEmail, r2.error);
