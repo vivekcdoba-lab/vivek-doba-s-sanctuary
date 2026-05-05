@@ -109,14 +109,23 @@ async function buildSignedPdf(opts: {
   return await pdfDoc.save({ useObjectStreams: true });
 }
 
+function escapeHtml(s: unknown): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const THANK_YOU_HTML = (name: string, docTitle: string, verificationId: string) => `
   <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937">
-    <p>Dear ${name},</p>
+    <p>Dear ${escapeHtml(name)},</p>
     <p>Thank you for signing the agreement.</p>
     <p>We appreciate your prompt response and look forward to working together. Please let me know if there is anything further required from my side.</p>
     <p style="background:#FFF8F0;padding:12px;border-radius:8px;border-left:4px solid #FF6B00;font-size:14px">
-      <strong>Document:</strong> ${docTitle}<br/>
-      <strong>Verification ID:</strong> ${verificationId}
+      <strong>Document:</strong> ${escapeHtml(docTitle)}<br/>
+      <strong>Verification ID:</strong> ${escapeHtml(verificationId)}
     </p>
     <p>Best regards,<br/>VDTS</p>
     <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
