@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Phone, MessageSquare, Lock, ChevronRight, Instagram, Youtube, Linkedin, Facebook } from 'lucide-react';
 import vivekDobaPhoto from '@/assets/vivek-doba.png';
 import { openWhatsApp } from '@/lib/openExternal';
+import HomepageMediaSection from '@/components/HomepageMediaSection';
 
 const stats = [
   { value: '80,000+', label: 'Lives Transformed' },
