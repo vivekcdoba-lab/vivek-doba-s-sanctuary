@@ -48,6 +48,24 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "seeker_id and document_ids[] required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Length cap on free-text custom message to limit injection / abuse surface
+    const safeCustomMessage = typeof custom_message === "string"
+      ? custom_message.slice(0, 1000)
+      : null;
+
+    // IDOR protection: non-admin coaches must be assigned to the target seeker
+    if (callerProfile.role !== "admin") {
+      const { data: assigned } = await admin
+        .from("coach_seekers")
+        .select("id")
+        .eq("coach_id", callerProfile.id)
+        .eq("seeker_id", seeker_id)
+        .maybeSingle();
+      if (!assigned) {
+        return new Response(JSON.stringify({ error: "Forbidden: coach not assigned to this seeker" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
     const { data: seeker, error: seekerErr } = await admin.from("profiles").select("id, full_name, email").eq("id", seeker_id).single();
     if (seekerErr || !seeker) {
       return new Response(JSON.stringify({ error: "Seeker not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -70,7 +88,7 @@ Deno.serve(async (req) => {
       const { data: req, error: reqErr } = await admin.from("signature_requests").insert({
         seeker_id, document_id: doc.id, session_id: session_id ?? null,
         signer_name: seeker.full_name, token_hash: tokenHash,
-        custom_message: custom_message ?? null, created_by: callerProfile.id,
+        custom_message: safeCustomMessage, created_by: callerProfile.id,
         sign_method: "email",
       }).select("id").single();
       if (reqErr) { console.error(reqErr); continue; }
@@ -78,14 +96,14 @@ Deno.serve(async (req) => {
       const link = `${APP_URL}/sign/${token}`;
       const html = `
         <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937">
-          <p>Dear ${seeker.full_name ?? "Seeker"},</p>
+          <p>Dear ${escapeHtml(seeker.full_name ?? "Seeker")},</p>
           <p>I hope this message finds you well.</p>
           <p>Please review and sign the attached agreement document at your earliest convenience. If you have any questions or need any clarification, feel free to reach out.</p>
           <p style="background:#FFF8F0;padding:16px;border-radius:8px;border-left:4px solid #FF6B00">
-            <strong>${doc.title}</strong><br/>
-            <span style="color:#6b7280;font-size:14px">${doc.description ?? ""}</span>
+            <strong>${escapeHtml(doc.title ?? "")}</strong><br/>
+            <span style="color:#6b7280;font-size:14px">${escapeHtml(doc.description ?? "")}</span>
           </p>
-          ${custom_message ? `<p style="font-style:italic;color:#374151">"${custom_message}"</p>` : ""}
+          ${safeCustomMessage ? `<p style="font-style:italic;color:#374151">"${escapeHtml(safeCustomMessage)}"</p>` : ""}
           <p style="text-align:center;margin:32px 0">
             <a href="${link}" style="background:#FF6B00;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600">Open Signing Page</a>
           </p>
@@ -116,3 +134,12 @@ Deno.serve(async (req) => {
     return new Response((console.error('edge function error', e), JSON.stringify({ error: 'Internal server error' })), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}

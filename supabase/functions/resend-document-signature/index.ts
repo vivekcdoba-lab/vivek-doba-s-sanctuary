@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     if (userErr || !user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const { data: caller } = await admin.from("profiles").select("role, is_also_coach").eq("user_id", user.id).maybeSingle();
+    const { data: caller } = await admin.from("profiles").select("id, role, is_also_coach").eq("user_id", user.id).maybeSingle();
     if (!caller || (caller.role !== "admin" && caller.role !== "coach" && !caller.is_also_coach)) {
       return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -41,6 +41,19 @@ Deno.serve(async (req) => {
     const { data: reqRow } = await admin.from("signature_requests").select("id, seeker_id, document_id, status").eq("id", request_id).maybeSingle();
     if (!reqRow) return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (reqRow.status === "signed") return new Response(JSON.stringify({ error: "already_signed" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+    // IDOR protection: non-admin coaches must be assigned to the target seeker
+    if (caller.role !== "admin") {
+      const { data: assigned } = await admin
+        .from("coach_seekers")
+        .select("id")
+        .eq("coach_id", caller.id)
+        .eq("seeker_id", reqRow.seeker_id)
+        .maybeSingle();
+      if (!assigned) {
+        return new Response(JSON.stringify({ error: "Forbidden: coach not assigned to this seeker" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
 
     const token = randomToken();
     const tokenHash = await sha256(token);
@@ -60,8 +73,8 @@ Deno.serve(async (req) => {
       const { sendEmail } = await import("../_shared/send-email.ts");
       const r = await sendEmail(admin, {
         to: seeker.email,
-        subject: `Reminder: Sign your ${doc?.title}`,
-        html: `<p>Dear ${seeker.full_name},</p><p>This is a reminder to sign your <strong>${doc?.title}</strong>.</p>
+        subject: `Reminder: Sign your ${doc?.title ?? "document"}`,
+        html: `<p>Dear ${escapeHtml(seeker.full_name ?? "Seeker")},</p><p>This is a reminder to sign your <strong>${escapeHtml(doc?.title ?? "")}</strong>.</p>
           <p><a href="${link}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none">Sign Now</a></p>
           <p style="font-size:12px;color:#6b7280">Link expires in 7 days.</p>`,
         label: "signature_reminder",
@@ -74,3 +87,12 @@ Deno.serve(async (req) => {
     return new Response((console.error('edge function error', e), JSON.stringify({ error: 'Internal server error' })), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
