@@ -87,3 +87,12 @@ Deno.serve(async (req) => {
     return new Response((console.error('edge function error', e), JSON.stringify({ error: 'Internal server error' })), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
