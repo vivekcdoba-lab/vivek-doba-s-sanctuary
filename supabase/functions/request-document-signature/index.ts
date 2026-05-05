@@ -48,6 +48,24 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "seeker_id and document_ids[] required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Length cap on free-text custom message to limit injection / abuse surface
+    const safeCustomMessage = typeof custom_message === "string"
+      ? custom_message.slice(0, 1000)
+      : null;
+
+    // IDOR protection: non-admin coaches must be assigned to the target seeker
+    if (callerProfile.role !== "admin") {
+      const { data: assigned } = await admin
+        .from("coach_seekers")
+        .select("id")
+        .eq("coach_id", callerProfile.id)
+        .eq("seeker_id", seeker_id)
+        .maybeSingle();
+      if (!assigned) {
+        return new Response(JSON.stringify({ error: "Forbidden: coach not assigned to this seeker" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
     const { data: seeker, error: seekerErr } = await admin.from("profiles").select("id, full_name, email").eq("id", seeker_id).single();
     if (seekerErr || !seeker) {
       return new Response(JSON.stringify({ error: "Seeker not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
