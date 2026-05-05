@@ -297,12 +297,21 @@ const AdminHomepageMedia = () => {
   function openCreate() {
     setEditing(null);
     setForm(emptyForm);
+    autoThumbRef.current = true;
+    manualPlatformRef.current = false;
+    manualTypeRef.current = false;
+    setDetected({});
     setDialogOpen(true);
   }
 
   function openEdit(row: MediaRow) {
     setEditing(row);
     setForm(row);
+    // Existing rows already have user-set values; don't auto-overwrite them
+    autoThumbRef.current = !row.thumbnail_url;
+    manualPlatformRef.current = true;
+    manualTypeRef.current = true;
+    setDetected(detectFromUrl(row.external_url || ''));
     setDialogOpen(true);
   }
 
