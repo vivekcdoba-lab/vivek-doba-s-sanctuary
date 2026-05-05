@@ -176,6 +176,32 @@ const AdminHomepageMedia = () => {
   const [editing, setEditing] = useState<MediaRow | null>(null);
   const [form, setForm] = useState<Partial<MediaRow>>(emptyForm);
   const [uploading, setUploading] = useState(false);
+  const [detected, setDetected] = useState<Detected>({});
+  // Tracks whether the admin has manually overridden these fields. Reset on dialog open.
+  const autoThumbRef = useRef(true);
+  const manualPlatformRef = useRef(false);
+  const manualTypeRef = useRef(false);
+
+  // When the URL changes, auto-detect platform/type/thumbnail
+  useEffect(() => {
+    if (!dialogOpen) return;
+    const d = detectFromUrl(form.external_url || '');
+    setDetected(d);
+    setForm(f => {
+      const next: Partial<MediaRow> = { ...f };
+      if (autoThumbRef.current) {
+        next.thumbnail_url = d.thumbnail || '';
+      }
+      if (!manualPlatformRef.current && d.platform) {
+        next.platform = d.platform;
+      }
+      if (!manualTypeRef.current && d.contentType) {
+        next.content_type = d.contentType;
+      }
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.external_url, dialogOpen]);
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ['homepage-media-admin'],
