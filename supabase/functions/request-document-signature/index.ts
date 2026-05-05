@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
       const { data: req, error: reqErr } = await admin.from("signature_requests").insert({
         seeker_id, document_id: doc.id, session_id: session_id ?? null,
         signer_name: seeker.full_name, token_hash: tokenHash,
-        custom_message: custom_message ?? null, created_by: callerProfile.id,
+        custom_message: safeCustomMessage, created_by: callerProfile.id,
         sign_method: "email",
       }).select("id").single();
       if (reqErr) { console.error(reqErr); continue; }
@@ -96,14 +96,14 @@ Deno.serve(async (req) => {
       const link = `${APP_URL}/sign/${token}`;
       const html = `
         <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1f2937">
-          <p>Dear ${seeker.full_name ?? "Seeker"},</p>
+          <p>Dear ${escapeHtml(seeker.full_name ?? "Seeker")},</p>
           <p>I hope this message finds you well.</p>
           <p>Please review and sign the attached agreement document at your earliest convenience. If you have any questions or need any clarification, feel free to reach out.</p>
           <p style="background:#FFF8F0;padding:16px;border-radius:8px;border-left:4px solid #FF6B00">
-            <strong>${doc.title}</strong><br/>
-            <span style="color:#6b7280;font-size:14px">${doc.description ?? ""}</span>
+            <strong>${escapeHtml(doc.title ?? "")}</strong><br/>
+            <span style="color:#6b7280;font-size:14px">${escapeHtml(doc.description ?? "")}</span>
           </p>
-          ${custom_message ? `<p style="font-style:italic;color:#374151">"${custom_message}"</p>` : ""}
+          ${safeCustomMessage ? `<p style="font-style:italic;color:#374151">"${escapeHtml(safeCustomMessage)}"</p>` : ""}
           <p style="text-align:center;margin:32px 0">
             <a href="${link}" style="background:#FF6B00;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600">Open Signing Page</a>
           </p>
