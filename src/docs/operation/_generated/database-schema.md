@@ -1,6 +1,6 @@
 # Database Schema
 
-_Generated: 2026-05-06T06:57:28.972Z_
+_Generated: 2026-05-06T07:59:07.640Z_
 
 Tables: **106** • Functions: **57**
 
@@ -92,7 +92,7 @@ Tables: **106** • Functions: **57**
 
 **Columns** (11): `id`, `course_id`, `trigger_enrollment_course_id`, `free_sessions`, `discounted_sessions`, `discounted_rate_inr`, `paid_after`, `notes`, `is_active`, `created_at`, `updated_at`
 
-**RLS policies** (3): _All can read course session rules_; _Admins manage course session rules_; _Authenticated can read course session rules_
+**RLS policies** (4): _All can read course session rules_; _Admins manage course session rules_; _Authenticated can read course session rules_; _Admins and coaches can read course session rules_
 
 ## Sessions
 
@@ -528,7 +528,7 @@ Tables: **106** • Functions: **57**
 
 **Columns** (8): `id`, `message_id`, `template_name`, `recipient_email`, `status`, `error_message`, `metadata`, `created_at`
 
-**RLS policies** (7): _Service role can read send log_; _Service role can insert send log_; _Service role can update send log_; _Admins can view email send log_; _Restrict email_send_log reads to admins and service role_; _Super admins and service role can read email send log_; _Super admins can delete old email send log entries_
+**RLS policies** (9): _Service role can read send log_; _Service role can insert send log_; _Service role can update send log_; _Admins can view email send log_; _Restrict email_send_log reads to admins and service role_; _Super admins and service role can read email send log_; _Super admins can delete old email send log entries_; _Super admins read email send log_; _Super admins delete email send log entries_
 
 ### `email_send_state`
 
