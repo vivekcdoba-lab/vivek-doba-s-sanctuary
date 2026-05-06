@@ -1091,6 +1091,10 @@ const SeekerDetailPage = () => {
         </div>
       )}
 
+      {/* TAB 10: ACCESS */}
+      {activeTab === 10 && (
+        <SeekerAccessTab seekerId={seeker.id} />
+      )}
 
       {/* Award Badge Dialog */}
       <Dialog open={awardBadgeOpen} onOpenChange={setAwardBadgeOpen}>
