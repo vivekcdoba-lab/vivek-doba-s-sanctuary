@@ -8,6 +8,16 @@ const corsHeaders = {
 
 const ADMIN_EMAIL = "info@vivekdoba.com";
 
+// HTML-escape DB-sourced values to prevent stored HTML injection in admin emails.
+function escapeHtml(v: unknown): string {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
