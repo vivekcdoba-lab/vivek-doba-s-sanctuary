@@ -165,6 +165,24 @@ function SeekerSidebar({ collapsed, onCollapse, onClose }: { collapsed: boolean;
   const navigate = useNavigate();
   const { profile, logout } = useAuthStore();
   const { data: streak = 0 } = useStreakCount(profile?.id || null);
+  const { accessMap, isLoading: accessLoading, isSeeker } = useMyModuleAccess();
+
+  // Filter nav by per-seeker module access. Non-seekers (admin viewing) see everything.
+  const visibleNav = useMemo(() => {
+    if (!isSeeker) return seekerNav;
+    return seekerNav
+      .map(group => {
+        const items = group.items.filter(item => {
+          const mod = PATH_TO_MODULE[item.path];
+          if (!mod) return true; // unmapped items remain visible
+          if (mod.alwaysOn) return true;
+          if (accessLoading) return false; // hide gated items until we know
+          return canAccessModule(mod.key, accessMap);
+        });
+        return { ...group, items };
+      })
+      .filter(g => g.items.length > 0);
+  }, [isSeeker, accessLoading, accessMap]);
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     try {
