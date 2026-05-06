@@ -8,6 +8,16 @@ const corsHeaders = {
 
 const ADMIN_EMAIL = "info@vivekdoba.com";
 
+// HTML-escape DB-sourced values to prevent stored HTML injection in admin emails.
+function escapeHtml(v: unknown): string {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -73,11 +83,11 @@ Deno.serve(async (req) => {
 
     // Step 3: Build HTML email
     const reasonRows = Object.entries(r.logout_reasons || {})
-      .map(([reason, count]) => `<tr><td style="padding:6px 12px;border-bottom:1px solid #eee;text-transform:capitalize">${reason}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:center">${count}</td></tr>`)
+      .map(([reason, count]) => `<tr><td style="padding:6px 12px;border-bottom:1px solid #eee;text-transform:capitalize">${escapeHtml(reason)}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:center">${escapeHtml(count)}</td></tr>`)
       .join("");
 
     const userRows = (r.top_users || [])
-      .map((u) => `<tr><td style="padding:6px 12px;border-bottom:1px solid #eee">${u.full_name}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-transform:capitalize">${u.role}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:center">${u.session_count}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:center">${u.avg_min} min</td></tr>`)
+      .map((u) => `<tr><td style="padding:6px 12px;border-bottom:1px solid #eee">${escapeHtml(u.full_name)}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-transform:capitalize">${escapeHtml(u.role)}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:center">${escapeHtml(u.session_count)}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:center">${escapeHtml(u.avg_min)} min</td></tr>`)
       .join("");
 
     const html = `
