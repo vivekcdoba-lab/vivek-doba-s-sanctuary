@@ -233,7 +233,7 @@ function SeekerSidebar({ collapsed, onCollapse, onClose }: { collapsed: boolean;
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
-        {seekerNav.map((group, gi) => {
+        {visibleNav.map((group, gi) => {
           const isExpanded = expanded[group.label] ?? false;
           return (
             <div key={group.label}>
