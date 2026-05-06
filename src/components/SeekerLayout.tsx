@@ -19,6 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useMyModuleAccess } from '@/hooks/useSeekerModuleAccess';
 import { PATH_TO_MODULE } from '@/config/seekerModules';
 import { canAccessModule } from '@/lib/canAccessModule';
+import ModuleGuard from '@/components/ModuleGuard';
 
 type NavItem = { icon: any; label: string; path: string };
 type NavGroup = { label: string; emoji: string; items: NavItem[]; dividerBefore?: string };
@@ -387,7 +388,7 @@ const SeekerLayout = () => {
         </header>
 
         <main className="flex-1 pb-20 lg:pb-4 overflow-y-auto">
-          <Outlet />
+          <ModuleGuard><Outlet /></ModuleGuard>
         </main>
 
         <FloatingMusicButton />
