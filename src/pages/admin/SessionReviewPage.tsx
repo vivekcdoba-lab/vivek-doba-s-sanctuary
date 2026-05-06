@@ -86,18 +86,14 @@ const SessionReviewPage = () => {
     if (id) loadAll();
   }, [id]);
 
-  // Live refresh: re-fetch when the seeker (or anyone) updates this session
+  // Live refresh: poll every 5s while the review page is open.
+  // (Realtime broadcast on `sessions` was removed for security — the table
+  // is no longer in the supabase_realtime publication, so we use polling
+  // here instead. Admin-only page, so the extra request volume is minimal.)
   useEffect(() => {
     if (!id) return;
-    const ch = supabase
-      .channel(`session-review-${id}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'sessions', filter: `id=eq.${id}` },
-        () => { loadAll(); },
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    const interval = setInterval(() => { loadAll(); }, 5000);
+    return () => { clearInterval(interval); };
   }, [id]);
 
   const loadAll = async () => {
