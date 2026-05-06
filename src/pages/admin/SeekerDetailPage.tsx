@@ -38,13 +38,14 @@ import { Link2, Unlink, Users } from 'lucide-react';
 import AvatarUploader from '@/components/AvatarUploader';
 import { useSeekerSessionCount } from '@/hooks/useSeekerSessionCount';
 import { useFeeStructure } from '@/hooks/useFeeStructure';
+import SeekerAccessTab from '@/components/admin/SeekerAccessTab';
 
 import { formatDateDMY } from "@/lib/dateFormat";
 const formatINR = (n: number) => `₹${n.toLocaleString('en-IN')}`;
 const formatDate = (d: string) => { if (!d) return '—'; try { return format(new Date(d), 'dd-MMMM-yyyy'); } catch { return d; } };
 const formatTime12 = (t: string) => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`; };
 
-const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Assignments', 'Daily Tracking', 'Payments', 'Documents', 'LGT Application 👑', 'Private Notes 🔒'];
+const ALL_TABS = ['Overview', 'Personal Info', 'Sessions', 'Assessments', 'Assignments', 'Daily Tracking', 'Payments', 'Documents', 'LGT Application 👑', 'Private Notes 🔒', 'Access 🔐'];
 
 const moodEmoji = (score?: number | null) => {
   if (!score) return '—';
@@ -1090,6 +1091,10 @@ const SeekerDetailPage = () => {
         </div>
       )}
 
+      {/* TAB 10: ACCESS */}
+      {activeTab === 10 && (
+        <SeekerAccessTab seekerId={seeker.id} />
+      )}
 
       {/* Award Badge Dialog */}
       <Dialog open={awardBadgeOpen} onOpenChange={setAwardBadgeOpen}>

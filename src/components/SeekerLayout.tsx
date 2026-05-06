@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import NotificationBell from '@/components/NotificationBell';
 import { useStreakCount } from '@/hooks/useStreakCount';
@@ -15,6 +15,11 @@ import {
   Award, PanelLeftClose, PanelLeft, Clock
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
+import { useMyModuleAccess } from '@/hooks/useSeekerModuleAccess';
+import { PATH_TO_MODULE } from '@/config/seekerModules';
+import { canAccessModule } from '@/lib/canAccessModule';
+import ModuleGuard from '@/components/ModuleGuard';
 
 type NavItem = { icon: any; label: string; path: string };
 type NavGroup = { label: string; emoji: string; items: NavItem[]; dividerBefore?: string };
@@ -161,6 +166,24 @@ function SeekerSidebar({ collapsed, onCollapse, onClose }: { collapsed: boolean;
   const navigate = useNavigate();
   const { profile, logout } = useAuthStore();
   const { data: streak = 0 } = useStreakCount(profile?.id || null);
+  const { accessMap, isLoading: accessLoading, isSeeker } = useMyModuleAccess();
+
+  // Filter nav by per-seeker module access. Non-seekers (admin viewing) see everything.
+  const visibleNav = useMemo(() => {
+    if (!isSeeker) return seekerNav;
+    return seekerNav
+      .map(group => {
+        const items = group.items.filter(item => {
+          const mod = PATH_TO_MODULE[item.path];
+          if (!mod) return true; // unmapped items remain visible
+          if (mod.alwaysOn) return true;
+          if (accessLoading) return false; // hide gated items until we know
+          return canAccessModule(mod.key, accessMap);
+        });
+        return { ...group, items };
+      })
+      .filter(g => g.items.length > 0);
+  }, [isSeeker, accessLoading, accessMap]);
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     try {
@@ -211,7 +234,7 @@ function SeekerSidebar({ collapsed, onCollapse, onClose }: { collapsed: boolean;
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
-        {seekerNav.map((group, gi) => {
+        {visibleNav.map((group, gi) => {
           const isExpanded = expanded[group.label] ?? false;
           return (
             <div key={group.label}>
@@ -365,7 +388,7 @@ const SeekerLayout = () => {
         </header>
 
         <main className="flex-1 pb-20 lg:pb-4 overflow-y-auto">
-          <Outlet />
+          <ModuleGuard><Outlet /></ModuleGuard>
         </main>
 
         <FloatingMusicButton />
