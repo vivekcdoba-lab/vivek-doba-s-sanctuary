@@ -23,10 +23,14 @@ const T = {
   footer:  { en: "To stop these emails, manage notifications in your profile.", hi: "ये ईमेल बंद करने के लिए प्रोफ़ाइल में नोटिफिकेशन प्रबंधित करें।", mr: "हे ईमेल थांबवण्यासाठी प्रोफाइलमध्ये सूचना व्यवस्थापित करा." } as Record<Lang,string>,
 };
 
+function escapeHtml(s: unknown): string {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+}
+
 function html(name: string, lang: Lang) {
   return `<!doctype html><html><body style="font-family:system-ui,sans-serif;background:#fff7ed;padding:24px">
   <div style="max-width:560px;margin:auto;background:#fff;border-radius:12px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,0.06)">
-    <h2 style="color:#c2410c;margin:0 0 8px">${T.hi[lang]} ${name} 🙏</h2>
+    <h2 style="color:#c2410c;margin:0 0 8px">${T.hi[lang]} ${escapeHtml(name)} 🙏</h2>
     <p style="color:#374151;line-height:1.6">${T.body[lang]}</p>
     <p style="text-align:center;margin:28px 0">
       <a href="${SITE}/seeker/gratitude-wall" style="background:#ea580c;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600">${T.cta[lang]} →</a>
