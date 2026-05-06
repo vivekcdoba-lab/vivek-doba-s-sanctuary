@@ -71,8 +71,12 @@ function fontFamily(lang: Lang): string {
   return lang === "en" ? "'Poppins', Arial, sans-serif" : "'Noto Sans Devanagari', 'Poppins', Arial, sans-serif";
 }
 
+function escapeHtml(s: unknown): string {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+}
+
 function buildHtml(summary: any, lang: Lang, appUrl: string): { subject: string; html: string } {
-  const firstName = (summary.full_name || "Sadhak").split(" ")[0];
+  const firstName = escapeHtml((summary.full_name || "Sadhak").split(" ")[0]);
   const ws = summary.worksheet;
   const lgtToday = summary.lgt_today;
   const lgtAvg = summary.lgt_7d_avg || {};
@@ -125,7 +129,7 @@ function buildHtml(summary: any, lang: Lang, appUrl: string): { subject: string;
   const snapshotRows = ws ? `
     <tr><td style="padding:6px 0;color:#6b7280">${t("worksheet", lang)}</td>
         <td style="padding:6px 0;text-align:right"><b>${ws.submitted ? "✅ " + t("submitted", lang) : "⏳ " + t("not_submitted", lang)}</b> ${ws.completion ? `(${Math.round(Number(ws.completion))}%)` : ""}</td></tr>
-    ${ws.mood ? `<tr><td style="padding:6px 0;color:#6b7280">${t("mood", lang)}</td><td style="padding:6px 0;text-align:right">${ws.mood}</td></tr>` : ""}
+    ${ws.mood ? `<tr><td style="padding:6px 0;color:#6b7280">${t("mood", lang)}</td><td style="padding:6px 0;text-align:right">${escapeHtml(ws.mood)}</td></tr>` : ""}
     ${ws.energy ? `<tr><td style="padding:6px 0;color:#6b7280">${t("energy", lang)}</td><td style="padding:6px 0;text-align:right">${ws.energy}/10</td></tr>` : ""}
     <tr><td style="padding:6px 0;color:#6b7280">🔥 ${t("streak", lang)}</td><td style="padding:6px 0;text-align:right"><b>${streak} ${t("days", lang)}</b></td></tr>
   ` : `<tr><td style="padding:6px 0;color:#6b7280">🔥 ${t("streak", lang)}</td><td style="padding:6px 0;text-align:right"><b>${streak} ${t("days", lang)}</b></td></tr>`;
@@ -134,7 +138,7 @@ function buildHtml(summary: any, lang: Lang, appUrl: string): { subject: string;
   const nextSessionBlock = next ? `
     <div style="margin-top:16px;padding:12px;background:#FEF3C7;border-radius:8px;border-left:4px solid #D97706">
       <div style="font-size:12px;color:#92400E;font-weight:600">${t("next_session", lang)}</div>
-      <div style="font-size:14px;color:#1f2937;margin-top:4px">${next.name || "Session"} — ${next.date}${next.start_time ? " at " + next.start_time : ""}</div>
+      <div style="font-size:14px;color:#1f2937;margin-top:4px">${escapeHtml(next.name || "Session")} — ${escapeHtml(next.date)}${next.start_time ? " at " + escapeHtml(next.start_time) : ""}</div>
     </div>` : "";
 
   const pendingBlock = summary.pending_assignments > 0 ? `
@@ -145,7 +149,7 @@ function buildHtml(summary: any, lang: Lang, appUrl: string): { subject: string;
   const sankalpBlock = ws?.tomorrow_sankalp ? `
     <div style="margin-top:16px;padding:12px;background:#ECFDF5;border-radius:8px;border-left:4px solid #059669">
       <div style="font-size:12px;color:#065F46;font-weight:600">${t("tomorrow", lang)}</div>
-      <div style="font-size:14px;color:#1f2937;margin-top:4px;font-style:italic">"${ws.tomorrow_sankalp}"</div>
+      <div style="font-size:14px;color:#1f2937;margin-top:4px;font-style:italic">"${escapeHtml(ws.tomorrow_sankalp)}"</div>
     </div>` : "";
 
   const html = `

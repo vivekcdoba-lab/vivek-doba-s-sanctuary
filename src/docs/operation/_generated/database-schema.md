@@ -1,8 +1,8 @@
 # Database Schema
 
-_Generated: 2026-05-06T05:24:26.428Z_
+_Generated: 2026-05-06T06:57:28.972Z_
 
-Tables: **105** • Functions: **57**
+Tables: **106** • Functions: **57**
 
 > Schema is reconstructed from migration files in `supabase/migrations/`. Source of truth is the running database; migrations are the authoritative change log.
 
@@ -663,4 +663,8 @@ Tables: **105** • Functions: **57**
 ### `homepage_media`
 
 **Columns** (12): `id`, `title`, `platform`, `content_type`, `external_url`, `thumbnail_url`, `description`, `display_order`, `is_active`, `created_by`, `created_at`, `updated_at`
+
+### `seeker_module_access`
+
+**Columns** (7): `id`, `seeker_id`, `module_key`, `is_enabled`, `updated_by`, `created_at`, `updated_at`
 
