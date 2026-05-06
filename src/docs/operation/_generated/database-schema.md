@@ -1,8 +1,8 @@
 # Database Schema
 
-_Generated: 2026-05-05T16:00:13.989Z_
+_Generated: 2026-05-06T05:24:26.428Z_
 
-Tables: **104** • Functions: **57**
+Tables: **105** • Functions: **57**
 
 > Schema is reconstructed from migration files in `supabase/migrations/`. Source of truth is the running database; migrations are the authoritative change log.
 
@@ -92,7 +92,7 @@ Tables: **104** • Functions: **57**
 
 **Columns** (11): `id`, `course_id`, `trigger_enrollment_course_id`, `free_sessions`, `discounted_sessions`, `discounted_rate_inr`, `paid_after`, `notes`, `is_active`, `created_at`, `updated_at`
 
-**RLS policies** (2): _All can read course session rules_; _Admins manage course session rules_
+**RLS policies** (3): _All can read course session rules_; _Admins manage course session rules_; _Authenticated can read course session rules_
 
 ## Sessions
 
@@ -166,7 +166,7 @@ Tables: **104** • Functions: **57**
 
 **Columns** (6): `id`, `name`, `category`, `icon_emoji`, `created_by`, `created_at`
 
-**RLS policies** (3): _Anyone can view topics_; _Admins manage all topics_; _Authenticated users can create topics_
+**RLS policies** (4): _Anyone can view topics_; _Admins manage all topics_; _Authenticated users can create topics_; _Coaches and admins can create topics_
 
 ## Assessments
 
@@ -564,7 +564,7 @@ Tables: **104** • Functions: **57**
 
 **Columns** (6): `id`, `enabled`, `send_hour`, `updated_by`, `updated_at`, `singleton`
 
-**RLS policies** (3): _Anyone authed can read daily report settings_; _Admins can update daily report settings_; _Admins can insert daily report settings_
+**RLS policies** (4): _Anyone authed can read daily report settings_; _Admins can update daily report settings_; _Admins can insert daily report settings_; _Admins can read daily report settings_
 
 ## Documents & Agreements
 
@@ -578,7 +578,7 @@ Tables: **104** • Functions: **57**
 
 **Columns** (13): `id`, `request_id`, `seeker_id`, `document_id`, `signed_pdf_path`, `typed_full_name`, `place`, `signature_date`, `ip_address`, `user_agent`, `verification_id`, `file_size_bytes`, `signed_at`
 
-**RLS policies** (3): _Admins read document signatures_; _Coaches read document signatures_; _Seekers read own document signatures_
+**RLS policies** (4): _Admins read document signatures_; _Coaches read document signatures_; _Seekers read own document signatures_; _Only admins can insert document signatures_
 
 ### `agreements`
 
@@ -657,4 +657,10 @@ Tables: **104** • Functions: **57**
 **Columns** (12): `id`, `title`, `type`, `seeker_id`, `date`, `start_time`, `end_time`, `color`, `notes`, `created_at`, `updated_at`, `start_at`
 
 **RLS policies** (2): _Admins can manage calendar_; _Seekers can view own events_
+
+## Other / Uncategorized
+
+### `homepage_media`
+
+**Columns** (12): `id`, `title`, `platform`, `content_type`, `external_url`, `thumbnail_url`, `description`, `display_order`, `is_active`, `created_by`, `created_at`, `updated_at`
 
