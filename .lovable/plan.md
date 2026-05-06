@@ -1,97 +1,68 @@
-# Per-Seeker Module Access Control
+# P0 Security Fixes — Top 2 (this week)
 
-Give admin granular control over which seeker pages each individual seeker can see and access. By default, **everything is disabled** for new seekers — admin must explicitly enable modules.
+Fix the two high-severity findings from the latest audit. Both are quick, low-risk changes.
 
-## What gets built
+## 1. Enable Leaked Password Protection (HIBP)
 
-### 1. Database — `seeker_module_access` table
+**Problem:** Anyone can register with a known-breached password (e.g. `Password123!`), making the app trivially vulnerable to credential stuffing.
 
-```sql
-create table public.seeker_module_access (
-  id uuid primary key default gen_random_uuid(),
-  seeker_id uuid not null references profiles(id) on delete cascade,
-  module_key text not null,         -- canonical key matching MODULE_REGISTRY
-  is_enabled boolean not null default false,
-  updated_by uuid references profiles(id),
-  created_at timestamptz default now(),
-  updated_at timestamptz default now(),
-  unique (seeker_id, module_key)
-);
+**Fix:** Toggle `password_hibp_enabled = true` on the Cloud Auth configuration. This is a one-call change to the auth settings — Supabase will then check every signup and password change against the Have I Been Pwned database and reject compromised passwords.
+
+**Impact on users:** None for existing accounts. New signups and password resets that try to use a breached password will see a clear error and must pick a stronger one.
+
+## 2. Remove `sessions` table from Realtime publication
+
+**Problem:** `public.sessions` is currently in the `supabase_realtime` publication. Postgres logical replication broadcasts every row change at the table level *before* RLS is evaluated, so an authenticated seeker subscribing to the channel could receive payloads containing another seeker's coaching notes, scores, and private feedback. The client-side `filter: id=eq.<x>` only narrows what *that* client renders — it does not stop the row from being shipped to other listeners.
+
+**Audit of current usage:** Only one place in the entire codebase subscribes to realtime changes on `sessions`:
+
+- `src/pages/admin/SessionReviewPage.tsx` — admin-only route, listens for UPDATE on a single session id while the admin is reviewing it.
+
+Every other reference to `sessions` uses standard `select` / `update` queries (no realtime), so removing the table from the publication is safe.
+
+**Fix (migration):**
+
+1. Drop `public.sessions` from the `supabase_realtime` publication.
+2. Replace the realtime subscription on `SessionReviewPage.tsx` with a lightweight polling refetch (every 5 s while the page is open) so admins still see updates without the table being broadcast at all.
+
+```text
+sessions (in publication)  ──►  every authenticated client receives every row change
+                                                │
+                                                ▼ (RLS only filters reads, not realtime payloads)
+                                         data leak risk
+
+sessions (NOT in publication)  ──►  no broadcast; admin page polls every 5s for updates
 ```
 
-**RLS**
-- Admin: full read/write (`is_admin(auth.uid())`).
-- Coach: read-only on assigned seekers (`is_assigned_coach(...)`).
-- Seeker: read-only on own row (`profiles.user_id = auth.uid()`).
-- Default model: **absence of a row = disabled**. So no seeker access until admin saves at least one enabled row.
+## Technical changes
 
-Seed-on-demand: nothing pre-inserted. UI treats missing rows as `false`.
+- **Auth config**: call `configure_auth` with `password_hibp_enabled: true`.
+- **Migration** `…_drop_sessions_from_realtime.sql`:
+  ```sql
+  DO $$
+  BEGIN
+    IF EXISTS (
+      SELECT 1 FROM pg_publication_tables
+      WHERE pubname = 'supabase_realtime'
+        AND schemaname = 'public'
+        AND tablename = 'sessions'
+    ) THEN
+      EXECUTE 'ALTER PUBLICATION supabase_realtime DROP TABLE public.sessions';
+    END IF;
+  END $$;
+  ```
+- **`src/pages/admin/SessionReviewPage.tsx`**: remove the `supabase.channel(...).on('postgres_changes', { table: 'sessions', ... })` block; add a `useQuery` `refetchInterval: 5000` (or a `setInterval` calling the existing fetch) scoped to the open review session. Admin-only impact, no UX regression.
+- **Mark findings fixed** in the security scanner via `manage_security_finding` (HIBP + sessions realtime exposure).
+- **Update `@security-memory`**: note that `sessions` is intentionally excluded from realtime; admin review uses polling instead.
+- **Update `src/docs/operation/_generated/security-posture.md`**: remove the "manual one-time setup: enable HIBP" line and add a short note that `sessions` is not realtime-published.
 
-### 2. Module Registry (single source of truth)
+## Out of scope (covered by separate P1/P2 plans)
 
-New file `src/config/seekerModules.ts` mirroring the groups/items already in `src/components/SeekerLayout.tsx`. Each item gets a stable `key` (e.g. `daily.worksheet`, `assess.wol`, `artha.cashflow`, `moksha.meditation_timer`) plus its `label`, `path`, `group`, and `section` (MY JOURNEY / PURUSHAARTH / RESOURCES / etc.).
+- REVOKE EXECUTE on `decrypt_field`, `_current_dek`, `get_submission_password`, etc.
+- `requireAdminOrCron` audit on cron edge functions.
+- Partial unique index on `encryption_keys (is_current)`.
+- Avatars bucket listing tightening.
+- Recovery runbook + auth anomaly alerts.
+- CSP nonce migration, esm.sh pinning, Mermaid escapeHtml.
 
-Covers every item in the spec doc (Daily Practice, Assessments, Dharma, Artha, Kama, Moksha) and the existing extra groups already in the sidebar (Sessions, Assignments, Learning, Ambient Sounds, Messages, Achievements, Settings) so admin can also gate those. Settings/Profile, Help & Support, Notifications, and Dashboard/Home are marked `alwaysOn: true` (not gated, never hidden) so a seeker always has at least the home + profile.
-
-### 3. New "Access" tab on Admin Seeker Detail page
-
-`src/pages/admin/SeekerDetailPage.tsx` — extend `ALL_TABS` to insert `'Access 🔐'` right after `'Personal Info'`.
-
-Tab UI (`src/components/admin/SeekerAccessTab.tsx`, new):
-- Section headers (MY JOURNEY, PURUSHAARTH, RESOURCES, SETTINGS).
-- Each group (Daily Practice, Assessments, Dharma, Artha, Kama, Moksha, Sessions, Assignments, Learning, Ambient Sounds, Messages, Achievements) collapsible.
-- Per-item checkbox + per-group "toggle all" + global "Enable all / Disable all / Expand all / Collapse all".
-- "Save" button: bulk upsert into `seeker_module_access` (one row per non-always-on module). Shows toast on success.
-- Item count badge per group: `enabled / total`.
-- Always-on items shown as locked rows with a small "Always available" badge.
-
-### 4. Hook + helper
-
-`src/hooks/useSeekerModuleAccess.ts`
-- `useSeekerModuleAccess(seekerId)` → `{ accessMap: Record<string, boolean>, isLoading }`.
-- `useUpdateSeekerModuleAccess()` mutation → bulk upsert.
-- `useMyModuleAccess()` → for the logged-in seeker, joins to their `profiles.id`. Cached via TanStack Query, key includes seeker id, invalidated on update.
-
-`src/lib/canAccessModule.ts`
-- `canAccessModule(moduleKey, accessMap)` → `true` if `alwaysOn` OR `accessMap[key] === true`.
-
-### 5. Sidebar gating — `src/components/SeekerLayout.tsx`
-
-- Import `useMyModuleAccess` and the registry.
-- Each nav item is annotated with its `moduleKey` (extend `NavItem`).
-- Filter: if `!canAccessModule(item.moduleKey, accessMap)`, skip it.
-- If a group ends up with zero visible items, skip the group header too.
-- While loading: render only always-on items (Dashboard, Profile, Help) so the seeker isn't briefly shown the full menu.
-
-### 6. Route-level guard
-
-New `src/components/ModuleGuard.tsx`:
-- Reads `useMyModuleAccess`, looks up the `moduleKey` for the current path.
-- If disabled: render a `<ModuleDisabled />` placeholder ("This feature isn't enabled for your account yet. Please contact your coach.") instead of the page. No redirect (avoids loops).
-- Always-on routes bypass.
-
-In `src/App.tsx`, wrap each gated seeker route element with `<ModuleGuard moduleKey="...">`. Routes are listed in the registry so we can map path→key. Always-on routes (`/seeker/home`, `/seeker/profile`, `/seeker/help`, `/seeker/notifications`, `/seeker/privacy-settings`) are not wrapped.
-
-### 7. Backend enforcement
-
-RLS already isolates seeker data by `seeker_id = profiles.id where user_id = auth.uid()`. Module access controls **UI visibility**, not table-level data — there are no per-module tables to lock down beyond what RLS already does. The `ModuleGuard` blocks direct URL navigation, and the sidebar hides hidden items. This matches the spec's "frontend hides + backend RLS already protects data" model.
-
-(If a future module exposes shared/global data that needs per-seeker gating at the row level, add a policy that joins to `seeker_module_access`. Out of scope for this pass.)
-
-## Out of scope (future-ready, not built now)
-
-- Permission templates / copy-from-another-seeker
-- Bulk assignment across multiple seekers
-- Expiry-based / scheduled rollouts
-- Audit log table
-- Coach-level editing (read-only for now)
-
-## Files touched
-
-- **New**: `supabase/migrations/<ts>_seeker_module_access.sql`, `src/config/seekerModules.ts`, `src/hooks/useSeekerModuleAccess.ts`, `src/lib/canAccessModule.ts`, `src/components/admin/SeekerAccessTab.tsx`, `src/components/ModuleGuard.tsx`
-- **Edited**: `src/pages/admin/SeekerDetailPage.tsx` (insert Access tab + render), `src/components/SeekerLayout.tsx` (filter nav by access), `src/App.tsx` (wrap gated seeker routes in `ModuleGuard`)
-
-## Default behavior summary
-
-- New seeker → no rows in `seeker_module_access` → only always-on items visible (Home, Profile, Help, Notifications, Privacy).
-- Admin opens Access tab → sees full hierarchy with everything unchecked → ticks the modules to enable → Save → seeker's sidebar + routes update on next load (and live via query invalidation if seeker is logged in).
+Approve to proceed and I'll apply both fixes.
