@@ -5,8 +5,8 @@ import { openWhatsApp } from '@/lib/openExternal';
 import HomepageMediaSection from '@/components/HomepageMediaSection';
 
 const stats = [
-  { value: '80,000+', label: 'Lives Transformed' },
-  { value: '35,000+', label: 'Inspiring Stories' },
+  { value: '30,000+', label: 'Lives Transformed' },
+  { value: '1,000+', label: 'Inspiring Stories' },
   { value: '20+', label: 'Years Experience' },
 ];
 
