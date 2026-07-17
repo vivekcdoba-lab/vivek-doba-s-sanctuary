@@ -1,6 +1,6 @@
 # Edge Functions
 
-_Generated: 2026-05-06T07:59:07.640Z_
+_Generated: 2026-07-17T04:54:35.136Z_
 
 Total: **26** serverless functions deployed via Lovable Cloud.
 
@@ -9,7 +9,7 @@ Total: **26** serverless functions deployed via Lovable Cloud.
 | `admin-create-user` | — | RESEND_FROM |
 | `admin-reset-password` | — | — |
 | `approve-application` | — | — |
-| `daily-session-report` | — | CRON_SECRET |
+| `daily-session-report` | HTML-escape DB-sourced values to prevent stored HTML injection in admin emails. | CRON_SECRET |
 | `delete-seeker` | — | — |
 | `get-signature-request` | — | — |
 | `notify-session-submitted` | Notify a seeker (email + in-app notification) that their coach has submitted | APP_PUBLIC_URL |
