@@ -1,6 +1,6 @@
 # Database Schema
 
-_Generated: 2026-05-06T07:59:07.640Z_
+_Generated: 2026-07-17T04:54:35.136Z_
 
 Tables: **106** • Functions: **57**
 
@@ -284,7 +284,7 @@ Tables: **106** • Functions: **57**
 
 **Columns** (7): `id`, `seeker_id`, `habit_name`, `lgt_pillar`, `is_active`, `added_by`, `created_at`
 
-**RLS policies** (2): _Seekers can view own non-negotiables_; _Admins manage all non-negotiables_
+**RLS policies** (3): _Seekers can view own non-negotiables_; _Admins manage all non-negotiables_; _Assigned coaches view seeker non-negotiables_
 
 ### `time_sheets`
 
