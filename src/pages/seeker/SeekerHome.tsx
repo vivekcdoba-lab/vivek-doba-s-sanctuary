@@ -23,6 +23,8 @@ import DailySankalpWidget from '@/components/dashboard/DailySankalpWidget';
 import LGTQuickCheckIn from '@/components/dashboard/LGTQuickCheckIn';
 import SmartRecommendations from '@/components/dashboard/SmartRecommendations';
 import WheelOfLifeWidget from '@/components/dashboard/WheelOfLifeWidget';
+import SessionCreditsCard from '@/components/dashboard/SessionCreditsCard';
+import { useSessionCredits } from '@/hooks/useSessionCredits';
 
 const SeekerHome = () => {
   const { profile, logout } = useAuthStore();
@@ -33,9 +35,12 @@ const SeekerHome = () => {
   const { data: assignments = [] } = useDbAssignments(profileId ?? undefined);
   const { data: streak = 0 } = useStreakCount(profileId);
   const { notifications, dismiss, dismissAll } = useBadgeNotifications(profileId);
+  const { data: credits } = useSessionCredits(profileId);
 
   const completedSessions = sessions.filter(s => s.status === 'completed' || s.status === 'approved').length;
-  const totalSessions = Math.max(sessions.length, 24);
+  const totalSessions = credits && credits.totalAllowed > 0
+    ? credits.totalAllowed
+    : Math.max(sessions.length, 1);
 
   // Avatar (not present in local Profile type — fetch directly)
   const { data: avatarUrl } = useQuery({
@@ -202,6 +207,7 @@ const SeekerHome = () => {
       {/* Secondary Widgets Row */}
       <div className="grid md:grid-cols-2 gap-4">
         <AssignmentsWidget assignments={assignments} />
+        <SessionCreditsCard seekerId={profileId} />
       </div>
 
       {/* Wisdom Quote */}

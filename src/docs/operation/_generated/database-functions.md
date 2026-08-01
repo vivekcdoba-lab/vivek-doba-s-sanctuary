@@ -1,18 +1,20 @@
 # Database Functions
 
-_Generated: 2026-08-01T06:54:06.650Z_
+_Generated: 2026-08-01T07:10:18.156Z_
 
-Total: **57** functions in `public` schema (from migrations).
+Total: **63** functions in `public` schema (from migrations).
 
 - `_current_dek()`
 - `_dek_for_version()`
 - `auto_link_coaches_on_enrollment()`
 - `auto_link_seekers_on_program_trainer_insert()`
 - `auto_set_attendance_on_status()`
+- `award_assignment_credits()`
 - `check_profile_duplicate()`
 - `check_single_assessment_rate_limit()`
 - `cleanup_old_sessions()`
 - `close_inactive_sessions()`
+- `consume_workshop_credit()`
 - `decrypt_field()`
 - `decrypt_many()`
 - `delete_email()`
@@ -20,7 +22,9 @@ Total: **57** functions in `public` schema (from migrations).
 - `encrypt_submission_password()`
 - `enforce_otp_cooldown()`
 - `enforce_profile_insert_safety()`
+- `enforce_session_cap()`
 - `enqueue_email()`
+- `enrollment_apply_course_defaults()`
 - `find_unsubscribe_token()`
 - `get_daily_session_report()`
 - `get_encryption_status()`
@@ -31,6 +35,7 @@ Total: **57** functions in `public` schema (from migrations).
 - `get_seeker_link_group()`
 - `get_session_signatures()`
 - `get_submission_password()`
+- `guard_enrollment_credit_rules()`
 - `handle_new_user()`
 - `hash_for_lookup()`
 - `hash_token()`
@@ -50,6 +55,7 @@ Total: **57** functions in `public` schema (from migrations).
 - `purge_email_queue()`
 - `purge_old_submissions()`
 - `read_email_batch()`
+- `release_session_slot()`
 - `rotate_encryption_keys()`
 - `submit_lgt_application_by_token()`
 - `sync_session_time_fields()`
