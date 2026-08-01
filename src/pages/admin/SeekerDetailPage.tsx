@@ -22,6 +22,7 @@ import { usePayments } from '@/hooks/usePayments';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useDbSessions } from '@/hooks/useDbSessions';
+import { useSessionCredits } from '@/hooks/useSessionCredits';
 import { useDbAssignments } from '@/hooks/useDbAssignments';
 import { useDbCourses } from '@/hooks/useDbCourses';
 import { SeekerSignaturesTab } from '@/components/SeekerSignaturesTab';
@@ -132,6 +133,7 @@ const SeekerDetailPage = () => {
   // Real data hooks
   const { payments: seekerPayments, createPayment } = usePayments(id);
   const { data: sessions = [] } = useDbSessions(id);
+  const { data: credits } = useSessionCredits(id);
   const { data: assignments = [] } = useDbAssignments(id);
   const { data: courses = [] } = useDbCourses();
 
@@ -477,7 +479,7 @@ const SeekerDetailPage = () => {
 
   const course = courses.find(c => c.id === enrollment?.course_id);
   const completedSessions = sessions.filter(s => s.status === 'completed' || s.status === 'approved').length;
-  const totalSessions = sessions.length || 1;
+  const totalSessions = credits && credits.totalAllowed > 0 ? credits.totalAllowed : (sessions.length || 1);
   const daysSinceJoin = Math.floor((Date.now() - new Date(seeker.created_at).getTime()) / 86400000);
   const totalCourseFee = course?.price || 0;
   const totalPaid = seekerPayments.filter(p => p.status === 'received').reduce((s, p) => s + Number(p.total_amount), 0);
@@ -581,6 +583,22 @@ const SeekerDetailPage = () => {
           }`}>{tab}</button>
         ))}
       </div>
+
+      {/* Session cap warning */}
+      {credits && credits.atLimit && (
+        <div className="rounded-xl border-2 border-destructive/50 bg-destructive/10 p-4 flex items-start gap-3">
+          <span className="text-xl">⚠️</span>
+          <div>
+            <p className="text-sm font-semibold text-foreground">Session limit reached</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {credits.sessionsUsed} of {credits.totalAllowed} sessions delivered
+              {credits.bonusSessionsGranted > 0 && ` (incl. ${credits.bonusSessionsGranted} bonus)`}.
+              New sessions will be blocked until more sessions are committed or bonus credits are earned.
+              {credits.workshopCreditsRemaining > 0 && ` Workshop credits remaining: ${credits.workshopCreditsRemaining}.`}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* TAB 0: OVERVIEW */}
       {activeTab === 0 && (
