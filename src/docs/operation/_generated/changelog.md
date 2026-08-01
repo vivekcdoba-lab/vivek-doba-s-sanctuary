@@ -2,6 +2,18 @@
 
 Every production build appends an entry below. The newest entry is at the top.
 
+## 2026-08-01T07:10:18.156Z
+
+- Migrations on disk: 155
+- Edge functions: 26
+- Docs regenerated automatically.
+
+## 2026-08-01T07:10:17.705Z
+
+- Migrations on disk: 155
+- Edge functions: 26
+- Docs regenerated automatically.
+
 ## 2026-08-01T06:54:06.650Z
 
 - Migrations on disk: 154

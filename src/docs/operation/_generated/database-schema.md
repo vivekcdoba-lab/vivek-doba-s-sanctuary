@@ -1,8 +1,8 @@
 # Database Schema
 
-_Generated: 2026-08-01T06:54:06.650Z_
+_Generated: 2026-08-01T07:10:18.156Z_
 
-Tables: **106** • Functions: **57**
+Tables: **106** • Functions: **63**
 
 > Schema is reconstructed from migration files in `supabase/migrations/`. Source of truth is the running database; migrations are the authoritative change log.
 
@@ -60,7 +60,7 @@ Tables: **106** • Functions: **57**
 
 ### `courses`
 
-**Columns** (17): `id`, `name`, `tagline`, `description`, `duration`, `format`, `tier`, `price`, `max_participants`, `gradient_colors`, `is_active`, `created_at`, `updated_at`, `event_date`, `location`, `location_type`, `lifecycle_status`
+**Columns** (18): `id`, `name`, `tagline`, `description`, `duration`, `format`, `tier`, `price`, `max_participants`, `gradient_colors`, `is_active`, `created_at`, `updated_at`, `event_date`, `location`, `location_type`, `lifecycle_status`, `sessions_included`
 
 **RLS policies** (2): _Anyone can view active courses_; _Admins can manage courses_
 
@@ -72,7 +72,7 @@ Tables: **106** • Functions: **57**
 
 ### `enrollments`
 
-**Columns** (11): `id`, `seeker_id`, `course_id`, `tier`, `start_date`, `end_date`, `status`, `payment_status`, `created_at`, `updated_at`, `notes`
+**Columns** (12): `id`, `seeker_id`, `course_id`, `tier`, `start_date`, `end_date`, `status`, `payment_status`, `created_at`, `updated_at`, `notes`, `sessions_committed`
 
 **RLS policies** (2): _Admins can manage enrollments_; _Seekers can view own enrollments_
 
