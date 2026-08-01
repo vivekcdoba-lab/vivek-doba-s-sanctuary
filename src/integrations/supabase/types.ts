@@ -1308,6 +1308,7 @@ export type Database = {
           max_participants: number | null
           name: string
           price: number
+          sessions_included: number
           tagline: string | null
           tier: string
           updated_at: string
@@ -1327,6 +1328,7 @@ export type Database = {
           max_participants?: number | null
           name: string
           price?: number
+          sessions_included?: number
           tagline?: string | null
           tier?: string
           updated_at?: string
@@ -1346,6 +1348,7 @@ export type Database = {
           max_participants?: number | null
           name?: string
           price?: number
+          sessions_included?: number
           tagline?: string | null
           tier?: string
           updated_at?: string
@@ -2230,43 +2233,61 @@ export type Database = {
       }
       enrollments: {
         Row: {
+          bonus_sessions_granted: number
           course_id: string
           created_at: string
+          earned_credits: number
           end_date: string | null
           id: string
           notes: string | null
           payment_status: string
           seeker_id: string
+          sessions_committed: number
+          sessions_used: number
           start_date: string
           status: string
           tier: string
           updated_at: string
+          workshop_credits_total: number
+          workshop_credits_used: number
         }
         Insert: {
+          bonus_sessions_granted?: number
           course_id: string
           created_at?: string
+          earned_credits?: number
           end_date?: string | null
           id?: string
           notes?: string | null
           payment_status?: string
           seeker_id: string
+          sessions_committed?: number
+          sessions_used?: number
           start_date?: string
           status?: string
           tier?: string
           updated_at?: string
+          workshop_credits_total?: number
+          workshop_credits_used?: number
         }
         Update: {
+          bonus_sessions_granted?: number
           course_id?: string
           created_at?: string
+          earned_credits?: number
           end_date?: string | null
           id?: string
           notes?: string | null
           payment_status?: string
           seeker_id?: string
+          sessions_committed?: number
+          sessions_used?: number
           start_date?: string
           status?: string
           tier?: string
           updated_at?: string
+          workshop_credits_total?: number
+          workshop_credits_used?: number
         }
         Relationships: [
           {
@@ -5453,6 +5474,10 @@ export type Database = {
       }
       cleanup_old_sessions: { Args: never; Returns: number }
       close_inactive_sessions: { Args: never; Returns: number }
+      consume_workshop_credit: {
+        Args: { _enrollment_id: string }
+        Returns: Json
+      }
       decrypt_field: { Args: { _payload: string }; Returns: string }
       decrypt_many: { Args: { _payloads: string[] }; Returns: string[] }
       delete_email: {
