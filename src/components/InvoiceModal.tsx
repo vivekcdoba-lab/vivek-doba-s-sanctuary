@@ -162,6 +162,7 @@ const InvoiceModal = ({ open, onClose, invoice }: InvoiceModalProps) => {
               <p className="text-[10px] text-gray-400">GSTIN: 27XXXXXXXXXXXZX | PAN: XXXXX1234X</p>
               <p className="text-xs text-gray-500 italic">Thank you for your commitment to transformation! 🙏</p>
               <p className="text-[10px] text-gray-400">Vivek Doba Business Mastery | vivekdoba.com</p>
+              <p className="text-[10px] text-gray-400">Office No. 228 &amp; 229, Tower B, Second Floor, Gera Imperium Gateway, Near Nashik Phata Metro Station, Nashik Phata, Pune 411034</p>
             </div>
           </div>
         </div>
