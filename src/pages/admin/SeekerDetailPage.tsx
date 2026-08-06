@@ -299,7 +299,7 @@ const SeekerDetailPage = () => {
         setSeeker(profile);
         // Set breadcrumb to show name instead of UUID
         if (id) setOverride(id, profile.full_name);
-        document.title = `${profile.full_name} — VDTS`;
+        document.title = `${profile.full_name} — VDBM`;
         // Fetch enrollment
         const { data: enr } = await supabase.from('enrollments').select('*').eq('seeker_id', id).order('created_at', { ascending: false }).limit(1).maybeSingle();
         setEnrollment(enr);

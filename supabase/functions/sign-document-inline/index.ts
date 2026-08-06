@@ -11,7 +11,7 @@ const corsHeaders = {
 function makeVerificationId() {
   const bytes = new Uint8Array(6);
   crypto.getRandomValues(bytes);
-  return "VDTS-" + [...bytes].map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+  return "VDBM-" + [...bytes].map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
 }
 
 async function buildSignedPdf(opts: {
@@ -101,10 +101,10 @@ async function buildSignedPdf(opts: {
   });
 
   pdfDoc.setTitle(`${opts.docTitle} — Signed`);
-  pdfDoc.setAuthor("Vivek Doba Training Solutions");
+  pdfDoc.setAuthor("Vivek Doba Business Mastery");
   pdfDoc.setSubject(`Signed by ${opts.signerName}`);
-  pdfDoc.setProducer("VDTS Signature Service");
-  pdfDoc.setCreator("VDTS");
+  pdfDoc.setProducer("VDBM Signature Service");
+  pdfDoc.setCreator("VDBM");
 
   return await pdfDoc.save({ useObjectStreams: true });
 }
@@ -127,9 +127,9 @@ const THANK_YOU_HTML = (name: string, docTitle: string, verificationId: string) 
       <strong>Document:</strong> ${escapeHtml(docTitle)}<br/>
       <strong>Verification ID:</strong> ${escapeHtml(verificationId)}
     </p>
-    <p>Best regards,<br/>VDTS</p>
+    <p>Best regards,<br/>VDBM</p>
     <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-    <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions</p>
+    <p style="font-size:12px;color:#9ca3af">Vivek Doba Business Mastery</p>
   </div>`;
 
 Deno.serve(async (req) => {

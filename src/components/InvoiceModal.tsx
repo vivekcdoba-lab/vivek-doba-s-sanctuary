@@ -44,14 +44,14 @@ const InvoiceModal = ({ open, onClose, invoice }: InvoiceModalProps) => {
   const handlePrint = () => window.print();
 
   const handleEmail = () => {
-    const subject = encodeURIComponent(`Invoice ${invoice.invoiceNumber} — Vivek Doba Training Solutions`);
-    const body = encodeURIComponent(`Dear ${invoice.seekerName},\n\nPlease find your invoice ${invoice.invoiceNumber} for ${formatINR(invoice.totalAmount)}.\n\nThank you for your commitment to transformation!\n\n🙏 Vivek Doba\nVivek Doba Training Solutions`);
+    const subject = encodeURIComponent(`Invoice ${invoice.invoiceNumber} — Vivek Doba Business Mastery`);
+    const body = encodeURIComponent(`Dear ${invoice.seekerName},\n\nPlease find your invoice ${invoice.invoiceNumber} for ${formatINR(invoice.totalAmount)}.\n\nThank you for your commitment to transformation!\n\n🙏 Vivek Doba\nVivek Doba Business Mastery`);
     window.location.href = `mailto:${invoice.seekerEmail}?subject=${subject}&body=${body}`;
   };
 
   const handleWhatsApp = () => {
     const phone = invoice.seekerPhone.replace(/\D/g, '');
-    const text = encodeURIComponent(`🙏 Namaste ${invoice.seekerName} ji,\n\nInvoice: ${invoice.invoiceNumber}\nAmount: ${formatINR(invoice.totalAmount)}\nStatus: ${invoice.status === 'received' ? 'Paid ✅' : 'Pending'}\n\nFor ${invoice.courseName} (${invoice.tier})\n\nVivek Doba Training Solutions\nvivekdoba.com | 9607050111`);
+    const text = encodeURIComponent(`🙏 Namaste ${invoice.seekerName} ji,\n\nInvoice: ${invoice.invoiceNumber}\nAmount: ${formatINR(invoice.totalAmount)}\nStatus: ${invoice.status === 'received' ? 'Paid ✅' : 'Pending'}\n\nFor ${invoice.courseName} (${invoice.tier})\n\nVivek Doba Business Mastery\nvivekdoba.com | 9607050111`);
     window.open(`https://wa.me/91${phone}?text=${text}`, '_blank');
   };
 
@@ -161,7 +161,7 @@ const InvoiceModal = ({ open, onClose, invoice }: InvoiceModalProps) => {
             <div className="border-t pt-3 text-center space-y-1">
               <p className="text-[10px] text-gray-400">GSTIN: 27XXXXXXXXXXXZX | PAN: XXXXX1234X</p>
               <p className="text-xs text-gray-500 italic">Thank you for your commitment to transformation! 🙏</p>
-              <p className="text-[10px] text-gray-400">Vivek Doba Training Solutions | vivekdoba.com</p>
+              <p className="text-[10px] text-gray-400">Vivek Doba Business Mastery | vivekdoba.com</p>
             </div>
           </div>
         </div>

@@ -105,7 +105,7 @@ function buildIcs(opts: {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Vivek Doba Training Solutions//Sessions//EN",
+    "PRODID:-//Vivek Doba Business Mastery//Sessions//EN",
     "CALSCALE:GREGORIAN",
     `METHOD:${opts.method}`,
     ...tzBlock,
@@ -275,7 +275,7 @@ Deno.serve(async (req: Request) => {
     const isCancel = action === "cancelled";
     const isOnline = session.location_type !== "in_person";
     const joinLink = session.meeting_link || (isOnline ? DEFAULT_ZOOM_LINK : "");
-    const summary = `${isCancel ? "[Cancelled] " : ""}VDTS Session: ${courseName}`;
+    const summary = `${isCancel ? "[Cancelled] " : ""}VDBM Session: ${courseName}`;
     const location = isOnline
       ? (joinLink || "Online (link will be shared)")
       : `In-Person Venue — ${IN_PERSON_VENUE_MAP_URL}`;
@@ -295,7 +295,7 @@ Deno.serve(async (req: Request) => {
       "• Carry/keep ALL your notebooks ready to take notes",
       "• Complete pending assignments, assessments & activities",
       "",
-      "— Vivek Doba Training Solutions",
+      "— Vivek Doba Business Mastery",
     ]
       .filter(Boolean)
       .join("\n");
@@ -314,7 +314,7 @@ Deno.serve(async (req: Request) => {
       start_at: session.start_at,
       end_at: session.end_at,
       organizerEmail: "info@vivekdoba.com",
-      organizerName: "Vivek Doba Training Solutions",
+      organizerName: "Vivek Doba Business Mastery",
       attendees,
     });
 
@@ -463,7 +463,7 @@ Deno.serve(async (req: Request) => {
         <p style="margin-top:18px;font-size:13px;color:#6b7280">📎 The attached <code>.ics</code> file will add this to your Google Calendar, Outlook, or Apple Calendar in one click.</p>
 
         <hr style="margin:24px 0; border:none; border-top:1px solid #e5e7eb"/>
-        <p style="text-align:center;font-size:13px;color:#6b7280;margin:0">🙏 With gratitude,<br/><strong style="color:#FF6B00">Vivek Doba Training Solutions</strong></p>
+        <p style="text-align:center;font-size:13px;color:#6b7280;margin:0">🙏 With gratitude,<br/><strong style="color:#FF6B00">Vivek Doba Business Mastery</strong></p>
         <p style="text-align:center;font-size:11px;color:#9ca3af;margin:6px 0 0">${APP_BASE_URL}</p>
       </div>`;
 

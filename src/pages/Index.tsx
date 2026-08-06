@@ -18,7 +18,7 @@ const Index = () => (
         <Link to="/" className="flex items-center gap-2">
           <span className="text-2xl">🪷</span>
           <span className="font-bold text-lg" style={{ color: '#B8860B', fontFamily: 'Poppins, sans-serif' }}>
-            Vivek Doba Training Solutions
+            Vivek Doba Business Mastery
           </span>
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
@@ -296,7 +296,7 @@ const Index = () => (
     {/* Footer */}
     <footer className="bg-muted/50 border-t border-border py-10">
       <div className="max-w-4xl mx-auto px-4 text-center">
-        <p className="font-semibold text-foreground mb-1">Vivek Doba Training Solutions | Pune, Maharashtra</p>
+        <p className="font-semibold text-foreground mb-1">Vivek Doba Business Mastery | Pune, Maharashtra</p>
         <p className="text-sm text-muted-foreground mb-4">📞 9607050111 | 📧 info@vivekdoba.com | 🌐 vivekdoba.com</p>
         <div className="flex justify-center gap-3 mb-4">
           {[

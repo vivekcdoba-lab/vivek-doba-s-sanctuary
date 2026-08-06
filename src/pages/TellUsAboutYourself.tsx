@@ -228,7 +228,7 @@ const TellUsAboutYourself = () => {
                 onChange={(e) => setConsent(e.target.checked)}
                 className="mt-1 accent-primary"
               />
-              <span>I agree to be contacted by the VDTS team via call, email, or WhatsApp.</span>
+              <span>I agree to be contacted by the VDBM team via call, email, or WhatsApp.</span>
             </label>
 
             <Button

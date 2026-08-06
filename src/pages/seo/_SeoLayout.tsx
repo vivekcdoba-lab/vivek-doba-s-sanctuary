@@ -8,7 +8,7 @@ export const SeoNav = () => (
       <Link to="/" className="flex items-center gap-2">
         <span className="text-2xl">🪷</span>
         <span className="font-bold text-base sm:text-lg" style={{ color: "#B8860B", fontFamily: "Poppins, sans-serif" }}>
-          Vivek Doba Training Solutions
+          Vivek Doba Business Mastery
         </span>
       </Link>
       <div className="flex items-center gap-2 sm:gap-3">
@@ -59,7 +59,7 @@ export const SeoFooter = () => (
         <Link to="/business-coach-in-maharashtra" className="hover:text-foreground">Business Coach Maharashtra</Link>
         <Link to="/business-coach-in-india" className="hover:text-foreground">Business Coach India</Link>
       </div>
-      <p className="font-semibold text-foreground mb-1">Vivek Doba Training Solutions | Pune, Maharashtra</p>
+      <p className="font-semibold text-foreground mb-1">Vivek Doba Business Mastery | Pune, Maharashtra</p>
       <p className="text-sm text-muted-foreground mb-4">📞 9607050111 | 📧 info@vivekdoba.com | 🌐 vivekdoba.com</p>
       <div className="flex justify-center gap-3 mb-4">
         {[

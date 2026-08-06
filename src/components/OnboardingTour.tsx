@@ -12,7 +12,7 @@ interface TourStep {
 const TOUR_STEPS: TourStep[] = [
   {
     target: 'greeting',
-    title: 'Welcome to VDTS! 🙏',
+    title: 'Welcome to VDBM! 🙏',
     description: 'This is your personal dashboard — your daily command center for transformation. Track streaks, sessions, and more.',
     emoji: '🏠',
   },

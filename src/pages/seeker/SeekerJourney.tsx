@@ -132,7 +132,7 @@ const SeekerJourney = () => {
       </div>
 
       <footer className="text-center py-6 border-t border-border">
-        <p className="text-xs text-muted-foreground">Vivek Doba Training Solutions</p>
+        <p className="text-xs text-muted-foreground">Vivek Doba Business Mastery</p>
         <p className="text-[10px] text-muted-foreground mt-1">Made with 🙏 for seekers of transformation</p>
       </footer>
     </div>

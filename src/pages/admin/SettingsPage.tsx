@@ -61,9 +61,9 @@ const SettingsPage = () => {
           .eq('key', 'email_from')
           .maybeSingle();
         const v = data?.value;
-        setEmailFrom(typeof v === 'string' ? v : 'VDTS <info@vivekdoba.com>');
+        setEmailFrom(typeof v === 'string' ? v : 'VDBM <info@vivekdoba.com>');
       } catch {
-        setEmailFrom('VDTS <info@vivekdoba.com>');
+        setEmailFrom('VDBM <info@vivekdoba.com>');
       } finally {
         setEmailFromLoading(false);
       }
@@ -256,14 +256,14 @@ const SettingsPage = () => {
             <Label htmlFor="email_from">From Address</Label>
             <Input
               id="email_from"
-              placeholder="VDTS <info@vivekdoba.com>"
+              placeholder="VDBM <info@vivekdoba.com>"
               value={emailFrom}
               disabled={emailFromLoading || emailFromSaving}
               onChange={(e) => setEmailFrom(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
               Format: <code className="bg-muted px-1 rounded">Display Name &lt;email@domain.com&gt;</code> (e.g.
-              <code className="bg-muted px-1 rounded ml-1">VDTS &lt;info@vivekdoba.com&gt;</code>)
+              <code className="bg-muted px-1 rounded ml-1">VDBM &lt;info@vivekdoba.com&gt;</code>)
             </p>
           </div>
 
@@ -285,7 +285,7 @@ const SettingsPage = () => {
             <h2 className="text-lg font-semibold text-foreground">General Settings</h2>
           </div>
           <div className="space-y-4">
-            <div><label className="text-sm font-medium text-foreground">App Name</label><input defaultValue="Vivek Doba Training Solutions" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
+            <div><label className="text-sm font-medium text-foreground">App Name</label><input defaultValue="Vivek Doba Business Mastery" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
             <div><label className="text-sm font-medium text-foreground">Timezone</label><select defaultValue="IST" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option>IST (Asia/Kolkata)</option></select></div>
             <div><label className="text-sm font-medium text-foreground">Date Format</label><select defaultValue="DD/MM/YYYY" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option>DD/MM/YYYY</option><option>MM/DD/YYYY</option></select></div>
             <div><label className="text-sm font-medium text-foreground">Currency</label><input defaultValue="₹ (INR)" disabled className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm opacity-60" /></div>
@@ -297,7 +297,7 @@ const SettingsPage = () => {
         <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Business Information</h2>
           <div className="grid sm:grid-cols-2 gap-4">
-            <div><label className="text-sm font-medium text-foreground">Business Name</label><input defaultValue="Vivek Doba Training Solutions" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
+            <div><label className="text-sm font-medium text-foreground">Business Name</label><input defaultValue="Vivek Doba Business Mastery" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
             <div><label className="text-sm font-medium text-foreground">Phone</label><input defaultValue="9607050111" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
             <div><label className="text-sm font-medium text-foreground">Email</label><input defaultValue="info@vivekdoba.com" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
             <div><label className="text-sm font-medium text-foreground">Website</label><input defaultValue="vivekdoba.com" className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>

@@ -204,7 +204,7 @@ const LoginPage = () => {
             </div>
           </div>
           <h1 className="text-2xl lg:text-4xl font-bold text-primary-foreground mb-3">
-            Vivek Doba Training Solutions
+            Vivek Doba Business Mastery
           </h1>
           <p className="text-lg lg:text-xl text-primary-foreground/80 italic mb-2">
             Transform Your Life Through Ancient Wisdom

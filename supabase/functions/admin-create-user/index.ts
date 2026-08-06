@@ -75,13 +75,13 @@ function buildEmail(opts: { name: string; email: string; password: string; role:
       <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;border:1px solid #f0e3cf;overflow:hidden;">
         <tr><td style="background:linear-gradient(135deg,#FF6B00,#800020);padding:28px;text-align:center;color:#ffffff;">
           <div style="font-size:36px;line-height:1;">ॐ</div>
-          <div style="margin-top:8px;font-size:20px;font-weight:700;">Vivek Doba Training Solutions</div>
+          <div style="margin-top:8px;font-size:20px;font-weight:700;">Vivek Doba Business Mastery</div>
           <div style="margin-top:4px;font-size:13px;opacity:.85;">Begin your sacred session</div>
         </td></tr>
         <tr><td style="padding:28px;">
           <h2 style="margin:0 0 8px;color:#222;font-size:20px;">Welcome, ${escapeHtml(name)} 🙏</h2>
           <p style="margin:0 0 16px;color:#444;font-size:15px;line-height:1.55;">
-            A ${escapeHtml(roleLabel)} account has been created for you on the VDTS platform. Use the credentials below to sign in.
+            A ${escapeHtml(roleLabel)} account has been created for you on the VDBM platform. Use the credentials below to sign in.
           </p>
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF8F0;border:1px solid #f0e3cf;border-radius:12px;padding:16px;margin:12px 0 18px;">
             <tr><td style="padding:6px 0;font-size:13px;color:#666;">Email</td>
@@ -98,7 +98,7 @@ function buildEmail(opts: { name: string; email: string; password: string; role:
           <p style="margin:18px 0 0;color:#888;font-size:12px;text-align:center;">If you didn't expect this email, you can safely ignore it.</p>
         </td></tr>
         <tr><td style="background:#FFF8F0;padding:14px;text-align:center;color:#888;font-size:12px;border-top:1px solid #f0e3cf;">
-          © Vivek Doba Training Solutions
+          © Vivek Doba Business Mastery
         </td></tr>
       </table>
     </td></tr>
@@ -113,7 +113,7 @@ async function getFromAddress(adminClient: any): Promise<string> {
   } catch (e) {
     console.warn('[email] app_settings lookup failed', (e as Error).message);
   }
-  return Deno.env.get('RESEND_FROM') || 'VDTS <info@vivekdoba.com>';
+  return Deno.env.get('RESEND_FROM') || 'VDBM <info@vivekdoba.com>';
 }
 
 async function sendCredentialsEmail(adminClient: any, opts: {
@@ -121,8 +121,8 @@ async function sendCredentialsEmail(adminClient: any, opts: {
 }): Promise<{ ok: boolean; error?: string }> {
   const html = buildEmail(opts);
   const subject = opts.isTemp
-    ? 'Your VDTS account — temporary password inside'
-    : 'Your VDTS account credentials';
+    ? 'Your VDBM account — temporary password inside'
+    : 'Your VDBM account credentials';
   console.log('[email] enqueue', { to: opts.to, subject, isTemp: opts.isTemp });
   const r = await sendEmail(adminClient, { to: opts.to, subject, html, label: 'admin_create_user' });
   if (!r.ok) console.error('[email] enqueue failed', r.error);

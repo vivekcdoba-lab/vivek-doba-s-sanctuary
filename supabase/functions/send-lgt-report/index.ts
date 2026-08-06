@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
           </div>
         </td></tr>
         <tr><td style="background:#800020;padding:14px;text-align:center;color:#ffffff;font-size:11px;">
-          Vivek Doba Training Solutions · vivekdoba.com
+          Vivek Doba Business Mastery · vivekdoba.com
         </td></tr>
       </table>
     </td></tr>

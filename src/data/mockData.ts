@@ -96,21 +96,21 @@ export const LEADS: Lead[] = [
 ];
 
 export const PAYMENTS: Payment[] = [
-  { id: 'p1', seeker_id: 's1', invoice_number: 'VDTS-INV-1001', amount: 211864, gst_amount: 38136, total_amount: 250000, payment_date: '2024-09-15', method: 'bank_transfer', transaction_id: 'TXN001', status: 'received' },
-  { id: 'p2', seeker_id: 's2', invoice_number: 'VDTS-INV-1002', amount: 127119, gst_amount: 22881, total_amount: 150000, payment_date: '2024-10-01', method: 'upi', transaction_id: 'TXN002', status: 'received' },
-  { id: 'p3', seeker_id: 's3', invoice_number: 'VDTS-INV-1003', amount: 500000, gst_amount: 90000, total_amount: 590000, payment_date: '2024-08-01', method: 'bank_transfer', transaction_id: 'TXN003', status: 'received' },
-  { id: 'p4', seeker_id: 's3', invoice_number: 'VDTS-INV-1004', amount: 347458, gst_amount: 62542, total_amount: 410000, payment_date: '2025-02-01', method: 'bank_transfer', transaction_id: 'TXN004', status: 'received' },
-  { id: 'p5', seeker_id: 's4', invoice_number: 'VDTS-INV-1005', amount: 211864, gst_amount: 38136, total_amount: 250000, payment_date: '2024-11-01', method: 'razorpay', transaction_id: 'TXN005', status: 'received' },
-  { id: 'p6', seeker_id: 's5', invoice_number: 'VDTS-INV-1006', amount: 12500, gst_amount: 2250, total_amount: 14750, payment_date: '2024-07-15', method: 'upi', transaction_id: 'TXN006', status: 'received' },
-  { id: 'p7', seeker_id: 's5', invoice_number: 'VDTS-INV-1007', amount: 12500, gst_amount: 2250, total_amount: 14750, due_date: '2025-01-15', method: 'upi', status: 'overdue', payment_date: '' },
-  { id: 'p8', seeker_id: 's6', invoice_number: 'VDTS-INV-1008', amount: 4237, gst_amount: 763, total_amount: 5000, payment_date: '2025-01-10', method: 'cash', status: 'received' },
-  { id: 'p9', seeker_id: 's7', invoice_number: 'VDTS-INV-1009', amount: 254237, gst_amount: 45763, total_amount: 300000, payment_date: '2024-06-01', method: 'bank_transfer', transaction_id: 'TXN009', status: 'received' },
-  { id: 'p10', seeker_id: 's8', invoice_number: 'VDTS-INV-1010', amount: 5932, gst_amount: 1068, total_amount: 7000, payment_date: '2025-02-01', method: 'upi', transaction_id: 'TXN010', status: 'received' },
-  { id: 'p11', seeker_id: 's9', invoice_number: 'VDTS-INV-1011', amount: 127119, gst_amount: 22881, total_amount: 150000, payment_date: '2024-03-01', method: 'bank_transfer', transaction_id: 'TXN011', status: 'received' },
-  { id: 'p12', seeker_id: 's10', invoice_number: 'VDTS-INV-1012', amount: 175000, gst_amount: 31500, total_amount: 206500, payment_date: '2024-10-15', method: 'bank_transfer', transaction_id: 'TXN012', status: 'received' },
-  { id: 'p13', seeker_id: 's10', invoice_number: 'VDTS-INV-1013', amount: 175000, gst_amount: 31500, total_amount: 206500, due_date: '2025-04-15', method: 'bank_transfer', status: 'pending', payment_date: '' },
-  { id: 'p14', seeker_id: 's4', invoice_number: 'VDTS-INV-1014', amount: 50000, gst_amount: 9000, total_amount: 59000, due_date: '2025-04-01', method: 'emi', status: 'pending', payment_date: '' },
-  { id: 'p15', seeker_id: 's8', invoice_number: 'VDTS-INV-1015', amount: 5000, gst_amount: 900, total_amount: 5900, payment_date: '2025-03-15', method: 'cheque', transaction_id: 'CHQ-8834', status: 'received' },
+  { id: 'p1', seeker_id: 's1', invoice_number: 'VDBM-INV-1001', amount: 211864, gst_amount: 38136, total_amount: 250000, payment_date: '2024-09-15', method: 'bank_transfer', transaction_id: 'TXN001', status: 'received' },
+  { id: 'p2', seeker_id: 's2', invoice_number: 'VDBM-INV-1002', amount: 127119, gst_amount: 22881, total_amount: 150000, payment_date: '2024-10-01', method: 'upi', transaction_id: 'TXN002', status: 'received' },
+  { id: 'p3', seeker_id: 's3', invoice_number: 'VDBM-INV-1003', amount: 500000, gst_amount: 90000, total_amount: 590000, payment_date: '2024-08-01', method: 'bank_transfer', transaction_id: 'TXN003', status: 'received' },
+  { id: 'p4', seeker_id: 's3', invoice_number: 'VDBM-INV-1004', amount: 347458, gst_amount: 62542, total_amount: 410000, payment_date: '2025-02-01', method: 'bank_transfer', transaction_id: 'TXN004', status: 'received' },
+  { id: 'p5', seeker_id: 's4', invoice_number: 'VDBM-INV-1005', amount: 211864, gst_amount: 38136, total_amount: 250000, payment_date: '2024-11-01', method: 'razorpay', transaction_id: 'TXN005', status: 'received' },
+  { id: 'p6', seeker_id: 's5', invoice_number: 'VDBM-INV-1006', amount: 12500, gst_amount: 2250, total_amount: 14750, payment_date: '2024-07-15', method: 'upi', transaction_id: 'TXN006', status: 'received' },
+  { id: 'p7', seeker_id: 's5', invoice_number: 'VDBM-INV-1007', amount: 12500, gst_amount: 2250, total_amount: 14750, due_date: '2025-01-15', method: 'upi', status: 'overdue', payment_date: '' },
+  { id: 'p8', seeker_id: 's6', invoice_number: 'VDBM-INV-1008', amount: 4237, gst_amount: 763, total_amount: 5000, payment_date: '2025-01-10', method: 'cash', status: 'received' },
+  { id: 'p9', seeker_id: 's7', invoice_number: 'VDBM-INV-1009', amount: 254237, gst_amount: 45763, total_amount: 300000, payment_date: '2024-06-01', method: 'bank_transfer', transaction_id: 'TXN009', status: 'received' },
+  { id: 'p10', seeker_id: 's8', invoice_number: 'VDBM-INV-1010', amount: 5932, gst_amount: 1068, total_amount: 7000, payment_date: '2025-02-01', method: 'upi', transaction_id: 'TXN010', status: 'received' },
+  { id: 'p11', seeker_id: 's9', invoice_number: 'VDBM-INV-1011', amount: 127119, gst_amount: 22881, total_amount: 150000, payment_date: '2024-03-01', method: 'bank_transfer', transaction_id: 'TXN011', status: 'received' },
+  { id: 'p12', seeker_id: 's10', invoice_number: 'VDBM-INV-1012', amount: 175000, gst_amount: 31500, total_amount: 206500, payment_date: '2024-10-15', method: 'bank_transfer', transaction_id: 'TXN012', status: 'received' },
+  { id: 'p13', seeker_id: 's10', invoice_number: 'VDBM-INV-1013', amount: 175000, gst_amount: 31500, total_amount: 206500, due_date: '2025-04-15', method: 'bank_transfer', status: 'pending', payment_date: '' },
+  { id: 'p14', seeker_id: 's4', invoice_number: 'VDBM-INV-1014', amount: 50000, gst_amount: 9000, total_amount: 59000, due_date: '2025-04-01', method: 'emi', status: 'pending', payment_date: '' },
+  { id: 'p15', seeker_id: 's8', invoice_number: 'VDBM-INV-1015', amount: 5000, gst_amount: 900, total_amount: 5900, payment_date: '2025-03-15', method: 'cheque', transaction_id: 'CHQ-8834', status: 'received' },
 ];
 
 export const RESOURCES: Resource[] = [

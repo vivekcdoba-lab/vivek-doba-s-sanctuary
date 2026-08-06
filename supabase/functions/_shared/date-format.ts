@@ -1,5 +1,5 @@
 // Deno-compatible mirror of src/lib/dateFormat.ts
-// Standard display format across all VDTS emails: "DD-Month-YYYY"
+// Standard display format across all VDBM emails: "DD-Month-YYYY"
 
 export type Lang = 'en' | 'hi' | 'mr';
 

@@ -109,9 +109,9 @@ Deno.serve(async (req) => {
           </p>
           <p style="font-size:13px;color:#6b7280">This link expires in 7 days. If the button doesn't work, copy this URL: <br/><span style="word-break:break-all">${link}</span></p>
           <p>Looking forward to your confirmation.</p>
-          <p>Best regards,<br/>VDTS</p>
+          <p>Best regards,<br/>VDBM</p>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-          <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions</p>
+          <p style="font-size:12px;color:#9ca3af">Vivek Doba Business Mastery</p>
         </div>`;
 
       const r = await sendEmail(admin, {

@@ -90,7 +90,7 @@ const DailyAffirmationWidget = () => {
   };
 
   const handleShare = () => {
-    const text = `${aff.affirmation_text}\n\n${aff.affirmation_hindi || ''}\n\n— VDTS`;
+    const text = `${aff.affirmation_text}\n\n${aff.affirmation_hindi || ''}\n\n— VDBM`;
     if (navigator.share) {
       navigator.share({ text });
     } else {

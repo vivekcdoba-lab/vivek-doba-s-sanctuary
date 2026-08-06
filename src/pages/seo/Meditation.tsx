@@ -44,7 +44,7 @@ const Meditation = () => {
 
         <h3 className="text-xl font-semibold text-foreground mt-8 mb-3">Guided practice and tools</h3>
         <p className="text-muted-foreground leading-relaxed mb-6">
-          Inside the VDTS platform you'll find a meditation timer, a Sacred Sound System with procedurally generated
+          Inside the VDBM platform you'll find a meditation timer, a Sacred Sound System with procedurally generated
           ambient audio, and progress tracking that shows how consistent practice correlates with mood, energy and
           performance over time.
         </p>

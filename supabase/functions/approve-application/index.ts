@@ -99,7 +99,7 @@ function buildCredentialsEmail(opts: {
       <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:16px;border:1px solid #f0e3cf;overflow:hidden;">
         <tr><td style="background:linear-gradient(135deg,#FF6B00,#800020);padding:28px;text-align:center;color:#fff;">
           <div style="font-size:36px;line-height:1;">🪷</div>
-          <div style="margin-top:8px;font-size:20px;font-weight:700;">Vivek Doba Training Solutions</div>
+          <div style="margin-top:8px;font-size:20px;font-weight:700;">Vivek Doba Business Mastery</div>
           <div style="margin-top:4px;font-size:13px;opacity:.85;">Your application is approved</div>
         </td></tr>
         <tr><td style="padding:28px;">
@@ -119,7 +119,7 @@ function buildCredentialsEmail(opts: {
           <p style="margin:18px 0 0;color:#888;font-size:12px;text-align:center;">For any questions: 📞 9607050111 · 📧 info@vivekdoba.com</p>
         </td></tr>
         <tr><td style="background:#FFF8F0;padding:14px;text-align:center;color:#888;font-size:12px;border-top:1px solid #f0e3cf;">
-          © Vivek Doba Training Solutions
+          © Vivek Doba Business Mastery
         </td></tr>
       </table>
     </td></tr>
@@ -132,8 +132,8 @@ async function sendCredentialsEmail(adminClient: any, opts: {
 }): Promise<{ ok: boolean; error?: string }> {
   const html = buildCredentialsEmail(opts);
   const subject = opts.isTemp
-    ? '✅ Application Approved — Your VDTS account (temporary password inside)'
-    : '✅ Application Approved — Welcome to VDTS';
+    ? '✅ Application Approved — Your VDBM account (temporary password inside)'
+    : '✅ Application Approved — Welcome to VDBM';
   const r = await sendEmail(adminClient, { to: opts.to, subject, html, label: 'application_approved' });
   if (!r.ok) console.error('[email] enqueue failed', r.error);
   return r.ok ? { ok: true } : { ok: false, error: r.error };

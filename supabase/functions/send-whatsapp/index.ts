@@ -105,7 +105,7 @@ serve(async (req) => {
     const toDigits = toNumber.replace(/\D/g, "");
 
     // Verify destination belongs to a registered profile (seeker/lead) — prevents
-    // arbitrary outbound messaging via VDTS's Twilio number.
+    // arbitrary outbound messaging via VDBM's Twilio number.
     const { data: matches, error: lookupError } = await supabaseAuth
       .from("profiles")
       .select("id, phone, whatsapp")

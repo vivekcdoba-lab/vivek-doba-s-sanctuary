@@ -195,16 +195,16 @@ export default function SwotPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">SWOT Analysis</h1>
-        <p className="text-muted-foreground">VDTS competitive positioning & market analysis</p>
+        <p className="text-muted-foreground">VDBM competitive positioning & market analysis</p>
       </div>
 
       <Tabs defaultValue="vdts">
         <TabsList>
-          <TabsTrigger value="vdts">VDTS SWOT</TabsTrigger>
+          <TabsTrigger value="vdts">VDBM SWOT</TabsTrigger>
           <TabsTrigger value="competitors">Competitor Analysis</TabsTrigger>
         </TabsList>
 
-        {/* VDTS SWOT Grid */}
+        {/* VDBM SWOT Grid */}
         <TabsContent value="vdts" className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {(['strength', 'weakness', 'opportunity', 'threat'] as const).map(cat => (

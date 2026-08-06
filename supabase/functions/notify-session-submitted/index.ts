@@ -153,7 +153,7 @@ serve(async (req) => {
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#333">
           <div style="background:linear-gradient(135deg,#B8860B,#FF9933);padding:20px;border-radius:12px 12px 0 0">
             <h1 style="color:#fff;margin:0;font-size:20px">🪷 Your Session Has Been Submitted</h1>
-            <p style="color:rgba(255,255,255,0.9);margin:4px 0 0;font-size:14px">Vivek Doba Training Solutions</p>
+            <p style="color:rgba(255,255,255,0.9);margin:4px 0 0;font-size:14px">Vivek Doba Business Mastery</p>
           </div>
           <div style="background:#fff;padding:20px;border:1px solid #eee;border-top:none;border-radius:0 0 12px 12px">
             <p>Namaste ${escapeHtml(seeker.full_name || "Seeker")},</p>
@@ -172,7 +172,7 @@ serve(async (req) => {
             <div style="text-align:center;margin:20px 0">
               <a href="${reviewUrl}" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#FF9933);color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600">Open Session →</a>
             </div>
-            <p style="font-size:12px;color:#888;margin-top:20px">— Team VDTS</p>
+            <p style="font-size:12px;color:#888;margin-top:20px">— Team VDBM</p>
           </div>
         </div>`;
 

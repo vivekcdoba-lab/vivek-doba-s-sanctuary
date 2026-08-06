@@ -224,7 +224,7 @@ const SeekerHome = () => {
 
       {/* Footer */}
       <footer className="text-center py-6 border-t border-border">
-        <p className="text-xs text-muted-foreground">Vivek Doba Training Solutions</p>
+        <p className="text-xs text-muted-foreground">Vivek Doba Business Mastery</p>
         <p className="text-[10px] text-muted-foreground mt-1">Spiritual Business Coach | Founder of Life's Golden Triangle</p>
         <p className="text-[10px] text-muted-foreground mt-2">Made with 🙏 for seekers of transformation</p>
       </footer>

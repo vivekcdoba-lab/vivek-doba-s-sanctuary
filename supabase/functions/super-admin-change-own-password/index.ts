@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
             If you believe this change was unauthorized, contact support immediately at
             <a href="mailto:vdtssolutions@gmail.com">vdtssolutions@gmail.com</a>.
           </p>
-          <p style="color:#666;font-size:12px;margin-top:24px">— Vivek Doba Training Solutions</p>
+          <p style="color:#666;font-size:12px;margin-top:24px">— Vivek Doba Business Mastery</p>
         </div>`;
       const r = await sendEmail(admin, {
         to: a.email!,

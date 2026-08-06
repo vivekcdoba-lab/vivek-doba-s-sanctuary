@@ -2,7 +2,7 @@
 
 | Term | Meaning |
 |---|---|
-| **VDTS** | Vivek Doba Training Solutions — the brand |
+| **VDBM** | Vivek Doba Business Mastery — the brand |
 | **Seeker / Sadhak** | The customer (user) — both terms used interchangeably |
 | **Coach / Guruji** | A trained coach; "Guruji" is the honorific used for Vivek Doba |
 | **LGT** | Life's Golden Triangle — the four-pillar framework (Dharma, Artha, Kama, Moksha) |

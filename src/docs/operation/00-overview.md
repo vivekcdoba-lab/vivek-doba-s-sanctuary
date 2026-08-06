@@ -1,10 +1,10 @@
 # Overview
 
-**Vivek Doba Training Solutions (VDTS)** is a spiritual coaching platform integrating the **Life's Golden Triangle (LGT)** framework — Dharma, Artha, Kama, Moksha — with structured coaching, daily practice, and business mentorship.
+**Vivek Doba Business Mastery (VDBM)** is a spiritual coaching platform integrating the **Life's Golden Triangle (LGT)** framework — Dharma, Artha, Kama, Moksha — with structured coaching, daily practice, and business mentorship.
 
 ## Identity
 
-- **Brand**: Vivek Doba Training Solutions (VDTS)
+- **Brand**: Vivek Doba Business Mastery (VDBM)
 - **Coach / Guruji**: Vivek Doba
 - **Framework**: Life's Golden Triangle (LGT) — Dharma · Artha · Kama · Moksha
 - **Audience**: Seekers (Sadhaks) — primarily entrepreneurs and professionals seeking integration of spirituality and business
