@@ -297,6 +297,7 @@ const Index = () => (
     <footer className="bg-muted/50 border-t border-border py-10">
       <div className="max-w-4xl mx-auto px-4 text-center">
         <p className="font-semibold text-foreground mb-1">Vivek Doba Business Mastery | Pune, Maharashtra</p>
+          <p className="text-sm text-muted-foreground mb-2">📍 Office No. 228 & 229, Tower B, Second Floor, Gera Imperium Gateway, Near Nashik Phata Metro Station, Nashik Phata, Pune 411034</p>
         <p className="text-sm text-muted-foreground mb-4">📞 9607050111 | 📧 info@vivekdoba.com | 🌐 vivekdoba.com</p>
         <div className="flex justify-center gap-3 mb-4">
           {[

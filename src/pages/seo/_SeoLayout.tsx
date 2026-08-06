@@ -60,6 +60,7 @@ export const SeoFooter = () => (
         <Link to="/business-coach-in-india" className="hover:text-foreground">Business Coach India</Link>
       </div>
       <p className="font-semibold text-foreground mb-1">Vivek Doba Business Mastery | Pune, Maharashtra</p>
+      <p className="text-sm text-muted-foreground mb-2">📍 Office No. 228 & 229, Tower B, Second Floor, Gera Imperium Gateway, Near Nashik Phata Metro Station, Nashik Phata, Pune 411034</p>
       <p className="text-sm text-muted-foreground mb-4">📞 9607050111 | 📧 info@vivekdoba.com | 🌐 vivekdoba.com</p>
       <div className="flex justify-center gap-3 mb-4">
         {[
