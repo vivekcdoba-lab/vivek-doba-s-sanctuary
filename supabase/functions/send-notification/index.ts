@@ -33,7 +33,7 @@ async function getFromAddress(adminClient: any): Promise<string> {
   } catch (e) {
     console.warn('[email] app_settings lookup failed', (e as Error).message);
   }
-  return Deno.env.get('RESEND_FROM') || 'VDTS <info@vivekdoba.com>';
+  return Deno.env.get('RESEND_FROM') || 'VDBM <info@vivekdoba.com>';
 }
 
 interface NotificationRequest {
@@ -71,7 +71,7 @@ function buildAdminEmailHtml(data: NotificationRequest): string {
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
       <div style="background:linear-gradient(135deg,#B8860B,#FF9933);padding:20px;border-radius:12px 12px 0 0">
         <h1 style="color:#fff;margin:0;font-size:20px">🪷 New ${formType}</h1>
-        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:14px">Vivek Doba Training Solutions</p>
+        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:14px">Vivek Doba Business Mastery</p>
       </div>
       <div style="background:#fff;padding:20px;border:1px solid #eee;border-top:none;border-radius:0 0 12px 12px">
         <h2 style="color:#333;font-size:16px;margin:0 0 12px">Applicant: ${escapeHtml(data.applicant_name)}</h2>
@@ -114,7 +114,7 @@ function buildApplicantEmailHtml(data: NotificationRequest): string {
   return `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
       <div style="background:linear-gradient(135deg,#B8860B,#FF9933);padding:20px;border-radius:12px 12px 0 0">
-        <h1 style="color:#fff;margin:0;font-size:20px">🪷 Vivek Doba Training Solutions</h1>
+        <h1 style="color:#fff;margin:0;font-size:20px">🪷 Vivek Doba Business Mastery</h1>
       </div>
       <div style="background:#fff;padding:24px;border:1px solid #eee;border-top:none;border-radius:0 0 12px 12px">
         <h2 style="color:${status.color};font-size:18px;margin:0 0 12px">${status.icon} ${status.title}</h2>
@@ -209,9 +209,9 @@ serve(async (req) => {
 
     if (data.type === "status_update") {
       const subjectMap: Record<string, string> = {
-        approved: "✅ Your Application is Approved — Vivek Doba Training Solutions",
-        rejected: "Application Update — Vivek Doba Training Solutions",
-        info_requested: "📋 Additional Information Needed — Vivek Doba Training Solutions",
+        approved: "✅ Your Application is Approved — Vivek Doba Business Mastery",
+        rejected: "Application Update — Vivek Doba Business Mastery",
+        info_requested: "📋 Additional Information Needed — Vivek Doba Business Mastery",
       };
 
       const supabaseAdmin = createClient(
@@ -290,8 +290,8 @@ serve(async (req) => {
       if (recipientMobile) {
         try {
           const whatsappMessages: Record<string, string> = {
-            approved: `🪷 Namaste ${safeName}!\n\n✅ Great news! Your application with Vivek Doba Training Solutions has been *approved*.\n\n${data.form_type === "registration" ? "You can now log in to your account using the email and password you registered with." : "Our team will reach out to you shortly with next steps."}\n\nFor questions: 📞 9607050111\n\n🙏 Welcome to your transformation journey!`,
-            rejected: `🪷 Namaste ${safeName},\n\n🙏 Thank you for your interest in Vivek Doba Training Solutions.\n\nAfter careful review, we are unable to proceed with your application at this time.${sanitizedNotes ? `\n\nNote: ${sanitizedNotes}` : ""}\n\nFor questions: 📞 9607050111`,
+            approved: `🪷 Namaste ${safeName}!\n\n✅ Great news! Your application with Vivek Doba Business Mastery has been *approved*.\n\n${data.form_type === "registration" ? "You can now log in to your account using the email and password you registered with." : "Our team will reach out to you shortly with next steps."}\n\nFor questions: 📞 9607050111\n\n🙏 Welcome to your transformation journey!`,
+            rejected: `🪷 Namaste ${safeName},\n\n🙏 Thank you for your interest in Vivek Doba Business Mastery.\n\nAfter careful review, we are unable to proceed with your application at this time.${sanitizedNotes ? `\n\nNote: ${sanitizedNotes}` : ""}\n\nFor questions: 📞 9607050111`,
             info_requested: `🪷 Namaste ${safeName},\n\n📋 We need some additional information regarding your application.\n\n${sanitizedNotes || "Please check your email for details."}\n\nFor questions: 📞 9607050111`,
           };
 

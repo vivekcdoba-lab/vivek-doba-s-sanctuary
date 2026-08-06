@@ -48,7 +48,7 @@ const CHANNELS: { key: Channel; label: string; icon: typeof MessageSquare; color
 ];
 
 function generateMessage(template: TemplateKey, seekerName: string, data?: SendReminderModalProps['contextData']): string {
-  const sign = '\n\n🙏 Vivek Doba\nVivek Doba Training Solutions\nvivekdoba.com | 9607050111';
+  const sign = '\n\n🙏 Vivek Doba\nVivek Doba Business Mastery\nvivekdoba.com | 9607050111';
 
   switch (template) {
     case 'assignment_overdue':
@@ -72,13 +72,13 @@ function generateMessage(template: TemplateKey, seekerName: string, data?: SendR
 
 function getSubject(template: TemplateKey, data?: SendReminderModalProps['contextData']): string {
   switch (template) {
-    case 'assignment_overdue': return `Reminder: Assignment Due — Vivek Doba Training Solutions`;
-    case 'session_tomorrow': return `Session Reminder — Vivek Doba Training Solutions`;
-    case 'payment_due': return `Payment Reminder — Vivek Doba Training Solutions`;
-    case 'daily_log_missing': return `Daily Log Reminder — Vivek Doba Training Solutions`;
-    case 'general_checkin': return `Checking In — Vivek Doba Training Solutions`;
-    case 'streak_congrats': return `Congratulations on Your Streak! — Vivek Doba Training Solutions`;
-    default: return `Message from Vivek Doba Training Solutions`;
+    case 'assignment_overdue': return `Reminder: Assignment Due — Vivek Doba Business Mastery`;
+    case 'session_tomorrow': return `Session Reminder — Vivek Doba Business Mastery`;
+    case 'payment_due': return `Payment Reminder — Vivek Doba Business Mastery`;
+    case 'daily_log_missing': return `Daily Log Reminder — Vivek Doba Business Mastery`;
+    case 'general_checkin': return `Checking In — Vivek Doba Business Mastery`;
+    case 'streak_congrats': return `Congratulations on Your Streak! — Vivek Doba Business Mastery`;
+    default: return `Message from Vivek Doba Business Mastery`;
   }
 }
 

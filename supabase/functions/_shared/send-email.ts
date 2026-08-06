@@ -7,7 +7,7 @@
 //   const r = await sendEmail(supabaseAdmin, { to, subject, html, text, label });
 //   if (!r.ok) console.error("email failed", r.error);
 
-const FROM = "VDTS <info@notify.vivekdoba.com>";
+const FROM = "VDBM <info@notify.vivekdoba.com>";
 const SENDER_DOMAIN = "notify.vivekdoba.com";
 
 export interface SendEmailArgs {

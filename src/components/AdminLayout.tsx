@@ -104,8 +104,8 @@ const adminNav: NavGroup[] = [
     ],
   },
   {
-    label: 'OUR COMPANY', emoji: '🏢', dividerBefore: 'VDTS BUSINESS', items: [
-      { icon: BarChart3, label: 'VDTS SWOT', path: '/swot' },
+    label: 'OUR COMPANY', emoji: '🏢', dividerBefore: 'VDBM BUSINESS', items: [
+      { icon: BarChart3, label: 'VDBM SWOT', path: '/swot' },
       { icon: Trophy, label: 'Competitor Analysis', path: '/admin/competitors' },
       { icon: TrendingUp, label: 'Business Metrics', path: '/admin/business-metrics' },
       { icon: Target, label: 'Strategic Goals', path: '/admin/strategic-goals' },
@@ -179,7 +179,7 @@ function AdminSidebar({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground truncate">{profile?.full_name || 'Vivek Doba'}</p>
               <p className="text-[10px] text-muted-foreground">Super Admin 👑</p>
-              <p className="text-[9px] text-muted-foreground">VDTS Platform</p>
+              <p className="text-[9px] text-muted-foreground">VDBM Platform</p>
             </div>
           )}
         </div>

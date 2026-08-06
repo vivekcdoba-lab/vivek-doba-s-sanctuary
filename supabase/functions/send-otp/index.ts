@@ -119,7 +119,7 @@ serve(async (req) => {
       try {
         const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #B8860B;">VDTS - Verification Code</h2>
+            <h2 style="color: #B8860B;">VDBM - Verification Code</h2>
             <p>Dear ${escapeHtml(full_name) || "Seeker"},</p>
             <p>OTP for Signin request is <strong style="font-size: 24px; color: #B8860B;">${otp}</strong>.</p>
             <p>This OTP is valid for 15 minutes or 1 successful attempt whichever is earlier.</p>
@@ -127,7 +127,7 @@ serve(async (req) => {
             <p>If this request is not made by you, please contact us.</p>
             <br/>
             <p>Regards,</p>
-            <p><strong>VDTS Team</strong></p>
+            <p><strong>VDBM Team</strong></p>
           </div>
         `;
         const r = await sendEmail(supabase, {

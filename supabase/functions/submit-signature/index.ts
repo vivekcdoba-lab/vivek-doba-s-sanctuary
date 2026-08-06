@@ -37,7 +37,7 @@ function escapeHtml(s: unknown): string {
 function makeVerificationId() {
   const bytes = new Uint8Array(6);
   crypto.getRandomValues(bytes);
-  return "VDTS-" + [...bytes].map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+  return "VDBM-" + [...bytes].map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
 }
 
 Deno.serve(async (req) => {
@@ -156,10 +156,10 @@ Deno.serve(async (req) => {
     });
 
     pdfDoc.setTitle(`${doc?.title ?? "Document"} — Signed`);
-    pdfDoc.setAuthor("Vivek Doba Training Solutions");
+    pdfDoc.setAuthor("Vivek Doba Business Mastery");
     pdfDoc.setSubject(`Signed by ${full_name}`);
-    pdfDoc.setProducer("VDTS Signature Service");
-    pdfDoc.setCreator("VDTS");
+    pdfDoc.setProducer("VDBM Signature Service");
+    pdfDoc.setCreator("VDBM");
 
     const signedBytes = await pdfDoc.save({ useObjectStreams: true });
     const fileSize = signedBytes.byteLength;
@@ -201,9 +201,9 @@ Deno.serve(async (req) => {
             ${downloadUrl ? `<p style="text-align:center;margin:24px 0">
               <a href="${downloadUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">📄 Download your signed copy</a>
             </p><p style="font-size:12px;color:#9ca3af;text-align:center">Link valid for 7 days.</p>` : ""}
-            <p>Best regards,<br/>VDTS</p>
+            <p>Best regards,<br/>VDBM</p>
             <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-            <p style="font-size:12px;color:#9ca3af">Vivek Doba Training Solutions</p>
+            <p style="font-size:12px;color:#9ca3af">Vivek Doba Business Mastery</p>
           </div>`,
       });
       if (!r1.ok) console.error("seeker email failed", r1.error);

@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     if (targetProfile.email) {
       const html = `
         <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#222">
-          <h2 style="color:#800020;margin:0 0 16px">Your VDTS account password was changed</h2>
+          <h2 style="color:#800020;margin:0 0 16px">Your VDBM account password was changed</h2>
           <p>Hi ${targetProfile.full_name || 'there'},</p>
           <p>This is a security notice that your account password was reset by <strong>${callerName}</strong> on <strong>${istTime} IST</strong>.</p>
           <p>You will need to use the new password on your next login. Please change it after signing in.</p>
@@ -120,11 +120,11 @@ Deno.serve(async (req) => {
             <strong>Did not request this?</strong> Contact support immediately at
             <a href="mailto:vdtssolutions@gmail.com">vdtssolutions@gmail.com</a>.
           </p>
-          <p style="color:#666;font-size:12px;margin-top:24px">— Vivek Doba Training Solutions</p>
+          <p style="color:#666;font-size:12px;margin-top:24px">— Vivek Doba Business Mastery</p>
         </div>`;
       const r = await sendEmail(admin, {
         to: targetProfile.email,
-        subject: 'Your VDTS account password was changed',
+        subject: 'Your VDBM account password was changed',
         html,
         label: 'admin_reset_password',
       });

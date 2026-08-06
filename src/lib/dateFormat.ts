@@ -1,4 +1,4 @@
-// Centralized date formatter for VDTS app — display only.
+// Centralized date formatter for VDBM app — display only.
 // Standard format across the entire application: "DD-Month-YYYY"
 // e.g. "30-April-2026", "30-अप्रैल-2026", "30-एप्रिल-2026"
 // Database storage, ISO payloads, ICS files, <input type="date"> values

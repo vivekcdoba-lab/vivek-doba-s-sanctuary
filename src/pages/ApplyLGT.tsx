@@ -108,7 +108,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [appId] = useState(`VDTS-APP-${Math.floor(1000 + Math.random() * 9000)}`);
+  const [appId] = useState(`VDBM-APP-${Math.floor(1000 + Math.random() * 9000)}`);
   // When admin is editing an existing application (applicationId passed), expand every section so
   // previously saved answers are visible immediately. Otherwise keep the friendly progressive flow.
   const isEditingExisting = !!(adminMode && applicationId);
@@ -883,7 +883,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
             <label className={`flex items-start gap-3 cursor-pointer ${missingFields.has('consent1') ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}><input type="checkbox" checked={f.consent1} onChange={e => { set('consent1', e.target.checked); setMissingFields(p => { const n = new Set(p); n.delete('consent1'); return n; }); }} className="mt-1 rounded" /><span className="text-sm">I declare that all information provided is true and complete. *</span></label>
             <label className={`flex items-start gap-3 cursor-pointer ${missingFields.has('consent2') ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}><input type="checkbox" checked={f.consent2} onChange={e => { set('consent2', e.target.checked); setMissingFields(p => { const n = new Set(p); n.delete('consent2'); return n; }); }} className="mt-1 rounded" /><span className="text-sm">I understand this is an APPLICATION and acceptance is at the discretion of Vivek Doba. *</span></label>
             <label className={`flex items-start gap-3 cursor-pointer ${missingFields.has('consent3') ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}><input type="checkbox" checked={f.consent3} onChange={e => { set('consent3', e.target.checked); setMissingFields(p => { const n = new Set(p); n.delete('consent3'); return n; }); }} className="mt-1 rounded" /><span className="text-sm">I commit to my transformation journey with sincerity, dedication, and discipline. 🙏 *</span></label>
-            <label className={`flex items-start gap-3 cursor-pointer ${missingFields.has('consent4') ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}><input type="checkbox" checked={f.consent4} onChange={e => { set('consent4', e.target.checked); setMissingFields(p => { const n = new Set(p); n.delete('consent4'); return n; }); }} className="mt-1 rounded" /><span className="text-sm">I consent to VDTS contacting me via WhatsApp, Email, and Phone. *</span></label>
+            <label className={`flex items-start gap-3 cursor-pointer ${missingFields.has('consent4') ? 'ring-2 ring-destructive/60 rounded-lg p-2 -m-1' : ''}`}><input type="checkbox" checked={f.consent4} onChange={e => { set('consent4', e.target.checked); setMissingFields(p => { const n = new Set(p); n.delete('consent4'); return n; }); }} className="mt-1 rounded" /><span className="text-sm">I consent to VDBM contacting me via WhatsApp, Email, and Phone. *</span></label>
           </div>
           <button onClick={handleSubmit} disabled={loading} className="w-full mt-6 py-4 rounded-xl text-white font-bold text-base transition-opacity hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #FFD700, #7B1FA2)' }}>
             {loading ? '⏳ Submitting your sacred application...' : '👑 Submit My Application'}

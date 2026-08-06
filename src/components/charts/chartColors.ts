@@ -1,4 +1,4 @@
-// Consistent chart color palette using VDTS brand
+// Consistent chart color palette using VDBM brand
 export const CHART_COLORS = {
   saffron: 'hsl(27, 100%, 60%)',
   maroon: 'hsl(340, 100%, 25%)',

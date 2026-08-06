@@ -17,7 +17,7 @@ function wrap(title: string, body: string) {
   return `<!DOCTYPE html><html><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#FFF8F0;padding:24px;color:#1a1a1a">
   <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #f0e0d0">
     <div style="background:linear-gradient(135deg,#FF6B00,#800020);padding:20px 24px;color:#fff">
-      <div style="font-size:12px;opacity:.85;letter-spacing:.5px">VDTS — END-TO-END TEST</div>
+      <div style="font-size:12px;opacity:.85;letter-spacing:.5px">VDBM — END-TO-END TEST</div>
       <div style="font-size:20px;font-weight:700;margin-top:4px">${title}</div>
     </div>
     <div style="padding:24px;line-height:1.6;font-size:14px">${body}</div>

@@ -18,7 +18,7 @@ const LOCATION_CONTENT: Record<LocationKey, {
 }> = {
   india: {
     label: "India",
-    title: "Life Coach in India | Dharma-Based Coaching | VDTS",
+    title: "Life Coach in India | Dharma-Based Coaching | VDBM",
     description: "Work with a life coach in India who blends ancient dharma with modern life-coaching frameworks. Online sessions across all states and time zones.",
     h1: "Life Coach in India for Purpose & Inner Alignment",
     eyebrow: "Pan-India · Online",

@@ -1,6 +1,6 @@
 # Sidebar Navigation
 
-_Generated: 2026-08-06T10:14:26.711Z_
+_Generated: 2026-08-06T10:15:57.245Z_
 
 ## Admin (`src/components/AdminLayout.tsx`)
 
@@ -67,7 +67,7 @@ _Generated: 2026-08-06T10:14:26.711Z_
 
 - Announcements → `/admin/announcements`
 
-### VDTS SWOT
+### VDBM SWOT
 
 - Competitor Analysis → `/admin/competitors`
 - Business Metrics → `/admin/business-metrics`

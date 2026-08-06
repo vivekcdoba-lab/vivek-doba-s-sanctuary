@@ -13,7 +13,7 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const FROM = 'VDTS <info@notify.vivekdoba.com>';
+const FROM = 'VDBM <info@notify.vivekdoba.com>';
 const SENDER_DOMAIN = 'notify.vivekdoba.com';
 
 const RECIPIENTS: Array<{ email: string; role: string; name: string }> = [
@@ -26,12 +26,12 @@ function html(roleLabel: string) {
   return `<!DOCTYPE html><html><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#FFF8F0;padding:24px;color:#1a1a1a">
   <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #f0e0d0">
     <div style="background:linear-gradient(135deg,#FF6B00,#800020);padding:20px 24px;color:#fff">
-      <div style="font-size:12px;opacity:.85;letter-spacing:.5px">VDTS — EMAIL TEST</div>
+      <div style="font-size:12px;opacity:.85;letter-spacing:.5px">VDBM — EMAIL TEST</div>
       <div style="font-size:20px;font-weight:700;margin-top:4px">✅ Email infrastructure is live</div>
     </div>
     <div style="padding:24px;line-height:1.7;font-size:14px">
       <p>Hi <b>${roleLabel}</b>,</p>
-      <p>This is a test email from <b>Vivek Doba Training Solutions</b> sent through our verified domain <b>notify.vivekdoba.com</b>.</p>
+      <p>This is a test email from <b>Vivek Doba Business Mastery</b> sent through our verified domain <b>notify.vivekdoba.com</b>.</p>
       <p>If you received this, the full email pipeline (queue → dispatcher → Lovable Emails → inbox) is working end-to-end.</p>
       <p style="margin-top:20px;color:#666;font-size:13px">Sent at: ${new Date().toISOString()}</p>
     </div>
@@ -83,9 +83,9 @@ Deno.serve(async (req) => {
         to: r.email,
         from: FROM,
         sender_domain: SENDER_DOMAIN,
-        subject: `✅ VDTS Test Email — ${r.name}`,
+        subject: `✅ VDBM Test Email — ${r.name}`,
         html: html(r.name),
-        text: `Hi ${r.name}, this is a test email from VDTS via notify.vivekdoba.com. If you got this, the pipeline works.`,
+        text: `Hi ${r.name}, this is a test email from VDBM via notify.vivekdoba.com. If you got this, the pipeline works.`,
         purpose: 'transactional',
         label: 'test_email',
         idempotency_key: messageId,
