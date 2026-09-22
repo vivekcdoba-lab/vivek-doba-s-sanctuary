@@ -84,7 +84,7 @@ const LoginPage = () => {
 
         const profilePromise = supabase
           .from('profiles')
-          .select('id, user_id, email, full_name, role, must_change_password, password_change_prompted')
+          .select('id, user_id, email, full_name, role, admin_level, is_also_coach, must_change_password, password_change_prompted')
           .eq('user_id', data.user.id)
           .maybeSingle();
 

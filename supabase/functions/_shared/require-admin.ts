@@ -29,8 +29,30 @@ export async function requireAdminOrCron(
     Deno.env.get("SUPABASE_ANON_KEY")!,
   );
 
-  const { data: claimsRes, error } = await supabase.auth.getClaims(token);
-  if (error || !claimsRes?.claims?.sub) {
+  let claimsRes;
+  try {
+    const result = await supabase.auth.getClaims(token);
+    if (result.error) {
+      console.error("[require-admin] token validation failed", result.error.message);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    claimsRes = result.data;
+  } catch (error) {
+    console.error("[require-admin] token validation threw", error);
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // Scheduled database jobs may carry a valid service-role JWT that is not
+  // byte-for-byte identical to the currently exposed environment value.
+  if (claimsRes?.claims?.role === "service_role") return null;
+
+  if (!claimsRes?.claims?.sub) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
