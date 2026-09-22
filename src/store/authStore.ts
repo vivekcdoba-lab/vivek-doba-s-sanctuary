@@ -9,6 +9,7 @@ interface Profile {
   full_name: string;
   role: 'admin' | 'seeker' | 'coach';
   admin_level?: string | null;
+  is_also_coach?: boolean | null;
 }
 
 interface AuthState {
@@ -129,7 +130,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 async function fetchProfile(userId: string, userEmail?: string, metadata?: any): Promise<Profile | null> {
   const profilePromise = supabase
     .from('profiles')
-    .select('id, user_id, email, full_name, role, admin_level')
+    .select('id, user_id, email, full_name, role, admin_level, is_also_coach')
     .eq('user_id', userId)
     .maybeSingle();
 

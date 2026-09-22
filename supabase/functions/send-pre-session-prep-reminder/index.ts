@@ -13,6 +13,12 @@ const corsHeaders = {
 type Lang = "en" | "hi" | "mr";
 const SITE = "https://www.vivekdoba.com";
 
+function escapeHtml(value: unknown): string {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[character] ?? character));
+}
+
 const T = {
   subject: {
     en: "📅 Session tomorrow — please complete your prep",
@@ -38,8 +44,8 @@ function html(name: string, lang: Lang, when: string) {
     </td></tr>`;
   return `<!doctype html><html><body style="font-family:system-ui,sans-serif;background:#fef3c7;padding:24px">
     <div style="max-width:580px;margin:auto;background:#fff;border-radius:12px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,0.06)">
-      <h2 style="color:#c2410c;margin:0 0 4px">${T.hi[lang]} ${name} 🙏</h2>
-      <p style="color:#6b7280;margin:0 0 16px;font-size:14px">${when}</p>
+      <h2 style="color:#c2410c;margin:0 0 4px">${T.hi[lang]} ${escapeHtml(name)} 🙏</h2>
+      <p style="color:#6b7280;margin:0 0 16px;font-size:14px">${escapeHtml(when)}</p>
       <p style="color:#374151;line-height:1.6">${T.intro[lang]}</p>
       <table style="width:100%;border-collapse:collapse;margin:12px 0">
         ${item(T.weekly[lang], "/seeker/weekly-review", "📝")}
@@ -53,7 +59,9 @@ function html(name: string, lang: Lang, when: string) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  const denied = await requireAdminOrCron(req, corsHeaders);
+  try {
+
+  const denied = await requireAdminOrCron(req, corsHeaders, true);
   if (denied) return denied;
 
   const supabase = createClient(
@@ -74,7 +82,11 @@ Deno.serve(async (req) => {
     .not("seeker_id", "is", null);
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+    console.error("[pre-session-prep] session query failed", error);
+    return new Response(JSON.stringify({ error: "Unable to load upcoming sessions" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   let sent = 0, skipped = 0, failed = 0;
@@ -128,4 +140,11 @@ Deno.serve(async (req) => {
   return new Response(JSON.stringify({ sent, skipped, failed, scanned: sessions?.length ?? 0 }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+  } catch (error) {
+    console.error("[pre-session-prep] unhandled failure", error);
+    return new Response(JSON.stringify({ error: "Reminder processing failed" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 });

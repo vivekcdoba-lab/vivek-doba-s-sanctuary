@@ -42,7 +42,9 @@ function html(name: string, lang: Lang) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  const denied = await requireAdminOrCron(req, corsHeaders);
+  try {
+
+  const denied = await requireAdminOrCron(req, corsHeaders, true);
   if (denied) return denied;
 
   const supabase = createClient(
@@ -59,7 +61,11 @@ Deno.serve(async (req) => {
     .not("email", "is", null);
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+    console.error("[evening-gratitude] seeker query failed", error);
+    return new Response(JSON.stringify({ error: "Unable to load seekers" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   let sent = 0, skipped = 0, failed = 0;
@@ -113,4 +119,11 @@ Deno.serve(async (req) => {
   return new Response(JSON.stringify({ sent, skipped, failed }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+  } catch (error) {
+    console.error("[evening-gratitude] unhandled failure", error);
+    return new Response(JSON.stringify({ error: "Reminder processing failed" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 });
