@@ -25,6 +25,20 @@ export async function requireAdminOrCron(
   // Service-role key shortcut
   if (token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) return null;
 
+  // Managed pg_cron uses the project anon key as both apikey and bearer token.
+  // The API gateway validates apikey before the request reaches this function;
+  // require the two headers to match so an arbitrary bearer token is rejected.
+  if (allowScheduledAnon && token === req.headers.get("apikey")) {
+    try {
+      const payload = JSON.parse(
+        atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
+      );
+      if (payload?.role === "anon") return null;
+    } catch {
+      // Continue to normal JWT validation below.
+    }
+  }
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -52,10 +66,6 @@ export async function requireAdminOrCron(
   // Scheduled database jobs may carry a valid service-role JWT that is not
   // byte-for-byte identical to the currently exposed environment value.
   if (claimsRes?.claims?.role === "service_role") return null;
-
-  // Managed pg_cron invokes explicitly opted-in scheduled functions with a
-  // signed anon JWT. getClaims verifies its signature before this role check.
-  if (allowScheduledAnon && claimsRes?.claims?.role === "anon") return null;
 
   if (!claimsRes?.claims?.sub) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
