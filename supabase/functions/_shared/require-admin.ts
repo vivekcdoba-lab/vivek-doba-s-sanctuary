@@ -25,6 +25,11 @@ export async function requireAdminOrCron(
   // Service-role key shortcut
   if (token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) return null;
 
+  // Managed pg_cron invokes explicitly opted-in scheduled functions with the
+  // project's anon key. Compare it directly because anon JWTs have no user
+  // subject and therefore cannot pass the admin lookup below.
+  if (allowScheduledAnon && token === Deno.env.get("SUPABASE_ANON_KEY")) return null;
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -52,11 +57,6 @@ export async function requireAdminOrCron(
   // Scheduled database jobs may carry a valid service-role JWT that is not
   // byte-for-byte identical to the currently exposed environment value.
   if (claimsRes?.claims?.role === "service_role") return null;
-
-  // pg_cron jobs created by the managed platform invoke functions with the
-  // project's signed anon JWT. Only explicitly idempotent scheduled handlers
-  // opt into accepting that identity.
-  if (allowScheduledAnon && claimsRes?.claims?.role === "anon") return null;
 
   if (!claimsRes?.claims?.sub) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
