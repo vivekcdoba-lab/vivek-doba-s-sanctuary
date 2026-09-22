@@ -5,6 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 export async function requireAdminOrCron(
   req: Request,
   corsHeaders: Record<string, string>,
+  allowScheduledAnon = false,
 ): Promise<Response | null> {
   // 1) Cron secret short-circuit
   const cronSecret = Deno.env.get("CRON_SECRET");
@@ -51,6 +52,11 @@ export async function requireAdminOrCron(
   // Scheduled database jobs may carry a valid service-role JWT that is not
   // byte-for-byte identical to the currently exposed environment value.
   if (claimsRes?.claims?.role === "service_role") return null;
+
+  // pg_cron jobs created by the managed platform invoke functions with the
+  // project's signed anon JWT. Only explicitly idempotent scheduled handlers
+  // opt into accepting that identity.
+  if (allowScheduledAnon && claimsRes?.claims?.role === "anon") return null;
 
   if (!claimsRes?.claims?.sub) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {

@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
 
   try {
 
-  const denied = await requireAdminOrCron(req, corsHeaders);
+  const denied = await requireAdminOrCron(req, corsHeaders, true);
   if (denied) return denied;
 
   const supabase = createClient(
