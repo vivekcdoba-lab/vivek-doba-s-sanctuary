@@ -1,0 +1,11 @@
+import { Clock, GraduationCap, MapPin } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import PageBanner from '@/components/public/PageBanner';
+import { useDbCourses } from '@/hooks/useDbCourses';
+import { Button } from '@/components/ui/button';
+
+export default function PublicCoursesPage() {
+  const { data = [], isLoading } = useDbCourses();
+  return <><PageBanner icon={GraduationCap} eyebrow="Courses" title="Choose your transformation path" description="Practical programs for life, leadership and business—guided by wisdom, structure and personal accountability." />
+    <section className="max-w-7xl mx-auto px-4 py-14 sm:py-20">{isLoading ? <p className="text-center text-muted-foreground">Loading courses…</p> : data.length === 0 ? <p className="text-center text-muted-foreground">New courses are being prepared. Please check back soon.</p> : <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">{data.map(course => <article key={course.id} className="bg-card border border-border rounded-lg overflow-hidden shadow-sm card-hover flex flex-col">{course.image_url ? <img src={course.image_url} alt="" className="w-full aspect-[16/9] object-cover" /> : <div className="aspect-[16/9] gradient-saffron flex items-center justify-center"><GraduationCap className="w-12 h-12 text-primary-foreground/80" /></div>}<div className="p-6 flex flex-col flex-1"><div className="flex justify-between gap-3 mb-2"><h2 className="text-xl font-bold">{course.name}</h2><span className="shrink-0 text-xs font-bold bg-primary/10 text-primary px-2 py-1 rounded-full">{Number(course.price) === 0 ? 'FREE' : `₹${Number(course.price).toLocaleString('en-IN')}`}</span></div><p className="text-sm text-muted-foreground leading-6 flex-1">{course.public_description || course.description || course.tagline || 'Course details will be added soon.'}</p><div className="flex flex-wrap gap-3 text-xs text-muted-foreground my-5">{course.duration && <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{course.duration}</span>}{course.location && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{course.location}</span>}</div><Button asChild className="w-full gradient-saffron border-0"><Link to="/get-started">Enroll Now</Link></Button></div></article>)}</div>}</section></>;
+}
