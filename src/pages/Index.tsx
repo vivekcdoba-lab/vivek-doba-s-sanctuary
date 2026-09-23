@@ -6,7 +6,7 @@ import HomepageMediaSection from '@/components/HomepageMediaSection';
 const stats = [
   { value: '30,000+', label: 'Lives Transformed' },
   { value: '1,000+', label: 'Inspiring Stories' },
-  { value: '20+', label: 'Years Experience' },
+  { value: '28', label: 'Years Experience' },
 ];
 
 const Index = () => (

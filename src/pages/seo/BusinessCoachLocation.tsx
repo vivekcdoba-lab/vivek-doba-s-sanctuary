@@ -23,7 +23,7 @@ const LOCATION_CONTENT: Record<LocationKey, {
     h1: "Business Coach in India for Conscious Founders",
     eyebrow: "Pan-India · Online",
     subtitle: "Strategy, mindset and conscious leadership for founders building purpose-driven businesses anywhere in India.",
-    intro: "Choosing a business coach in India is a serious decision — most are either pure-strategy MBAs with no inner work, or pure mindset coaches with no business experience. Vivek Doba bridges both: 20+ years building, advising and scaling businesses, combined with a deep dharma-based coaching practice for the inner game.",
+    intro: "Choosing a business coach in India is a serious decision — most are either pure-strategy MBAs with no inner work, or pure mindset coaches with no business experience. Vivek Doba bridges both: 28 years of experience building, advising and scaling businesses, combined with a deep dharma-based coaching practice for the inner game.",
     local: "Clients across Bengaluru SaaS, Delhi-NCR D2C, Hyderabad services, Chennai manufacturing, Pune IT, and tier-2 family businesses in Indore, Coimbatore, Jaipur and Surat. Sessions delivered online with quarterly intensives in Pune for serious engagements. Particularly strong fit for founders running ₹1–25 Cr revenue businesses.",
     areaServed: "India",
   },

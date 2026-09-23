@@ -3,7 +3,7 @@ import vivekDobaPhoto from '@/assets/vivek-doba.png';
 import PageBanner from '@/components/public/PageBanner';
 
 const milestones = [
-  { value: '20+', label: 'Years of experience', icon: Award },
+  { value: '28', label: 'Years of experience', icon: Award },
   { value: '30,000+', label: 'Lives transformed', icon: Heart },
   { value: '1,000+', label: 'Inspiring stories', icon: Sparkles },
 ];

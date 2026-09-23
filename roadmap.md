@@ -16,3 +16,4 @@
 - [x] Make Courses database-driven with public fallback, nine image sets, and an admin editor.
 - [x] Add company-hosted Sales Sanjivani and corporate/one-to-one leadership coaching messaging.
 - [x] Add Vivek Doba's original photo to the Courses banner and show 28 years of experience.
+- [x] Standardize Vivek Doba's experience to 28 years across all public pages and metadata.
