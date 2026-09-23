@@ -115,6 +115,7 @@ const AdminVideos = lazyWithReload(() => import("./pages/admin/AdminVideos"));
 const AdminAudios = lazyWithReload(() => import("./pages/admin/AdminAudios"));
 const AdminHomepageMedia = lazyWithReload(() => import("./pages/admin/AdminHomepageMedia"));
 const AdminPublicContent = lazyWithReload(() => import("./pages/admin/AdminPublicContent"));
+const AdminPostsPage = lazyWithReload(() => import("./pages/admin/AdminPostsPage"));
 const AdminUploadResource = lazyWithReload(() => import("./pages/admin/AdminUploadResource"));
 const AdminCategories = lazyWithReload(() => import("./pages/admin/AdminCategories"));
 const AdminQuestionBank = lazyWithReload(() => import("./pages/admin/AdminQuestionBank"));
