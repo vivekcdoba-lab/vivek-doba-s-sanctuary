@@ -27,7 +27,8 @@ export type GalleryItem = {
 };
 export type BlogPost = { id: string; title: string; slug: string; excerpt: string | null; content: string; cover_image_url: string | null; status: 'draft' | 'published'; published_at: string | null; created_at: string };
 export type Post = { id: string; title: string; slug: string; excerpt: string; cover_image: string | null; body: string; category: 'Business Growth' | 'Leadership' | 'Mindset' | 'Health' | 'Family' | 'Sales'; tags: string[]; author: string; published_at: string | null; seo_title: string | null; seo_description: string | null; related_course_slug: string | null; is_published: boolean; created_at: string; updated_at: string };
-export type ContentKind = 'products' | 'gallery_items' | 'blog_posts' | 'posts';
+export type Testimonial = { id: string; name: string; business: string | null; city: string | null; photo: string | null; quote: string | null; youtube_id: string | null; program_slug: string | null; rating: number | null; sort_order: number; is_published: boolean; created_at: string; updated_at: string };
+export type ContentKind = 'products' | 'gallery_items' | 'blog_posts' | 'posts' | 'testimonials';
 
 export function useProducts(includeInactive = false) {
   return useQuery({ queryKey: ['products', includeInactive], queryFn: async () => {
@@ -98,6 +99,24 @@ export function usePost(slug?: string) {
     const { data, error } = await supabase.from('posts').select('*').eq('slug', slug || '').eq('is_published', true).maybeSingle();
     if (error) throw error;
     return data as Post | null;
+  }});
+}
+
+export function useTestimonials(includeDrafts = false) {
+  return useQuery({ queryKey: ['testimonials', includeDrafts], queryFn: async () => {
+    let query = supabase.from('testimonials').select('*').order('sort_order').order('created_at', { ascending: false });
+    if (!includeDrafts) query = query.eq('is_published', true);
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data || []) as Testimonial[];
+  }});
+}
+
+export function useProgramTestimonials(programSlug?: string) {
+  return useQuery({ queryKey: ['testimonials', 'program', programSlug], enabled: Boolean(programSlug), queryFn: async () => {
+    const { data, error } = await supabase.from('testimonials').select('*').eq('is_published', true).eq('program_slug', programSlug || '').order('sort_order').order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data || []) as Testimonial[];
   }});
 }
 
