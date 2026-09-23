@@ -1,10 +1,10 @@
 # Routes & Pages
 
-_Generated: 2026-09-23T09:16:26.955Z_
+_Generated: 2026-09-23T10:02:34.774Z_
 
-Total routes: **265**
+Total routes: **266**
 
-## Admin (71)
+## Admin (72)
 
 | Path | Component |
 |---|---|
@@ -23,7 +23,7 @@ Total routes: **265**
 | `/admin/audit-logs` | AdminAuditLogs |
 | `/admin/backup` | AdminBackup |
 | `/admin/batches` | AdminBatches |
-| `/admin/blog` | AdminPublicContent |
+| `/admin/blog` | Navigate |
 | `/admin/branding` | AdminBranding |
 | `/admin/business-metrics` | AdminBusinessMetrics |
 | `/admin/calendar` | Navigate |
@@ -60,6 +60,7 @@ Total routes: **265**
 | `/admin/operation-docs` | AdminOperationDocs |
 | `/admin/overdue-payments` | AdminOverduePayments |
 | `/admin/payments` | Navigate |
+| `/admin/posts` | AdminPostsPage |
 | `/admin/products` | AdminPublicContent |
 | `/admin/program-analytics` | AdminProgramAnalytics |
 | `/admin/program-coaches` | AdminProgramCoaches |

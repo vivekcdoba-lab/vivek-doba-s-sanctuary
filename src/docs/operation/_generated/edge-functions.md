@@ -1,8 +1,8 @@
 # Edge Functions
 
-_Generated: 2026-09-23T09:16:26.955Z_
+_Generated: 2026-09-23T10:02:34.774Z_
 
-Total: **28** serverless functions deployed via Lovable Cloud.
+Total: **29** serverless functions deployed via Lovable Cloud.
 
 | Function | Purpose (from header) | Secrets used |
 |---|---|---|
@@ -14,6 +14,7 @@ Total: **28** serverless functions deployed via Lovable Cloud.
 | `delete-seeker` | — | — |
 | `get-signature-request` | — | — |
 | `handle-email-events` | — | LOVABLE_API_KEY |
+| `notify-contact-submission` | — | — |
 | `notify-session-submitted` | Notify a seeker (email + in-app notification) that their coach has submitted | APP_PUBLIC_URL |
 | `preview-transactional-email` | Renders all registered templates with their previewData. | LOVABLE_API_KEY |
 | `request-document-signature` | — | APP_PUBLIC_URL |
