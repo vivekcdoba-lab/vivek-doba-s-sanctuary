@@ -12,7 +12,7 @@ import {
   UserPlus, Crown, Search as SearchIcon, FileText, CheckCircle,
   Megaphone, Video, Headphones, Building2, Trophy, Award,
   PanelLeftClose, PanelLeft, Shield, Bell, Link2, Database, Palette,
-  DollarSign, UserCheck, RotateCcw, Banknote, CreditCard, Mail, Settings2
+  DollarSign, UserCheck, RotateCcw, Banknote, CreditCard, Mail, Settings2, ShoppingBag, Image, Newspaper
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -39,7 +39,7 @@ const adminNav: NavGroup[] = [
   },
   {
     label: 'PROGRAMS', emoji: '📚', items: [
-      { icon: BookOpen, label: 'All Programs', path: '/courses' },
+      { icon: BookOpen, label: 'All Programs', path: '/admin/courses' },
       { icon: UserPlus, label: 'Create Program', path: '/admin/create-program' },
       { icon: FileText, label: 'Edit Programs', path: '/admin/edit-programs' },
       { icon: Crown, label: 'Program Coaches', path: '/admin/program-coaches' },
@@ -82,6 +82,9 @@ const adminNav: NavGroup[] = [
       { icon: Video, label: 'Videos', path: '/admin/videos' },
       { icon: Headphones, label: 'Audios', path: '/admin/audios' },
       { icon: Video, label: 'Homepage Media', path: '/admin/homepage-media' },
+      { icon: ShoppingBag, label: 'Shop Products', path: '/admin/products' },
+      { icon: Image, label: 'Gallery', path: '/admin/gallery' },
+      { icon: Newspaper, label: 'Blog Posts', path: '/admin/blog' },
       { icon: FileText, label: 'Resources', path: '/resources' },
       { icon: FileText, label: 'Agreement Document Library', path: '/admin/documents' },
       { icon: UserPlus, label: 'Upload Resource', path: '/admin/upload-resource' },
