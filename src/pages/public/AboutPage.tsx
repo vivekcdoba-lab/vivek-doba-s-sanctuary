@@ -100,8 +100,8 @@ export default function AboutPage() {
           <h1 className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">About Vivek Doba: Business Coach and Founder of Life’s Golden Triangle™</h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-primary-foreground/90">Helping business owners in Pune and across India grow their business without losing their health or their family, since 1998.</p>
         </div>
-        <div className="homepage-photo-frame mx-auto w-full max-w-lg overflow-hidden rounded-lg border border-primary-foreground/30">
-          <img src={vivekDobaBanner} alt="Vivek Doba, business coach and founder of Life’s Golden Triangle" width="1376" height="768" fetchPriority="high" className="aspect-[4/5] w-full object-cover object-top" />
+        <div className="homepage-photo-frame mx-auto w-full max-w-xl overflow-hidden rounded-lg border border-primary-foreground/30">
+          <img src={vivekDobaBanner} alt="Vivek Doba, business coach and founder of Life’s Golden Triangle" width="1376" height="768" fetchPriority="high" className="aspect-[4/3] w-full object-cover object-center" />
         </div>
       </div>
     </section>
