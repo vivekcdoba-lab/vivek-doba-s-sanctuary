@@ -1,10 +1,10 @@
 # Routes & Pages
 
-_Generated: 2026-09-23T05:23:57.296Z_
+_Generated: 2026-09-23T06:17:09.106Z_
 
-Total routes: **251**
+Total routes: **260**
 
-## Admin (68)
+## Admin (71)
 
 | Path | Component |
 |---|---|
@@ -23,6 +23,7 @@ Total routes: **251**
 | `/admin/audit-logs` | AdminAuditLogs |
 | `/admin/backup` | AdminBackup |
 | `/admin/batches` | AdminBatches |
+| `/admin/blog` | AdminPublicContent |
 | `/admin/branding` | AdminBranding |
 | `/admin/business-metrics` | AdminBusinessMetrics |
 | `/admin/calendar` | Navigate |
@@ -32,7 +33,7 @@ Total routes: **251**
 | `/admin/coaches` | AdminCoaches |
 | `/admin/competitors` | AdminCompetitors |
 | `/admin/conversion-funnel` | AdminConversionFunnel |
-| `/admin/courses` | Navigate |
+| `/admin/courses` | CoursesPage |
 | `/admin/create-assessment` | AdminCreateAssessment |
 | `/admin/create-program` | AdminCreateProgram |
 | `/admin/daily-reports` | AdminDailyReports |
@@ -45,6 +46,7 @@ Total routes: **251**
 | `/admin/enrollments` | AdminEnrollments |
 | `/admin/export-financials` | AdminExportFinancials |
 | `/admin/export-reports` | AdminExportReports |
+| `/admin/gallery` | AdminPublicContent |
 | `/admin/homepage-media` | AdminHomepageMedia |
 | `/admin/hot-leads` | AdminHotLeads |
 | `/admin/integrations` | AdminIntegrations |
@@ -58,6 +60,7 @@ Total routes: **251**
 | `/admin/operation-docs` | AdminOperationDocs |
 | `/admin/overdue-payments` | AdminOverduePayments |
 | `/admin/payments` | Navigate |
+| `/admin/products` | AdminPublicContent |
 | `/admin/program-analytics` | AdminProgramAnalytics |
 | `/admin/program-coaches` | AdminProgramCoaches |
 | `/admin/question-bank` | AdminQuestionBank |
@@ -232,26 +235,31 @@ Total routes: **251**
 | `/login` | LoginPage |
 | `/register` | RegisterPage |
 
-## Other (43)
+## Other (49)
 
 | Path | Component |
 |---|---|
 | `*` | NotFound |
+| `/about` | AboutPage |
 | `/active-sessions` | ActiveSessionsPage |
 | `/applications` | ApplicationsPage |
 | `/applications/:id/detailed-intake` | AdminDetailedIntake |
 | `/apply-lgt` | Navigate |
 | `/assessments` | AssessmentsPage |
 | `/assignments` | AssignmentsPage |
+| `/blog` | BlogPage |
+| `/blog/:slug` | BlogPostPage |
 | `/book-appointment` | BookAppointment |
 | `/business-coach-in-:location` | SeoBusinessCoachLocation |
 | `/business-coaching` | SeoBusinessCoaching |
 | `/calendar` | CalendarPage |
-| `/courses` | CoursesPage |
+| `/contact` | ContactPage |
+| `/courses` | PublicCoursesPage |
 | `/daily-tracking` | DailyTrackingPage |
 | `/dashboard` | AdminDashboard |
 | `/dharma-philosophy` | SeoDharmaPhilosophy |
 | `/follow-ups` | FollowUpsPage |
+| `/gallery` | GalleryPage |
 | `/get-started` | TellUsAboutYourself |
 | `/growth-matrix` | GrowthMatrixPage |
 | `/help` | HelpPage |
@@ -275,6 +283,7 @@ Total routes: **251**
 | `/sessions/:id/certify` | SessionCertification |
 | `/sessions/:id/review` | SessionReviewPage |
 | `/settings` | SettingsPage |
+| `/shop` | ShopPage |
 | `/sign/:token` | SignDocument |
 | `/swot` | SwotPage |
 | `/terms` | TermsPage |
