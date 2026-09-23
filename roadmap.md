@@ -8,3 +8,5 @@
 - [x] Add admin CRUD screens for public courses, products, gallery, and blog.
 - [x] Add WhatsApp cart checkout for shop products.
 - [x] Verify desktop/mobile navigation, contact submission, public page loading, and existing homepage sections.
+- [x] Build the grouped Courses menu and Hindi program ladder from the supplied course data.
+- [x] Verify Courses menu accessibility, CTA destinations, pricing rules, and responsive ladder layout.
