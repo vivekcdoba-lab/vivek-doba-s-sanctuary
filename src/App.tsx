@@ -43,6 +43,7 @@ import AdminLayout from "./components/AdminLayout";
 import SeekerLayout from "./components/SeekerLayout";
 import CoachingLayout from "./components/CoachingLayout";
 import WhatsAppSupportButton from "./components/WhatsAppSupportButton";
+import PublicLayout from "./components/public/PublicLayout";
 
 // Lazy-loaded routes (split into per-route chunks)
 const RegisterPage = lazyWithReload(() => import("./pages/RegisterPage"));
@@ -110,6 +111,7 @@ const AdminExportFinancials = lazyWithReload(() => import("./pages/admin/AdminEx
 const AdminVideos = lazyWithReload(() => import("./pages/admin/AdminVideos"));
 const AdminAudios = lazyWithReload(() => import("./pages/admin/AdminAudios"));
 const AdminHomepageMedia = lazyWithReload(() => import("./pages/admin/AdminHomepageMedia"));
+const AdminPublicContent = lazyWithReload(() => import("./pages/admin/AdminPublicContent"));
 const AdminUploadResource = lazyWithReload(() => import("./pages/admin/AdminUploadResource"));
 const AdminCategories = lazyWithReload(() => import("./pages/admin/AdminCategories"));
 const AdminQuestionBank = lazyWithReload(() => import("./pages/admin/AdminQuestionBank"));
@@ -276,6 +278,13 @@ const SeoNlpCoach = lazyWithReload(() => import("./pages/seo/NlpCoach"));
 const SeoSalesCoach = lazyWithReload(() => import("./pages/seo/SalesCoach"));
 const SeoLifeCoachLocation = lazyWithReload(() => import("./pages/seo/LifeCoachLocation"));
 const SeoBusinessCoachLocation = lazyWithReload(() => import("./pages/seo/BusinessCoachLocation"));
+const AboutPage = lazyWithReload(() => import("./pages/public/AboutPage"));
+const PublicCoursesPage = lazyWithReload(() => import("./pages/public/CoursesPage"));
+const ShopPage = lazyWithReload(() => import("./pages/public/ShopPage"));
+const GalleryPage = lazyWithReload(() => import("./pages/public/GalleryPage"));
+const BlogPage = lazyWithReload(() => import("./pages/public/BlogPage"));
+const BlogPostPage = lazyWithReload(() => import("./pages/public/BlogPostPage"));
+const ContactPage = lazyWithReload(() => import("./pages/public/ContactPage"));
 
 const queryClient = new QueryClient();
 
@@ -301,7 +310,16 @@ const App = () => (
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<Index />} />
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/courses" element={<PublicCoursesPage />} />
+              <Route path="/shop" element={<ShopPage />} />
+              <Route path="/gallery" element={<GalleryPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+            </Route>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/book-appointment" element={<BookAppointment />} />
@@ -334,7 +352,7 @@ const App = () => (
               <Route path="/seekers/:id" element={<SeekerDetailPage />} />
               <Route path="/seekers/:seekerId/premium-agreement" element={<PremiumAgreementPage />} />
               <Route path="/leads" element={<LeadsPage />} />
-              <Route path="/courses" element={<CoursesPage />} />
+              <Route path="/admin/courses" element={<CoursesPage />} />
               <Route path="/sessions" element={<SessionsPage />} />
               <Route path="/assignments" element={<AssignmentsPage />} />
               <Route path="/payments" element={<PaymentsPage />} />
@@ -360,7 +378,6 @@ const App = () => (
               <Route path="/admin/payments" element={<Navigate to="/payments" replace />} />
               <Route path="/admin/dashboard" element={<Navigate to="/dashboard" replace />} />
               <Route path="/admin/leads" element={<Navigate to="/leads" replace />} />
-              <Route path="/admin/courses" element={<Navigate to="/courses" replace />} />
               <Route path="/admin/sessions" element={<Navigate to="/sessions" replace />} />
               <Route path="/admin/assignments" element={<Navigate to="/assignments" replace />} />
               <Route path="/admin/messages" element={<Navigate to="/messages" replace />} />
@@ -403,6 +420,9 @@ const App = () => (
               <Route path="/admin/videos" element={<AdminVideos />} />
               <Route path="/admin/audios" element={<AdminAudios />} />
               <Route path="/admin/homepage-media" element={<AdminHomepageMedia />} />
+              <Route path="/admin/products" element={<AdminPublicContent mode="products" />} />
+              <Route path="/admin/gallery" element={<AdminPublicContent mode="gallery_items" />} />
+              <Route path="/admin/blog" element={<AdminPublicContent mode="blog_posts" />} />
               <Route path="/admin/upload-resource" element={<AdminUploadResource />} />
               <Route path="/admin/categories" element={<AdminCategories />} />
               <Route path="/admin/question-bank" element={<AdminQuestionBank />} />

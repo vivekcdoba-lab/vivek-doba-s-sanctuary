@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
-import { Plus, Users, Clock, Star, X, Loader2 } from 'lucide-react';
+import { Plus, Users, Clock, Star, X, Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAllDbCourses, useCreateCourse, useUpdateCourse } from '@/hooks/useDbCourses';
+import { useAllDbCourses, useCreateCourse, useUpdateCourse, useDeleteCourse } from '@/hooks/useDbCourses';
 import { useSeekerProfiles } from '@/hooks/useSeekerProfiles';
 import {
   LIFECYCLE_STATUSES,
@@ -24,6 +24,7 @@ const emptyForm = {
   name: '', tagline: '', duration: '', format: 'Workshop', tier: 'standard',
   price: '', max_participants: '', gradient_index: 0, event_date: '',
   location: '', location_type: 'in_person',
+  public_description: '', image_url: '',
   lifecycle_status: 'active' as LifecycleStatus,
 };
 
@@ -32,6 +33,7 @@ const CoursesPage = () => {
   const { data: seekers = [] } = useSeekerProfiles();
   const createCourse = useCreateCourse();
   const updateCourse = useUpdateCourse();
+  const deleteCourse = useDeleteCourse();
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [tab, setTab] = useState<LifecycleStatus>('active');
@@ -56,6 +58,7 @@ const CoursesPage = () => {
       max_participants: String(c.max_participants), gradient_index: gi >= 0 ? gi : 0,
       event_date: c.event_date || '', location: c.location || '',
       location_type: c.location_type || 'in_person',
+      public_description: c.public_description || c.description || '', image_url: c.image_url || '',
       lifecycle_status: (c.lifecycle_status || 'active') as LifecycleStatus,
     });
     setEditId(id); setShowModal(true);
@@ -71,12 +74,19 @@ const CoursesPage = () => {
       lifecycle_status: form.lifecycle_status,
       event_date: form.event_date || null, location: form.location || null,
       location_type: form.location_type,
+      public_description: form.public_description || null, image_url: form.image_url || null,
     };
     try {
       if (editId) { await updateCourse.mutateAsync({ id: editId, ...data } as any); toast.success(`"${form.name}" updated`); }
       else { await createCourse.mutateAsync(data as any); toast.success(`"${form.name}" added`); }
       setShowModal(false); resetForm();
     } catch (err: any) { toast.error(err.message || 'Failed to save'); }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`Delete "${name}"? Existing enrollments may prevent deletion.`)) return;
+    try { await deleteCourse.mutateAsync(id); toast.success(`"${name}" deleted`); }
+    catch (err: any) { toast.error(err.message || 'This course cannot be deleted'); }
   };
 
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
@@ -138,6 +148,7 @@ const CoursesPage = () => {
                   </div>
                   <div className="flex justify-end gap-2">
                     <button onClick={() => openEdit(course.id)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:opacity-90">Edit</button>
+                    <button aria-label={`Delete ${course.name}`} onClick={() => handleDelete(course.id, course.name)} className="p-1.5 rounded-lg text-destructive border border-destructive/30 hover:bg-destructive/10"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
               </div>
@@ -158,6 +169,8 @@ const CoursesPage = () => {
               <h2 className="text-xl font-bold text-foreground">{editId ? 'Edit Course' : 'Add New Course'}</h2>
               <div><label className="block text-sm font-medium text-foreground mb-1">Course Name *</label><input className={inputCls} value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g., Leadership through Mahabharata" /></div>
               <div><label className="block text-sm font-medium text-foreground mb-1">Tagline</label><input className={inputCls} value={form.tagline} onChange={e => set('tagline', e.target.value)} /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Public Description</label><textarea className={inputCls} rows={4} value={form.public_description} onChange={e => set('public_description', e.target.value)} placeholder="Description shown on the public Courses page" /></div>
+              <div><label className="block text-sm font-medium text-foreground mb-1">Public Image URL</label><input className={inputCls} value={form.image_url} onChange={e => set('image_url', e.target.value)} placeholder="https://…" /></div>
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-sm font-medium text-foreground mb-1">Duration *</label><input className={inputCls} value={form.duration} onChange={e => set('duration', e.target.value)} placeholder="e.g., 6 Months" /></div>
                 <div><label className="block text-sm font-medium text-foreground mb-1">Format</label><select className={inputCls} value={form.format} onChange={e => set('format', e.target.value)}>{FORMATS.map(f => <option key={f}>{f}</option>)}</select></div>
