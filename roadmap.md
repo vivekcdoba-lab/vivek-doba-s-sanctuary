@@ -3,7 +3,8 @@
 ## Shared header, footer, and trust consistency
 
 - [x] Update the shared desktop and mobile header without overlap or duplicate actions.
-- [x] Standardize homepage and public review claims to 840+ and remove banned claims.
+- [ ] Correct every public review claim to the verified 805+ count.
+- [ ] Rebuild the homepage for Pune and PCMC business owners using the supplied nine-section brief.
 - [x] Update the four-column footer and keep shared business details exact.
 - [x] Align public business JSON-LD with the shared name, address, and phone.
 - [x] Verify links, layouts, claims, and type safety.
@@ -17,7 +18,7 @@
 - [x] Fix verified issues and report remaining user inputs.
 - [x] Set Know Your Triangle fees to ₹999 and add a 45-minute session with Vivek for ₹4,999.
 
-- [x] Superseded: use the latest approved 840+ Google and client review claim everywhere.
+- [x] Superseded: use the latest approved 805+ Google and client review claim everywhere.
 
 ## Technical SEO foundation follow-up
 
