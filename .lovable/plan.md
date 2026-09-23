@@ -38,3 +38,21 @@ Turn `/blog` into the site’s search-focused article hub, backed by admin-manag
 - Verify admin-only draft access and public draft isolation.
 - Verify category filtering, Markdown headings/table of contents, course relation, sharing links, metadata, Article JSON-LD, and related posts.
 - Run type checks and the production build, then confirm published article HTML is prerendered when published posts exist.
+
+# Contact Page Rebuild
+
+## What will be built
+- Rebuild `/contact` with the requested H1, three prominent Call, WhatsApp, and Email actions, while retaining the established brand styling.
+- Expand the contact form with name, phone, email, business type, turnover range, dynamic course interest, and message fields, with clear validation and safe length limits.
+- Extend the existing `contact_submissions` record additively for the new fields; keep public submission-only access and admin-only reading.
+- Trigger an admin notification through the existing email setup after a successful save, while ensuring the enquiry is still saved if email delivery temporarily fails.
+- Show the requested success message with the response-time placeholder until a confirmed time is supplied.
+- Use the shared business-name, address, phone, and email constants so the Contact page, footer, and structured data stay identical.
+- Add opening hours, a lazy Google Maps embed, directions link, three FAQs, FAQ schema, LocalBusiness data, breadcrumb data, and unique Contact metadata.
+
+## Missing facts
+Because the details question was skipped, no facts will be invented. The page will use the existing confirmed email `info@vivekdoba.com`, the shared Pune address and phone, and visible placeholders for `[LOCALITY]`, `[HOURS]`, and `[24 HOURS]` until confirmed. The map will use the confirmed address rather than invented coordinates.
+
+## Validation
+- Verify form validation, database save, notification response, success/error states, phone/WhatsApp/email actions, dynamic course list, exact shared contact details, map loading, and structured data.
+- Run type checks and the production build; verify desktop and mobile layouts.
