@@ -1,5 +1,13 @@
 # Full-site final audit
 
+## Shared header, footer, and trust consistency
+
+- [ ] Update the shared desktop and mobile header without overlap or duplicate actions.
+- [ ] Standardize homepage and public review claims to 840+ and remove banned claims.
+- [ ] Update the four-column footer and keep shared business details exact.
+- [ ] Align public business JSON-LD with the shared name, address, and phone.
+- [ ] Verify links, layouts, claims, and type safety.
+
 - [x] Check every public route, link, button, form, and external action.
 - [x] Remove unintended Devanagari and identify visible placeholders.
 - [x] Validate 390px layout, text size, tap targets, and contrast.

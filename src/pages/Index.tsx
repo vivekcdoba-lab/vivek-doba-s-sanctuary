@@ -90,7 +90,7 @@ export default function Index() {
   const book = courses.find(course => course.slug === 'book');
 
   return <div className="bg-background">
-    <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business coach in Pimpri-Chinchwad, Pune for business owners who want growth without losing health and family. Life’s Golden Triangle™ by Vivek Doba. 805+ reviews, coaching since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, faqSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
+    <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business coach in Pimpri-Chinchwad, Pune for business owners who want growth without losing health and family. Life’s Golden Triangle™ by Vivek Doba. 840+ Google and client reviews, coaching business owners since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, faqSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
 
     <section className="gradient-hero relative overflow-hidden text-primary-foreground">
       <div className="homepage-hero-pattern absolute inset-0 pointer-events-none" />
@@ -103,10 +103,9 @@ export default function Index() {
             <Button asChild size="lg" className="min-h-12 bg-course-maroon text-secondary-foreground hover:bg-course-maroon/90"><a href={diagnosticUrl} target="_blank" rel="noopener noreferrer">Book a diagnostic <MessageCircle /></a></Button>
             <Button asChild size="lg" variant="outline" className="min-h-12 border-primary-foreground/60 bg-background/10 text-primary-foreground hover:bg-background hover:text-foreground"><Link to="/courses/know-your-triangle">Know Your Triangle · ₹999 <ArrowRight /></Link></Button>
           </div>
-          <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-primary-foreground/90">
-            <span className="inline-flex items-center gap-1.5"><Check className="h-4 w-4" />805+ reviews</span>
-            <span className="inline-flex items-center gap-1.5"><Clock3 className="h-4 w-4" />Coaching since 1998</span>
-            <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" />Pimpri-Chinchwad, Pune</span>
+          <div className="mt-8 grid max-w-xl grid-cols-2 gap-3 text-primary-foreground">
+            <div className="border-l border-primary-foreground/40 pl-4"><p className="text-2xl font-bold">840+</p><p className="text-sm text-primary-foreground/90">Google &amp; client reviews</p></div>
+            <div className="border-l border-primary-foreground/40 pl-4"><p className="text-2xl font-bold">Since 1998</p><p className="text-sm text-primary-foreground/90">Coaching business owners</p></div>
           </div>
         </div>
         <div className="relative mx-auto w-full max-w-lg self-end">

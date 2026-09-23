@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { CourseCta, CoursePrice } from '@/components/public/CourseElements';
 import { CourseSeo, providerSchema } from '@/components/public/CourseSeo';
 import { SITE_URL, whatsappLink, type Course } from '@/data/courses';
+import { professionalServiceSchema } from '@/components/public/PublicSeo';
 import { usePublicCourses } from '@/hooks/useDbCourses';
 import { openExternal } from '@/lib/openExternal';
 import vivekDobaCoursesBanner from '@/assets/vivek-doba-courses-banner.webp';
@@ -61,12 +62,12 @@ export default function PublicCoursesPage() {
   const jump = (slug: string) => { setHighlighted(slug); document.getElementById(`step-${slug}`)?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); };
   const schema = [
     { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: allCourses.map((course, index) => ({ '@type': 'ListItem', position: index + 1, item: { '@type': 'Course', name: course.name, description: course.outcome, url: `${SITE_URL}/courses/${course.slug}`, provider: providerSchema } })) },
-    { '@context': 'https://schema.org', '@type': 'ProfessionalService', name: 'Vivek Doba Business Mastery', telephone: '+91-9607050111', url: SITE_URL, address: { '@type': 'PostalAddress', addressLocality: 'Pimpri-Chinchwad', addressRegion: 'Maharashtra', addressCountry: 'IN' } },
+    professionalServiceSchema,
     { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(item => ({ '@type': 'Question', name: item.question, acceptedAnswer: { '@type': 'Answer', text: item.answer } })) },
     { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL }, { '@type': 'ListItem', position: 2, name: 'Courses', item: `${SITE_URL}/courses` }] },
   ];
   return <div className="bg-course-ivory">
-    <CourseSeo title="Business Coaching Programs in Pune & PCMC | Vivek Doba" description="Nine business coaching programs, one path. From a ₹999 two-hour session to Life’s Golden Triangle one-to-one coaching. Business coach in Pimpri-Chinchwad, Pune, with 28 years of experience and 805+ reviews." path="/courses" schema={schema} />
+    <CourseSeo title="Business Coaching Programs in Pune & PCMC | Vivek Doba" description="Nine business coaching programs, one path. From a ₹999 two-hour session to Life’s Golden Triangle one-to-one coaching. Business coach in Pimpri-Chinchwad, Pune, with 28 years of experience and 840+ Google and client reviews." path="/courses" schema={schema} />
     <section className="relative min-h-[560px] overflow-hidden border-b border-primary/15 sm:min-h-[620px]">
       <img src={vivekDobaCoursesBanner} alt="Vivek Doba standing against a warm sunrise mountain landscape" width="1376" height="768" className="absolute inset-0 h-full w-full object-cover object-[68%_center] sm:object-center" fetchPriority="high" />
       <div className="absolute inset-0 bg-gradient-to-r from-foreground/95 via-foreground/75 to-transparent" aria-hidden="true" />
@@ -76,7 +77,7 @@ export default function PublicCoursesPage() {
           <h1 className="text-3xl font-bold leading-tight sm:text-5xl">Business Coaching Programs in Pune for Owners Who Want Growth, Health and Family in Balance</h1>
           <p className="font-course-serif mt-7 text-4xl italic text-accent sm:text-5xl">Where are you today?</p>
           <p className="mt-4 max-w-xl text-base leading-8 text-primary-foreground/85 sm:text-lg">Every program does the same work at a different depth. Find the sentence that sounds like you, and start there.</p>
-          <div className="mt-7 flex flex-wrap gap-4 text-sm font-semibold"><span className="inline-flex items-center gap-2"><Star className="h-4 w-4 text-accent" />805+ reviews</span><span>· 28 years of experience</span><span>· PCMC, Pune</span></div>
+          <div className="mt-7 flex flex-wrap gap-4 text-sm font-semibold"><span className="inline-flex items-center gap-2"><Star className="h-4 w-4 text-accent" />840+ Google &amp; client reviews</span><span>· 28 years of experience</span><span>· PCMC, Pune</span></div>
         </div>
       </div>
     </section>
