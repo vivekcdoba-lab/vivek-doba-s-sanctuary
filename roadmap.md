@@ -39,3 +39,4 @@
 - [x] Rebuild `/contact` with action cards, expanded lead form, email notification, shared business details, map, FAQ, and LocalBusiness data. Blocked values remain clearly marked: `[LOCALITY]`, opening hours, and response time.
 - [ ] Build database-managed testimonials, admin editing, program filters, and matching course-page stories; keep navigation hidden until 3 are published.
 - [ ] Replace the current Golden Triangle Score tool with a noindex coming-soon page and WhatsApp action.
+- [ ] Verify and use the supplied Vivek Doba Business Mastery Google reviews link on `/testimonials`.
