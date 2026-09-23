@@ -5312,6 +5312,54 @@ export type Database = {
           },
         ]
       }
+      testimonials: {
+        Row: {
+          business: string | null
+          city: string | null
+          created_at: string
+          id: string
+          is_published: boolean
+          name: string
+          photo: string | null
+          program_slug: string | null
+          quote: string | null
+          rating: number | null
+          sort_order: number
+          updated_at: string
+          youtube_id: string | null
+        }
+        Insert: {
+          business?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          name: string
+          photo?: string | null
+          program_slug?: string | null
+          quote?: string | null
+          rating?: number | null
+          sort_order?: number
+          updated_at?: string
+          youtube_id?: string | null
+        }
+        Update: {
+          business?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          name?: string
+          photo?: string | null
+          program_slug?: string | null
+          quote?: string | null
+          rating?: number | null
+          sort_order?: number
+          updated_at?: string
+          youtube_id?: string | null
+        }
+        Relationships: []
+      }
       time_sheets: {
         Row: {
           created_at: string
