@@ -208,17 +208,21 @@ Deno.serve(async (req) => {
     if (cronSecret && providedCronSecret && providedCronSecret === cronSecret) {
       authorized = true;
     } else if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "");
+      if (token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
+        authorized = true;
+      } else {
       const userClient = createClient(
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_ANON_KEY")!,
         { global: { headers: { Authorization: authHeader } } }
       );
-      const token = authHeader.replace("Bearer ", "");
       const { data: userData } = await userClient.auth.getUser(token);
       if (userData?.user) {
         callerUserId = userData.user.id;
         const { data: prof } = await userClient.from("profiles").select("role").eq("user_id", userData.user.id).single();
         if (prof?.role === "admin") authorized = true;
+      }
       }
     }
 

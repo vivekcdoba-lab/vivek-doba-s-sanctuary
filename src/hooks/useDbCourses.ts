@@ -53,7 +53,7 @@ export function useDbCourses() {
 
 export function useAllDbCourses() {
   return useQuery({ queryKey: ['db-courses', 'all'], queryFn: async () => {
-    const { data, error } = await supabase.from('courses').select('*').not('slug', 'is', null).order('sort_order');
+    const { data, error } = await supabase.from('courses').select('*').order('sort_order', { nullsFirst: false }).order('name');
     if (error) throw error;
     return data;
   }});
@@ -61,6 +61,7 @@ export function useAllDbCourses() {
 
 function invalidate(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: ['db-courses'] });
+  queryClient.invalidateQueries({ queryKey: ['db-courses', 'all'] });
   queryClient.invalidateQueries({ queryKey: ['public-courses'] });
 }
 

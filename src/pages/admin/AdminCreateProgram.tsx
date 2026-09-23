@@ -78,7 +78,7 @@ const AdminCreateProgram = () => {
         location_type: form.location_type,
       } as any);
       toast.success(`Program "${form.name}" created!`);
-      navigate('/courses');
+      navigate('/admin/edit-programs');
     } catch (err: any) {
       toast.error(err.message || 'Failed to create');
     }
