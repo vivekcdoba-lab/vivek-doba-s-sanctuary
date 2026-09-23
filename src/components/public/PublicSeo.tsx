@@ -14,10 +14,10 @@ export const SOCIAL_URLS = [
   'https://www.linkedin.com/in/vivekdoba/',
 ];
 
-const address = {
+export const businessAddressSchema = {
   '@type': 'PostalAddress',
-  streetAddress: 'Office Number 228, 229, Tower B, Second Floor, Gera Imperium Gateway, Near Nashik Phata Metro Station, Mumbai Pune Highway',
-  addressLocality: 'Pimpri-Chinchwad', addressRegion: 'Maharashtra', postalCode: '411034', addressCountry: 'IN',
+  streetAddress: BUSINESS_ADDRESS,
+  addressCountry: 'IN',
 };
 
 export const organizationSchema = {
@@ -34,7 +34,7 @@ export const personSchema = {
 export const professionalServiceSchema = {
   '@context': 'https://schema.org', '@type': 'ProfessionalService', '@id': `${SITE_URL}/#business`,
   name: BUSINESS_NAME, url: SITE_URL, telephone: BUSINESS_PHONE, email: BUSINESS_EMAIL,
-  image: SHARE_IMAGE, address: { '@type': 'PostalAddress', streetAddress: BUSINESS_ADDRESS, addressCountry: 'IN' }, areaServed: ['Pimpri-Chinchwad', 'Pune', 'India'], priceRange: '₹₹',
+  image: SHARE_IMAGE, address: businessAddressSchema, areaServed: ['Pimpri-Chinchwad', 'Pune', 'India'], priceRange: '₹₹',
 };
 
 export function breadcrumbSchema(items: { name: string; path: string }[]) {

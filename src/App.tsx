@@ -330,6 +330,19 @@ const App = () => (
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/testimonials" element={<TestimonialsPage />} />
               <Route path="/score" element={<ScorePage />} />
+              <Route path="/help" element={<HelpPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/refund-policy" element={<RefundPolicyPage />} />
+              <Route path="/life-coaching" element={<SeoLifeCoaching />} />
+              <Route path="/business-coaching" element={<SeoBusinessCoaching />} />
+              <Route path="/manifestation" element={<SeoManifestation />} />
+              <Route path="/meditation" element={<SeoMeditation />} />
+              <Route path="/dharma-philosophy" element={<SeoDharmaPhilosophy />} />
+              <Route path="/nlp-coach" element={<SeoNlpCoach />} />
+              <Route path="/sales-coach" element={<SeoSalesCoach />} />
+              {(['india', 'maharashtra', 'pune', 'mumbai'] as const).map(location => <Route key={`life-${location}`} path={`/life-coach-in-${location}`} element={<SeoLifeCoachLocation forcedLocation={location} />} />)}
+              {(['india', 'maharashtra', 'pune', 'mumbai'] as const).map(location => <Route key={`business-${location}`} path={`/business-coach-in-${location}`} element={<SeoBusinessCoachLocation forcedLocation={location} />} />)}
             </Route>
             {['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt', 'practitioner', 'ram-nirvana', 'sales-sanjivani', 'leadership', 'book'].map(slug => (
               <Route key={slug} path={`/${slug}`} element={<Navigate to={`/courses/${slug}`} replace />} />
@@ -344,19 +357,6 @@ const App = () => (
             <Route path="/lgt-form/:token" element={<SeekerLgtForm />} />
             <Route path="/get-started" element={<TellUsAboutYourself />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/help" element={<HelpPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/refund-policy" element={<RefundPolicyPage />} />
-            <Route path="/life-coaching" element={<SeoLifeCoaching />} />
-            <Route path="/business-coaching" element={<SeoBusinessCoaching />} />
-            <Route path="/manifestation" element={<SeoManifestation />} />
-            <Route path="/meditation" element={<SeoMeditation />} />
-            <Route path="/dharma-philosophy" element={<SeoDharmaPhilosophy />} />
-            <Route path="/nlp-coach" element={<SeoNlpCoach />} />
-            <Route path="/sales-coach" element={<SeoSalesCoach />} />
-            {(['india', 'maharashtra', 'pune', 'mumbai'] as const).map(location => <Route key={`life-${location}`} path={`/life-coach-in-${location}`} element={<SeoLifeCoachLocation forcedLocation={location} />} />)}
-            {(['india', 'maharashtra', 'pune', 'mumbai'] as const).map(location => <Route key={`business-${location}`} path={`/business-coach-in-${location}`} element={<SeoBusinessCoachLocation forcedLocation={location} />} />)}
             <Route path="/sign/:token" element={<SignDocument />} />
 
             {/* Admin Routes */}

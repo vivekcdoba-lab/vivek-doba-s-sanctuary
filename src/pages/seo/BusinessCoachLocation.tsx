@@ -2,6 +2,7 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
+import { BUSINESS_ADDRESS, BUSINESS_NAME, BUSINESS_PHONE, businessAddressSchema } from "@/components/public/PublicSeo";
 
 type LocationKey = "india" | "maharashtra" | "pune" | "mumbai";
 
@@ -80,11 +81,12 @@ const BusinessCoachLocation = ({ forcedLocation }: { forcedLocation?: LocationKe
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
-    name: `Vivek Doba — Business Coach in ${content.label}`,
+    name: BUSINESS_NAME,
     areaServed: content.areaServed,
     url: `https://vivekdoba.com/business-coach-in-${key}`,
-    telephone: "+91-9607050111",
-    address: { "@type": "PostalAddress", addressLocality: "Pune", addressRegion: "Maharashtra", addressCountry: "IN" },
+    telephone: BUSINESS_PHONE,
+    address: businessAddressSchema,
+    description: `${BUSINESS_NAME}, ${BUSINESS_ADDRESS}`,
   };
 
   if (!isValidLocation) return <Navigate to="/404" replace />;
