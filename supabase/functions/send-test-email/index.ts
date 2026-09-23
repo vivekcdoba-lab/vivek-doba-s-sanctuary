@@ -1,9 +1,9 @@
-// Sends one branded test email to each of admin / coach / seeker via the
-// Lovable Emails queue (uses the verified notify.vivekdoba.com domain).
+// Sends one branded test email to each of admin / coach / seeker.
 // Requires service-role auth.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { requireAdminOrCron } from '../_shared/require-admin.ts';
+import { sendEmail } from '../_shared/send-email.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,9 +12,6 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const FROM = 'VDBM <info@notify.vivekdoba.com>';
-const SENDER_DOMAIN = 'notify.vivekdoba.com';
 
 const RECIPIENTS: Array<{ email: string; role: string; name: string }> = [
   { email: 'vivekcdoba@gmail.com',   role: 'admin',  name: 'Admin' },
@@ -50,65 +47,23 @@ Deno.serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    const enqueued: Array<{ to: string; msg_id: number | null; error?: string }> = [];
+    const results: Array<{ to: string; sent: boolean; error?: string }> = [];
 
     for (const r of RECIPIENTS) {
-      const messageId = crypto.randomUUID();
-
-      // Get or create an unsubscribe token for this recipient
-      let unsubToken: string | null = null;
-      const { data: existing } = await supabase
-        .from('email_unsubscribe_tokens')
-        .select('token')
-        .eq('email', r.email)
-        .maybeSingle();
-      if (existing?.token) {
-        unsubToken = existing.token;
-      } else {
-        const newToken = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
-        const { data: inserted, error: insErr } = await supabase
-          .from('email_unsubscribe_tokens')
-          .insert({ email: r.email, token: newToken })
-          .select('token')
-          .single();
-        if (insErr) {
-          enqueued.push({ to: r.email, msg_id: null, error: `token: ${insErr.message}` });
-          continue;
-        }
-        unsubToken = inserted.token;
-      }
-
-      const payload = {
-        message_id: messageId,
+      const result = await sendEmail(supabase, {
         to: r.email,
-        from: FROM,
-        sender_domain: SENDER_DOMAIN,
         subject: `✅ VDBM Test Email — ${r.name}`,
         html: html(r.name),
         text: `Hi ${r.name}, this is a test email from VDBM via notify.vivekdoba.com. If you got this, the pipeline works.`,
-        purpose: 'transactional',
         label: 'test_email',
-        idempotency_key: messageId,
-        unsubscribe_token: unsubToken,
-        queued_at: new Date().toISOString(),
-      };
-
-      const { data, error } = await supabase.rpc('enqueue_email', {
-        queue_name: 'transactional_emails',
-        payload,
       });
-
-      if (error) {
-        enqueued.push({ to: r.email, msg_id: null, error: error.message });
-      } else {
-        enqueued.push({ to: r.email, msg_id: data as number });
-      }
+      results.push({ to: r.email, sent: result.ok, error: result.error });
     }
 
     return new Response(JSON.stringify({
       success: true,
-      message: 'Emails enqueued. The dispatcher cron will send them within ~30s. Check email_send_log for status.',
-      enqueued,
+      message: 'Test email sends completed.',
+      results,
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (e) {
     return new Response(JSON.stringify({
