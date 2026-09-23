@@ -1,42 +1,9 @@
-# Roadmap
+# Full-site final audit
 
-- [x] Add shared public header and six-tab navigation across public pages.
-- [x] Build public About, Courses, Shop, Gallery, Blog, Blog Post, and Contact pages.
-- [x] Add secure content tables for products, gallery, blog, and contact submissions.
-- [x] Reuse the existing homepage media library for admin image uploads.
-- [x] Extend course content fields for public cards while preserving course/session rules.
-- [x] Add admin CRUD screens for public courses, products, gallery, and blog.
-- [x] Add WhatsApp cart checkout for shop products.
-- [x] Verify desktop/mobile navigation, contact submission, public page loading, and existing homepage sections.
-- [x] Build the grouped Courses menu and Hindi program ladder from the supplied course data.
-- [x] Verify Courses menu accessibility, CTA destinations, pricing rules, and responsive ladder layout.
-- [x] Replace the Courses data with the complete English program content and SEO fields.
-- [x] Rebuild the Courses dropdown, ladder, detail template, pricing, CTAs, FAQ, and motion.
-- [x] Add Courses metadata, structured data, canonical routes, redirects, sitemap entries, and verification.
-- [x] Make Courses database-driven with public fallback, nine image sets, and an admin editor.
-- [x] Add company-hosted Sales Sanjivani and corporate/one-to-one leadership coaching messaging.
-- [x] Add Vivek Doba's original photo to the Courses banner and show 28 years of experience.
-- [x] Standardize Vivek Doba's experience to 28 years across all public pages and metadata.
-- [x] Replace generated instructors with Vivek Doba in every teaching and meditation course image.
-- [ ] Add build-time HTML prerendering for all indexable public routes and published dynamic content.
-- [ ] Standardize public metadata, canonical URLs, social tags, breadcrumbs, and structured data.
-- [ ] Add public Testimonials and Golden Triangle Score pages plus noindex 404 links.
-- [ ] Generate sitemap from public routes/content and update crawler rules.
-- [ ] Optimize public images/fonts and verify mobile Lighthouse, rendered source, links, metadata, and errors.
-- [ ] Rebuild the site-wide header and mobile navigation with diagnostic, phone, and WhatsApp actions.
-- [ ] Remove unverifiable trust claims and standardize the approved homepage proof points.
-- [ ] Build the four-column footer with exact contact details and complete program/explore links.
-- [ ] Add or review Privacy, Terms, and Refund policy pages and link them from the footer.
-- [x] Redesign the homepage for Pune and PCMC business owners with visual story sections, program ladder, book, FAQ, and diagnostic actions.
-- [x] Rebuild the About page as a factual, image-led story with marked history placeholders and Person structured data.
-- [x] Rebuild the database-driven Shop, product detail pages, and product admin editor with the seeded book preorder.
-- [x] Rebuild the real-photo Gallery with filters, uploads, lightbox controls, and latest photos on matching course pages.
-- [x] Restore newly created programs across all admin program selectors and lists.
-- [x] Keep admins in program management after creating a program.
-- [x] Repair and verify protected authentication for all scheduled email jobs.
-
-- [x] Rebuild `/blog` and `/blog/:slug` around admin-managed `posts`, seed six draft outlines, add SEO/editor/prerendering.
-- [x] Rebuild `/contact` with action cards, expanded lead form, email notification, shared business details, map, FAQ, and LocalBusiness data. Blocked values remain clearly marked: `[LOCALITY]`, opening hours, and response time.
-- [x] Build database-managed testimonials, admin editing, program filters, and matching course-page stories; keep navigation hidden until 3 are published.
-- [x] Replace the current Golden Triangle Score tool with a noindex coming-soon page and WhatsApp action.
-- [x] Verify and use the supplied Vivek Doba Business Mastery Google reviews link on `/testimonials`.
+- [ ] Check every public route, link, button, form, and external action.
+- [ ] Remove unintended Devanagari and identify visible placeholders.
+- [ ] Validate 390px layout, text size, tap targets, and contrast.
+- [ ] Validate per-page titles, descriptions, canonicals, H1s, and JSON-LD.
+- [ ] Confirm prerendered HTML contains real page text.
+- [ ] Measure Lighthouse mobile on the five requested pages.
+- [ ] Fix verified issues and report remaining user inputs.
