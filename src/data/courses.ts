@@ -37,6 +37,7 @@ const baseSidePrograms: Course[] = [
 ];
 
 const IMAGE_BASE = 'https://pobjadmnmfbeydqsymhx.supabase.co/storage/v1/object/public/homepage-media/courses%2F';
+const VIVEK_IMAGE_COURSES = new Set(['know-your-triangle', 'loa', 'udyog-sanjivani', 'practitioner', 'sales-sanjivani', 'leadership']);
 const enhancements: Record<string, Pick<Course, 'benefits' | 'method' | 'timeline' | 'deliverables'>> = {
   'know-your-triangle': {
     benefits: [{ title: 'See your life on one page', text: 'Your business, health and family measured on one Golden Triangle Score.', icon: 'Triangle' }, { title: 'Know where to start', text: 'Find the one side of your life that needs attention first.', icon: 'Compass' }, { title: 'No risk, no pressure', text: 'Free, 2 hours, and no obligation to join anything.', icon: 'ShieldCheck' }],
@@ -71,7 +72,9 @@ function enrichCourse(course: Course, index: number, side = false): Course {
     benefits: enhancements[course.slug]?.benefits || [], method: enhancements[course.slug]?.method || [],
     timeline: enhancements[course.slug]?.timeline || [], deliverables: enhancements[course.slug]?.deliverables || [],
     sortOrder: index, isSideProgram: side, isPublished: true, generatedImage: true,
-    heroImageUrl: `${IMAGE_BASE}${course.slug}-hero.webp`, cardImageUrl: `${IMAGE_BASE}${course.slug}-card.webp`, galleryImageUrls: [],
+    heroImageUrl: `${IMAGE_BASE}${course.slug}-hero.webp${VIVEK_IMAGE_COURSES.has(course.slug) ? '?v=vivek-20260923' : ''}`,
+    cardImageUrl: `${IMAGE_BASE}${course.slug}-card.webp${VIVEK_IMAGE_COURSES.has(course.slug) ? '?v=vivek-20260923' : ''}`,
+    galleryImageUrls: [],
   };
 }
 
