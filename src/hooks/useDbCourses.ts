@@ -17,6 +17,8 @@ export interface DbCourse {
   location: string | null;
   location_type: string | null;
   lifecycle_status: 'active' | 'upcoming' | 'completed' | 'deactivated';
+  public_description: string | null;
+  image_url: string | null;
 }
 
 export function useDbCourses() {
@@ -76,6 +78,17 @@ export function useUpdateCourse() {
         .single();
       if (error) throw error;
       return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['db-courses'] }),
+  });
+}
+
+export function useDeleteCourse() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('courses').delete().eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['db-courses'] }),
   });
