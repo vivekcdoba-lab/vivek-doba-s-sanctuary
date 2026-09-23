@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { formatINR, type Course } from '@/data/courses';
 import { usePublicCourses } from '@/hooks/useDbCourses';
+import { useTestimonials, type Testimonial } from '@/hooks/usePublicContent';
 import PublicSeo, { breadcrumbSchema, organizationSchema, personSchema, professionalServiceSchema } from '@/components/public/PublicSeo';
 
 const diagnosticUrl = `https://wa.me/919607050111?text=${encodeURIComponent('Namaste, I would like to book a diagnostic call.')}`;
@@ -49,8 +50,6 @@ const faqSchema = {
   })),
 };
 
-const testimonials: { youtubeId: string; name: string; business: string }[] = [];
-
 function ProgramPrice({ course }: { course: Course }) {
   if (course.priceINR === null) {
     return <p className="text-sm font-semibold text-course-maroon">{course.priceNote}</p>;
@@ -62,7 +61,7 @@ function ProgramPrice({ course }: { course: Course }) {
   </div>;
 }
 
-function TestimonialsSection() {
+function TestimonialsSection({ testimonials }: { testimonials: Testimonial[] }) {
   if (testimonials.length === 0) return null;
   return <section className="border-y border-border bg-muted/40 py-16 sm:py-20">
     <div className="mx-auto max-w-6xl px-4">
@@ -71,9 +70,9 @@ function TestimonialsSection() {
         <h2 className="text-3xl font-bold">Stories from business owners</h2>
       </div>
       <div className="grid gap-6 md:grid-cols-3">
-        {testimonials.map(story => <article key={story.youtubeId} className="overflow-hidden rounded-lg border border-border bg-card">
-          <iframe className="aspect-video w-full" loading="lazy" src={`https://www.youtube-nocookie.com/embed/${story.youtubeId}`} title={`${story.name} testimonial`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-          <div className="p-4"><p className="font-semibold">{story.name}</p><p className="text-sm text-muted-foreground">{story.business}</p></div>
+        {testimonials.map(story => <article key={story.id} className="overflow-hidden rounded-lg border border-border bg-card">
+          <iframe className="aspect-video w-full" loading="lazy" src={`https://www.youtube-nocookie.com/embed/${story.youtube_id}`} title={`${story.name} testimonial`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+          <div className="p-4"><p className="font-semibold">{story.name}</p>{story.business && <p className="text-base text-muted-foreground">{story.business}</p>}</div>
         </article>)}
       </div>
       <Button asChild variant="outline" className="mt-8"><Link to="/testimonials">More stories <ArrowRight /></Link></Button>
@@ -83,12 +82,14 @@ function TestimonialsSection() {
 
 export default function Index() {
   const { data: courses = [] } = usePublicCourses();
+  const { data: publishedTestimonials = [] } = useTestimonials();
   const featuredSlugs = ['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt'];
   const featuredCourses = featuredSlugs.map(slug => courses.find(course => course.slug === slug)).filter((course): course is Course => Boolean(course));
   const book = courses.find(course => course.slug === 'book');
+  const videoTestimonials = publishedTestimonials.filter(item => item.youtube_id).slice(0, 3);
 
   return <div className="bg-background">
-    <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business coach in Pimpri-Chinchwad, Pune for business owners who want growth without losing health and family. Life’s Golden Triangle™ by Vivek Doba. 840+ Google and client reviews, coaching business owners since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, faqSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
+    <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business coach in Pimpri-Chinchwad, Pune for business owners who want growth without losing health and family. Life’s Golden Triangle™ by Vivek Doba. 805+ Google and client reviews, coaching business owners since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, faqSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
 
     <section className="gradient-hero relative overflow-hidden text-primary-foreground">
       <div className="homepage-hero-pattern absolute inset-0 pointer-events-none" />
@@ -99,12 +100,9 @@ export default function Index() {
           <p className="mt-6 max-w-2xl text-lg leading-8 text-primary-foreground/90"><strong>Ghar bhi jeeto. Bazaar bhi.</strong> Life’s Golden Triangle™ helps you grow your business without losing your health or your family.</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="min-h-12 bg-course-maroon text-secondary-foreground hover:bg-course-maroon/90"><a href={diagnosticUrl} target="_blank" rel="noopener noreferrer">Book a diagnostic <MessageCircle /></a></Button>
-            <Button asChild size="lg" variant="outline" className="min-h-12 border-primary-foreground/60 bg-background/10 text-primary-foreground hover:bg-background hover:text-foreground"><Link to="/courses/know-your-triangle">Know Your Triangle · ₹999 <ArrowRight /></Link></Button>
+            <Button asChild size="lg" variant="outline" className="min-h-12 border-primary-foreground/60 bg-background/10 text-primary-foreground hover:bg-background hover:text-foreground"><Link to="/courses/know-your-triangle">Start here: Know Your Triangle <ArrowRight /></Link></Button>
           </div>
-          <div className="mt-8 grid max-w-xl grid-cols-2 gap-3 text-primary-foreground">
-            <div className="border-l border-primary-foreground/40 pl-4"><p className="text-2xl font-bold">840+</p><p className="text-sm text-primary-foreground/90">Google &amp; client reviews</p></div>
-            <div className="border-l border-primary-foreground/40 pl-4"><p className="text-2xl font-bold">Since 1998</p><p className="text-sm text-primary-foreground/90">Coaching business owners</p></div>
-          </div>
+          <p className="mt-8 max-w-2xl border-l border-primary-foreground/40 pl-4 text-base font-semibold text-primary-foreground">805+ reviews · Coaching since 1998 · Pimpri-Chinchwad, Pune</p>
         </div>
         <div className="relative mx-auto w-full max-w-lg self-end">
           <div className="homepage-photo-frame overflow-hidden rounded-lg border border-primary-foreground/30">
@@ -164,7 +162,7 @@ export default function Index() {
       </div>
     </section>
 
-    <TestimonialsSection />
+    <TestimonialsSection testimonials={videoTestimonials} />
 
     {book && <section className="py-16 sm:py-20">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-2">
