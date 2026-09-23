@@ -17,8 +17,7 @@ const routes = [
 
 const escapeXml = (value: string) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const writeSitemap = (paths: string[]) => {
-  const lastmod = new Date().toISOString().slice(0, 10);
-  const urls = paths.filter(path => path !== '/score').map(path => `  <url><loc>${escapeXml(`${SITE_URL}${path}`)}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n');
+  const urls = [...new Set(paths)].filter(path => path !== '/score').map(path => `  <url><loc>${escapeXml(`${SITE_URL}${path}`)}</loc></url>`).join('\n');
   writeFileSync(resolve('public/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
   writeFileSync(resolve('dist/sitemap.xml'), readFileSync(resolve('public/sitemap.xml')));
 };
@@ -56,13 +55,14 @@ try {
   const executablePath = resolveChromiumExecutable();
   const browser = await chromium.launch({ headless: true, executablePath });
   const page = await browser.newPage({ viewport: { width: 1280, height: 1800 } });
-  const blogRoutes: string[] = [];
+  const discoveredRoutes: string[] = [];
   for (const route of [...routes.filter(route => route !== '/'), '/']) {
     await page.goto(`http://127.0.0.1:${PORT}${route}`, { waitUntil: 'networkidle', timeout: 45000 });
     await page.locator('h1').first().waitFor({ state: 'attached', timeout: 15000 });
-    if (route === '/blog') {
-      const hrefs = await page.locator('a[href^="/blog/"]').evaluateAll(links => links.map(link => link.getAttribute('href')).filter((href): href is string => Boolean(href)));
-      blogRoutes.push(...hrefs);
+    if (route === '/blog' || route === '/shop' || route === '/courses') {
+      const prefix = `${route}/`;
+      const hrefs = await page.locator(`a[href^="${prefix}"]`).evaluateAll(links => links.map(link => link.getAttribute('href')).filter((href): href is string => Boolean(href)));
+      discoveredRoutes.push(...hrefs);
     }
     const html = '<!doctype html>\n' + await page.content();
     const target = route === '/' ? resolve('dist/index.html') : resolve('dist', route.slice(1), 'index.html');
@@ -70,15 +70,16 @@ try {
     writeFileSync(target, html);
     console.log(`Prerendered ${route}`);
   }
-  for (const route of [...new Set(blogRoutes)]) {
+  for (const route of [...new Set(discoveredRoutes)].filter(route => !routes.includes(route))) {
     await page.goto(`http://127.0.0.1:${PORT}${route}`, { waitUntil: 'networkidle', timeout: 45000 });
     await page.locator('h1').first().waitFor({ state: 'attached', timeout: 15000 });
     const target = resolve('dist', route.slice(1), 'index.html');
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, '<!doctype html>\n' + await page.content());
+    console.log(`Prerendered ${route}`);
   }
   await browser.close();
-  writeSitemap([...routes, ...new Set(blogRoutes)]);
+  writeSitemap([...routes, ...new Set(discoveredRoutes)]);
 } finally {
   server.kill('SIGTERM');
 }

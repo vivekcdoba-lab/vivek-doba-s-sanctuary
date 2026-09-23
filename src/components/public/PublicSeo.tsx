@@ -46,6 +46,10 @@ type PublicSeoProps = { title: string; description: string; path: string; image?
 export default function PublicSeo({ title, description, path, image = SHARE_IMAGE, noindex = false, schemas = [], type = 'website' }: PublicSeoProps) {
   const normalizedPath = path === '/' ? '/' : `/${path.replace(/^\/+|\/+$/g, '')}`;
   const canonical = `${SITE_URL}${normalizedPath}`;
+  const structuredData = [organizationSchema, personSchema, ...schemas].filter((schema, index, all) => {
+    const identity = JSON.stringify(schema);
+    return all.findIndex(candidate => JSON.stringify(candidate) === identity) === index;
+  });
   return <Helmet htmlAttributes={{ lang: 'en' }}>
     <title>{title}</title>
     <meta name="description" content={description} />
@@ -57,6 +61,6 @@ export default function PublicSeo({ title, description, path, image = SHARE_IMAG
     <meta property="og:locale" content="en_IN" /><meta property="og:site_name" content="Vivek Doba Business Mastery" />
     <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} /><meta name="twitter:image" content={image} />
-    {schemas.map((schema, index) => <script key={index} type="application/ld+json">{JSON.stringify(schema)}</script>)}
+    {structuredData.map((schema, index) => <script key={index} type="application/ld+json">{JSON.stringify(schema)}</script>)}
   </Helmet>;
 }

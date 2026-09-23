@@ -64,8 +64,8 @@ const aboutPersonSchema = {
 export default function AboutPage() {
   return <div className="bg-background">
     <PublicSeo
-      title="About Vivek Doba | Business Coach in Pune"
-      description="Meet Vivek Doba, founder of Life’s Golden Triangle™, helping business owners grow business, health and family together since 1998."
+      title="About Vivek Doba | Business & Life Coach, Pune"
+      description="Meet Vivek Doba, founder of Life’s Golden Triangle™. Coaching business owners in Pune and PCMC since 1998 to grow business, health and family together."
       path="/about"
       schemas={[
         aboutPersonSchema,
