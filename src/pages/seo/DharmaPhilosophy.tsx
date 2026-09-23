@@ -4,7 +4,7 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const DharmaPhilosophy = () => {
   useDocumentMeta({
-    title: "Dharma, Karma & Moksha — Wisdom for All Ages & Walks of Life",
+    title: "Dharma, Karma & Moksha | Vivek Doba",
     description: "Understand dharma, karma and moksha and apply these timeless principles to modern life and business — for students, professionals, entrepreneurs and industrialists alike.",
     canonicalPath: "/dharma-philosophy",
   });

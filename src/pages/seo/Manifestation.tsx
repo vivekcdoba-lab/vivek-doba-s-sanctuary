@@ -4,7 +4,7 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const Manifestation = () => {
   useDocumentMeta({
-    title: "Manifestation Coaching for All Ages | Law of Attraction India",
+    title: "Manifestation Coaching | Law of Attraction India",
     description: "Manifestation & law of attraction coaching for students, professionals, entrepreneurs and seekers of every age. Turn intention into measurable life & business outcomes.",
     canonicalPath: "/manifestation",
   });

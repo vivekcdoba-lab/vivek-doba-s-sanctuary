@@ -18,7 +18,7 @@ const NotFound = () => {
         <h1 className="text-6xl font-bold text-primary">404</h1>
         <p className="text-xl text-muted-foreground">Page not found</p>
         <p className="text-sm text-muted-foreground">The page you're looking for doesn't exist.</p>
-        <div className="flex flex-wrap justify-center gap-3"><Link to={homeLink} className="inline-block px-6 py-2.5 rounded-md bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">Go to {isAuthenticated ? 'Dashboard' : 'Home'}</Link>{!isAuthenticated && <><Link to="/courses" className="inline-block px-6 py-2.5 rounded-md border border-border font-medium">Courses</Link><Link to="/contact" className="inline-block px-6 py-2.5 rounded-md border border-border font-medium">Contact</Link></>}</div>
+        <div className="flex flex-wrap justify-center gap-3"><Link to={homeLink} className="inline-flex min-h-12 items-center px-6 rounded-md bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">Go to {isAuthenticated ? 'Dashboard' : 'Home'}</Link>{!isAuthenticated && <><Link to="/courses" className="inline-flex min-h-12 items-center px-6 rounded-md border border-border font-medium">Courses</Link><Link to="/contact" className="inline-flex min-h-12 items-center px-6 rounded-md border border-border font-medium">Contact</Link></>}</div>
       </div>
     </div>
   );
