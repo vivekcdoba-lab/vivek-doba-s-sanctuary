@@ -1276,30 +1276,39 @@ export type Database = {
       }
       contact_submissions: {
         Row: {
+          annual_turnover_range: string | null
+          business_type: string | null
           created_at: string
           email: string
           id: string
           message: string
           name: string
           phone: string | null
+          program_interest: string | null
           status: string
         }
         Insert: {
+          annual_turnover_range?: string | null
+          business_type?: string | null
           created_at?: string
           email: string
           id?: string
           message: string
           name: string
           phone?: string | null
+          program_interest?: string | null
           status?: string
         }
         Update: {
+          annual_turnover_range?: string | null
+          business_type?: string | null
           created_at?: string
           email?: string
           id?: string
           message?: string
           name?: string
           phone?: string | null
+          program_interest?: string | null
           status?: string
         }
         Relationships: []
@@ -3495,6 +3504,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      posts: {
+        Row: {
+          author: string
+          body: string
+          category: string
+          cover_image: string | null
+          created_at: string
+          excerpt: string
+          id: string
+          is_published: boolean
+          published_at: string | null
+          related_course_slug: string | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string
+          body?: string
+          category: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          related_course_slug?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          body?: string
+          category?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          related_course_slug?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       products: {
         Row: {
