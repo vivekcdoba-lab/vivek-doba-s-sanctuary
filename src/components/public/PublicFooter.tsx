@@ -1,22 +1,8 @@
-import { Facebook, Instagram, Linkedin, Youtube } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, MapPin, MessageSquare, Phone, Youtube } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { allCourses } from '@/data/courses';
+import { BUSINESS_ADDRESS, BUSINESS_EMAIL, BUSINESS_HOURS, BUSINESS_NAME, BUSINESS_PHONE } from './PublicSeo';
 
-const socials = [
-  { name: 'Instagram', url: 'https://www.instagram.com/vivekdoba/', icon: Instagram },
-  { name: 'YouTube', url: 'https://www.youtube.com/@VIVEKDOBA', icon: Youtube },
-  { name: 'LinkedIn', url: 'https://www.linkedin.com/in/vivekdoba/', icon: Linkedin },
-  { name: 'Facebook', url: 'https://www.facebook.com/askVivekDoba/', icon: Facebook },
-];
-
-export default function PublicFooter() {
-  return <footer className="bg-muted/50 border-t border-border py-10">
-    <div className="max-w-4xl mx-auto px-4 text-center">
-      <p className="font-semibold text-foreground mb-1">Vivek Doba Business Mastery | Pune, Maharashtra</p>
-      <p className="text-sm text-muted-foreground mb-2">Office No. 228 &amp; 229, Tower B, Second Floor, Gera Imperium Gateway, Near Nashik Phata Metro Station, Nashik Phata, Pune 411034</p>
-      <p className="text-sm text-muted-foreground mb-4">9607050111 | info@vivekdoba.com | vivekdoba.com</p>
-      <div className="flex justify-center gap-3 mb-4">
-        {socials.map(({ name, url, icon: Icon }) => <a key={name} href={url} target="_blank" rel="noopener noreferrer" aria-label={name} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all hover:-translate-y-0.5"><Icon className="w-5 h-5" /></a>)}
-      </div>
-      <p className="text-xs text-muted-foreground">Made with reverence for seekers of transformation</p>
-    </div>
-  </footer>;
-}
+const socials = [{ name: 'YouTube', url: 'https://www.youtube.com/@VIVEKDOBA', icon: Youtube }, { name: 'Instagram', url: 'https://www.instagram.com/vivekdoba/', icon: Instagram }, { name: 'Facebook', url: 'https://www.facebook.com/askVivekDoba/', icon: Facebook }, { name: 'LinkedIn', url: 'https://www.linkedin.com/in/vivekdoba/', icon: Linkedin }];
+const explore = [['About Us','/about'],['Shop','/shop'],['Gallery','/gallery'],['Blog','/blog'],['Testimonials','/testimonials'],['Contact Us','/contact'],['Golden Triangle Score','/score']];
+export default function PublicFooter() { return <footer className="bg-footer-background text-footer-foreground"><div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-4"><section><Link to="/" className="font-bold">{BUSINESS_NAME}</Link><p className="mt-4 font-semibold">Success is a Triangle. Complete it.</p><p className="mt-2 text-sm">Ghar bhi jeeto. Bazaar bhi.</p><div className="mt-5 flex gap-2">{socials.map(({ name,url,icon:Icon }) => <a key={name} href={url} target="_blank" rel="noopener noreferrer" aria-label={name} className="rounded-full border border-footer-foreground/30 p-2 hover:bg-footer-foreground/10"><Icon className="h-5 w-5" /></a>)}</div></section><section><h2 className="font-bold">Programs</h2><ul className="mt-4 space-y-2 text-sm">{allCourses.map(course => <li key={course.slug}><Link to={`/courses/${course.slug}`} className="hover:underline">{course.name}</Link></li>)}</ul></section><section><h2 className="font-bold">Explore</h2><ul className="mt-4 space-y-2 text-sm">{explore.map(([label,to]) => <li key={to}><Link to={to} className="hover:underline">{label}</Link></li>)}</ul></section><section><h2 className="font-bold">Visit us</h2><div className="mt-4 space-y-3 text-sm"><p className="flex gap-2"><MapPin className="h-5 w-5 shrink-0" />{BUSINESS_ADDRESS}</p><a className="flex gap-2" href={`tel:${BUSINESS_PHONE}`}><Phone className="h-5 w-5" />{BUSINESS_PHONE}</a><a className="flex gap-2" href="https://wa.me/919607050111"><MessageSquare className="h-5 w-5" />WhatsApp</a><a className="block hover:underline" href={`mailto:${BUSINESS_EMAIL}`}>{BUSINESS_EMAIL}</a><p>{BUSINESS_HOURS}</p><a className="font-semibold underline" href="https://www.google.com/maps/search/?api=1&query=Gera%20Imperium%20Gateway%20Pune%20411034" target="_blank" rel="noopener noreferrer">Get directions</a></div></section></div><div className="border-t border-footer-foreground/20"><div className="mx-auto flex max-w-7xl flex-wrap justify-center gap-x-3 gap-y-2 px-4 py-5 text-xs"><span>© 2026 Vivek Doba Business Mastery</span><span>·</span><Link to="/privacy">Privacy Policy</Link><span>·</span><Link to="/terms">Terms</Link><span>·</span><Link to="/refund-policy">Refund Policy</Link></div></div></footer>; }

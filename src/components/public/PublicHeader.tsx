@@ -1,96 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { BookOpen, ChevronDown, GraduationCap, Image, Lock, MessageSquare, Phone, ShoppingBag, User } from 'lucide-react';
+import { BookOpen, ChevronDown, GraduationCap, Image, Menu, MessageSquare, Phone, ShoppingBag, User } from 'lucide-react';
 import { openWhatsApp } from '@/lib/openExternal';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { courseMenu } from '@/data/courses';
 import { usePublicCourses } from '@/hooks/useDbCourses';
 
 const tabs = [
-  { to: '/about', label: 'About Us', icon: User },
-  { to: '/courses', label: 'Courses', icon: GraduationCap },
-  { to: '/shop', label: 'Shop', icon: ShoppingBag },
-  { to: '/gallery', label: 'Gallery', icon: Image },
-  { to: '/blog', label: 'Blog', icon: BookOpen },
-  { to: '/contact', label: 'Contact Us', icon: Phone },
+  { to: '/about', label: 'About Us', icon: User }, { to: '/courses', label: 'Courses', icon: GraduationCap },
+  { to: '/shop', label: 'Shop', icon: ShoppingBag }, { to: '/gallery', label: 'Gallery', icon: Image },
+  { to: '/blog', label: 'Blog', icon: BookOpen }, { to: '/contact', label: 'Contact Us', icon: Phone },
 ];
+const diagnostic = () => openWhatsApp('919607050111', 'Namaste, I would like to book a diagnostic call.');
 
 export default function PublicHeader() {
   const { data: courses = [] } = usePublicCourses();
   const [coursesOpen, setCoursesOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const coursesRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const isCoursesActive = location.pathname.startsWith('/courses') || courseMenu.some(group => group.items.some(item => item.href === location.pathname));
-
-  useEffect(() => {
-    const onPointerDown = (event: MouseEvent) => {
-      if (!coursesRef.current?.contains(event.target as Node)) setCoursesOpen(false);
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setCoursesOpen(false);
-    };
-    document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, []);
-
+  useEffect(() => { const onScroll = () => setScrolled(window.scrollY > 8); onScroll(); window.addEventListener('scroll', onScroll, { passive: true }); return () => window.removeEventListener('scroll', onScroll); }, []);
+  useEffect(() => { const close = (event: MouseEvent) => { if (!coursesRef.current?.contains(event.target as Node)) setCoursesOpen(false); }; document.addEventListener('mousedown', close); return () => document.removeEventListener('mousedown', close); }, []);
   useEffect(() => setCoursesOpen(false), [location.pathname]);
-
-  return (
-    <header className="sticky top-0 z-50">
-      <div className="bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
-          <Link to="/" className="flex items-center gap-2 min-w-0">
-            <span className="text-2xl" aria-hidden="true">🪷</span>
-            <span className="font-bold text-base sm:text-lg text-primary truncate">Vivek Doba Business Mastery</span>
-          </Link>
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <a href="tel:9607050111" className="hidden md:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
-              <Phone className="w-4 h-4" /> 9607050111
-            </a>
-            <a href="https://wa.me/919607050111" target="_blank" rel="noopener noreferrer" onClick={(event) => { event.preventDefault(); openWhatsApp(); }} className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium bg-[hsl(var(--dharma-green))] text-primary-foreground hover:opacity-90 transition-opacity">
-              <MessageSquare className="w-4 h-4" /><span className="hidden sm:inline">WhatsApp</span>
-            </a>
-            <Link to="/login" className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-md text-sm font-medium border-2 border-primary text-primary hover:bg-primary/10 transition-colors">
-              <Lock className="w-4 h-4" /> Login
-            </Link>
-          </div>
-        </div>
-      </div>
-      <nav aria-label="Main navigation" className="bg-background/95 backdrop-blur-md border-b border-primary/20 shadow-sm">
-        <div className="max-w-5xl mx-auto overflow-x-auto scrollbar-none px-3">
-          <div className="flex min-w-max sm:min-w-0 sm:justify-center sm:divide-x sm:divide-primary/10">
-            {tabs.map(({ to, label, icon: Icon }) => to === '/courses' ? (
-              <div key={to} ref={coursesRef} className={`relative flex items-stretch transition-colors ${isCoursesActive ? 'bg-primary/10' : 'hover:bg-primary/5'}`} onMouseEnter={() => window.matchMedia('(min-width: 768px)').matches && setCoursesOpen(true)} onMouseLeave={() => window.matchMedia('(min-width: 768px)').matches && setCoursesOpen(false)}>
-                <NavLink to="/courses" onClick={() => setCoursesOpen(false)} className={`relative flex items-center justify-center gap-2 py-3 pl-4 pr-2 lg:pl-7 text-sm transition-all duration-200 hover:-translate-y-0.5 hover:text-primary ${isCoursesActive ? 'font-bold text-primary after:absolute after:bottom-0 after:left-3 after:right-0 after:h-0.5 after:gradient-saffron' : 'font-semibold text-primary'}`}>
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full gradient-saffron text-primary-foreground"><Icon className="w-3.5 h-3.5" /></span>{label}
-                </NavLink>
-                <Button variant="ghost" size="icon" aria-label="Open Courses menu" aria-expanded={coursesOpen} aria-haspopup="menu" onClick={() => setCoursesOpen(open => !open)} className={`relative h-auto w-8 rounded-none px-0 text-primary hover:bg-primary/10 hover:text-primary ${isCoursesActive ? 'after:absolute after:bottom-0 after:left-0 after:right-3 after:h-0.5 after:gradient-saffron' : ''}`}>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${coursesOpen ? 'rotate-180' : ''}`} />
-                </Button>
-                {coursesOpen && <div role="menu" className="fixed left-3 right-3 top-[113px] md:left-1/2 md:right-auto md:w-[min(94vw,980px)] md:-translate-x-1/2 bg-card border border-primary/20 shadow-xl rounded-md overflow-hidden">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-0 md:gap-5 p-4 md:p-6 max-h-[65vh] overflow-y-auto">
-                    {courseMenu.map(group => <section key={group.group} className="border-b border-border py-3 first:pt-0 last:border-0 md:border-0 md:py-0">
-                      <h2 className="mb-2 text-xs font-semibold text-muted-foreground">{group.group}</h2>
-                      <div className="space-y-1">{group.items.map(item => { const course = courses.find(entry => `/courses/${entry.slug}` === item.href); return <Link role="menuitem" key={item.href} to={item.href} onClick={() => setCoursesOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                        {course?.cardImageUrl && <img src={course.cardImageUrl} alt="" width="1200" height="900" loading="lazy" className="h-11 w-14 shrink-0 rounded object-cover" />}<span><span className="block text-sm font-semibold text-foreground">{course?.name || item.label}</span><span className="block text-xs leading-5 text-muted-foreground">{course?.duration || item.sub}</span></span>
-                      </Link>; })}</div>
-                    </section>)}
-                  </div>
-                  <Link role="menuitem" to="/courses" onClick={() => setCoursesOpen(false)} className="block border-t border-primary/20 bg-primary/5 px-5 py-3 text-center text-sm font-bold text-primary hover:bg-primary/10">See the full ladder</Link>
-                </div>}
-              </div>
-            ) : (
-              <NavLink key={to} to={to} className={({ isActive }) => `relative flex items-center justify-center gap-2 px-4 lg:px-7 py-3 text-sm transition-all duration-200 hover:-translate-y-0.5 hover:text-primary ${isActive ? 'font-bold text-primary after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:gradient-saffron' : 'font-medium text-muted-foreground'}`}>
-                <Icon className="w-4 h-4" />{label}
-              </NavLink>
-            ))}
-          </div>
-        </div>
-      </nav>
-    </header>
-  );
+  return <header className={`sticky top-0 z-50 bg-background/95 backdrop-blur-md transition-shadow ${scrolled ? 'shadow-md' : ''}`}>
+    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
+      <Link to="/" className="min-w-0 truncate text-sm font-bold text-primary sm:text-lg">Vivek Doba Business Mastery</Link>
+      <nav aria-label="Main navigation" className="hidden items-stretch lg:flex">{tabs.map(({ to, label, icon: Icon }) => to === '/courses' ? <div key={to} ref={coursesRef} className="relative flex" onMouseEnter={() => setCoursesOpen(true)} onMouseLeave={() => setCoursesOpen(false)}><NavLink to={to} className={`flex items-center gap-2 px-3 py-2 text-sm ${isCoursesActive ? 'font-bold text-primary' : 'text-muted-foreground'}`}><Icon className="h-4 w-4" />{label}</NavLink><Button variant="ghost" size="icon" className="h-auto w-7" aria-label="Open Courses menu" aria-expanded={coursesOpen} onClick={() => setCoursesOpen(v => !v)}><ChevronDown className="h-4 w-4" /></Button>{coursesOpen && <div role="menu" className="fixed left-1/2 top-16 w-[min(94vw,980px)] -translate-x-1/2 rounded-md border bg-card p-6 shadow-xl"><div className="grid grid-cols-4 gap-5">{courseMenu.map(group => <section key={group.group}><h2 className="mb-2 text-xs font-semibold text-muted-foreground">{group.group}</h2>{group.items.map(item => { const course = courses.find(entry => `/courses/${entry.slug}` === item.href); return <Link key={item.href} to={item.href} role="menuitem" className="flex gap-3 rounded-md p-2 hover:bg-primary/10">{course?.cardImageUrl && <img src={course.cardImageUrl} alt="" width="1200" height="900" loading="lazy" className="h-11 w-14 rounded object-cover" />}<span><b className="block text-sm">{course?.name || item.label}</b><small className="text-muted-foreground">{course?.duration || item.sub}</small></span></Link>; })}</section>)}</div></div>}</div> : <NavLink key={to} to={to} className={({ isActive }) => `flex items-center gap-2 px-3 py-2 text-sm ${isActive ? 'font-bold text-primary' : 'text-muted-foreground'}`}><Icon className="h-4 w-4" />{label}</NavLink>)}</nav>
+      <div className="flex shrink-0 items-center gap-2"><a href="tel:9607050111" className="hidden text-sm text-muted-foreground xl:flex"><Phone className="mr-1 h-4 w-4" />9607050111</a><Button variant="ghost" size="sm" className="hidden xl:inline-flex" onClick={() => openWhatsApp()}><MessageSquare />WhatsApp</Button><Button size="sm" onClick={diagnostic} className="bg-diagnostic text-primary-foreground hover:bg-diagnostic/90">Book a diagnostic</Button><Link to="/login" className="hidden text-sm text-muted-foreground hover:text-primary sm:block">Login</Link><Sheet><SheetTrigger asChild><Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu"><Menu /></Button></SheetTrigger><SheetContent><SheetTitle>Menu</SheetTitle><nav className="mt-8 space-y-2">{tabs.map(({ to, label, icon: Icon }) => <SheetClose asChild key={to}><Link to={to} className="flex items-center gap-3 rounded-md p-3 hover:bg-muted"><Icon className="h-5 w-5 text-primary" />{label}</Link></SheetClose>)}<a href="tel:9607050111" className="flex items-center gap-3 rounded-md p-3"><Phone className="h-5 w-5 text-primary" />9607050111</a><Button variant="outline" className="w-full" onClick={() => openWhatsApp()}><MessageSquare />WhatsApp</Button><SheetClose asChild><Link to="/login" className="block p-3 text-center text-sm">Login</Link></SheetClose></nav></SheetContent></Sheet></div>
+    </div>
+  </header>;
 }

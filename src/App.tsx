@@ -49,6 +49,7 @@ import PublicLayout from "./components/public/PublicLayout";
 const RegisterPage = lazyWithReload(() => import("./pages/RegisterPage"));
 const TestimonialsPage = lazyWithReload(() => import("./pages/public/TestimonialsPage"));
 const ScorePage = lazyWithReload(() => import("./pages/public/ScorePage"));
+const RefundPolicyPage = lazyWithReload(() => import("./pages/RefundPolicyPage"));
 const BookAppointment = lazyWithReload(() => import("./pages/BookAppointment"));
 const RegisterWorkshop = lazyWithReload(() => import("./pages/RegisterWorkshop"));
 const SeekerLgtForm = lazyWithReload(() => import("./pages/SeekerLgtForm"));
@@ -342,6 +343,7 @@ const App = () => (
             <Route path="/help" element={<HelpPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/refund-policy" element={<RefundPolicyPage />} />
             <Route path="/life-coaching" element={<SeoLifeCoaching />} />
             <Route path="/business-coaching" element={<SeoBusinessCoaching />} />
             <Route path="/manifestation" element={<SeoManifestation />} />
