@@ -26,7 +26,8 @@ export type GalleryItem = {
   image_url: string | null; youtube_id: string | null; caption: string | null; event_name: string | null; program_slug: string | null; city: string | null; date: string | null; sort_order: number; is_published: boolean;
 };
 export type BlogPost = { id: string; title: string; slug: string; excerpt: string | null; content: string; cover_image_url: string | null; status: 'draft' | 'published'; published_at: string | null; created_at: string };
-export type ContentKind = 'products' | 'gallery_items' | 'blog_posts';
+export type Post = { id: string; title: string; slug: string; excerpt: string; cover_image: string | null; body: string; category: 'Business Growth' | 'Leadership' | 'Mindset' | 'Health' | 'Family' | 'Sales'; tags: string[]; author: string; published_at: string | null; seo_title: string | null; seo_description: string | null; related_course_slug: string | null; is_published: boolean; created_at: string; updated_at: string };
+export type ContentKind = 'products' | 'gallery_items' | 'blog_posts' | 'posts';
 
 export function useProducts(includeInactive = false) {
   return useQuery({ queryKey: ['products', includeInactive], queryFn: async () => {
@@ -79,6 +80,24 @@ export function useBlogPost(slug?: string) {
     const { data, error } = await supabase.from('blog_posts').select('*').eq('slug', slug || '').single();
     if (error) throw error;
     return data as BlogPost;
+  }});
+}
+
+export function usePosts(includeDrafts = false) {
+  return useQuery({ queryKey: ['posts', includeDrafts], queryFn: async () => {
+    let query = supabase.from('posts').select('*').order('published_at', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+    if (!includeDrafts) query = query.eq('is_published', true);
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data || []) as Post[];
+  }});
+}
+
+export function usePost(slug?: string) {
+  return useQuery({ queryKey: ['post', slug], enabled: Boolean(slug), retry: false, queryFn: async () => {
+    const { data, error } = await supabase.from('posts').select('*').eq('slug', slug || '').eq('is_published', true).maybeSingle();
+    if (error) throw error;
+    return data as Post | null;
   }});
 }
 
