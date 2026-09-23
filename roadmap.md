@@ -31,3 +31,6 @@
 - [x] Rebuild the About page as a factual, image-led story with marked history placeholders and Person structured data.
 - [x] Rebuild the database-driven Shop, product detail pages, and product admin editor with the seeded book preorder.
 - [x] Rebuild the real-photo Gallery with filters, uploads, lightbox controls, and latest photos on matching course pages.
+- [x] Restore newly created programs across all admin program selectors and lists.
+- [x] Keep admins in program management after creating a program.
+- [x] Repair and verify protected authentication for all scheduled email jobs.
