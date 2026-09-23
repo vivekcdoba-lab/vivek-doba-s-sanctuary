@@ -23,3 +23,7 @@
 - [ ] Add public Testimonials and Golden Triangle Score pages plus noindex 404 links.
 - [ ] Generate sitemap from public routes/content and update crawler rules.
 - [ ] Optimize public images/fonts and verify mobile Lighthouse, rendered source, links, metadata, and errors.
+- [ ] Rebuild the site-wide header and mobile navigation with diagnostic, phone, and WhatsApp actions.
+- [ ] Remove unverifiable trust claims and standardize the approved homepage proof points.
+- [ ] Build the four-column footer with exact contact details and complete program/explore links.
+- [ ] Add or review Privacy, Terms, and Refund policy pages and link them from the footer.
