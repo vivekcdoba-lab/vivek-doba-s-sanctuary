@@ -18,6 +18,13 @@
 - [x] Keep media and talks hidden until real material is supplied.
 - [x] Add the diagnostic/program actions and matching Person structured data.
 
+## Shop and product detail
+
+- [x] Confirm the published book record, ₹999 price, tax status, pre-order status, and launch wording.
+- [x] Keep products database-driven with the existing `/admin/products` manager.
+- [x] Show product cards with the correct WhatsApp order message and one-product note.
+- [x] Add gallery, contents, audience, delivery placeholder, refund link, FAQs, and Product structured data.
+
 - [x] Check every public route, link, button, form, and external action.
 - [x] Remove unintended Devanagari and identify visible placeholders.
 - [x] Validate 390px layout, text size, tap targets, and contrast.
