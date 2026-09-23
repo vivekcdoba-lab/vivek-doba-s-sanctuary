@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { chromium } from 'playwright';
 
@@ -31,10 +31,30 @@ const waitForServer = async () => {
   throw new Error('Preview server did not start.');
 };
 
+const resolveChromiumExecutable = () => {
+  const bundledPath = chromium.executablePath();
+  if (existsSync(bundledPath)) return bundledPath;
+
+  const browsersRoot = process.env.PLAYWRIGHT_BROWSERS_PATH;
+  if (!browsersRoot || !existsSync(browsersRoot)) return undefined;
+
+  const candidates = readdirSync(browsersRoot)
+    .filter(name => name.startsWith('chromium-'))
+    .sort()
+    .reverse()
+    .flatMap(name => [
+      resolve(browsersRoot, name, 'chrome-linux64', 'chrome'),
+      resolve(browsersRoot, name, 'chrome-linux', 'chrome'),
+    ]);
+
+  return candidates.find(existsSync);
+};
+
 const server = spawn('vite', ['preview', '--host', '127.0.0.1', '--port', String(PORT)], { stdio: 'ignore', shell: true });
 try {
   await waitForServer();
-  const browser = await chromium.launch({ headless: true });
+  const executablePath = resolveChromiumExecutable();
+  const browser = await chromium.launch({ headless: true, executablePath });
   const page = await browser.newPage({ viewport: { width: 1280, height: 1800 } });
   const blogRoutes: string[] = [];
   for (const route of [...routes.filter(route => route !== '/'), '/']) {

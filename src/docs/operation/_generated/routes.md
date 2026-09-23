@@ -1,8 +1,8 @@
 # Routes & Pages
 
-_Generated: 2026-09-23T07:47:06.580Z_
+_Generated: 2026-09-23T09:16:26.955Z_
 
-Total routes: **263**
+Total routes: **265**
 
 ## Admin (71)
 
@@ -235,7 +235,7 @@ Total routes: **263**
 | `/login` | LoginPage |
 | `/register` | RegisterPage |
 
-## Other (52)
+## Other (54)
 
 | Path | Component |
 |---|---|
@@ -274,6 +274,7 @@ Total routes: **263**
 | `/nlp-coach` | SeoNlpCoach |
 | `/payments` | PaymentsPage |
 | `/privacy` | PrivacyPage |
+| `/refund-policy` | RefundPolicyPage |
 | `/register-workshop` | RegisterWorkshop |
 | `/reports` | ReportsPage |
 | `/reset-password` | ResetPassword |
@@ -286,6 +287,7 @@ Total routes: **263**
 | `/sessions/:id/review` | SessionReviewPage |
 | `/settings` | SettingsPage |
 | `/shop` | ShopPage |
+| `/shop/:slug` | ProductDetailPage |
 | `/sign/:token` | SignDocument |
 | `/swot` | SwotPage |
 | `/terms` | TermsPage |
