@@ -8,3 +8,5 @@
 - [ ] Measure Lighthouse mobile on the five requested pages.
 - [ ] Fix verified issues and report remaining user inputs.
 - [ ] Set Know Your Triangle fees to ₹999 and add a 45-minute session with Vivek for ₹4,999.
+
+- [ ] Replace every public 840+ review reference with 805+
