@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Phone, MessageSquare, Lock, ChevronRight, Instagram, Youtube, Linkedin, Facebook } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import vivekDobaPhoto from '@/assets/vivek-doba.png';
-import { openWhatsApp } from '@/lib/openExternal';
 import HomepageMediaSection from '@/components/HomepageMediaSection';
 
 const stats = [
@@ -11,40 +10,7 @@ const stats = [
 ];
 
 const Index = () => (
-  <div className="min-h-screen bg-background">
-    {/* Navbar */}
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md shadow-sm border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="text-2xl">🪷</span>
-          <span className="font-bold text-lg" style={{ color: '#B8860B', fontFamily: 'Poppins, sans-serif' }}>
-            Vivek Doba Business Mastery
-          </span>
-        </Link>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <a href="tel:9607050111" className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <Phone className="w-4 h-4" /> 9607050111
-          </a>
-          <a
-            href={`https://wa.me/919607050111?text=${encodeURIComponent("Hello, I recently explored your website and program details. I'm really interested and would love to understand how the program works and how it can help transform my life.")}`}
-            target="_blank"
-            rel="noopener noreferrer me"
-            onClick={(e) => { e.preventDefault(); openWhatsApp(); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white"
-            style={{ backgroundColor: '#25D366' }}
-          >
-            <MessageSquare className="w-4 h-4" /> <span className="hidden sm:inline">WhatsApp</span>
-          </a>
-          <Link
-            to="/login"
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium border-2 transition-colors hover:opacity-90"
-            style={{ borderColor: '#B8860B', color: '#B8860B' }}
-          >
-            <Lock className="w-4 h-4" /> Login
-          </Link>
-        </div>
-      </div>
-    </nav>
+  <div className="bg-background">
 
     {/* Hero */}
     <section
@@ -293,36 +259,6 @@ const Index = () => (
       </div>
     </section>
 
-    {/* Footer */}
-    <footer className="bg-muted/50 border-t border-border py-10">
-      <div className="max-w-4xl mx-auto px-4 text-center">
-        <p className="font-semibold text-foreground mb-1">Vivek Doba Business Mastery | Pune, Maharashtra</p>
-          <p className="text-sm text-muted-foreground mb-2">📍 Office No. 228 & 229, Tower B, Second Floor, Gera Imperium Gateway, Near Nashik Phata Metro Station, Nashik Phata, Pune 411034</p>
-        <p className="text-sm text-muted-foreground mb-4">📞 9607050111 | 📧 info@vivekdoba.com | 🌐 vivekdoba.com</p>
-        <div className="flex justify-center gap-3 mb-4">
-          {[
-            { name: 'Instagram', url: 'https://www.instagram.com/vivekdoba/', icon: Instagram, hoverColor: '#E4405F' },
-            { name: 'YouTube', url: 'https://www.youtube.com/@VIVEKDOBA', icon: Youtube, hoverColor: '#FF0000' },
-            { name: 'LinkedIn', url: 'https://www.linkedin.com/in/vivek-doba-life-nlp-success-business-coach/', icon: Linkedin, hoverColor: '#0A66C2' },
-            { name: 'Facebook', url: 'https://www.facebook.com/askVivekDoba', icon: Facebook, hoverColor: '#1877F2' },
-          ].map((s) => (
-            <a
-              key={s.name}
-              href={s.url}
-              target="_blank"
-              rel="noopener noreferrer me"
-              title={s.name}
-              className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-white transition-all duration-200 hover:scale-110"
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = s.hoverColor)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-            >
-              <s.icon className="w-5 h-5" />
-            </a>
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground">Made with 🙏 for seekers of transformation</p>
-      </div>
-    </footer>
   </div>
 );
 

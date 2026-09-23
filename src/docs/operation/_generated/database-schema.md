@@ -1,8 +1,8 @@
 # Database Schema
 
-_Generated: 2026-09-23T04:53:47.347Z_
+_Generated: 2026-09-23T05:23:57.296Z_
 
-Tables: **106** • Functions: **63**
+Tables: **102** • Functions: **63**
 
 > Schema is reconstructed from migration files in `supabase/migrations/`. Source of truth is the running database; migrations are the authoritative change log.
 
@@ -523,30 +523,6 @@ Tables: **106** • Functions: **63**
 **Columns** (8): `id`, `seed_run_id`, `recipients`, `subject`, `status`, `resend_message_id`, `error_message`, `sent_at`
 
 **RLS policies** (6): _Admins read email log_; _No client INSERT to email_log_; _No client UPDATE to email_log_; _No client DELETE from email_log_; _Super admins read email log_; _Deny non-super-admin select email_log_
-
-### `email_send_log`
-
-**Columns** (8): `id`, `message_id`, `template_name`, `recipient_email`, `status`, `error_message`, `metadata`, `created_at`
-
-**RLS policies** (9): _Service role can read send log_; _Service role can insert send log_; _Service role can update send log_; _Admins can view email send log_; _Restrict email_send_log reads to admins and service role_; _Super admins and service role can read email send log_; _Super admins can delete old email send log entries_; _Super admins read email send log_; _Super admins delete email send log entries_
-
-### `email_send_state`
-
-**Columns** (7): `id`, `retry_after_until`, `batch_size`, `send_delay_ms`, `auth_email_ttl_minutes`, `transactional_email_ttl_minutes`, `updated_at`
-
-**RLS policies** (1): _Service role can manage send state_
-
-### `email_unsubscribe_tokens`
-
-**Columns** (7): `id`, `token`, `email`, `created_at`, `used_at`, `email_hash`, `token_hash`
-
-**RLS policies** (3): _Service role can read tokens_; _Service role can insert tokens_; _Service role can mark tokens as used_
-
-### `suppressed_emails`
-
-**Columns** (5): `id`, `email`, `reason`, `metadata`, `created_at`
-
-**RLS policies** (4): _Service role can read suppressed emails_; _Service role can insert suppressed emails_; _Admins can read suppressed emails_; _Super admins can read suppressed emails_
 
 ### `worksheet_notifications`
 

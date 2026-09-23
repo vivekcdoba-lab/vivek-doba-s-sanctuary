@@ -1,19 +1,21 @@
 # Edge Functions
 
-_Generated: 2026-09-23T04:53:47.347Z_
+_Generated: 2026-09-23T05:23:57.296Z_
 
-Total: **26** serverless functions deployed via Lovable Cloud.
+Total: **28** serverless functions deployed via Lovable Cloud.
 
 | Function | Purpose (from header) | Secrets used |
 |---|---|---|
 | `admin-create-user` | — | RESEND_FROM |
 | `admin-reset-password` | — | — |
 | `approve-application` | — | — |
+| `auth-email-hook` | Configuration | LOVABLE_API_KEY, LOVABLE_SEND_URL |
 | `daily-session-report` | HTML-escape DB-sourced values to prevent stored HTML injection in admin emails. | CRON_SECRET |
 | `delete-seeker` | — | — |
 | `get-signature-request` | — | — |
+| `handle-email-events` | — | LOVABLE_API_KEY |
 | `notify-session-submitted` | Notify a seeker (email + in-app notification) that their coach has submitted | APP_PUBLIC_URL |
-| `process-email-queue` | Check if an error is a rate-limit (429) response. | LOVABLE_API_KEY, LOVABLE_SEND_URL |
+| `preview-transactional-email` | Renders all registered templates with their previewData. | LOVABLE_API_KEY |
 | `request-document-signature` | — | APP_PUBLIC_URL |
 | `resend-document-signature` | — | APP_PUBLIC_URL |
 | `seed-test-notifications` | no body | — |
@@ -25,7 +27,7 @@ Total: **26** serverless functions deployed via Lovable Cloud.
 | `send-otp` | OTP must be callable without auth (it's used during login flow) | TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN |
 | `send-pre-session-prep-reminder` | Hourly job. For seekers whose next session falls 23–25 hours from now, | — |
 | `send-session-invite` | Send a calendar invite (.ics) email for a coaching session. | — |
-| `send-test-email` | Sends one branded test email to each of admin / coach / seeker via the | — |
+| `send-test-email` | Sends one branded test email to each of admin / coach / seeker. | — |
 | `send-whatsapp` | — | TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN |
 | `session-heartbeat` | ignore | — |
 | `sign-document-inline` | optional | — |

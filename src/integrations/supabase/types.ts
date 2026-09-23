@@ -563,6 +563,45 @@ export type Database = {
           },
         ]
       }
+      blog_posts: {
+        Row: {
+          content: string
+          cover_image_url: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          published_at: string | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       branding_strategy: {
         Row: {
           brand_colors: Json | null
@@ -1235,6 +1274,36 @@ export type Database = {
           },
         ]
       }
+      contact_submissions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       course_session_rules: {
         Row: {
           course_id: string
@@ -1301,6 +1370,7 @@ export type Database = {
           format: string | null
           gradient_colors: Json | null
           id: string
+          image_url: string | null
           is_active: boolean | null
           lifecycle_status: string
           location: string | null
@@ -1308,6 +1378,7 @@ export type Database = {
           max_participants: number | null
           name: string
           price: number
+          public_description: string | null
           sessions_included: number
           tagline: string | null
           tier: string
@@ -1321,6 +1392,7 @@ export type Database = {
           format?: string | null
           gradient_colors?: Json | null
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           lifecycle_status?: string
           location?: string | null
@@ -1328,6 +1400,7 @@ export type Database = {
           max_participants?: number | null
           name: string
           price?: number
+          public_description?: string | null
           sessions_included?: number
           tagline?: string | null
           tier?: string
@@ -1341,6 +1414,7 @@ export type Database = {
           format?: string | null
           gradient_colors?: Json | null
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           lifecycle_status?: string
           location?: string | null
@@ -1348,6 +1422,7 @@ export type Database = {
           max_participants?: number | null
           name?: string
           price?: number
+          public_description?: string | null
           sessions_included?: number
           tagline?: string | null
           tier?: string
@@ -2442,6 +2517,48 @@ export type Database = {
           },
         ]
       }
+      gallery_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          media_type: string
+          media_url: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          media_type?: string
+          media_url: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          media_type?: string
+          media_url?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       happiness_assessments: {
         Row: {
           accomplishment_score: number
@@ -3246,6 +3363,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          price?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
