@@ -1,18 +1,18 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, CalendarDays, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ladder, sidePrograms, type Course, whatsappLink, WHATSAPP_NUMBER } from '@/data/courses';
+import { formatINR, ladder, sidePrograms, type Course, whatsappLink } from '@/data/courses';
 import { openExternal } from '@/lib/openExternal';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 
-const diagnosticLink = (course: Course) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`नमस्ते, मुझे ${course.name} के लिए Diagnostic call book करनी है`)}`;
-
 function CourseAction({ course }: { course: Course }) {
-  if (!course.ctaLabel || course.ctaType === 'none') return null;
-  if (course.ctaType === 'read') return <Button asChild variant="outline"><Link to={`/${course.slug}`}>{course.ctaLabel}<ArrowRight /></Link></Button>;
-  const href = course.ctaType === 'diagnostic' ? diagnosticLink(course) : whatsappLink(course.name);
-  return <Button className="gradient-saffron border-0" onClick={(event) => { event.stopPropagation(); openExternal(href); }}>{course.ctaLabel}<ArrowRight /></Button>;
+  if (course.ctaType === 'none') return null;
+  if (course.ctaType === 'read') return <Button asChild variant="outline"><Link to={`/${course.slug}`}>{course.cta}<ArrowRight /></Link></Button>;
+  const href = whatsappLink(course.name, course.ctaType === 'diagnostic');
+  return <Button className="gradient-saffron border-0" onClick={(event) => { event.stopPropagation(); openExternal(href); }}>{course.cta}<ArrowRight /></Button>;
 }
+
+const coursePrice = (course: Course) => course.priceINR === 0 ? 'Free' : course.priceINR === null ? course.priceNote : `${course.priceFrom ? 'From ' : ''}${formatINR(course.priceINR)}`;
 
 function LadderRow({ course, calm = false }: { course: Course; calm?: boolean }) {
   const navigate = useNavigate();
@@ -22,11 +22,11 @@ function LadderRow({ course, calm = false }: { course: Course; calm?: boolean })
       <div className="min-w-0">
         <p className="mb-1 text-xs font-semibold text-primary/80">{course.stage}</p>
         <Link to={`/${course.slug}`} onClick={event => event.stopPropagation()} className="inline-flex items-center gap-2 text-xl md:text-2xl font-bold hover:text-primary">{course.locked && <Lock className="h-5 w-5" />}{course.name}</Link>
-        <p className="mt-2 text-sm md:text-base leading-7 text-muted-foreground font-devanagari">{course.meta}</p>
-        <div className="mt-4 border-l-4 border-primary bg-primary/10 px-4 py-3 text-sm md:text-base leading-7 font-devanagari"><strong>{course.forLabel || 'किसके लिए'}:</strong> {course.forWhom}</div>
+        <p className="mt-2 text-sm md:text-base leading-7 text-muted-foreground">{course.duration} · {course.format}</p>
+        <div className="mt-4 border-l-4 border-primary bg-primary/10 px-4 py-3 text-sm md:text-base leading-7"><strong>Who it’s for:</strong> {course.forWhom}</div>
       </div>
       <div className="flex min-w-[9.5rem] flex-row flex-wrap items-center gap-3 md:flex-col md:items-end md:justify-center" onClick={event => event.stopPropagation()}>
-        {!calm && (course.price || course.priceNote) && <p className="text-lg font-bold text-primary">{course.price || course.priceNote}</p>}
+        {!calm && coursePrice(course) && <p className="text-lg font-bold text-primary">{coursePrice(course)}</p>}
         {course.nextDate && <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs font-medium"><CalendarDays className="h-3.5 w-3.5" />{course.nextDate}</span>}
         {course.locked ? <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground"><Lock className="h-3.5 w-3.5" />Graduates</span> : <CourseAction course={course} />}
       </div>
@@ -53,8 +53,8 @@ export default function PublicCoursesPage() {
     <section className="border-t border-border bg-muted/30 px-4 py-12 sm:py-16">
       <div className="mx-auto max-w-6xl"><h2 className="mb-7 text-2xl sm:text-3xl font-bold">और भी</h2>
         <div className="space-y-3">{sidePrograms.map(course => <article key={course.slug} className="grid gap-4 rounded-lg border border-border bg-card p-5 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center">
-          <div><Link to={`/${course.slug}`} className="text-lg font-bold hover:text-primary">{course.name}</Link><p className="mt-1 text-sm leading-6 text-muted-foreground">{course.meta}</p></div>
-          {course.price && <p className="font-bold text-primary">{course.price}</p>}<CourseAction course={course} />
+          <div><Link to={`/${course.slug}`} className="text-lg font-bold hover:text-primary">{course.name}</Link><p className="mt-1 text-sm leading-6 text-muted-foreground">{course.duration} · {course.format}</p></div>
+          {coursePrice(course) && <p className="font-bold text-primary">{coursePrice(course)}</p>}<CourseAction course={course} />
         </article>)}</div>
       </div>
     </section>
