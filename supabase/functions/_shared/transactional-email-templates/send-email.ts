@@ -7,7 +7,7 @@ import { TEMPLATES } from './registry.ts'
 // expose sending to the browser.
 
 // Configuration baked in at scaffold time
-const SITE_NAME = "Vivek Doba's Sanctuary"
+const SITE_NAME = "Vivek Doba Business Mastery"
 // SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
 // It MUST match the subdomain delegated to Lovable's nameservers. NEVER use the root domain.
 const SENDER_DOMAIN = "notify.vivekdoba.com"

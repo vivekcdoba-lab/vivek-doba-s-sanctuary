@@ -15,7 +15,7 @@ const corsHeaders = {
 }
 
 // Configuration
-const SITE_NAME = "Vivek Doba's Sanctuary"
+const SITE_NAME = "Vivek Doba Business Mastery"
 const SENDER_DOMAIN = "notify.vivekdoba.com"
 const ROOT_DOMAIN = "vivekdoba.com"
 const FROM_DOMAIN = "vivekdoba.com"
