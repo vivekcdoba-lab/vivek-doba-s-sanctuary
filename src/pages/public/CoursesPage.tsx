@@ -9,6 +9,7 @@ import { CourseSeo, providerSchema } from '@/components/public/CourseSeo';
 import { SITE_URL, whatsappLink, type Course } from '@/data/courses';
 import { usePublicCourses } from '@/hooks/useDbCourses';
 import { openExternal } from '@/lib/openExternal';
+import vivekDobaCoursesBanner from '@/assets/vivek-doba-courses-banner.jpg';
 
 const faqs = [
   { question: 'Which program should I start with?', answer: 'If you are unsure, start with Know Your Triangle. It is free, takes 2 hours and shows you your Golden Triangle Score. Or book a diagnostic call and we will guide you.' },
@@ -66,8 +67,18 @@ export default function PublicCoursesPage() {
   ];
   return <div className="bg-course-ivory">
     <CourseSeo title="Business Coaching Programs in Pune & PCMC | Vivek Doba" description="Nine business coaching programs, one path. From a free 2-hour session to Life’s Golden Triangle one-to-one coaching. Business coach in Pimpri-Chinchwad, Pune. 840+ reviews, coaching since 1998." path="/courses" schema={schema} />
-    <section className="course-hero-texture border-b border-primary/15 px-4 py-16 text-center sm:py-24">
-      <div className="mx-auto max-w-5xl"><h1 className="text-3xl font-bold leading-tight sm:text-5xl">Business Coaching Programs in Pune for Owners Who Want Growth, Health and Family in Balance</h1><p className="font-course-serif mt-7 text-4xl italic text-course-maroon sm:text-5xl">Where are you today?</p><p className="mx-auto mt-4 max-w-3xl text-base leading-8 text-muted-foreground sm:text-lg">Every program does the same work at a different depth. Find the sentence that sounds like you, and start there.</p><div className="mt-7 flex flex-wrap justify-center gap-4 text-sm font-semibold"><span className="inline-flex items-center gap-2"><Star className="h-4 w-4 text-course-saffron" />840+ reviews</span><span>· Coaching since 1998</span><span>· PCMC, Pune</span></div></div>
+    <section className="relative min-h-[560px] overflow-hidden border-b border-primary/15 sm:min-h-[620px]">
+      <img src={vivekDobaCoursesBanner} alt="Vivek Doba standing against a warm sunrise mountain landscape" className="absolute inset-0 h-full w-full object-cover object-[68%_center] sm:object-center" fetchPriority="high" />
+      <div className="absolute inset-0 bg-gradient-to-r from-foreground/95 via-foreground/75 to-transparent" aria-hidden="true" />
+      <div className="relative mx-auto flex min-h-[560px] max-w-7xl items-center px-4 py-16 sm:min-h-[620px] sm:px-8">
+        <div className="max-w-2xl text-primary-foreground">
+          <p className="mb-4 text-sm font-semibold uppercase text-accent">Vivek Doba Business Mastery</p>
+          <h1 className="text-3xl font-bold leading-tight sm:text-5xl">Business Coaching Programs in Pune for Owners Who Want Growth, Health and Family in Balance</h1>
+          <p className="font-course-serif mt-7 text-4xl italic text-accent sm:text-5xl">Where are you today?</p>
+          <p className="mt-4 max-w-xl text-base leading-8 text-primary-foreground/85 sm:text-lg">Every program does the same work at a different depth. Find the sentence that sounds like you, and start there.</p>
+          <div className="mt-7 flex flex-wrap gap-4 text-sm font-semibold"><span className="inline-flex items-center gap-2"><Star className="h-4 w-4 text-accent" />840+ reviews</span><span>· Coaching since 1998</span><span>· PCMC, Pune</span></div>
+        </div>
+      </div>
     </section>
     <motion.section {...reveal} className="mx-auto max-w-7xl px-4 py-14"><h2 className="sr-only">Find the program that sounds like you</h2><div className="scrollbar-none flex snap-x gap-4 overflow-x-auto pb-4">{ladder.slice(0,5).map(course => <Button variant="outline" key={course.slug} onClick={() => jump(course.slug)} className="h-auto min-h-44 min-w-[82vw] snap-start items-start whitespace-normal overflow-hidden rounded-[18px] border-primary/15 bg-card p-0 text-left shadow-course hover:border-course-saffron hover:bg-card sm:min-w-[23rem]"><span className="flex h-full w-full flex-col"><img src={course.cardImageUrl} alt={`${course.name}: ${course.outcome}`} className="aspect-[4/3] w-full object-cover" loading="lazy" /><span className="p-6"><span className="text-xs font-semibold uppercase text-course-saffron">Step {course.step} · {course.stage}</span><q className="font-course-serif mt-3 block text-2xl italic leading-8 text-course-maroon">{course.hook}</q></span></span></Button>)}</div></motion.section>
     <section className="mx-auto max-w-6xl px-4 pb-16"><h2 className="text-center text-3xl font-bold sm:text-4xl">The Golden Triangle Ladder: Nine Programs, One Path</h2><div ref={ladderRef} className="relative mt-12 space-y-8"><div className="absolute bottom-8 left-[1.35rem] top-8 w-1 rounded-full bg-primary/15 md:left-[1.65rem]" /><motion.div style={{ scaleY, transformOrigin: 'top' }} className="absolute bottom-8 left-[1.35rem] top-8 w-1 rounded-full bg-course-saffron md:left-[1.65rem]" />{ladder.map((course,index) => <LadderCard key={course.slug} course={course} index={index} highlighted={highlighted === course.slug} />)}</div><p className="mt-10 text-center text-sm leading-6 text-muted-foreground">All program fees shown are exclusive of 18% GST, which is added at the time of payment. A GST invoice is issued for every enrollment.</p></section>
