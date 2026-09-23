@@ -1,6 +1,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import BackToHome from '@/components/BackToHome';
+import PublicSeo, { breadcrumbSchema } from '@/components/public/PublicSeo';
 
 const faqs = [
   { q: 'What is the LGT Framework?', a: "Life's Golden Triangle (LGT) is VDBM's proprietary coaching framework built on the four Purusharthas — Dharma (Purpose), Artha (Prosperity), Kama (Fulfillment), and Moksha (Liberation). It provides a holistic approach to transformation." },
@@ -16,6 +17,7 @@ const faqs = [
 export default function HelpPage() {
   return (
     <div className="space-y-6">
+      <PublicSeo title="Help Center | Vivek Doba Business Mastery" description="Answers about Vivek Doba Business Mastery programs, assessments, coaching support and platform access." path="/help" schemas={[breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Help', path: '/help' }])]} />
       <BackToHome />
       <div>
         <h1 className="text-2xl font-bold text-foreground">Help Center</h1>

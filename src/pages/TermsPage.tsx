@@ -1,8 +1,10 @@
 import BackToHome from '@/components/BackToHome';
+import PublicSeo, { breadcrumbSchema } from '@/components/public/PublicSeo';
 
 export default function TermsPage() {
   return (
     <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
+      <PublicSeo title="Terms of Service | Vivek Doba Business Mastery" description="Terms governing Vivek Doba Business Mastery coaching services, accounts, payments and intellectual property." path="/terms" schemas={[breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Terms', path: '/terms' }])]} />
       <BackToHome />
       <h1 className="text-2xl font-bold text-foreground">Terms of Service</h1>
       <p className="text-sm text-muted-foreground">Last updated: April 2026</p>

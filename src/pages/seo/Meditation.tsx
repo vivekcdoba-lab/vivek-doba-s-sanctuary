@@ -51,7 +51,7 @@ const Meditation = () => {
 
         <h3 className="text-xl font-semibold text-foreground mt-8 mb-3">Start meditating today</h3>
         <p className="text-muted-foreground leading-relaxed mb-6">
-          Book a free discovery call to design a meditation routine that fits your actual calendar — not an idealized
+          Book a 45-minute session with Vivek for ₹4,999 to design a meditation routine that fits your actual calendar — not an idealized
           version of it. Or explore the deeper{" "}
           <Link to="/dharma-philosophy" className="text-primary underline">dharma philosophy</Link> behind the practice.
         </p>

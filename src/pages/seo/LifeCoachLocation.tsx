@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
@@ -64,9 +64,11 @@ const LOCATION_CONTENT: Record<LocationKey, {
 
 const VALID_KEYS: LocationKey[] = ["india", "maharashtra", "pune", "mumbai"];
 
-const LifeCoachLocation = () => {
-  const { location } = useParams<{ location: string }>();
-  const key = (VALID_KEYS.includes(location as LocationKey) ? location : "india") as LocationKey;
+const LifeCoachLocation = ({ forcedLocation }: { forcedLocation?: LocationKey }) => {
+  const params = useParams<{ location: string }>();
+  const location = forcedLocation || params.location;
+  const isValidLocation = VALID_KEYS.includes(location as LocationKey);
+  const key = (isValidLocation ? location : "india") as LocationKey;
   const content = LOCATION_CONTENT[key];
 
   useDocumentMeta({
@@ -84,6 +86,8 @@ const LifeCoachLocation = () => {
     telephone: "+91-9607050111",
     address: { "@type": "PostalAddress", addressLocality: "Pune", addressRegion: "Maharashtra", addressCountry: "IN" },
   };
+
+  if (!isValidLocation) return <Navigate to="/404" replace />;
 
   return (
     <SeoPage>
@@ -124,9 +128,9 @@ const LifeCoachLocation = () => {
 
         <section>
           <h2 className="text-2xl font-bold text-foreground mb-3">Get Started</h2>
-          <p>Free 45-minute discovery call. We'll discuss where you are, where you want to be, and whether this is the right fit.</p>
+          <p>Book a 45-minute session with Vivek Doba for ₹4,999. Discuss where you are, where you want to be, and the right next step.</p>
           <Link to="/book-appointment" className="inline-flex items-center gap-1 mt-3 text-primary font-semibold hover:underline">
-            Book your call <ChevronRight className="w-4 h-4" />
+            Book your 45-minute session <ChevronRight className="w-4 h-4" />
           </Link>
         </section>
       </article>

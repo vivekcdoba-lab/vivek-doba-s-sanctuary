@@ -25,6 +25,7 @@ import { usePublicCourses } from '@/hooks/useDbCourses';
 import PublicSeo, { breadcrumbSchema, organizationSchema, personSchema, professionalServiceSchema } from '@/components/public/PublicSeo';
 
 const diagnosticUrl = `https://wa.me/919607050111?text=${encodeURIComponent('Namaste, I would like to book a diagnostic call.')}`;
+const privateSessionUrl = `https://wa.me/919607050111?text=${encodeURIComponent('Namaste, I would like to book a 45-minute session with Vivek Doba for ₹4,999.')}`;
 
 const mirrorCards = [
   { title: 'Business', text: 'The business grows, but only when you are in the room.', image: businessOwnerBusiness, Icon: BriefcaseBusiness, alt: 'Indian business owner managing every decision in his Pune workshop' },
@@ -35,7 +36,7 @@ const mirrorCards = [
 const faqItems = [
   { q: 'Who is Vivek Doba’s coaching for?', a: 'It is for business owners and leaders who want sustainable growth without sacrificing their health or family life.' },
   { q: 'Where are the programs held?', a: 'Programs are held in Pune and Pimpri-Chinchwad, with the location shared for each scheduled batch.' },
-  { q: 'Which program should I start with?', a: 'Start with the free Know Your Triangle session. It helps you see which side—business, health or family—needs attention first.' },
+  { q: 'Which program should I start with?', a: 'Start with the ₹999 Know Your Triangle session. It helps you see which side—business, health or family—needs attention first.' },
   { q: 'Are programs available online?', a: 'Selected programs are available online. Each program page clearly shows whether it is offline, online or offered in both formats.' },
   { q: 'Are fees inclusive of GST?', a: 'No. 18% GST is added to program fees. The Life’s Golden Triangle Book + Workbook set is inclusive of all taxes.' },
 ];
@@ -89,7 +90,7 @@ export default function Index() {
   const book = courses.find(course => course.slug === 'book');
 
   return <div className="bg-background">
-    <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business coach in Pimpri-Chinchwad, Pune for business owners who want growth without losing health and family. Life’s Golden Triangle™ by Vivek Doba. 840+ reviews, coaching since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, faqSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
+    <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business coach in Pimpri-Chinchwad, Pune for business owners who want growth without losing health and family. Life’s Golden Triangle™ by Vivek Doba. 805+ reviews, coaching since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, faqSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
 
     <section className="gradient-hero relative overflow-hidden text-primary-foreground">
       <div className="homepage-hero-pattern absolute inset-0 pointer-events-none" />
@@ -100,10 +101,10 @@ export default function Index() {
           <p className="mt-6 max-w-2xl text-lg leading-8 text-primary-foreground/90"><strong>Ghar bhi jeeto. Bazaar bhi.</strong> Life’s Golden Triangle™ helps you grow your business without losing your health or your family.</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="min-h-12 bg-course-maroon text-secondary-foreground hover:bg-course-maroon/90"><a href={diagnosticUrl} target="_blank" rel="noopener noreferrer">Book a diagnostic <MessageCircle /></a></Button>
-            <Button asChild size="lg" variant="outline" className="min-h-12 border-primary-foreground/60 bg-background/10 text-primary-foreground hover:bg-background hover:text-foreground"><Link to="/courses/know-your-triangle">Start free: Know Your Triangle <ArrowRight /></Link></Button>
+            <Button asChild size="lg" variant="outline" className="min-h-12 border-primary-foreground/60 bg-background/10 text-primary-foreground hover:bg-background hover:text-foreground"><Link to="/courses/know-your-triangle">Know Your Triangle · ₹999 <ArrowRight /></Link></Button>
           </div>
           <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-primary-foreground/90">
-            <span className="inline-flex items-center gap-1.5"><Check className="h-4 w-4" />840+ reviews</span>
+            <span className="inline-flex items-center gap-1.5"><Check className="h-4 w-4" />805+ reviews</span>
             <span className="inline-flex items-center gap-1.5"><Clock3 className="h-4 w-4" />Coaching since 1998</span>
             <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" />Pimpri-Chinchwad, Pune</span>
           </div>
@@ -118,6 +119,8 @@ export default function Index() {
         </div>
       </div>
     </section>
+
+    <section className="border-y border-border bg-background py-10"><div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-5 px-4 sm:flex-row sm:items-center"><div><p className="font-bold text-course-maroon">Private guidance with Vivek Doba</p><h2 className="mt-1 text-2xl font-bold">Book your 45-minute session with Vivek · ₹4,999</h2></div><Button asChild size="lg"><a href={privateSessionUrl} target="_blank" rel="noopener noreferrer">Book your session <MessageCircle /></a></Button></div></section>
 
     <section className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4">
