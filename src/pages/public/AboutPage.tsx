@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import vivekDobaBanner from '@/assets/vivek-doba-courses-banner.webp';
 import vivekDobaTeaching from '@/assets/courses/leadership-vivek-hero.webp';
+import vivekDobaWorkshop from '@/assets/courses/udyog-sanjivani-vivek-card.webp';
+import vivekDobaPortrait from '@/assets/vivek-doba.png';
 import { Button } from '@/components/ui/button';
 import PublicSeo, { breadcrumbSchema, personSchema } from '@/components/public/PublicSeo';
 
@@ -20,12 +22,28 @@ const diagnosticUrl = `https://wa.me/919607050111?text=${encodeURIComponent('Nam
 
 const storyChapters = [
   {
-    label: 'What I believe',
-    text: 'I believe business growth should not cost an owner their health or their family. Lasting success needs Business, Health and Family to support each other.',
+    label: 'Where I started',
+    text: 'I began coaching business owners in 1998. [ADD WHERE AND HOW VIVEK STARTED]',
+    image: vivekDobaPortrait,
+    alt: 'Vivek Doba, business coach',
+    width: 500,
+    height: 331,
+  },
+  {
+    label: 'The turning point',
+    text: '[ADD THE TURNING POINT THAT LED VIVEK TO CREATE LIFE’S GOLDEN TRIANGLE™]',
     image: vivekDobaTeaching,
     alt: 'Vivek Doba leading a business coaching session',
     width: 1376,
     height: 768,
+  },
+  {
+    label: 'What I believe',
+    text: 'I believe business growth should not cost an owner their health or their family. Lasting success needs Business, Health and Family to support each other.',
+    image: vivekDobaWorkshop,
+    alt: 'Vivek Doba with business owners',
+    width: 1200,
+    height: 900,
   },
 ];
 
@@ -37,18 +55,20 @@ const workingPrinciples = [
   },
   {
     title: 'Small groups and one-to-one',
-    text: 'Focused coaching in small groups, with one-to-one guidance available for leaders.',
+    text: 'Small-group programs and one-to-one coaching for focused, personal work.',
     Icon: Users,
   },
   {
     title: 'Measured by real change, not promises',
-    text: 'The work is judged by meaningful change across Business, Health and Family.',
+    text: 'The work is measured by real change across Business, Health and Family.',
     Icon: CheckCircle2,
   },
 ];
 
 const timeline = [
-  { year: '1998', title: 'The coaching journey begins', detail: 'Vivek Doba begins coaching business owners.' },
+  { year: '1998', title: 'The coaching journey begins', detail: 'I began coaching business owners.' },
+  { year: '[ADD YEAR]', title: '[ADD KEY PROGRAM LAUNCHED]', detail: '[ADD MILESTONE DETAILS]' },
+  { year: '[ADD YEAR]', title: '[ADD KEY PROGRAM LAUNCHED]', detail: '[ADD MILESTONE DETAILS]' },
   { year: 'Dussehra 2026', title: 'Book launch', detail: 'Life’s Golden Triangle: Book + Workbook set launches.' },
 ];
 
@@ -95,7 +115,7 @@ export default function AboutPage() {
             <img src={chapter.image} alt={chapter.alt} width={chapter.width} height={chapter.height} loading="lazy" className={`aspect-[4/3] w-full rounded-lg object-cover shadow-course ${index % 2 === 1 ? 'md:order-2' : ''}`} />
             <div className={index % 2 === 1 ? 'md:order-1' : ''}>
               <p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">{chapter.label}</p>
-              <p className="font-course-serif text-2xl leading-9 text-foreground sm:text-3xl">“{chapter.text}”</p>
+               <p className="font-course-serif text-2xl leading-9 text-foreground sm:text-3xl">“{chapter.text}”</p>
             </div>
           </article>)}
         </div>
