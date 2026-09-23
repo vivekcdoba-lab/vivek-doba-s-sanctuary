@@ -13,9 +13,9 @@
 
 ## Technical SEO foundation follow-up
 
-- [ ] Re-audit prerender coverage for every requested public course, product, and published blog route.
-- [ ] Verify and normalize homepage/per-page metadata, canonicals, social tags, language, and JSON-LD.
-- [ ] Add the requested Search Console verification slot without inventing its final code.
-- [ ] Correct sitemap date handling and verify robots, 404 noindex, and route exclusions.
-- [ ] Audit image delivery, dimensions, lazy loading, hero/font preloads, and removable unused code.
-- [ ] Capture mobile Lighthouse before/after scores and homepage source proof.
+- [x] Re-audit prerender coverage for every requested public course, product, and published blog route.
+- [x] Verify and normalize homepage/per-page metadata, canonicals, social tags, language, and JSON-LD.
+- [x] Add the requested Search Console verification slot without inventing its final code.
+- [x] Correct sitemap date handling and verify robots, 404 noindex, and route exclusions.
+- [x] Audit image delivery, dimensions, lazy loading, hero/font preloads, and removable unused code.
+- [ ] Capture post-change mobile Lighthouse scores and rendered homepage source proof (blocked: installed browser cannot start because a system library is unavailable).

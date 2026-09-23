@@ -10,7 +10,7 @@ const orderUrl = (product: Product) => `https://wa.me/919607050111?text=${encode
 export default function ShopPage() {
   const { data: products = [], isLoading } = useProducts();
   return <div className="bg-background">
-    <PublicSeo title="Shop Books & Resources by Vivek Doba" description="Shop books, workbooks and practical resources by Vivek Doba, including the Life’s Golden Triangle Book + Workbook set." path="/shop" schemas={[breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Shop', path: '/shop' }])]} />
+    <PublicSeo title="Shop | Life’s Golden Triangle Book & Workbook | Vivek Doba" description="Books, workbooks and resources by Vivek Doba to begin your Golden Triangle journey at home." path="/shop" schemas={[breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Shop', path: '/shop' }])]} />
     <section className="border-b border-border bg-course-ivory py-14 sm:py-20">
       <div className="mx-auto max-w-6xl px-4"><p className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-primary"><ShoppingBag className="h-4 w-4" /> Books and resources</p><h1 className="max-w-4xl text-4xl font-bold sm:text-5xl">Shop: Books and Resources by Vivek Doba</h1><p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">Practical resources to help you understand and strengthen your Business, Health and Family.</p></div>
     </section>

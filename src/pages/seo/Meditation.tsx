@@ -4,7 +4,7 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const Meditation = () => {
   useDocumentMeta({
-    title: "Meditation for Success — Entrepreneurs, Professionals & Students",
+    title: "Meditation for Success | Vivek Doba",
     description: "Practical meditation for entrepreneurs, corporate professionals, students and seekers of every age. Build mental clarity, emotional control and calm leadership presence.",
     canonicalPath: "/meditation",
   });

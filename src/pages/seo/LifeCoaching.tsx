@@ -5,7 +5,7 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const LifeCoaching = () => {
   useDocumentMeta({
-    title: "Life Coach in India for Students, Professionals & Entrepreneurs",
+    title: "Life Coach in India | Vivek Doba",
     description:
       "Trusted life coach for students, working professionals, entrepreneurs and seekers of all ages. Dharma-based coaching for clarity, purpose and lasting fulfillment.",
     canonicalPath: "/life-coaching",

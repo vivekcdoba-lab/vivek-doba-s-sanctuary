@@ -11,7 +11,7 @@ import {
   Triangle,
   Users,
 } from 'lucide-react';
-import vivekDobaBanner from '@/assets/vivek-doba-courses-banner.jpg';
+import vivekDobaBanner from '@/assets/vivek-doba-courses-banner.webp';
 import vivekDobaTeaching from '@/assets/courses/leadership-vivek-hero.webp';
 import { Button } from '@/components/ui/button';
 import PublicSeo, { breadcrumbSchema, personSchema } from '@/components/public/PublicSeo';
@@ -64,8 +64,8 @@ const aboutPersonSchema = {
 export default function AboutPage() {
   return <div className="bg-background">
     <PublicSeo
-      title="About Vivek Doba | Business Coach in Pune"
-      description="Meet Vivek Doba, founder of Life’s Golden Triangle™, helping business owners grow business, health and family together since 1998."
+      title="About Vivek Doba | Business & Life Coach, Pune"
+      description="Meet Vivek Doba, founder of Life’s Golden Triangle™. Coaching business owners in Pune and PCMC since 1998 to grow business, health and family together."
       path="/about"
       schemas={[
         aboutPersonSchema,

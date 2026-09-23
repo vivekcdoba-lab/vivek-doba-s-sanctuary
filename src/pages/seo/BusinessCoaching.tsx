@@ -5,7 +5,7 @@ import { SeoPage, SeoHero, SeoCTA } from "./_SeoLayout";
 
 const BusinessCoaching = () => {
   useDocumentMeta({
-    title: "Business Coach for Entrepreneurs, Industrialists & Founders | India",
+    title: "Business Coach for Founders in India | Vivek Doba",
     description:
       "Spiritual business coach for entrepreneurs, business owners and industrialists. Combine mindset, dharma and growth strategy to scale a purpose-driven business.",
     canonicalPath: "/business-coaching",
