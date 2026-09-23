@@ -1,6 +1,11 @@
 import { Helmet } from 'react-helmet-async';
 
 export const SITE_URL = 'https://vivekdoba.com';
+export const BUSINESS_NAME = 'Vivek Doba Business Mastery LLP';
+export const BUSINESS_ADDRESS = 'Office Number 228,229, Tower B, second floor, Gera Imperium Gateway, Near Nashik Phata metro station, Mumbai Pune highway, Pune-411034';
+export const BUSINESS_PHONE = '9607050111';
+export const BUSINESS_EMAIL = 'info@vivekdoba.com';
+export const BUSINESS_HOURS = 'Hours: To be confirmed';
 export const SHARE_IMAGE = 'https://storage.googleapis.com/gpt-engineer-file-uploads/zrsITRprJqddVA1fAGWy6EZ8rD62/social-images/social-1776562975511-LGT.webp';
 export const SOCIAL_URLS = [
   'https://www.youtube.com/@VIVEKDOBA',
@@ -17,7 +22,7 @@ const address = {
 
 export const organizationSchema = {
   '@context': 'https://schema.org', '@type': 'Organization', '@id': `${SITE_URL}/#organization`,
-  name: 'Vivek Doba Business Mastery', url: SITE_URL,
+  name: BUSINESS_NAME, url: SITE_URL,
   logo: `${SITE_URL}/pwa-icon-192.png`, sameAs: SOCIAL_URLS,
 };
 export const personSchema = {
@@ -28,8 +33,8 @@ export const personSchema = {
 };
 export const professionalServiceSchema = {
   '@context': 'https://schema.org', '@type': 'ProfessionalService', '@id': `${SITE_URL}/#business`,
-  name: 'Vivek Doba Business Mastery', url: SITE_URL, telephone: '+91-9607050111',
-  image: SHARE_IMAGE, address, areaServed: ['Pimpri-Chinchwad', 'Pune', 'India'], priceRange: '₹₹',
+  name: BUSINESS_NAME, url: SITE_URL, telephone: BUSINESS_PHONE, email: BUSINESS_EMAIL,
+  image: SHARE_IMAGE, address: { '@type': 'PostalAddress', streetAddress: BUSINESS_ADDRESS, addressCountry: 'IN' }, areaServed: ['Pimpri-Chinchwad', 'Pune', 'India'], priceRange: '₹₹',
 };
 
 export function breadcrumbSchema(items: { name: string; path: string }[]) {

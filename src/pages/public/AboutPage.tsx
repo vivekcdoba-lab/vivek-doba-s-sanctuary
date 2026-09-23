@@ -1,12 +1,11 @@
-import { Award, Compass, Heart, Sparkles, User } from 'lucide-react';
+import { Award, Compass, Star, User } from 'lucide-react';
 import vivekDobaPhoto from '@/assets/vivek-doba.png';
 import PageBanner from '@/components/public/PageBanner';
 import PublicSeo, { breadcrumbSchema } from '@/components/public/PublicSeo';
 
 const milestones = [
-  { value: '28', label: 'Years of experience', icon: Award },
-  { value: '30,000+', label: 'Lives transformed', icon: Heart },
-  { value: '1,000+', label: 'Inspiring stories', icon: Sparkles },
+  { value: '805+', label: 'Google & client reviews', icon: Star },
+  { value: 'Since 1998', label: 'Coaching business owners', icon: Award },
 ];
 
 export default function AboutPage() {

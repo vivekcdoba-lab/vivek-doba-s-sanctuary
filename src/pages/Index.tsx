@@ -5,9 +5,8 @@ import HomepageMediaSection from '@/components/HomepageMediaSection';
 import PublicSeo, { breadcrumbSchema, organizationSchema, personSchema, professionalServiceSchema } from '@/components/public/PublicSeo';
 
 const stats = [
-  { value: '30,000+', label: 'Lives Transformed' },
-  { value: '1,000+', label: 'Inspiring Stories' },
-  { value: '28', label: 'Years Experience' },
+  { value: '805+', label: 'Google & client reviews' },
+  { value: 'Since 1998', label: 'Coaching business owners' },
 ];
 
 const Index = () => (
