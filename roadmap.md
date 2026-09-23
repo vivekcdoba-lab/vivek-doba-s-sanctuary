@@ -34,3 +34,6 @@
 - [x] Restore newly created programs across all admin program selectors and lists.
 - [x] Keep admins in program management after creating a program.
 - [x] Repair and verify protected authentication for all scheduled email jobs.
+
+- [ ] Rebuild `/blog` and `/blog/:slug` around admin-managed `posts`, seed six draft outlines, add SEO/editor/prerendering.
+- [ ] Rebuild `/contact` with action cards, expanded lead form, email notification, shared business details, map, FAQ, and LocalBusiness data. Blocked values: `[LOCALITY]`, `[EMAIL]`, opening hours, and response time must be supplied or remain clearly marked placeholders.
