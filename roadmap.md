@@ -10,3 +10,12 @@
 - [x] Set Know Your Triangle fees to ₹999 and add a 45-minute session with Vivek for ₹4,999.
 
 - [x] Replace every public 840+ review reference with 805+
+
+## Technical SEO foundation follow-up
+
+- [ ] Re-audit prerender coverage for every requested public course, product, and published blog route.
+- [ ] Verify and normalize homepage/per-page metadata, canonicals, social tags, language, and JSON-LD.
+- [ ] Add the requested Search Console verification slot without inventing its final code.
+- [ ] Correct sitemap date handling and verify robots, 404 noindex, and route exclusions.
+- [ ] Audit image delivery, dimensions, lazy loading, hero/font preloads, and removable unused code.
+- [ ] Capture mobile Lighthouse before/after scores and homepage source proof.
