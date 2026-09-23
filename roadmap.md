@@ -9,6 +9,15 @@
 - [x] Align public business JSON-LD with the shared name, address, and phone.
 - [x] Verify links, layouts, claims, and type safety.
 
+## About Vivek Doba story page
+
+- [x] Build the photo-led About introduction with the supplied factual positioning.
+- [x] Add a first-person story with clearly marked placeholders for missing history.
+- [x] Add the Golden Triangle philosophy and three supplied coaching principles.
+- [x] Add confirmed timeline entries and marked placeholders for missing milestones.
+- [x] Keep media and talks hidden until real material is supplied.
+- [x] Add the diagnostic/program actions and matching Person structured data.
+
 - [x] Check every public route, link, button, form, and external action.
 - [x] Remove unintended Devanagari and identify visible placeholders.
 - [x] Validate 390px layout, text size, tap targets, and contrast.
