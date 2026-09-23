@@ -1,13 +1,13 @@
 project_id = "pobjadmnmfbeydqsymhx"
 
-[functions.get-signature-request]
-verify_jwt = false
-
-[functions.submit-signature]
-verify_jwt = false
-
-[functions.process-email-queue]
-verify_jwt = true
-
-[functions.send-lgt-report]
-verify_jwt = false
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.get-signature-request]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.send-lgt-report]
+    verify_jwt = false
+  [functions.submit-signature]
+    verify_jwt = false
