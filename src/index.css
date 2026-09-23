@@ -238,6 +238,64 @@
     background-image: radial-gradient(circle at 50% 50%, hsl(var(--gold) / 0.08) 0 1px, transparent 1px);
     background-size: 22px 22px;
   }
+
+  .homepage-hero-pattern {
+    background-image:
+      linear-gradient(120deg, transparent 65%, hsl(var(--secondary) / 0.12) 65%),
+      radial-gradient(circle at 12% 20%, hsl(var(--primary-foreground) / 0.12) 0 2px, transparent 2px);
+    background-size: 100% 100%, 24px 24px;
+  }
+  .homepage-photo-frame {
+    box-shadow: 24px 24px 0 hsl(var(--secondary) / 0.28);
+  }
+  .homepage-triangle {
+    position: relative;
+    width: min(100%, 430px);
+    aspect-ratio: 1.12;
+  }
+  .homepage-triangle-shape {
+    position: absolute;
+    inset: 12% 12% 15%;
+    background: linear-gradient(145deg, hsl(var(--gold-bright)), hsl(var(--gold)));
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    filter: drop-shadow(0 18px 24px hsl(var(--gold) / 0.2));
+  }
+  .homepage-triangle-shape::after {
+    content: '';
+    position: absolute;
+    inset: 10%;
+    background: hsl(var(--muted));
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+  .homepage-triangle-point {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.375rem;
+    background: hsl(var(--card));
+    color: hsl(var(--course-maroon));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 8px 24px hsl(var(--foreground) / 0.1);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .homepage-triangle-point svg { width: 1rem; height: 1rem; color: hsl(var(--primary)); }
+  .homepage-triangle-business { top: 0; left: 50%; transform: translateX(-50%); }
+  .homepage-triangle-health { bottom: 0; left: 0; }
+  .homepage-triangle-family { right: 0; bottom: 0; }
+  .homepage-triangle-mark {
+    position: absolute;
+    z-index: 2;
+    width: 3rem;
+    height: 3rem;
+    left: 50%;
+    top: 55%;
+    transform: translate(-50%, -50%);
+    color: hsl(var(--primary));
+  }
   .course-glow { animation: course-glow 1.6s ease-out; }
   @keyframes course-glow {
     0%, 100% { box-shadow: 0 18px 50px hsl(var(--course-maroon) / 0.09); }

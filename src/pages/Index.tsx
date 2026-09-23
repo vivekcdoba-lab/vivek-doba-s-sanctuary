@@ -1,266 +1,195 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  BriefcaseBusiness,
+  Check,
+  Clock3,
+  HeartPulse,
+  Home,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Play,
+  Quote,
+  Sparkles,
+  Triangle,
+} from 'lucide-react';
 import vivekDobaPhoto from '@/assets/vivek-doba.png';
-import HomepageMediaSection from '@/components/HomepageMediaSection';
+import businessOwnerBusiness from '@/assets/home/business-owner-business.jpg';
+import businessOwnerHealth from '@/assets/home/business-owner-health.jpg';
+import businessOwnerFamily from '@/assets/home/business-owner-family.jpg';
+import { Button } from '@/components/ui/button';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { formatINR, type Course } from '@/data/courses';
+import { usePublicCourses } from '@/hooks/useDbCourses';
 import PublicSeo, { breadcrumbSchema, organizationSchema, personSchema, professionalServiceSchema } from '@/components/public/PublicSeo';
 
-const stats = [
-  { value: '805+', label: 'Google & client reviews' },
-  { value: 'Since 1998', label: 'Coaching business owners' },
+const diagnosticUrl = `https://wa.me/919607050111?text=${encodeURIComponent('Namaste, I would like to book a diagnostic call.')}`;
+
+const mirrorCards = [
+  { title: 'Business', text: 'The business grows, but only when you are in the room.', image: businessOwnerBusiness, Icon: BriefcaseBusiness, alt: 'Indian business owner managing every decision in his Pune workshop' },
+  { title: 'Health', text: 'Your body is paying for your success.', image: businessOwnerHealth, Icon: HeartPulse, alt: 'Indian business owner feeling the physical strain of a long workday' },
+  { title: 'Family', text: 'You are building everything for your family, and missing them.', image: businessOwnerFamily, Icon: Home, alt: 'Indian business owner arriving home after his family has started dinner' },
 ];
 
-const Index = () => (
-  <div className="bg-background">
-    <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business coach in Pimpri-Chinchwad, Pune for business owners who want growth without losing health and family. Life’s Golden Triangle™ by Vivek Doba. 840+ reviews, coaching since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
+const faqItems = [
+  { q: 'Who is Vivek Doba’s coaching for?', a: 'It is for business owners and leaders who want sustainable growth without sacrificing their health or family life.' },
+  { q: 'Where are the programs held?', a: 'Programs are held in Pune and Pimpri-Chinchwad, with the location shared for each scheduled batch.' },
+  { q: 'Which program should I start with?', a: 'Start with the free Know Your Triangle session. It helps you see which side—business, health or family—needs attention first.' },
+  { q: 'Are programs available online?', a: 'Selected programs are available online. Each program page clearly shows whether it is offline, online or offered in both formats.' },
+  { q: 'Are fees inclusive of GST?', a: 'No. 18% GST is added to program fees. The Life’s Golden Triangle Book + Workbook set is inclusive of all taxes.' },
+];
 
-    {/* Hero */}
-    <section
-      className="relative overflow-hidden py-16 sm:py-24 text-center"
-      style={{ background: 'linear-gradient(135deg, #B8860B 0%, #FF9933 50%, #E91E63 100%)' }}
-    >
-      <div className="absolute inset-0 opacity-[0.06] text-[200px] leading-none flex flex-wrap justify-center items-center pointer-events-none select-none overflow-hidden">
-        {'🪷 🕉️ 🪷 🕉️ 🪷 🕉️ 🪷 🕉️ 🪷 🕉️ '.repeat(3)}
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map(item => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
+};
+
+const testimonials: { youtubeId: string; name: string; business: string }[] = [];
+
+function ProgramPrice({ course }: { course: Course }) {
+  if (course.priceINR === null) {
+    return <p className="text-sm font-semibold text-course-maroon">{course.priceNote}</p>;
+  }
+  if (course.priceINR === 0) return <p className="text-lg font-bold text-course-maroon">Free</p>;
+  return <div>
+    <p className="text-lg font-bold text-course-maroon">{course.priceFrom ? 'From ' : ''}{formatINR(course.priceINR)}</p>
+    {course.gstApplies && <p className="text-xs text-muted-foreground">+ 18% GST</p>}
+  </div>;
+}
+
+function TestimonialsSection() {
+  if (testimonials.length === 0) return null;
+  return <section className="border-y border-border bg-muted/40 py-16 sm:py-20">
+    <div className="mx-auto max-w-6xl px-4">
+      <div className="mb-9 flex items-center gap-3">
+        <Quote className="h-7 w-7 text-primary" />
+        <h2 className="text-3xl font-bold">Stories from business owners</h2>
       </div>
-      <div className="relative z-10 max-w-4xl mx-auto px-4">
-        <div className="w-32 h-32 sm:w-36 sm:h-36 mx-auto rounded-full overflow-hidden mb-6 border-4 border-white/30 shadow-xl">
-          <img src={vivekDobaPhoto} alt="Coach Vivek Doba" width="500" height="331" fetchPriority="high" className="w-full h-full object-cover" />
-        </div>
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3" style={{ fontFamily: 'Poppins, sans-serif' }}>
-          Vivek Doba
-        </h1>
-        <p className="text-lg sm:text-xl text-white/80 mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-          Spiritual Business Coach | Founder of Life's Golden Triangle
-        </p>
-        <p className="text-base text-white/70 italic mb-10">
-          Transform Your Life Through Ancient Wisdom &amp; Modern Leadership
-        </p>
-        <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-          {stats.map((s) => (
-            <div key={s.label} className="bg-black/20 backdrop-blur-sm rounded-xl px-6 py-4 min-w-[160px]">
-              <p className="text-2xl sm:text-3xl font-bold text-white">{s.value}</p>
-              <p className="text-sm text-white/70">{s.label}</p>
-            </div>
-          ))}
-        </div>
+      <div className="grid gap-6 md:grid-cols-3">
+        {testimonials.map(story => <article key={story.youtubeId} className="overflow-hidden rounded-lg border border-border bg-card">
+          <iframe className="aspect-video w-full" loading="lazy" src={`https://www.youtube-nocookie.com/embed/${story.youtubeId}`} title={`${story.name} testimonial`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+          <div className="p-4"><p className="font-semibold">{story.name}</p><p className="text-sm text-muted-foreground">{story.business}</p></div>
+        </article>)}
       </div>
-    </section>
+      <Button asChild variant="outline" className="mt-8"><Link to="/testimonials">More stories <ArrowRight /></Link></Button>
+    </div>
+  </section>;
+}
 
-    {/* 3 Registration Cards */}
-    <section className="max-w-7xl mx-auto px-4 py-16 sm:py-20">
-      <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-3">Begin Your Transformation</h2>
-      <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">Choose how you'd like to start your journey with Vivek Doba</p>
+export default function Index() {
+  const { data: courses = [] } = usePublicCourses();
+  const featuredSlugs = ['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt'];
+  const featuredCourses = featuredSlugs.map(slug => courses.find(course => course.slug === slug)).filter((course): course is Course => Boolean(course));
+  const book = courses.find(course => course.slug === 'book');
 
-      <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-        {/* Card 1 */}
-        <div className="group bg-card rounded-2xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all overflow-hidden border border-border">
-          <div className="h-2" style={{ background: 'linear-gradient(135deg, #2196F3, #00BCD4)' }} />
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-3xl">📞</span>
-              <span className="px-3 py-1 rounded-full text-xs font-bold text-white bg-emerald-500">FREE</span>
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Book a 45-Minute Free Discovery Call</h3>
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              Not sure which program is right for you? Book a personal discovery call with Vivek Sir. Understand your goals, explore possibilities, and get clarity on your transformation path.
-            </p>
-            <Link
-              to="/book-appointment"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-white font-semibold transition-opacity hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #2196F3, #00BCD4)' }}
-            >
-              Book My Call <ChevronRight className="w-4 h-4" />
-            </Link>
+  return <div className="bg-background">
+    <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business coach in Pimpri-Chinchwad, Pune for business owners who want growth without losing health and family. Life’s Golden Triangle™ by Vivek Doba. 840+ reviews, coaching since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, faqSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
+
+    <section className="gradient-hero relative overflow-hidden text-primary-foreground">
+      <div className="homepage-hero-pattern absolute inset-0 pointer-events-none" />
+      <div className="relative mx-auto grid min-h-[650px] max-w-7xl items-center gap-10 px-4 py-14 lg:grid-cols-[1.08fr_0.92fr] lg:py-20">
+        <div className="max-w-3xl">
+          <p className="font-course-serif mb-4 text-xl italic sm:text-2xl">Success is a Triangle. Complete it.</p>
+          <h1 className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">Business Coach in Pune for Owners Who Want to Win at Work and at Home</h1>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-primary-foreground/90"><strong>Ghar bhi jeeto. Bazaar bhi.</strong> Life’s Golden Triangle™ helps you grow your business without losing your health or your family.</p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Button asChild size="lg" className="min-h-12 bg-course-maroon text-secondary-foreground hover:bg-course-maroon/90"><a href={diagnosticUrl} target="_blank" rel="noopener noreferrer">Book a diagnostic <MessageCircle /></a></Button>
+            <Button asChild size="lg" variant="outline" className="min-h-12 border-primary-foreground/60 bg-background/10 text-primary-foreground hover:bg-background hover:text-foreground"><Link to="/courses/know-your-triangle">Start free: Know Your Triangle <ArrowRight /></Link></Button>
+          </div>
+          <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-primary-foreground/90">
+            <span className="inline-flex items-center gap-1.5"><Check className="h-4 w-4" />840+ reviews</span>
+            <span className="inline-flex items-center gap-1.5"><Clock3 className="h-4 w-4" />Coaching since 1998</span>
+            <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" />Pimpri-Chinchwad, Pune</span>
           </div>
         </div>
-
-        {/* Card 2 */}
-        <div className="group bg-card rounded-2xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all overflow-hidden border border-border">
-          <div className="h-2" style={{ background: 'linear-gradient(135deg, #FF9933, #FFD700)' }} />
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-3xl">🎯</span>
-              <span className="px-3 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: '#FFF3CD', color: '#B8860B' }}>Open for Registration</span>
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Register for a One-Day Workshop</h3>
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              Experience the power of transformation in a single day. Choose from 'Laws of Attraction through Ramayana', 'Team Building', or 'Leadership through Mahabharata'.
-            </p>
-            <Link
-              to="/register-workshop"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-white font-semibold transition-opacity hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #FF9933, #FFD700)' }}
-            >
-              Register Now <ChevronRight className="w-4 h-4" />
-            </Link>
+        <div className="relative mx-auto w-full max-w-lg self-end">
+          <div className="homepage-photo-frame overflow-hidden rounded-lg border border-primary-foreground/30">
+            <img src={vivekDobaPhoto} alt="Business coach Vivek Doba in Pune" width="500" height="331" fetchPriority="high" className="aspect-[4/5] w-full object-cover object-top" />
           </div>
-        </div>
-
-        {/* Card 3 */}
-        <div className="group bg-card rounded-2xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all overflow-hidden border border-border relative">
-          <div className="h-2 shimmer-gold" style={{ background: 'linear-gradient(135deg, #FFD700, #7B1FA2)' }} />
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-3xl">👑</span>
-              <span className="px-3 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: '#FFF3CD', color: '#B8860B' }}>Under 1 minute</span>
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Tell Us About Yourself</h3>
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              Share a few details and we'll personally reach out to design the right path for you. No long forms, no payment now — just a friendly conversation to begin your transformation.
-            </p>
-            <Link
-              to="/get-started"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-white font-semibold transition-opacity hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #FFD700, #7B1FA2)' }}
-            >
-              Get Started <ChevronRight className="w-4 h-4" />
-            </Link>
+          <div className="absolute bottom-5 left-5 right-5 rounded-md border border-primary-foreground/20 bg-course-maroon/90 px-4 py-3 text-center backdrop-blur-sm">
+            <p className="font-semibold">Vivek Doba</p><p className="text-sm text-secondary-foreground/80">Business Coach · Founder, Life’s Golden Triangle™</p>
           </div>
         </div>
       </div>
     </section>
 
-    {/* SEO: Dharma-Based Coaching */}
-    <section className="bg-muted/30 py-16 sm:py-20 border-t border-border">
-      <div className="max-w-4xl mx-auto px-4">
-        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 text-center">
-          Dharma-Based Coaching for Conscious Leaders
-        </h2>
-        <p className="text-muted-foreground leading-relaxed mb-4">
-          Vivek Doba is a spiritual business coach for entrepreneurs, professionals and purpose-seekers who want
-          measurable results without losing themselves in the process. His dharma-based coaching practice blends ancient
-          Indian wisdom — Dharma, Artha, Kama and Moksha — with modern frameworks for mindset and business growth.
-        </p>
-        <p className="text-muted-foreground leading-relaxed mb-4">
-          Whether you're searching for a life coach for purpose, a business coach for entrepreneurs, or guidance in
-          manifestation coaching and meditation for success, the work begins in the same place: inner alignment. When
-          identity, intention and action move together, growth stops being a struggle and becomes a natural by-product of
-          who you are.
-        </p>
-        <p className="text-muted-foreground leading-relaxed">
-          Clients build a purpose-driven business, recover their energy through meditation for entrepreneurs, and apply
-          the law of attraction with disciplined sankalp practice. The outcome is conscious leadership — calmer
-          decisions, healthier teams and a life that feels meaningfully aligned with what matters most.
-        </p>
+    <section className="py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="mb-10 text-center"><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">The mirror</p><h2 className="text-3xl font-bold sm:text-4xl">Which one is you?</h2></div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {mirrorCards.map(({ title, text, image, Icon, alt }) => <article key={title} className="group overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+            <div className="relative overflow-hidden"><img src={image} alt={alt} width="1200" height="800" loading="lazy" className="aspect-[3/2] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" /><div className="absolute bottom-0 left-0 flex h-12 w-12 items-center justify-center bg-course-maroon text-secondary-foreground"><Icon className="h-5 w-5" /></div></div>
+            <div className="p-6"><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">{title}</p><h3 className="text-xl font-semibold leading-8">{text}</h3></div>
+          </article>)}
+        </div>
+        <p className="mx-auto mt-10 max-w-3xl text-center font-course-serif text-2xl font-semibold text-course-maroon">When one side breaks, the other two follow. That is the Golden Triangle.</p>
       </div>
     </section>
 
-    {/* SEO: What We Offer */}
-    <section className="max-w-7xl mx-auto px-4 py-16 sm:py-20">
-      <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-3">What We Offer</h2>
-      <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-        Specialized coaching pathways — pick the entry point that matches where you are today.
-      </p>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {[
-          { to: "/life-coaching", emoji: "🌅", title: "Life Coaching", desc: "Find purpose, clarity and inner alignment for a meaningful life." },
-          { to: "/business-coaching", emoji: "📈", title: "Business Coaching", desc: "Mindset and strategy for entrepreneurs building purpose-driven businesses." },
-          { to: "/manifestation", emoji: "✨", title: "Manifestation", desc: "Law of attraction coaching grounded in sankalp and disciplined action." },
-          { to: "/meditation", emoji: "🧘", title: "Meditation", desc: "A practical meditation practice for success, focus and emotional balance." },
-        ].map((c) => (
-          <Link
-            key={c.to}
-            to={c.to}
-            className="block bg-card rounded-2xl border border-border p-6 hover:shadow-lg hover:scale-[1.02] transition-all"
-          >
-            <div className="text-3xl mb-3">{c.emoji}</div>
-            <h3 className="text-lg font-bold text-foreground mb-2">{c.title}</h3>
-            <p className="text-sm text-muted-foreground">{c.desc}</p>
-          </Link>
-        ))}
+    <section className="border-y border-border bg-muted/40 py-16 sm:py-20">
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-2">
+        <div className="homepage-triangle mx-auto" aria-label="Golden Triangle with Business, Health and Family at its corners">
+          <div className="homepage-triangle-shape" />
+          <span className="homepage-triangle-point homepage-triangle-business"><BriefcaseBusiness />Business</span>
+          <span className="homepage-triangle-point homepage-triangle-health"><HeartPulse />Health</span>
+          <span className="homepage-triangle-point homepage-triangle-family"><Home />Family</span>
+          <Triangle className="homepage-triangle-mark" />
+        </div>
+        <div><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">The framework</p><h2 className="text-3xl font-bold sm:text-4xl">The Golden Triangle, explained</h2><p className="mt-5 text-lg leading-8 text-muted-foreground">Most owners work on one corner. Lasting success needs all three to support each other.</p><Button asChild className="mt-7 bg-course-saffron text-primary-foreground hover:bg-course-saffron/90"><Link to="/score">Take the 3-minute Golden Triangle Score <ArrowRight /></Link></Button></div>
       </div>
     </section>
 
-    {/* SEO: Why Choose */}
-    <section className="bg-muted/30 py-16 sm:py-20 border-t border-border">
-      <div className="max-w-5xl mx-auto px-4">
-        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-10 text-center">
-          Why Choose Dharma-Based Coaching
-        </h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {[
-            { h: "Ancient Wisdom, Modern Tools", p: "Vedic frameworks (Purushaarthas, sankalp, dharma) translated into worksheets, assessments and weekly reviews." },
-            { h: "Built for Entrepreneurs", p: "Designed for high-functioning founders and leaders who need both inner depth and hard business outcomes." },
-            { h: "Measurable Transformation", p: "A six-stage journey with check-ins, progress charts and milestone certifications, not vague promises." },
-          ].map((b) => (
-            <div key={b.h} className="bg-card rounded-2xl border border-border p-6">
-              <h3 className="text-lg font-bold text-foreground mb-2">{b.h}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{b.p}</p>
-            </div>
-          ))}
+    <section className="py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">A clear next step</p><h2 className="text-3xl font-bold sm:text-4xl">The ladder, in brief</h2></div><Button asChild variant="outline"><Link to="/courses">See all programs <ArrowRight /></Link></Button></div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {featuredCourses.map(course => <article key={course.slug} className="flex overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-lg sm:flex-col">
+            {course.cardImageUrl ? <img src={course.cardImageUrl} alt={`${course.name} program`} width="800" height="600" loading="lazy" className="h-40 w-36 shrink-0 object-cover sm:aspect-[4/3] sm:h-auto sm:w-full" /> : <div className="flex h-40 w-36 shrink-0 items-center justify-center bg-muted sm:aspect-[4/3] sm:h-auto sm:w-full"><Sparkles className="h-10 w-10 text-primary" /></div>}
+            <div className="flex flex-1 flex-col p-5"><p className="text-xs font-bold uppercase tracking-widest text-primary">{course.stage}</p><h3 className="mt-1 text-lg font-bold">{course.name}</h3><p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">{course.outcome}</p><div className="mt-4 flex items-end justify-between gap-3"><div><p className="text-xs text-muted-foreground">{course.duration}</p><ProgramPrice course={course} /></div><Button asChild size="icon" variant="outline" aria-label={`View ${course.name}`}><Link to={`/courses/${course.slug}`}><ArrowRight /></Link></Button></div></div>
+          </article>)}
         </div>
       </div>
     </section>
 
-    {/* SEO: FAQ */}
-    <section className="max-w-3xl mx-auto px-4 py-16 sm:py-20">
-      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-8 text-center">
-        Frequently Asked Questions
-      </h2>
-      <div className="space-y-6">
-        {[
-          { q: "What is dharma-based coaching?", a: "Dharma-based coaching helps you align work and life with your authentic purpose using the four Purushaarthas — Dharma, Artha, Kama and Moksha — as a practical framework." },
-          { q: "Who is this spiritual business coaching for?", a: "Entrepreneurs, professionals and leaders who want both inner clarity and measurable business growth." },
-          { q: "Does manifestation coaching really work?", a: "Yes — when paired with disciplined daily action, sankalp setting and aligned identity work, not as a substitute for them." },
-          { q: "How does meditation help entrepreneurs?", a: "Meditation improves decision quality, emotional regulation and leadership presence, which compound into better business outcomes." },
-          { q: "How do I get started?", a: "Book a free 45-minute discovery call, register for a one-day workshop, or apply for the flagship Life's Golden Triangle program." },
-        ].map((f) => (
-          <div key={f.q} className="bg-card rounded-xl border border-border p-5">
-            <h3 className="font-semibold text-foreground mb-2">{f.q}</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{f.a}</p>
-          </div>
-        ))}
+    <section className="border-y border-border bg-course-ivory py-16 sm:py-20">
+      <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-[0.8fr_1.2fr]">
+        <img src={vivekDobaPhoto} alt="Vivek Doba, business and life coach" width="500" height="331" loading="lazy" className="mx-auto aspect-square w-full max-w-sm rounded-lg object-cover object-top shadow-course" />
+        <div><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">Meet Vivek Doba</p><h2 className="text-3xl font-bold sm:text-4xl">Business discipline. Inner clarity. A life that stays whole.</h2><div className="mt-6 space-y-4 text-base leading-7 text-muted-foreground"><p className="flex gap-3"><Check className="mt-1 h-5 w-5 shrink-0 text-primary" />He guides entrepreneurs and professionals towards clarity, balance and sustainable achievement.</p><p className="flex gap-3"><Check className="mt-1 h-5 w-5 shrink-0 text-primary" />His approach combines spiritual principles, mindset work and practical business discipline.</p><p className="flex gap-3"><Check className="mt-1 h-5 w-5 shrink-0 text-primary" />He founded Life’s Golden Triangle™ to make success meaningful as well as measurable.</p></div><Button asChild variant="outline" className="mt-7"><Link to="/about">Read his story <ArrowRight /></Link></Button></div>
       </div>
     </section>
 
-    {/* Featured Videos & Social Highlights */}
-    <HomepageMediaSection />
+    <TestimonialsSection />
 
-    {/* SEO: Coaching Across India */}
-    <section className="bg-muted/30 py-16 sm:py-20 border-t border-border">
-      <div className="max-w-5xl mx-auto px-4">
-        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 text-center">Coaching Across India</h2>
-        <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
-          Based in Pune. Working with founders, professionals and seekers across Maharashtra and India — online and in-person.
-        </p>
-
-        <div className="grid sm:grid-cols-2 gap-6">
-          <div className="bg-card rounded-2xl border border-border p-6">
-            <h3 className="text-lg font-bold text-foreground mb-3">Life Coach in</h3>
-            <div className="flex flex-wrap gap-2">
-              {["Pune", "Mumbai", "Maharashtra", "India"].map((label) => (
-                <span key={label} className="px-3 py-1.5 rounded-full bg-muted text-sm text-foreground">
-                  {label}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-card rounded-2xl border border-border p-6">
-            <h3 className="text-lg font-bold text-foreground mb-3">Business Coach in</h3>
-            <div className="flex flex-wrap gap-2">
-              {["Pune", "Mumbai", "Maharashtra", "India"].map((label) => (
-                <span key={label} className="px-3 py-1.5 rounded-full bg-muted text-sm text-foreground">
-                  {label}
-                </span>
-              ))}
-            </div>
-          </div>
+    {book && <section className="py-16 sm:py-20">
+      <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-2">
+        <div className="relative mx-auto w-full max-w-lg overflow-hidden rounded-lg border border-border bg-muted">
+          {book.cardImageUrl ? <img src={book.cardImageUrl} alt="Life’s Golden Triangle Book and Workbook set" width="800" height="600" loading="lazy" className="aspect-[4/3] w-full object-cover" /> : <div className="flex aspect-[4/3] items-center justify-center"><BookOpen className="h-24 w-24 text-primary/60" /></div>}
         </div>
+        <div><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">Read. Reflect. Apply.</p><h2 className="text-3xl font-bold sm:text-4xl">Life’s Golden Triangle: Book + Workbook set</h2><p className="mt-5 text-lg text-muted-foreground">Founder’s Edition for the first 200 · Launching on Dussehra</p><p className="mt-5 text-3xl font-bold text-course-maroon">₹999</p><p className="text-xs text-muted-foreground">Inclusive of all taxes</p><Button asChild size="lg" className="mt-7 bg-course-saffron text-primary-foreground hover:bg-course-saffron/90"><a href={`https://wa.me/919607050111?text=${encodeURIComponent('Namaste, I would like to pre-book the Life’s Golden Triangle Book + Workbook set.')}`} target="_blank" rel="noopener noreferrer">Pre-book <BookOpen /></a></Button></div>
+      </div>
+    </section>}
 
-        <div className="grid sm:grid-cols-2 gap-6 mt-6">
-          <Link to="/nlp-coach" className="bg-card rounded-2xl border border-border p-6 hover:shadow-lg hover:scale-[1.02] transition-all">
-            <h3 className="text-lg font-bold text-foreground mb-2">🧠 NLP Coach</h3>
-            <p className="text-sm text-muted-foreground">Mindset & behaviour change for entrepreneurs and professionals.</p>
-          </Link>
-          <Link to="/sales-coach" className="bg-card rounded-2xl border border-border p-6 hover:shadow-lg hover:scale-[1.02] transition-all">
-            <h3 className="text-lg font-bold text-foreground mb-2">💼 Sales Coach</h3>
-            <p className="text-sm text-muted-foreground">Calm, ethical sales coaching for founders and B2B teams.</p>
-          </Link>
-        </div>
+    <section className="border-t border-border bg-muted/40 py-16 sm:py-20">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 md:grid-cols-[0.7fr_1.3fr]">
+        <div><div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground"><MessageCircle className="h-5 w-5" /></div><h2 className="text-3xl font-bold sm:text-4xl">Frequently asked questions</h2><p className="mt-4 text-muted-foreground">Clear answers before you choose your first step.</p></div>
+        <Accordion type="single" collapsible className="border-t border-border">
+          {faqItems.map((item, index) => <AccordionItem key={item.q} value={`faq-${index}`}><AccordionTrigger className="text-left text-base">{item.q}</AccordionTrigger><AccordionContent className="pr-8 text-muted-foreground leading-6">{item.a}</AccordionContent></AccordionItem>)}
+        </Accordion>
       </div>
     </section>
 
-  </div>
-);
-
-export default Index;
+    <section className="bg-course-maroon py-14 text-secondary-foreground sm:py-16">
+      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-4 lg:flex-row lg:items-center">
+        <div><h2 className="text-3xl font-bold sm:text-4xl">Not sure where to begin?</h2><p className="mt-3 max-w-2xl text-secondary-foreground/80">Book a diagnostic call. We will understand your business and tell you honestly which step fits you.</p></div>
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row"><Button asChild size="lg" className="bg-course-saffron text-primary-foreground hover:bg-course-saffron/90"><a href={diagnosticUrl} target="_blank" rel="noopener noreferrer">Book a diagnostic <MessageCircle /></a></Button><Button asChild size="lg" variant="outline" className="border-secondary-foreground/50 bg-transparent text-secondary-foreground hover:bg-secondary-foreground hover:text-course-maroon"><a href="tel:9607050111">Call 9607050111 <Phone /></a></Button></div>
+      </div>
+    </section>
+  </div>;
+}
