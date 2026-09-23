@@ -1,152 +1,183 @@
 export type Course = {
   slug: string;
-  step: string | null;        // ladder step number shown on /courses ("0"–"4"), "🕉️" for Ram Nirvana, null for side programs
-  stage: string | null;       // ladder stage name
+  step: string | null;          // "0"–"4", "ॐ" for the summit, null for side programs
+  stage: string | null;         // ladder stage name
   name: string;
-  meta: string;               // duration / format line
-  forWhom: string;            // "किसके लिए"
-  forLabel?: string;          // override label, e.g. "कब"
-  price: string | null;       // null = do not show a price
-  priceNote?: string;         // shown instead of price when price is null
+  hook: string;                 // the emotional first line: the reader's own feeling, in their words
+  outcome: string;              // ONE line: what their life looks like after
+  duration: string;
+  format: string;
+  seats?: string;               // real seat limit only
   nextDate?: string;
-  ctaLabel: string | null;    // null = no button
+  forWhom: string;
+  notFor: string[];
+  before: string[];             // "Today" — what they feel now
+  after: string[];              // "After" — what changes
+  journey: { title: string; text: string }[];   // the phases inside the program
+  takeaways: string[];
+  priceINR: number | null;      // base fee, excluding GST. null = do not show a price
+  priceFrom?: boolean;          // shows "From ₹…"
+  gstApplies: boolean;          // true = 18% GST added on top
+  priceNote?: string;           // shown when priceINR is null
+  cta: string;
   ctaType: "book" | "diagnostic" | "apply" | "enquiry" | "prebook" | "read" | "none";
-  nextSlug?: string;          // "अगला पायदान" shown at the end of the course page
+  nextSlug?: string;
   locked?: boolean;
+  videos: { youtubeId: string; name: string; business?: string }[];
 };
 
+export const GST_RATE = 0.18;
 export const WHATSAPP_NUMBER = "919607050111";
 
-export const whatsappLink = (programName: string) =>
-  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`नमस्ते, मुझे ${programName} के बारे में जानना है`)}`;
+export const formatINR = (n: number) => "₹" + n.toLocaleString("en-IN");
+export const gstAmount = (n: number) => Math.round(n * GST_RATE);
+export const totalWithGst = (n: number) => n + gstAmount(n);
+
+export const whatsappLink = (courseName: string, diagnostic = false) =>
+  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    diagnostic
+      ? `Namaste, I would like to book a diagnostic call for ${courseName}.`
+      : `Namaste, I would like to know more about ${courseName}.`
+  )}`;
 
 export const ladder: Course[] = [
   {
     slug: "know-your-triangle",
-    step: "0", stage: "पहचान",
+    step: "0", stage: "Discover",
     name: "Know Your Triangle",
-    meta: "2 घंटे · समूह · Golden Triangle Score जीवंत",
-    forWhom: "जो अभी सिर्फ़ देखना चाहते हैं",
-    price: "निःशुल्क",
-    ctaLabel: "सीट बुक करें", ctaType: "book",
-    nextSlug: "loa",
+    hook: "Something feels off, but you can’t quite name it.",
+    outcome: "See your business, health and family on one score in just 2 hours.",
+    duration: "2 hours", format: "Group session · Live Golden Triangle Score",
+    forWhom: "Anyone who simply wants to explore first",
+    notFor: ["People looking for a quick motivational talk"],
+    before: ["You are busy every day, but unsure if you are moving forward", "One area of life keeps pulling the others down"],
+    after: ["You know your Golden Triangle score", "You can see which side needs attention first"],
+    journey: [],
+    takeaways: ["Your personal Golden Triangle Score", "Clarity on your next step"],
+    priceINR: 0, gstApplies: false,
+    cta: "Book my free seat", ctaType: "book",
+    nextSlug: "loa", videos: [],
   },
   {
     slug: "loa",
-    step: "1", stage: "संकल्प",
+    step: "1", stage: "Resolve",
     name: "LOA through Ramayana",
-    meta: "2 दिन · Offline या Online · भीतर का राम, रावण, सीता, हनुमान",
-    forWhom: "जो अटके हैं और भीतर से शुरू करना चाहते हैं",
-    price: "₹5,999 से",
-    nextDate: "3–4 अक्टूबर",
-    ctaLabel: "अभी बुक करें", ctaType: "book",
-    nextSlug: "udyog-sanjivani",
+    hook: "You know what you want. Something inside you keeps stopping you.",
+    outcome: "Walk out with a clear mind and a resolve you can act on from Monday.",
+    duration: "2 days", format: "Offline or Online · The Ram, Ravan, Sita and Hanuman within you",
+    nextDate: "3–4 October",
+    forWhom: "Those who feel stuck and want to begin from within",
+    notFor: ["People who want someone else to change their life for them"],
+    before: ["You start strong and lose steam", "Doubt and fear speak louder than your goals"],
+    after: ["You recognise the Ravan inside you and how to face it", "You leave with a resolve that holds"],
+    journey: [],
+    takeaways: [],
+    priceINR: 5999, priceFrom: true, gstApplies: true,
+    cta: "Book my seat", ctaType: "book",
+    nextSlug: "udyog-sanjivani", videos: [],
   },
   {
     slug: "udyog-sanjivani",
-    step: "2", stage: "पुनर्जीवन",
-    name: "उद्योग संजीवनी · पंचतत्त्व",
-    meta: "90 दिन · 12 सत्र · 7 Offline + 5 Online · केवल 10 · + 30 दिन handholding",
-    forWhom: "₹50 लाख–₹2 करोड़ · Business चल रहा है पर आप पर टिका है",
-    price: "₹75,000",
-    ctaLabel: "Diagnostic", ctaType: "diagnostic",
-    nextSlug: "lgt",
+    step: "2", stage: "Revive",
+    name: "Udyog Sanjivani · Panchatattva",
+    hook: "Your business runs. But only when you are in the room.",
+    outcome: "Build a business that keeps running, and growing, without depending on you.",
+    duration: "90 days", format: "12 sessions: 7 offline + 5 online · Plus 30 days of handholding",
+    seats: "Only 10 business owners per batch",
+    forWhom: "Business owners at ₹50 lakh–₹2 crore whose business still depends entirely on them",
+    notFor: ["Businesses that have not started yet", "Owners who are not willing to let go of control"],
+    before: ["Every decision waits for you", "A holiday feels impossible", "Growth has stalled"],
+    after: ["Your team runs the day-to-day", "You finally work on the business, not in it"],
+    journey: [],
+    takeaways: [],
+    priceINR: 75000, gstApplies: true,
+    cta: "Book a diagnostic", ctaType: "diagnostic",
+    nextSlug: "lgt", videos: [],
   },
   {
     slug: "lgt",
-    step: "3", stage: "रूपांतरण",
-    name: "Life's Golden Triangle™",
-    meta: "6 माह · 24 + 2 सत्र · आमने-सामने · वर्ष में केवल 20",
-    forWhom: "₹2–15 करोड़ · धंधा, सेहत और घर — तीनों गहराई से",
-    price: null, priceNote: "Diagnostic के बाद",
-    ctaLabel: "आवेदन", ctaType: "apply",
-    nextSlug: "practitioner",
+    step: "3", stage: "Transform",
+    name: "Life’s Golden Triangle™",
+    hook: "The business grew. Your health and your home paid the price.",
+    outcome: "Bring business, health and family into balance, deeply and together.",
+    duration: "6 months", format: "24 + 2 sessions · Face to face, one to one",
+    seats: "Only 20 people a year",
+    forWhom: "Business owners at ₹2–15 crore ready to work on business, health and family together",
+    notFor: ["Anyone looking for a shortcut", "Anyone not ready for honest one-to-one work"],
+    before: ["Success on paper, emptiness at home", "Your body is warning you"],
+    after: ["All three sides of your life support each other"],
+    journey: [],
+    takeaways: [],
+    priceINR: null, gstApplies: true, priceNote: "Fee shared after your diagnostic call",
+    cta: "Apply now", ctaType: "apply",
+    nextSlug: "practitioner", videos: [],
   },
   {
     slug: "practitioner",
-    step: "4", stage: "प्रमाणन",
+    step: "4", stage: "Certify",
     name: "LGT Practitioner",
-    meta: "6 माह · हर शुक्रवार · केवल 8 · 60-40 साझेदारी",
-    forWhom: "🔒 केवल Life's Golden Triangle graduates",
-    price: null, priceNote: "आमंत्रण से",
-    ctaLabel: null, ctaType: "none",
-    locked: true,
+    hook: "You lived the transformation. Now you want to carry it to others.",
+    outcome: "Become certified to guide others through Life’s Golden Triangle™.",
+    duration: "6 months", format: "Every Friday · 60–40 partnership",
+    seats: "Only 8 practitioners",
+    forWhom: "Graduates of Life’s Golden Triangle™ only",
+    notFor: ["Anyone who has not completed Life’s Golden Triangle™"],
+    before: [], after: [], journey: [], takeaways: [],
+    priceINR: null, gstApplies: true, priceNote: "By invitation",
+    cta: "Graduates only", ctaType: "none", locked: true, videos: [],
   },
   {
     slug: "ram-nirvana",
-    step: "🕉️", stage: "सिद्धि",
+    step: "ॐ", stage: "The summit",
     name: "Ram Nirvana™",
-    meta: "आश्रम — जहाँ लोग अपना त्रिकोण संतुलित करने आएँगे",
-    forWhom: "2029 के बाद · अभी बिक्री नहीं",
-    forLabel: "कब",
-    price: null, priceNote: "दृष्टि",
-    ctaLabel: "पढ़िए", ctaType: "read",
+    hook: "A place to come home to yourself.",
+    outcome: "An ashram where people come to bring their triangle into balance.",
+    duration: "After 2029", format: "A vision, not open for enrollment",
+    forWhom: "A future home for everyone who walks this path",
+    notFor: [], before: [], after: [], journey: [], takeaways: [],
+    priceINR: null, gstApplies: false, priceNote: "A vision",
+    cta: "Read the vision", ctaType: "read", videos: [],
   },
 ];
 
 export const sidePrograms: Course[] = [
   {
     slug: "sales-sanjivani",
-    step: null, stage: null,
-    name: "Sales संजीवनी",
-    meta: "2 दिन · टीम के लिए · 60% अभ्यास",
-    forWhom: "टीम की बिक्री",
-    price: "₹6,000 से",
-    ctaLabel: "Enquiry", ctaType: "enquiry",
-    nextSlug: "udyog-sanjivani",
+    step: null, stage: "For teams",
+    name: "Sales Sanjivani",
+    hook: "Your team sells when you push, and stops when you don’t.",
+    outcome: "A sales team that sells with confidence, built through real practice.",
+    duration: "2 days", format: "For sales teams · 60% hands-on practice",
+    forWhom: "Business owners who want their sales team to perform without them",
+    notFor: [], before: [], after: [], journey: [], takeaways: [],
+    priceINR: 6000, priceFrom: true, gstApplies: true,
+    cta: "Enquire", ctaType: "enquiry", nextSlug: "udyog-sanjivani", videos: [],
   },
   {
     slug: "leadership",
-    step: null, stage: null,
+    step: null, stage: "For organisations",
     name: "Leadership the Srikrishna Way",
-    meta: "1 दिन · Corporate · जनवरी 2027",
-    forWhom: "संस्थाओं के लिए",
-    price: null,
-    ctaLabel: "Enquiry", ctaType: "enquiry",
+    hook: "Calm at the centre of the battlefield.",
+    outcome: "Leaders who stay clear and steady when pressure rises.",
+    duration: "1 day", format: "Corporate program · Starting January 2027",
+    forWhom: "Organisations developing their leadership teams",
+    notFor: [], before: [], after: [], journey: [], takeaways: [],
+    priceINR: null, gstApplies: true, priceNote: "Fee on proposal",
+    cta: "Enquire", ctaType: "enquiry", videos: [],
   },
   {
     slug: "book",
-    step: null, stage: null,
-    name: "📕 Life's Golden Triangle — किताब + Workbook SET",
-    meta: "दो भाग · Founder's Edition पहले 200 के लिए · विमोचन दशहरा",
-    forWhom: "सबके लिए",
-    price: "₹999",
-    ctaLabel: "Pre-book", ctaType: "prebook",
+    step: null, stage: "For readers",
+    name: "Life’s Golden Triangle: Book + Workbook set",
+    hook: "The whole philosophy, in your hands.",
+    outcome: "Read it, then work through it, one page at a time.",
+    duration: "Two volumes", format: "Founder’s Edition for the first 200 · Launching on Dussehra",
+    forWhom: "Anyone who wants to begin at home",
+    notFor: [], before: [], after: [], journey: [], takeaways: [],
+    priceINR: 999, gstApplies: false,
+    cta: "Pre-book", ctaType: "prebook", videos: [],
   },
 ];
 
 export const allCourses = [...ladder, ...sidePrograms];
 export const getCourse = (slug: string) => allCourses.find((c) => c.slug === slug);
-
-// Courses dropdown menu (grouped)
-export const courseMenu = [
-  {
-    group: "शुरुआत",
-    items: [
-      { label: "Know Your Triangle", sub: "2 घंटे · निःशुल्क", href: "/know-your-triangle" },
-      { label: "Golden Triangle Score", sub: "3 मिनट · online", href: "/score" },
-      { label: "किताब + Workbook", sub: "₹999", href: "/book" },
-    ],
-  },
-  {
-    group: "दो दिन",
-    items: [
-      { label: "LOA through Ramayana", sub: "मन और संकल्प", href: "/loa" },
-      { label: "Sales संजीवनी", sub: "टीम की बिक्री", href: "/sales-sanjivani" },
-    ],
-  },
-  {
-    group: "गहरा काम",
-    items: [
-      { label: "उद्योग संजीवनी", sub: "90 दिन · 10 लोग", href: "/udyog-sanjivani" },
-      { label: "Life's Golden Triangle™", sub: "6 माह · 1:1", href: "/lgt" },
-      { label: "LGT Practitioner", sub: "केवल graduates", href: "/practitioner" },
-    ],
-  },
-  {
-    group: "संस्थाओं के लिए",
-    items: [
-      { label: "Leadership the Srikrishna Way", sub: "Corporate · 1 दिन", href: "/leadership" },
-    ],
-  },
-];
