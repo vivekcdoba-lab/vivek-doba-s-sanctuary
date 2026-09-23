@@ -5798,16 +5798,7 @@ export type Database = {
       }
       decrypt_field: { Args: { _payload: string }; Returns: string }
       decrypt_many: { Args: { _payloads: string[] }; Returns: string[] }
-      delete_email: {
-        Args: { message_id: number; queue_name: string }
-        Returns: boolean
-      }
-      email_queue_dispatch: { Args: never; Returns: undefined }
       encrypt_field: { Args: { _plaintext: string }; Returns: string }
-      enqueue_email: {
-        Args: { payload: Json; queue_name: string }
-        Returns: number
-      }
       find_unsubscribe_token: { Args: { _token: string }; Returns: string }
       get_daily_session_report: { Args: never; Returns: Json }
       get_encryption_status: { Args: never; Returns: Json }
@@ -5874,29 +5865,12 @@ export type Database = {
       }
       is_coach: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
-      move_to_dlq: {
-        Args: {
-          dlq_name: string
-          message_id: number
-          payload: Json
-          source_queue: string
-        }
-        Returns: number
-      }
       notify_admins_of_ticket: {
         Args: { _ticket_id: string }
         Returns: undefined
       }
       purge_email_queue: { Args: { queue_name: string }; Returns: number }
       purge_old_submissions: { Args: never; Returns: number }
-      read_email_batch: {
-        Args: { batch_size: number; queue_name: string; vt: number }
-        Returns: {
-          message: Json
-          msg_id: number
-          read_ct: number
-        }[]
-      }
       rotate_encryption_keys: {
         Args: { _trigger_source?: string }
         Returns: Json
