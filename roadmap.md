@@ -33,4 +33,4 @@
 - [x] Rebuild the real-photo Gallery with filters, uploads, lightbox controls, and latest photos on matching course pages.
 - [x] Restore newly created programs across all admin program selectors and lists.
 - [x] Keep admins in program management after creating a program.
-- [ ] Repair and verify protected authentication for all scheduled email jobs.
+- [x] Repair and verify protected authentication for all scheduled email jobs.
