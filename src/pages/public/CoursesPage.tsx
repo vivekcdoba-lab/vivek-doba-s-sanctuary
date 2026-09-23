@@ -26,7 +26,7 @@ function LadderRow({ course, calm = false }: { course: Course; calm?: boolean })
         <div className="mt-4 border-l-4 border-primary bg-primary/10 px-4 py-3 text-sm md:text-base leading-7"><strong>Who it’s for:</strong> {course.forWhom}</div>
       </div>
       <div className="flex min-w-[9.5rem] flex-row flex-wrap items-center gap-3 md:flex-col md:items-end md:justify-center" onClick={event => event.stopPropagation()}>
-        {!calm && coursePrice(course) && <p className="text-lg font-bold text-primary">{coursePrice(course)}</p>}
+        {!calm && coursePrice(course) && <div className="text-right"><p className="text-lg font-bold text-primary">{coursePrice(course)}</p>{course.gstApplies && course.priceINR !== null && <p className="mt-0.5 text-xs font-medium text-muted-foreground">+ 18% GST</p>}</div>}
         {course.nextDate && <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs font-medium"><CalendarDays className="h-3.5 w-3.5" />{course.nextDate}</span>}
         {course.locked ? <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground"><Lock className="h-3.5 w-3.5" />Graduates</span> : <CourseAction course={course} />}
       </div>
@@ -35,12 +35,12 @@ function LadderRow({ course, calm = false }: { course: Course; calm?: boolean })
 }
 
 export default function PublicCoursesPage() {
-  useDocumentMeta({ title: 'Courses — Vivek Doba | Business Coach, PCMC Pune', description: "नौ कार्यक्रम, एक सीढ़ी — Know Your Triangle से Life's Golden Triangle™ तक। अपनी जगह से शुरू कीजिए।", canonicalPath: '/courses' });
+  useDocumentMeta({ title: 'Courses — Vivek Doba | Business Coach, PCMC Pune', description: "Nine programs, one ladder — from Know Your Triangle to Life's Golden Triangle™. Find the step that describes you today.", canonicalPath: '/courses' });
   return <div className="font-devanagari">
     <section className="border-b border-primary/20 bg-primary/5 px-4 py-12 text-center sm:py-16">
       <p className="mb-2 text-sm font-semibold text-primary">Courses</p>
-      <h1 className="text-3xl sm:text-4xl font-bold">आप कहाँ से शुरू करें?</h1>
-      <p className="mx-auto mt-3 max-w-2xl text-base sm:text-lg leading-8 text-muted-foreground">हर कार्यक्रम एक ही काम करता है। अपनी जगह से शुरू कीजिए।</p>
+      <h1 className="text-3xl sm:text-4xl font-bold">Where are you today?</h1>
+      <p className="mx-auto mt-3 max-w-2xl text-base sm:text-lg leading-8 text-muted-foreground">Every program does the same work at a different depth. Find the step that describes you today, and start there.</p>
     </section>
     <section className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
       <div className="relative space-y-7 before:absolute before:bottom-8 before:left-7 before:top-8 before:w-px before:bg-primary/40 md:before:left-8">
@@ -51,10 +51,10 @@ export default function PublicCoursesPage() {
       </div>
     </section>
     <section className="border-t border-border bg-muted/30 px-4 py-12 sm:py-16">
-      <div className="mx-auto max-w-6xl"><h2 className="mb-7 text-2xl sm:text-3xl font-bold">और भी</h2>
+      <div className="mx-auto max-w-6xl"><h2 className="mb-7 text-2xl sm:text-3xl font-bold">Also available</h2>
         <div className="space-y-3">{sidePrograms.map(course => <article key={course.slug} className="grid gap-4 rounded-lg border border-border bg-card p-5 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center">
           <div><Link to={`/${course.slug}`} className="text-lg font-bold hover:text-primary">{course.name}</Link><p className="mt-1 text-sm leading-6 text-muted-foreground">{course.duration} · {course.format}</p></div>
-          {coursePrice(course) && <p className="font-bold text-primary">{coursePrice(course)}</p>}<CourseAction course={course} />
+          {coursePrice(course) && <div className="text-left md:text-right"><p className="font-bold text-primary">{coursePrice(course)}</p>{course.gstApplies && course.priceINR !== null && <p className="mt-0.5 text-xs font-medium text-muted-foreground">+ 18% GST</p>}</div>}<CourseAction course={course} />
         </article>)}</div>
       </div>
     </section>
