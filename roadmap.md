@@ -13,3 +13,4 @@
 - [ ] Replace the Courses data with the complete English program content and SEO fields.
 - [ ] Rebuild the Courses dropdown, ladder, detail template, pricing, CTAs, FAQ, and motion.
 - [ ] Add Courses metadata, structured data, canonical routes, redirects, sitemap entries, and verification.
+- [x] Add company-hosted Sales Sanjivani and corporate/one-to-one leadership coaching messaging.
