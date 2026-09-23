@@ -1,18 +1,45 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export type Product = { id: string; name: string; description: string | null; category: string; image_url: string | null; price: number; is_active: boolean; display_order: number };
+export type Product = {
+  id: string;
+  name: string;
+  slug: string | null;
+  image_url: string | null;
+  gallery_images: string[];
+  short_description: string | null;
+  long_description: string | null;
+  price_inr: number | null;
+  gst_included: boolean;
+  stock_status: 'in_stock' | 'out_of_stock' | 'preorder';
+  is_preorder: boolean;
+  sort_order: number;
+  is_published: boolean;
+  description: string | null;
+  category: string;
+  price: number;
+  is_active: boolean;
+  display_order: number;
+};
 export type GalleryItem = { id: string; title: string; description: string | null; category: 'Events' | 'Seminars' | 'Workshops' | 'Testimonials'; media_type: 'image' | 'video'; media_url: string; thumbnail_url: string | null; is_active: boolean; display_order: number };
 export type BlogPost = { id: string; title: string; slug: string; excerpt: string | null; content: string; cover_image_url: string | null; status: 'draft' | 'published'; published_at: string | null; created_at: string };
 export type ContentKind = 'products' | 'gallery_items' | 'blog_posts';
 
 export function useProducts(includeInactive = false) {
   return useQuery({ queryKey: ['products', includeInactive], queryFn: async () => {
-    let query = supabase.from('products').select('*').order('display_order').order('name');
-    if (!includeInactive) query = query.eq('is_active', true);
+    let query = supabase.from('products').select('*').order('sort_order').order('name');
+    if (!includeInactive) query = query.eq('is_published', true);
     const { data, error } = await query;
     if (error) throw error;
     return (data || []) as Product[];
+  }});
+}
+
+export function useProduct(slug?: string) {
+  return useQuery({ queryKey: ['product', slug], enabled: Boolean(slug), queryFn: async () => {
+    const { data, error } = await supabase.from('products').select('*').eq('slug', slug || '').eq('is_published', true).maybeSingle();
+    if (error) throw error;
+    return data as Product | null;
   }});
 }
 

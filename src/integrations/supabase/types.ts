@@ -2624,43 +2624,70 @@ export type Database = {
       }
       gallery_items: {
         Row: {
+          caption: string | null
           category: string
+          city: string | null
           created_at: string
+          date: string | null
           description: string | null
           display_order: number
+          event_name: string | null
           id: string
+          image_url: string | null
           is_active: boolean
+          is_published: boolean
           media_type: string
           media_url: string
+          program_slug: string | null
+          sort_order: number
           thumbnail_url: string | null
           title: string
           updated_at: string
+          youtube_id: string | null
         }
         Insert: {
+          caption?: string | null
           category?: string
+          city?: string | null
           created_at?: string
+          date?: string | null
           description?: string | null
           display_order?: number
+          event_name?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
+          is_published?: boolean
           media_type?: string
           media_url: string
+          program_slug?: string | null
+          sort_order?: number
           thumbnail_url?: string | null
           title: string
           updated_at?: string
+          youtube_id?: string | null
         }
         Update: {
+          caption?: string | null
           category?: string
+          city?: string | null
           created_at?: string
+          date?: string | null
           description?: string | null
           display_order?: number
+          event_name?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
+          is_published?: boolean
           media_type?: string
           media_url?: string
+          program_slug?: string | null
+          sort_order?: number
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
+          youtube_id?: string | null
         }
         Relationships: []
       }
@@ -3475,11 +3502,21 @@ export type Database = {
           created_at: string
           description: string | null
           display_order: number
+          gallery_images: string[]
+          gst_included: boolean
           id: string
           image_url: string | null
           is_active: boolean
+          is_preorder: boolean
+          is_published: boolean
+          long_description: string | null
           name: string
           price: number
+          price_inr: number | null
+          short_description: string | null
+          slug: string | null
+          sort_order: number
+          stock_status: string
           updated_at: string
         }
         Insert: {
@@ -3487,11 +3524,21 @@ export type Database = {
           created_at?: string
           description?: string | null
           display_order?: number
+          gallery_images?: string[]
+          gst_included?: boolean
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_preorder?: boolean
+          is_published?: boolean
+          long_description?: string | null
           name: string
           price?: number
+          price_inr?: number | null
+          short_description?: string | null
+          slug?: string | null
+          sort_order?: number
+          stock_status?: string
           updated_at?: string
         }
         Update: {
@@ -3499,11 +3546,21 @@ export type Database = {
           created_at?: string
           description?: string | null
           display_order?: number
+          gallery_images?: string[]
+          gst_included?: boolean
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_preorder?: boolean
+          is_published?: boolean
+          long_description?: string | null
           name?: string
           price?: number
+          price_inr?: number | null
+          short_description?: string | null
+          slug?: string | null
+          sort_order?: number
+          stock_status?: string
           updated_at?: string
         }
         Relationships: []

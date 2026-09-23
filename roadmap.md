@@ -29,3 +29,5 @@
 - [ ] Add or review Privacy, Terms, and Refund policy pages and link them from the footer.
 - [x] Redesign the homepage for Pune and PCMC business owners with visual story sections, program ladder, book, FAQ, and diagnostic actions.
 - [x] Rebuild the About page as a factual, image-led story with marked history placeholders and Person structured data.
+- [ ] Rebuild the database-driven Shop, product detail pages, and product admin editor with the seeded book preorder.
+- [ ] Rebuild the real-photo Gallery with filters, uploads, lightbox controls, and latest photos on matching course pages.
