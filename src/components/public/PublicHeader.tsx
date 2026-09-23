@@ -3,26 +3,7 @@ import { NavLink, Link, useLocation } from 'react-router-dom';
 import { BookOpen, ChevronDown, GraduationCap, Image, Lock, MessageSquare, Phone, ShoppingBag, User } from 'lucide-react';
 import { openWhatsApp } from '@/lib/openExternal';
 import { Button } from '@/components/ui/button';
-
-const courseMenu = [
-  { group: 'Start here', items: [
-    { label: 'Know Your Triangle', sub: '2 hours · Free', href: '/know-your-triangle' },
-    { label: 'Golden Triangle Score', sub: '3 minutes · Online', href: '/score' },
-    { label: 'Book + Workbook', sub: '₹999', href: '/book' },
-  ] },
-  { group: 'Two-day programs', items: [
-    { label: 'LOA through Ramayana', sub: 'Mind and resolve', href: '/loa' },
-    { label: 'Sales Sanjivani', sub: 'Team sales', href: '/sales-sanjivani' },
-  ] },
-  { group: 'Deep work', items: [
-    { label: 'Udyog Sanjivani', sub: '90 days · 10 people', href: '/udyog-sanjivani' },
-    { label: 'Life’s Golden Triangle', sub: '6 months · 1:1', href: '/lgt' },
-    { label: '(Train the Trainer) LGT Practitioner', sub: 'Graduates only', href: '/practitioner' },
-  ] },
-  { group: 'For organisations', items: [
-    { label: 'Leadership the Srikrishna Way', sub: 'Corporate · 1 day', href: '/leadership' },
-  ] },
-];
+import { courseMenu } from '@/data/courses';
 
 const tabs = [
   { to: '/about', label: 'About Us', icon: User },
@@ -37,7 +18,7 @@ export default function PublicHeader() {
   const [coursesOpen, setCoursesOpen] = useState(false);
   const coursesRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-  const isCoursesActive = location.pathname === '/courses' || courseMenu.some(group => group.items.some(item => item.href === location.pathname));
+  const isCoursesActive = location.pathname.startsWith('/courses') || courseMenu.some(group => group.items.some(item => item.href === location.pathname));
 
   useEffect(() => {
     const onPointerDown = (event: MouseEvent) => {

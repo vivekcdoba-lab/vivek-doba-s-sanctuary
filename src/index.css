@@ -36,6 +36,9 @@
     --wisdom-purple: 282 68% 38%;
     --sky-blue: 199 95% 42%;
     --warning-amber: 33 100% 50%;
+    --course-ivory: 30 79% 96%;
+    --course-saffron: 16 85% 38%;
+    --course-maroon: 14 63% 29%;
 
     --sidebar-background: 340 100% 25%;
     --sidebar-foreground: 0 0% 95%;
@@ -219,6 +222,25 @@
     @apply shadow-lg;
     transform: translateY(-2px) scale(1.02);
   }
+
+  .font-course-serif { font-family: 'Cormorant Garamond', serif; }
+  .bg-course-ivory { background-color: hsl(var(--course-ivory)); }
+  .bg-course-saffron { background-color: hsl(var(--course-saffron)); }
+  .bg-course-maroon { background-color: hsl(var(--course-maroon)); }
+  .text-course-saffron { color: hsl(var(--course-saffron)); }
+  .text-course-maroon { color: hsl(var(--course-maroon)); }
+  .border-course-saffron { border-color: hsl(var(--course-saffron)); }
+  .shadow-course { box-shadow: 0 18px 50px hsl(var(--course-maroon) / 0.09); }
+  .course-hero-texture {
+    background-image: radial-gradient(circle at 50% 50%, hsl(var(--gold) / 0.08) 0 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .course-glow { animation: course-glow 1.6s ease-out; }
+  @keyframes course-glow {
+    0%, 100% { box-shadow: 0 18px 50px hsl(var(--course-maroon) / 0.09); }
+    35% { box-shadow: 0 0 0 5px hsl(var(--gold-bright) / 0.28), 0 20px 55px hsl(var(--course-saffron) / 0.18); }
+  }
+  @media (prefers-reduced-motion: reduce) { .course-glow { animation: none; } }
   .card-hover:active {
     transform: scale(0.98);
   }

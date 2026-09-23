@@ -1,183 +1,39 @@
 export type Course = {
-  slug: string;
-  step: string | null;          // "0"–"4", "ॐ" for the summit, null for side programs
-  stage: string | null;         // ladder stage name
-  name: string;
-  hook: string;                 // the emotional first line: the reader's own feeling, in their words
-  outcome: string;              // ONE line: what their life looks like after
-  duration: string;
-  format: string;
-  seats?: string;               // real seat limit only
-  nextDate?: string;
-  forWhom: string;
-  notFor: string[];
-  before: string[];             // "Today" — what they feel now
-  after: string[];              // "After" — what changes
-  journey: { title: string; text: string }[];   // the phases inside the program
-  takeaways: string[];
-  priceINR: number | null;      // base fee, excluding GST. null = do not show a price
-  priceFrom?: boolean;          // shows "From ₹…"
-  gstApplies: boolean;          // true = 18% GST added on top
-  priceNote?: string;           // shown when priceINR is null
-  cta: string;
-  ctaType: "book" | "diagnostic" | "apply" | "enquiry" | "prebook" | "read" | "none";
-  nextSlug?: string;
-  locked?: boolean;
-  videos: { youtubeId: string; name: string; business?: string }[];
+  slug: string; step: string | null; stage: string; name: string; hook: string; outcome: string;
+  duration: string; format: string; mode: string; seats?: string; nextDate?: string; forWhom: string;
+  notFor: string[]; before: string[]; after: string[]; journey: { title: string; text: string }[];
+  takeaways: string[]; priceINR: number | null; priceFrom?: boolean; gstApplies: boolean; priceNote?: string;
+  cta: string; ctaType: "book" | "diagnostic" | "apply" | "enquiry" | "prebook" | "read" | "none";
+  nextSlug?: string; locked?: boolean; videos: { youtubeId: string; name: string; business?: string }[];
+  seo: { title: string; description: string; keywords: string[] };
 };
-
+export const SITE_URL = "https://vivekdoba.com";
 export const GST_RATE = 0.18;
 export const WHATSAPP_NUMBER = "919607050111";
-
 export const formatINR = (n: number) => "₹" + n.toLocaleString("en-IN");
 export const gstAmount = (n: number) => Math.round(n * GST_RATE);
 export const totalWithGst = (n: number) => n + gstAmount(n);
-
-export const whatsappLink = (courseName: string, diagnostic = false) =>
-  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    diagnostic
-      ? `Namaste, I would like to book a diagnostic call for ${courseName}.`
-      : `Namaste, I would like to know more about ${courseName}.`
-  )}`;
+export const whatsappLink = (courseName: string, diagnostic = false) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(diagnostic ? `Namaste, I would like to book a diagnostic call for ${courseName}.` : `Namaste, I would like to know more about ${courseName}.`)}`;
 
 export const ladder: Course[] = [
-  {
-    slug: "know-your-triangle",
-    step: "0", stage: "Discover",
-    name: "Know Your Triangle",
-    hook: "Something feels off, but you can’t quite name it.",
-    outcome: "See your business, health and family on one score in just 2 hours.",
-    duration: "2 hours", format: "Group session · Live Golden Triangle Score",
-    forWhom: "Anyone who simply wants to explore first",
-    notFor: ["People looking for a quick motivational talk"],
-    before: ["You are busy every day, but unsure if you are moving forward", "One area of life keeps pulling the others down"],
-    after: ["You know your Golden Triangle score", "You can see which side needs attention first"],
-    journey: [],
-    takeaways: ["Your personal Golden Triangle Score", "Clarity on your next step"],
-    priceINR: 0, gstApplies: false,
-    cta: "Book my free seat", ctaType: "book",
-    nextSlug: "loa", videos: [],
-  },
-  {
-    slug: "loa",
-    step: "1", stage: "Resolve",
-    name: "LOA through Ramayana",
-    hook: "You know what you want. Something inside you keeps stopping you.",
-    outcome: "Walk out with a clear mind and a resolve you can act on from Monday.",
-    duration: "2 days", format: "Offline or Online · The Ram, Ravan, Sita and Hanuman within you",
-    nextDate: "3–4 October",
-    forWhom: "Those who feel stuck and want to begin from within",
-    notFor: ["People who want someone else to change their life for them"],
-    before: ["You start strong and lose steam", "Doubt and fear speak louder than your goals"],
-    after: ["You recognise the Ravan inside you and how to face it", "You leave with a resolve that holds"],
-    journey: [],
-    takeaways: [],
-    priceINR: 5999, priceFrom: true, gstApplies: true,
-    cta: "Book my seat", ctaType: "book",
-    nextSlug: "udyog-sanjivani", videos: [],
-  },
-  {
-    slug: "udyog-sanjivani",
-    step: "2", stage: "Revive",
-    name: "Udyog Sanjivani · Panchatattva",
-    hook: "Your business runs. But only when you are in the room.",
-    outcome: "Build a business that keeps running, and growing, without depending on you.",
-    duration: "90 days", format: "12 sessions: 7 offline + 5 online · Plus 30 days of handholding",
-    seats: "Only 10 business owners per batch",
-    forWhom: "Business owners at ₹50 lakh–₹2 crore whose business still depends entirely on them",
-    notFor: ["Businesses that have not started yet", "Owners who are not willing to let go of control"],
-    before: ["Every decision waits for you", "A holiday feels impossible", "Growth has stalled"],
-    after: ["Your team runs the day-to-day", "You finally work on the business, not in it"],
-    journey: [],
-    takeaways: [],
-    priceINR: 75000, gstApplies: true,
-    cta: "Book a diagnostic", ctaType: "diagnostic",
-    nextSlug: "lgt", videos: [],
-  },
-  {
-    slug: "lgt",
-    step: "3", stage: "Transform",
-    name: "Life’s Golden Triangle",
-    hook: "The business grew. Your health and your home paid the price.",
-    outcome: "Bring business, health and family into balance, deeply and together.",
-    duration: "6 months", format: "24 + 2 sessions · Face to face, one to one",
-    seats: "Only 20 people a year",
-    forWhom: "Business owners at ₹2–15 crore ready to work on business, health and family together",
-    notFor: ["Anyone looking for a shortcut", "Anyone not ready for honest one-to-one work"],
-    before: ["Success on paper, emptiness at home", "Your body is warning you"],
-    after: ["All three sides of your life support each other"],
-    journey: [],
-    takeaways: [],
-    priceINR: null, gstApplies: true, priceNote: "Fee shared after your diagnostic call",
-    cta: "Apply now", ctaType: "apply",
-    nextSlug: "practitioner", videos: [],
-  },
-  {
-    slug: "practitioner",
-    step: "4", stage: "Certify",
-    name: "(Train the Trainer) LGT Practitioner",
-    hook: "You lived the transformation. Now you want to carry it to others.",
-    outcome: "Become certified to guide others through Life’s Golden Triangle.",
-    duration: "6 months", format: "Every Friday · 60–40 partnership",
-    seats: "Only 8 practitioners",
-    forWhom: "Graduates of Life’s Golden Triangle only",
-    notFor: ["Anyone who has not completed Life’s Golden Triangle"],
-    before: [], after: [], journey: [], takeaways: [],
-    priceINR: null, gstApplies: true, priceNote: "By invitation",
-    cta: "Graduates only", ctaType: "none", locked: true, videos: [],
-  },
-  {
-    slug: "ram-nirvana",
-    step: "ॐ", stage: "The summit",
-    name: "Ram Nirvana™",
-    hook: "A place to come home to yourself.",
-    outcome: "An ashram where people come to bring their triangle into balance.",
-    duration: "After 2029", format: "A vision, not open for enrollment",
-    forWhom: "A future home for everyone who walks this path",
-    notFor: [], before: [], after: [], journey: [], takeaways: [],
-    priceINR: null, gstApplies: false, priceNote: "A vision",
-    cta: "Read the vision", ctaType: "read", videos: [],
-  },
+  { slug:"know-your-triangle", step:"0", stage:"Discover", name:"Know Your Triangle", hook:"Something feels off, but you can’t quite name it.", outcome:"In 2 hours, see your business, health and family on one clear score, and know which side needs you first.", duration:"2 hours", format:"Group session", mode:"Live, with your Golden Triangle Score", forWhom:"Business owners and professionals who want to explore before committing to anything", notFor:["People looking for a quick motivational talk","Anyone not willing to look honestly at their own life"], before:["You are busy every day, but unsure if you are moving forward","One area of life keeps pulling the other two down","You don’t know where to start"], after:["You know your Golden Triangle Score","You can see which side of your life needs attention first","You know your next step on the ladder"], journey:[{title:"Understand the Golden Triangle",text:"Business, health and family: why all three rise or fall together."},{title:"Take your Golden Triangle Score live",text:"Measure where you stand today, in the room."},{title:"Read your result",text:"See your strongest and weakest side, and what that means for you."}], takeaways:["Your personal Golden Triangle Score","Clarity on your weakest side","A clear next step"], priceINR:0, gstApplies:false, cta:"Book my free seat", ctaType:"book", nextSlug:"loa", videos:[], seo:{title:"Know Your Triangle: Free 2-Hour Session | Vivek Doba, Pune",description:"Free 2-hour group session in Pune & PCMC. Measure your business, health and family on the Golden Triangle Score and find your next step.",keywords:["free business coaching session Pune","life balance assessment","Golden Triangle Score","business coach PCMC"]}},
+  { slug:"loa", step:"1", stage:"Resolve", name:"LOA through Ramayana", hook:"You know what you want. Something inside you keeps stopping you.", outcome:"In 2 days, understand the Ram, Ravan, Sita and Hanuman within you, and leave with a clear mind and a resolve that holds.", duration:"2 days", format:"Workshop", mode:"Offline or Online", nextDate:"3–4 October", forWhom:"Anyone who feels stuck and wants to begin the change from within", notFor:["People who want someone else to change their life for them"], before:["You start strong and lose steam","Doubt and fear speak louder than your goals","You know the answers but don’t act on them"], after:["You recognise the Ravan inside you, and how to face it","Your mind is clear about what you want","You leave with a resolve you act on from Monday"], journey:[{title:"Day 1: The inner Ramayana",text:"Meet the Ram, Ravan, Sita and Hanuman within you, and see which one is running your life today."},{title:"Day 2: Mind and resolve",text:"Turn clarity into a resolve (sankalp) you can live by, using the Law of Attraction through the Ramayana."}], takeaways:["A clear personal resolve","A way to recognise and handle your inner blocks","A calmer, more focused mind"], priceINR:5999, priceFrom:true, gstApplies:true, cta:"Book my seat", ctaType:"book", nextSlug:"udyog-sanjivani", videos:[], seo:{title:"Law of Attraction through Ramayana: 2-Day Workshop | Vivek Doba",description:"2-day Law of Attraction workshop through the Ramayana, offline in Pune or online. Clear your mind, face inner blocks and build a resolve that lasts.",keywords:["law of attraction workshop Pune","Ramayana life lessons workshop","mindset workshop Pune","LOA workshop online India"]}},
+  { slug:"udyog-sanjivani", step:"2", stage:"Revive", name:"Udyog Sanjivani · Panchatattva", hook:"Your business runs. But only when you are in the room.", outcome:"In 90 days, build a business that keeps running, and growing, without depending on you for every decision.", duration:"90 days + 30 days handholding", format:"12 sessions: 7 offline + 5 online", mode:"Small group, in Pune & online", seats:"Only 10 business owners per batch", forWhom:"Business owners with ₹50 lakh–₹2 crore turnover whose business still depends entirely on them", notFor:["Businesses that have not started yet","Owners who are not willing to let go of control"], before:["Every decision waits for you","A holiday feels impossible","Growth has stalled and you are tired"], after:["Your team runs the day-to-day","You finally work on the business, not in it","Growth has a clear plan behind it"], journey:[{title:"7 offline sessions",text:"Hands-on work on your own business, face to face, built on the five elements (Panchatattva)."},{title:"5 online sessions",text:"Review, correct and keep moving between the offline sessions."},{title:"30 days of handholding",text:"Support after the program while the changes settle in your business."}], takeaways:["A business that runs without you in every decision","A clear growth plan","A team that takes ownership"], priceINR:75000, gstApplies:true, cta:"Book a diagnostic", ctaType:"diagnostic", nextSlug:"lgt", videos:[], seo:{title:"Udyog Sanjivani: 90-Day Business Coaching Program in Pune | Vivek Doba",description:"90-day business coaching program for owners with ₹50 lakh–₹2 crore turnover in Pune & PCMC. Build a business that grows without depending on you. Only 10 per batch.",keywords:["business coaching program Pune","SME business coach PCMC","business growth coaching India","business coach Pimpri Chinchwad"]}},
+  { slug:"lgt", step:"3", stage:"Transform", name:"Life’s Golden Triangle", hook:"The business grew. Your health and your home paid the price.", outcome:"In 6 months of one-to-one work, bring your business, health and family into balance, deeply and together.", duration:"6 months", format:"24 + 2 one-to-one sessions", mode:"Face to face", seats:"Only 20 people a year", forWhom:"Business owners with ₹2–15 crore turnover, ready to work deeply on business, health and family together", notFor:["Anyone looking for a shortcut","Anyone not ready for honest one-to-one work"], before:["Success on paper, emptiness at home","Your body is warning you","You have no time for the people you work for"], after:["All three sides of your life support each other","You lead your business from calm, not pressure","Your family feels you are back"], journey:[{title:"24 one-to-one sessions",text:"Deep personal work across business, health and family, face to face."},{title:"2 additional sessions",text:"To review, strengthen and lock in the change."}], takeaways:["Balance across business, health and family","A personal plan built only for you","Lasting habits, not temporary motivation"], priceINR:null, gstApplies:true, priceNote:"Fee shared after your diagnostic call", cta:"Apply now", ctaType:"apply", nextSlug:"practitioner", videos:[], seo:{title:"Life’s Golden Triangle: 6-Month One-to-One Coaching | Vivek Doba",description:"6-month one-to-one coaching for business owners with ₹2–15 crore turnover. Balance business, health and family with Vivek Doba. Only 20 people a year.",keywords:["executive coach Pune","one to one business coaching India","work life balance coaching for business owners","spiritual business coach"]}},
+  { slug:"practitioner", step:"4", stage:"Certify", name:"(Train the Trainer) LGT Practitioner", hook:"You lived the transformation. Now you want to carry it to others.", outcome:"In 6 months, become certified to guide others through Life’s Golden Triangle.", duration:"6 months", format:"Every Friday", mode:"60–40 partnership", seats:"Only 8 practitioners", forWhom:"Graduates of Life’s Golden Triangle only", notFor:["Anyone who has not completed Life’s Golden Triangle"], before:[], after:[], journey:[], takeaways:[], priceINR:null, gstApplies:true, priceNote:"By invitation", cta:"Graduates only", ctaType:"none", locked:true, videos:[], seo:{title:"LGT Practitioner Certification | Vivek Doba",description:"6-month practitioner certification, open by invitation to Life’s Golden Triangle graduates only. Only 8 practitioners.",keywords:["coach certification India","Life's Golden Triangle practitioner"]}},
+  { slug:"ram-nirvana", step:"ॐ", stage:"The summit", name:"Ram Nirvana™", hook:"A place to come home to yourself.", outcome:"An ashram where people will come to bring their triangle into balance.", duration:"After 2029", format:"A vision", mode:"Not open for enrollment", forWhom:"A future home for everyone who walks this path", notFor:[], before:[], after:[], journey:[], takeaways:[], priceINR:null, gstApplies:false, priceNote:"A vision", cta:"Read the vision", ctaType:"read", videos:[], seo:{title:"Ram Nirvana™: The Vision | Vivek Doba",description:"Ram Nirvana™ is Vivek Doba’s vision for an ashram where people come to balance business, health and family. Planned after 2029.",keywords:["spiritual retreat vision","Ram Nirvana"]}}
 ];
 
 export const sidePrograms: Course[] = [
-  {
-    slug: "sales-sanjivani",
-    step: null, stage: "For teams",
-    name: "Sales Sanjivani",
-    hook: "Your team sells when you push, and stops when you don’t.",
-    outcome: "A sales team that sells with confidence, built through real practice.",
-    duration: "1 day", format: "For sales teams · 60% hands-on practice",
-    forWhom: "Business owners who want their sales team to perform without them",
-    notFor: [], before: [], after: [], journey: [], takeaways: [],
-    priceINR: 6000, priceFrom: true, gstApplies: true,
-    cta: "Enquire", ctaType: "enquiry", nextSlug: "udyog-sanjivani", videos: [],
-  },
-  {
-    slug: "leadership",
-    step: null, stage: "For organisations",
-    name: "Leadership the Srikrishna Way",
-    hook: "Calm at the centre of the battlefield.",
-    outcome: "Leaders who stay clear and steady when pressure rises.",
-    duration: "1 day", format: "Corporate program · Starting January 2027",
-    forWhom: "Organisations developing their leadership teams",
-    notFor: [], before: [], after: [], journey: [], takeaways: [],
-    priceINR: null, gstApplies: true, priceNote: "Fee on proposal",
-    cta: "Enquire", ctaType: "enquiry", videos: [],
-  },
-  {
-    slug: "book",
-    step: null, stage: "For readers",
-    name: "Life’s Golden Triangle: Book + Workbook set",
-    hook: "The whole philosophy, in your hands.",
-    outcome: "Read it, then work through it, one page at a time.",
-    duration: "Two volumes", format: "Founder’s Edition for the first 200 · Launching on Dussehra",
-    forWhom: "Anyone who wants to begin at home",
-    notFor: [], before: [], after: [], journey: [], takeaways: [],
-    priceINR: 999, gstApplies: false,
-    cta: "Pre-book", ctaType: "prebook", videos: [],
-  },
+  { slug:"sales-sanjivani", step:null, stage:"For teams", name:"Sales Sanjivani", hook:"Your team sells when you push, and stops when you don’t.", outcome:"In 1 day, build a sales team that sells with confidence through 60% hands-on practice.", duration:"1 day", format:"Team training", mode:"60% practice, 40% concepts", forWhom:"Business owners who want their sales team to perform without them", notFor:["Teams looking only for theory"], before:["Sales depend on the owner","Your team fears objections and follow-ups"], after:["Your team handles conversations with confidence","Sales do not stop when you step away"], journey:[], takeaways:["A more confident, practised sales team"], priceINR:6000, priceFrom:true, gstApplies:true, cta:"Enquire", ctaType:"enquiry", nextSlug:"udyog-sanjivani", videos:[], seo:{title:"Sales Sanjivani: 1-Day Sales Team Training in Pune | Vivek Doba",description:"1-day practical sales training for teams in Pune & PCMC, with 60% hands-on practice. Build a sales team that performs without the owner.",keywords:["sales training Pune","sales team training PCMC","corporate sales workshop India"]}},
+  { slug:"leadership", step:null, stage:"For organisations", name:"Leadership the Srikrishna Way", hook:"Calm at the centre of the battlefield.", outcome:"In 1 day, leaders learn to stay clear and steady when pressure rises, the way Srikrishna led.", duration:"1 day", format:"Corporate program", mode:"At your organisation", nextDate:"Starting January 2027", forWhom:"Organisations developing their leadership teams", notFor:[], before:[], after:[], journey:[], takeaways:[], priceINR:null, gstApplies:true, priceNote:"Fee on proposal", cta:"Enquire", ctaType:"enquiry", videos:[], seo:{title:"Leadership the Srikrishna Way: Corporate Leadership Training | Vivek Doba",description:"1-day corporate leadership program inspired by Srikrishna and the Bhagavad Gita. Calm, clear leadership under pressure. For organisations in Pune and across India.",keywords:["corporate leadership training Pune","Bhagavad Gita leadership program","leadership workshop India"]}},
+  { slug:"book", step:null, stage:"For readers", name:"Life’s Golden Triangle: Book + Workbook set", hook:"The whole philosophy, in your hands.", outcome:"Read the Golden Triangle philosophy, then work through it yourself, one page at a time.", duration:"Two volumes", format:"Book + Workbook", mode:"Founder’s Edition for the first 200", nextDate:"Launching on Dussehra", forWhom:"Anyone who wants to begin at home", notFor:[], before:[], after:[], journey:[], takeaways:[], priceINR:999, gstApplies:false, cta:"Pre-book", ctaType:"prebook", videos:[], seo:{title:"Life’s Golden Triangle Book + Workbook | Vivek Doba",description:"Pre-book the Life’s Golden Triangle book and workbook set by Vivek Doba. Founder’s Edition for the first 200. ₹999.",keywords:["Vivek Doba book","Life's Golden Triangle book","self help book for business owners"]}}
 ];
-
 export const allCourses = [...ladder, ...sidePrograms];
 export const getCourse = (slug: string) => allCourses.find((c) => c.slug === slug);
+export const courseMenu = [
+  {group:"Start here",items:[{label:"Know Your Triangle",sub:"2 hours · Free",href:"/courses/know-your-triangle"},{label:"Golden Triangle Score",sub:"3 minutes · Online",href:"/score"},{label:"Book + Workbook",sub:"₹999",href:"/courses/book"}]},
+  {group:"Two-day programs",items:[{label:"LOA through Ramayana",sub:"Mind and resolve",href:"/courses/loa"},{label:"Sales Sanjivani",sub:"Team sales",href:"/courses/sales-sanjivani"}]},
+  {group:"Deep work",items:[{label:"Udyog Sanjivani",sub:"90 days · 10 people",href:"/courses/udyog-sanjivani"},{label:"Life’s Golden Triangle",sub:"6 months · 1:1",href:"/courses/lgt"},{label:"(Train the Trainer) LGT Practitioner",sub:"Graduates only",href:"/courses/practitioner"}]},
+  {group:"For organisations",items:[{label:"Leadership the Srikrishna Way",sub:"Corporate · 1 day",href:"/courses/leadership"}]}
+];

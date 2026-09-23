@@ -280,6 +280,7 @@ const SeoLifeCoachLocation = lazyWithReload(() => import("./pages/seo/LifeCoachL
 const SeoBusinessCoachLocation = lazyWithReload(() => import("./pages/seo/BusinessCoachLocation"));
 const AboutPage = lazyWithReload(() => import("./pages/public/AboutPage"));
 const PublicCoursesPage = lazyWithReload(() => import("./pages/public/CoursesPage"));
+const CourseDetailPage = lazyWithReload(() => import("./pages/public/CourseDetailPage"));
 const ShopPage = lazyWithReload(() => import("./pages/public/ShopPage"));
 const GalleryPage = lazyWithReload(() => import("./pages/public/GalleryPage"));
 const BlogPage = lazyWithReload(() => import("./pages/public/BlogPage"));
@@ -314,12 +315,16 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/courses" element={<PublicCoursesPage />} />
+              <Route path="/courses/:slug" element={<CourseDetailPage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/gallery" element={<GalleryPage />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
               <Route path="/contact" element={<ContactPage />} />
             </Route>
+            {['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt', 'practitioner', 'ram-nirvana', 'sales-sanjivani', 'leadership', 'book'].map(slug => (
+              <Route key={slug} path={`/${slug}`} element={<Navigate to={`/courses/${slug}`} replace />} />
+            ))}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/book-appointment" element={<BookAppointment />} />
