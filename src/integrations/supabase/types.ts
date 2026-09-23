@@ -1283,6 +1283,7 @@ export type Database = {
           id: string
           message: string
           name: string
+          notification_sent_at: string | null
           phone: string | null
           program_interest: string | null
           status: string
@@ -1295,6 +1296,7 @@ export type Database = {
           id?: string
           message: string
           name: string
+          notification_sent_at?: string | null
           phone?: string | null
           program_interest?: string | null
           status?: string
@@ -1307,6 +1309,7 @@ export type Database = {
           id?: string
           message?: string
           name?: string
+          notification_sent_at?: string | null
           phone?: string | null
           program_interest?: string | null
           status?: string
