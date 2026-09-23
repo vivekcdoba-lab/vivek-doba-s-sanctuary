@@ -285,6 +285,7 @@ const AboutPage = lazyWithReload(() => import("./pages/public/AboutPage"));
 const PublicCoursesPage = lazyWithReload(() => import("./pages/public/CoursesPage"));
 const CourseDetailPage = lazyWithReload(() => import("./pages/public/CourseDetailPage"));
 const ShopPage = lazyWithReload(() => import("./pages/public/ShopPage"));
+const ProductDetailPage = lazyWithReload(() => import("./pages/public/ProductDetailPage"));
 const GalleryPage = lazyWithReload(() => import("./pages/public/GalleryPage"));
 const BlogPage = lazyWithReload(() => import("./pages/public/BlogPage"));
 const BlogPostPage = lazyWithReload(() => import("./pages/public/BlogPostPage"));
@@ -320,6 +321,7 @@ const App = () => (
               <Route path="/courses" element={<PublicCoursesPage />} />
               <Route path="/courses/:slug" element={<CourseDetailPage />} />
               <Route path="/shop" element={<ShopPage />} />
+              <Route path="/shop/:slug" element={<ProductDetailPage />} />
               <Route path="/gallery" element={<GalleryPage />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />

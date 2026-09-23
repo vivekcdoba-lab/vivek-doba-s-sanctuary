@@ -9,15 +9,16 @@ const courseSlugs = ['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt', 'pra
 const locations = ['india', 'maharashtra', 'pune', 'mumbai'];
 const routes = [
   '/', '/about', '/courses', ...courseSlugs.map(slug => `/courses/${slug}`),
-  '/shop', '/gallery', '/blog', '/contact', '/testimonials', '/score',
+  '/shop', '/shop/lifes-golden-triangle-book-workbook', '/gallery', '/blog', '/contact', '/testimonials', '/score',
   '/life-coaching', '/business-coaching', '/manifestation', '/meditation', '/dharma-philosophy', '/nlp-coach', '/sales-coach',
   ...locations.flatMap(location => [`/life-coach-in-${location}`, `/business-coach-in-${location}`]),
-  '/book-appointment', '/register-workshop', '/help', '/terms', '/privacy',
+  '/book-appointment', '/register-workshop', '/help', '/terms', '/privacy', '/refund-policy',
 ];
 
 const escapeXml = (value: string) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const writeSitemap = (paths: string[]) => {
-  const urls = paths.map(path => `  <url><loc>${escapeXml(`${SITE_URL}${path}`)}</loc></url>`).join('\n');
+  const lastmod = new Date().toISOString().slice(0, 10);
+  const urls = paths.map(path => `  <url><loc>${escapeXml(`${SITE_URL}${path}`)}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n');
   writeFileSync(resolve('public/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
   writeFileSync(resolve('dist/sitemap.xml'), readFileSync(resolve('public/sitemap.xml')));
 };
