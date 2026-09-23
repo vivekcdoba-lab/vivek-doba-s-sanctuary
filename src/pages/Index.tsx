@@ -2,15 +2,16 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import vivekDobaPhoto from '@/assets/vivek-doba.png';
 import HomepageMediaSection from '@/components/HomepageMediaSection';
+import PublicSeo, { breadcrumbSchema, organizationSchema, personSchema, professionalServiceSchema } from '@/components/public/PublicSeo';
 
 const stats = [
-  { value: '30,000+', label: 'Lives Transformed' },
-  { value: '1,000+', label: 'Inspiring Stories' },
-  { value: '28', label: 'Years Experience' },
+  { value: '805+', label: 'Google & client reviews' },
+  { value: 'Since 1998', label: 'Coaching business owners' },
 ];
 
 const Index = () => (
   <div className="bg-background">
+    <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business coach in Pimpri-Chinchwad, Pune for business owners who want growth without losing health and family. Life’s Golden Triangle™ by Vivek Doba. 840+ reviews, coaching since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
 
     {/* Hero */}
     <section
@@ -22,7 +23,7 @@ const Index = () => (
       </div>
       <div className="relative z-10 max-w-4xl mx-auto px-4">
         <div className="w-32 h-32 sm:w-36 sm:h-36 mx-auto rounded-full overflow-hidden mb-6 border-4 border-white/30 shadow-xl">
-          <img src={vivekDobaPhoto} alt="Coach Vivek Doba" className="w-full h-full object-cover" />
+          <img src={vivekDobaPhoto} alt="Coach Vivek Doba" width="500" height="331" fetchPriority="high" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3" style={{ fontFamily: 'Poppins, sans-serif' }}>
           Vivek Doba

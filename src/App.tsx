@@ -47,6 +47,9 @@ import PublicLayout from "./components/public/PublicLayout";
 
 // Lazy-loaded routes (split into per-route chunks)
 const RegisterPage = lazyWithReload(() => import("./pages/RegisterPage"));
+const TestimonialsPage = lazyWithReload(() => import("./pages/public/TestimonialsPage"));
+const ScorePage = lazyWithReload(() => import("./pages/public/ScorePage"));
+const RefundPolicyPage = lazyWithReload(() => import("./pages/RefundPolicyPage"));
 const BookAppointment = lazyWithReload(() => import("./pages/BookAppointment"));
 const RegisterWorkshop = lazyWithReload(() => import("./pages/RegisterWorkshop"));
 const SeekerLgtForm = lazyWithReload(() => import("./pages/SeekerLgtForm"));
@@ -321,6 +324,8 @@ const App = () => (
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/testimonials" element={<TestimonialsPage />} />
+              <Route path="/score" element={<ScorePage />} />
             </Route>
             {['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt', 'practitioner', 'ram-nirvana', 'sales-sanjivani', 'leadership', 'book'].map(slug => (
               <Route key={slug} path={`/${slug}`} element={<Navigate to={`/courses/${slug}`} replace />} />
@@ -338,6 +343,7 @@ const App = () => (
             <Route path="/help" element={<HelpPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/refund-policy" element={<RefundPolicyPage />} />
             <Route path="/life-coaching" element={<SeoLifeCoaching />} />
             <Route path="/business-coaching" element={<SeoBusinessCoaching />} />
             <Route path="/manifestation" element={<SeoManifestation />} />
