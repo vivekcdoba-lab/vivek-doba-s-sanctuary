@@ -436,7 +436,8 @@ const App = () => (
               <Route path="/admin/homepage-media" element={<AdminHomepageMedia />} />
               <Route path="/admin/products" element={<AdminPublicContent mode="products" />} />
               <Route path="/admin/gallery" element={<AdminPublicContent mode="gallery_items" />} />
-              <Route path="/admin/blog" element={<AdminPublicContent mode="blog_posts" />} />
+              <Route path="/admin/posts" element={<AdminPostsPage />} />
+              <Route path="/admin/blog" element={<Navigate to="/admin/posts" replace />} />
               <Route path="/admin/upload-resource" element={<AdminUploadResource />} />
               <Route path="/admin/categories" element={<AdminCategories />} />
               <Route path="/admin/question-bank" element={<AdminQuestionBank />} />
