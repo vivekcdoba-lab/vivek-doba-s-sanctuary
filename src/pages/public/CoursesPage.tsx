@@ -76,7 +76,7 @@ export default function PublicCoursesPage() {
           <h1 className="text-3xl font-bold leading-tight sm:text-5xl">Business Coaching Programs in Pune for Owners Who Want Growth, Health and Family in Balance</h1>
           <p className="font-course-serif mt-7 text-4xl italic text-accent sm:text-5xl">Where are you today?</p>
           <p className="mt-4 max-w-xl text-base leading-8 text-primary-foreground/85 sm:text-lg">Every program does the same work at a different depth. Find the sentence that sounds like you, and start there.</p>
-          <div className="mt-7 flex flex-wrap gap-4 text-sm font-semibold"><span className="inline-flex items-center gap-2"><Star className="h-4 w-4 text-accent" />840+ reviews</span><span>· Coaching since 1998</span><span>· PCMC, Pune</span></div>
+          <div className="mt-7 flex flex-wrap gap-4 text-sm font-semibold"><span className="inline-flex items-center gap-2"><Star className="h-4 w-4 text-accent" />840+ reviews</span><span>· 28 years of experience</span><span>· PCMC, Pune</span></div>
         </div>
       </div>
     </section>
