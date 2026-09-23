@@ -16,8 +16,8 @@ const courseMenu = [
   ] },
   { group: 'Deep work', items: [
     { label: 'Udyog Sanjivani', sub: '90 days · 10 people', href: '/udyog-sanjivani' },
-    { label: 'Life’s Golden Triangle™', sub: '6 months · 1:1', href: '/lgt' },
-    { label: 'LGT Practitioner', sub: 'Graduates only', href: '/practitioner' },
+    { label: 'Life’s Golden Triangle', sub: '6 months · 1:1', href: '/lgt' },
+    { label: '(Train the Trainer) LGT Practitioner', sub: 'Graduates only', href: '/practitioner' },
   ] },
   { group: 'For organisations', items: [
     { label: 'Leadership the Srikrishna Way', sub: 'Corporate · 1 day', href: '/leadership' },

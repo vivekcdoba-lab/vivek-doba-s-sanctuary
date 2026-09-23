@@ -35,7 +35,7 @@ function LadderRow({ course, calm = false }: { course: Course; calm?: boolean })
 }
 
 export default function PublicCoursesPage() {
-  useDocumentMeta({ title: 'Courses — Vivek Doba | Business Coach, PCMC Pune', description: "Nine programs, one ladder — from Know Your Triangle to Life's Golden Triangle™. Find the step that describes you today.", canonicalPath: '/courses' });
+  useDocumentMeta({ title: 'Courses — Vivek Doba | Business Coach, PCMC Pune', description: "Nine programs, one ladder — from Know Your Triangle to Life's Golden Triangle. Find the step that describes you today.", canonicalPath: '/courses' });
   return <div className="font-devanagari">
     <section className="border-b border-primary/20 bg-primary/5 px-4 py-12 text-center sm:py-16">
       <p className="mb-2 text-sm font-semibold text-primary">Courses</p>
