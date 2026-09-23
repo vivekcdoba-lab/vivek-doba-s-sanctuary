@@ -10,7 +10,6 @@ import {
   MapPin,
   MessageCircle,
   Phone,
-  Play,
   Quote,
   Sparkles,
   Triangle,
