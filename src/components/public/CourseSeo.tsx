@@ -3,8 +3,9 @@ import { SITE_URL, type Course } from '@/data/courses';
 
 const SHARE_IMAGE = `${SITE_URL}/vivek-doba.png`;
 
-export function CourseSeo({ title, description, path, schema }: { title: string; description: string; path: string; schema: object[] }) {
+export function CourseSeo({ title, description, path, schema, image }: { title: string; description: string; path: string; schema: object[]; image?: string }) {
   const url = `${SITE_URL}${path}`;
+  const shareImage = image || SHARE_IMAGE;
   return <Helmet>
     <html lang="en" />
     <title>{title}</title>
@@ -14,11 +15,11 @@ export function CourseSeo({ title, description, path, schema }: { title: string;
     <meta property="og:description" content={description} />
     <meta property="og:url" content={url} />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content={SHARE_IMAGE} />
+    <meta property="og:image" content={shareImage} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={SHARE_IMAGE} />
+    <meta name="twitter:image" content={shareImage} />
     <script type="application/ld+json">{JSON.stringify(schema)}</script>
   </Helmet>;
 }
@@ -28,7 +29,7 @@ export const providerSchema = { '@type': 'Organization', name: 'Vivek Doba Busin
 export function courseSchema(course: Course, faqs: { question: string; answer: string }[]) {
   const offer = typeof course.priceINR === 'number' ? { '@type': 'Offer', price: course.priceINR, priceCurrency: 'INR', description: course.gstApplies ? '18% GST is extra.' : 'Inclusive of all taxes.' } : undefined;
   return [
-    { '@context': 'https://schema.org', '@type': 'Course', name: course.name, description: course.outcome, provider: providerSchema, hasCourseInstance: { '@type': 'CourseInstance', courseMode: course.mode, courseWorkload: course.duration }, ...(offer ? { offers: offer } : {}) },
+    { '@context': 'https://schema.org', '@type': 'Course', name: course.name, description: course.outcome, ...(course.heroImageUrl ? { image: course.heroImageUrl } : {}), provider: providerSchema, hasCourseInstance: { '@type': 'CourseInstance', courseMode: course.mode, courseWorkload: course.duration }, ...(offer ? { offers: offer } : {}) },
     { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(item => ({ '@type': 'Question', name: item.question, acceptedAnswer: { '@type': 'Answer', text: item.answer } })) },
     { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },

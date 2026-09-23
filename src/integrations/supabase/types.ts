@@ -1363,70 +1363,175 @@ export type Database = {
       }
       courses: {
         Row: {
+          after: string[]
+          before: string[]
+          benefits: Json
+          card_image_url: string | null
           created_at: string
+          cta_label: string | null
+          cta_type: string
+          deliverables: string[]
           description: string | null
           duration: string | null
           event_date: string | null
           format: string | null
+          gallery_image_urls: string[]
+          generated_image: boolean
           gradient_colors: Json | null
+          gst_applies: boolean
+          hero_image_url: string | null
+          hook: string | null
           id: string
           image_url: string | null
           is_active: boolean | null
+          is_published: boolean
+          is_side_program: boolean
           lifecycle_status: string
           location: string | null
           location_type: string | null
+          locked: boolean
           max_participants: number | null
+          method: Json
+          mode: string | null
           name: string
+          next_date: string | null
+          next_slug: string | null
+          not_for: string[]
+          outcome: string | null
           price: number
+          price_from: boolean
+          price_inr: number | null
+          price_note: string | null
           public_description: string | null
+          seats: string | null
+          seo_description: string | null
+          seo_keywords: string[]
+          seo_title: string | null
           sessions_included: number
+          slug: string | null
+          sort_order: number
+          stage: string | null
+          step: string | null
           tagline: string | null
           tier: string
+          timeline: Json
           updated_at: string
+          video_ids: string[]
+          who_for: string | null
         }
         Insert: {
+          after?: string[]
+          before?: string[]
+          benefits?: Json
+          card_image_url?: string | null
           created_at?: string
+          cta_label?: string | null
+          cta_type?: string
+          deliverables?: string[]
           description?: string | null
           duration?: string | null
           event_date?: string | null
           format?: string | null
+          gallery_image_urls?: string[]
+          generated_image?: boolean
           gradient_colors?: Json | null
+          gst_applies?: boolean
+          hero_image_url?: string | null
+          hook?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          is_published?: boolean
+          is_side_program?: boolean
           lifecycle_status?: string
           location?: string | null
           location_type?: string | null
+          locked?: boolean
           max_participants?: number | null
+          method?: Json
+          mode?: string | null
           name: string
+          next_date?: string | null
+          next_slug?: string | null
+          not_for?: string[]
+          outcome?: string | null
           price?: number
+          price_from?: boolean
+          price_inr?: number | null
+          price_note?: string | null
           public_description?: string | null
+          seats?: string | null
+          seo_description?: string | null
+          seo_keywords?: string[]
+          seo_title?: string | null
           sessions_included?: number
+          slug?: string | null
+          sort_order?: number
+          stage?: string | null
+          step?: string | null
           tagline?: string | null
           tier?: string
+          timeline?: Json
           updated_at?: string
+          video_ids?: string[]
+          who_for?: string | null
         }
         Update: {
+          after?: string[]
+          before?: string[]
+          benefits?: Json
+          card_image_url?: string | null
           created_at?: string
+          cta_label?: string | null
+          cta_type?: string
+          deliverables?: string[]
           description?: string | null
           duration?: string | null
           event_date?: string | null
           format?: string | null
+          gallery_image_urls?: string[]
+          generated_image?: boolean
           gradient_colors?: Json | null
+          gst_applies?: boolean
+          hero_image_url?: string | null
+          hook?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          is_published?: boolean
+          is_side_program?: boolean
           lifecycle_status?: string
           location?: string | null
           location_type?: string | null
+          locked?: boolean
           max_participants?: number | null
+          method?: Json
+          mode?: string | null
           name?: string
+          next_date?: string | null
+          next_slug?: string | null
+          not_for?: string[]
+          outcome?: string | null
           price?: number
+          price_from?: boolean
+          price_inr?: number | null
+          price_note?: string | null
           public_description?: string | null
+          seats?: string | null
+          seo_description?: string | null
+          seo_keywords?: string[]
+          seo_title?: string | null
           sessions_included?: number
+          slug?: string | null
+          sort_order?: number
+          stage?: string | null
+          step?: string | null
           tagline?: string | null
           tier?: string
+          timeline?: Json
           updated_at?: string
+          video_ids?: string[]
+          who_for?: string | null
         }
         Relationships: []
       }
