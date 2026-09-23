@@ -5,18 +5,18 @@ import { openWhatsApp } from '@/lib/openExternal';
 import { Button } from '@/components/ui/button';
 
 const courseMenu = [
-  { group: 'Starting points', items: [
+  { group: 'Start here', items: [
     { label: 'Know Your Triangle', sub: '2 hours · Free', href: '/know-your-triangle' },
     { label: 'Golden Triangle Score', sub: '3 minutes · Online', href: '/score' },
     { label: 'Book + Workbook', sub: '₹999', href: '/book' },
   ] },
   { group: 'Two-day programs', items: [
     { label: 'LOA through Ramayana', sub: 'Mind and resolve', href: '/loa' },
-    { label: 'Sales Sanjivani', sub: 'For sales teams', href: '/sales-sanjivani' },
+    { label: 'Sales Sanjivani', sub: 'Team sales', href: '/sales-sanjivani' },
   ] },
   { group: 'Deep work', items: [
-    { label: 'Udyog Sanjivani', sub: '90 days · 10 owners', href: '/udyog-sanjivani' },
-    { label: 'Life’s Golden Triangle™', sub: '6 months · One to one', href: '/lgt' },
+    { label: 'Udyog Sanjivani', sub: '90 days · 10 people', href: '/udyog-sanjivani' },
+    { label: 'Life’s Golden Triangle™', sub: '6 months · 1:1', href: '/lgt' },
     { label: 'LGT Practitioner', sub: 'Graduates only', href: '/practitioner' },
   ] },
   { group: 'For organisations', items: [
@@ -97,7 +97,7 @@ export default function PublicHeader() {
                       </Link>)}</div>
                     </section>)}
                   </div>
-                  <Link role="menuitem" to="/courses" onClick={() => setCoursesOpen(false)} className="block border-t border-primary/20 bg-primary/5 px-5 py-3 text-center text-sm font-bold text-primary hover:bg-primary/10">🌳 पूरी सीढ़ी देखिए</Link>
+                  <Link role="menuitem" to="/courses" onClick={() => setCoursesOpen(false)} className="block border-t border-primary/20 bg-primary/5 px-5 py-3 text-center text-sm font-bold text-primary hover:bg-primary/10">See the full ladder</Link>
                 </div>}
               </div>
             ) : (
