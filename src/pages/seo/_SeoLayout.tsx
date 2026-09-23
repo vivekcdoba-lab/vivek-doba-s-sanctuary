@@ -126,8 +126,6 @@ export const SeoCTA = () => (
 
 export const SeoPage = ({ children }: { children: ReactNode }) => (
   <div className="min-h-screen bg-background">
-    <SeoNav />
     {children}
-    <SeoFooter />
   </div>
 );

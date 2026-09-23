@@ -6,7 +6,7 @@
 - [x] Standardize homepage and public review claims to 840+ and remove banned claims.
 - [x] Update the four-column footer and keep shared business details exact.
 - [x] Align public business JSON-LD with the shared name, address, and phone.
-- [ ] Verify links, layouts, claims, and type safety.
+- [x] Verify links, layouts, claims, and type safety.
 
 - [x] Check every public route, link, button, form, and external action.
 - [x] Remove unintended Devanagari and identify visible placeholders.
