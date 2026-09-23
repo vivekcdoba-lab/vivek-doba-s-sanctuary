@@ -18,4 +18,4 @@
 - [x] Add the requested Search Console verification slot without inventing its final code.
 - [x] Correct sitemap date handling and verify robots, 404 noindex, and route exclusions.
 - [x] Audit image delivery, dimensions, lazy loading, hero/font preloads, and removable unused code.
-- [ ] Capture mobile Lighthouse before/after scores and homepage source proof.
+- [ ] Capture post-change mobile Lighthouse scores and rendered homepage source proof (blocked: installed browser cannot start because a system library is unavailable).
