@@ -1,6 +1,5 @@
-// Shared email sender — routes all transactional emails through Lovable Emails
-// using the verified `notify.vivekdoba.com` sender. Replaces direct Resend calls
-// which fail because notify.vivekdoba.com is NS-delegated to Lovable.
+// Shared compatibility sender for the app's existing dynamic emails.
+// Delivery, retries, suppression, and unsubscribe handling are managed by Lovable.
 //
 // Usage:
 //   import { sendEmail } from "../_shared/send-email.ts";
@@ -9,6 +8,8 @@
 
 const FROM = "VDBM <info@notify.vivekdoba.com>";
 const SENDER_DOMAIN = "notify.vivekdoba.com";
+
+import { EmailAPIError, sendLovableEmail } from "npm:@lovable.dev/email-js@0.1.0";
 
 export interface SendEmailArgs {
   to: string;
@@ -26,7 +27,6 @@ export interface SendEmailArgs {
 export interface SendEmailResult {
   ok: boolean;
   message_id?: string;
-  queue_id?: number;
   error?: string;
 }
 
@@ -42,40 +42,31 @@ export async function sendEmail(
   if (!args?.subject) return { ok: false, error: "missing 'subject'" };
   if (!args?.html) return { ok: false, error: "missing 'html'" };
 
-  try {
-    // 1. Get-or-create unsubscribe token (token kept for legacy URL compatibility,
-    //    token_hash is what we look up against in new flows so the raw value is
-    //    not required at rest going forward).
-    let unsubToken: string | null = null;
-    const { data: existing } = await supabase
-      .from("email_unsubscribe_tokens")
-      .select("token, token_hash")
-      .eq("email", args.to)
-      .maybeSingle();
+  const messageId = crypto.randomUUID();
+  const label = args.label ?? "transactional";
 
-    if (existing?.token) {
-      unsubToken = existing.token;
-    } else {
-      const newToken =
-        crypto.randomUUID().replace(/-/g, "") +
-        crypto.randomUUID().replace(/-/g, "");
-      // Compute token_hash server-side via the existing hash_token RPC
-      const { data: tokenHash } = await supabase.rpc("hash_token", { _token: newToken });
-      const { data: inserted, error: insErr } = await supabase
-        .from("email_unsubscribe_tokens")
-        .insert({ email: args.to, token: newToken, token_hash: tokenHash })
-        .select("token")
-        .single();
-      if (insErr) {
-        return { ok: false, error: `unsubscribe_token: ${insErr.message}` };
-      }
-      unsubToken = inserted.token;
-    }
-
-    // 2. Enqueue
-    const messageId = crypto.randomUUID();
-    const payload = {
+  const logResult = async (status: "sent" | "suppressed" | "failed", errorMessage?: string) => {
+    const { error } = await supabase.from("email_send_log").insert({
       message_id: messageId,
+      template_name: label,
+      recipient_email: args.to,
+      status,
+      error_message: errorMessage,
+    });
+    if (error) {
+      console.error("Failed to record managed email result", {
+        code: error.code,
+        message: error.message,
+        message_id: messageId,
+      });
+    }
+  };
+
+  try {
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
+
+    await sendLovableEmail({
       to: args.to,
       from: args.from ?? FROM,
       sender_domain: SENDER_DOMAIN,
@@ -83,20 +74,23 @@ export async function sendEmail(
       html: args.html,
       text: args.text ?? args.subject,
       purpose: args.purpose ?? "transactional",
-      label: args.label ?? "transactional",
+      label,
       idempotency_key: messageId,
-      unsubscribe_token: unsubToken,
-      queued_at: new Date().toISOString(),
-    };
-
-    const { data, error } = await supabase.rpc("enqueue_email", {
-      queue_name: "transactional_emails",
-      payload,
+      message_id: messageId,
+    }, {
+      apiKey,
+      sendUrl: Deno.env.get("LOVABLE_SEND_URL"),
     });
 
-    if (error) return { ok: false, error: error.message };
-    return { ok: true, message_id: messageId, queue_id: data as number };
+    await logResult("sent");
+    return { ok: true, message_id: messageId };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    const error = e instanceof Error ? e.message : String(e);
+    if (e instanceof EmailAPIError && e.code === "recipient_suppressed") {
+      await logResult("suppressed", error.slice(0, 1000));
+      return { ok: false, message_id: messageId, error: "recipient_suppressed" };
+    }
+    await logResult("failed", error.slice(0, 1000));
+    return { ok: false, message_id: messageId, error };
   }
 }
