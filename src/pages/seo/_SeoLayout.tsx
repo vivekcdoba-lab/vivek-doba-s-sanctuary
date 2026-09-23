@@ -111,7 +111,7 @@ export const SeoCTA = () => (
         className="flex items-center justify-center gap-2 py-4 rounded-xl text-white font-semibold transition-opacity hover:opacity-90"
         style={{ background: "linear-gradient(135deg, #2196F3, #00BCD4)" }}
       >
-        Book Free Discovery Call <ChevronRight className="w-4 h-4" />
+        Book a 45-Minute Session · ₹4,999 <ChevronRight className="w-4 h-4" />
       </Link>
       <Link
         to="/register-workshop"

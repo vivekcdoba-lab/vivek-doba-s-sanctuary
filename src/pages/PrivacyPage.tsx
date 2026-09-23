@@ -1,8 +1,10 @@
 import BackToHome from '@/components/BackToHome';
+import PublicSeo, { breadcrumbSchema } from '@/components/public/PublicSeo';
 
 export default function PrivacyPage() {
   return (
     <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
+      <PublicSeo title="Privacy Policy | Vivek Doba Business Mastery" description="How Vivek Doba Business Mastery collects, uses, secures and manages personal and coaching information." path="/privacy" schemas={[breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Privacy Policy', path: '/privacy' }])]} />
       <BackToHome />
       <h1 className="text-2xl font-bold text-foreground">Privacy Policy</h1>
       <p className="text-sm text-muted-foreground">Last updated: April 2026</p>

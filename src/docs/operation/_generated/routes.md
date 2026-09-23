@@ -1,10 +1,10 @@
 # Routes & Pages
 
-_Generated: 2026-09-23T10:02:34.774Z_
+_Generated: 2026-09-23T10:36:06.428Z_
 
-Total routes: **266**
+Total routes: **265**
 
-## Admin (72)
+## Admin (73)
 
 | Path | Component |
 |---|---|
@@ -76,6 +76,7 @@ Total routes: **266**
 | `/admin/sessions` | Navigate |
 | `/admin/strategic-goals` | AdminStrategicGoals |
 | `/admin/support` | AdminSupportInbox |
+| `/admin/testimonials` | AdminTestimonialsPage |
 | `/admin/upload-resource` | AdminUploadResource |
 | `/admin/user-analytics` | AdminUserAnalytics |
 | `/admin/user-growth` | AdminUserGrowth |
@@ -236,7 +237,7 @@ Total routes: **266**
 | `/login` | LoginPage |
 | `/register` | RegisterPage |
 
-## Other (54)
+## Other (52)
 
 | Path | Component |
 |---|---|
@@ -251,7 +252,6 @@ Total routes: **266**
 | `/blog` | BlogPage |
 | `/blog/:slug` | BlogPostPage |
 | `/book-appointment` | BookAppointment |
-| `/business-coach-in-:location` | SeoBusinessCoachLocation |
 | `/business-coaching` | SeoBusinessCoaching |
 | `/calendar` | CalendarPage |
 | `/contact` | ContactPage |
@@ -267,7 +267,6 @@ Total routes: **266**
 | `/help` | HelpPage |
 | `/leads` | LeadsPage |
 | `/lgt-form/:token` | SeekerLgtForm |
-| `/life-coach-in-:location` | SeoLifeCoachLocation |
 | `/life-coaching` | SeoLifeCoaching |
 | `/manifestation` | SeoManifestation |
 | `/meditation` | SeoMeditation |

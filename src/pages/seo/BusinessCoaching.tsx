@@ -75,7 +75,7 @@ const BusinessCoaching = () => {
           <p>
             The premier 6–12 month{" "}
             <span className="font-semibold text-primary">Life's Golden Triangle program</span> is our flagship
-            engagement for serious founders. Or book a free discovery call to find the right entry point for your business.
+            engagement for serious founders. Or book a 45-minute session with Vivek for ₹4,999 to find the right entry point for your business.
           </p>
           <Link
             to="/book-appointment"

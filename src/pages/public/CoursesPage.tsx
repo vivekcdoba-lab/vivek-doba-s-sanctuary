@@ -12,7 +12,7 @@ import { openExternal } from '@/lib/openExternal';
 import vivekDobaCoursesBanner from '@/assets/vivek-doba-courses-banner.jpg';
 
 const faqs = [
-  { question: 'Which program should I start with?', answer: 'If you are unsure, start with Know Your Triangle. It is free, takes 2 hours and shows you your Golden Triangle Score. Or book a diagnostic call and we will guide you.' },
+  { question: 'Which program should I start with?', answer: 'If you are unsure, start with Know Your Triangle. It costs ₹999 plus 18% GST, takes 2 hours and shows you your Golden Triangle Score. Or book a diagnostic call and we will guide you.' },
   { question: 'Are the fees inclusive of GST?', answer: 'No. All program fees are exclusive of 18% GST, which is added at payment. The book is priced inclusive of all taxes.' },
   { question: 'Are programs available online?', answer: 'LOA through Ramayana is available offline and online. Udyog Sanjivani combines 7 offline and 5 online sessions. Life’s Golden Triangle is face to face.' },
   { question: 'Where are the offline programs held?', answer: 'In Pimpri-Chinchwad (PCMC), Pune.' },
@@ -66,7 +66,7 @@ export default function PublicCoursesPage() {
     { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL }, { '@type': 'ListItem', position: 2, name: 'Courses', item: `${SITE_URL}/courses` }] },
   ];
   return <div className="bg-course-ivory">
-    <CourseSeo title="Business Coaching Programs in Pune & PCMC | Vivek Doba" description="Nine business coaching programs, one path. From a free 2-hour session to Life’s Golden Triangle one-to-one coaching. Business coach in Pimpri-Chinchwad, Pune, with 28 years of experience and 840+ reviews." path="/courses" schema={schema} />
+    <CourseSeo title="Business Coaching Programs in Pune & PCMC | Vivek Doba" description="Nine business coaching programs, one path. From a ₹999 two-hour session to Life’s Golden Triangle one-to-one coaching. Business coach in Pimpri-Chinchwad, Pune, with 28 years of experience and 840+ reviews." path="/courses" schema={schema} />
     <section className="relative min-h-[560px] overflow-hidden border-b border-primary/15 sm:min-h-[620px]">
       <img src={vivekDobaCoursesBanner} alt="Vivek Doba standing against a warm sunrise mountain landscape" width="1376" height="768" className="absolute inset-0 h-full w-full object-cover object-[68%_center] sm:object-center" fetchPriority="high" />
       <div className="absolute inset-0 bg-gradient-to-r from-foreground/95 via-foreground/75 to-transparent" aria-hidden="true" />

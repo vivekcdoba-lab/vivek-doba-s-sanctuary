@@ -1,6 +1,6 @@
 # Sidebar Navigation
 
-_Generated: 2026-09-23T10:02:34.774Z_
+_Generated: 2026-09-23T10:36:06.428Z_
 
 ## Admin (`src/components/AdminLayout.tsx`)
 
@@ -53,7 +53,8 @@ _Generated: 2026-09-23T10:02:34.774Z_
 - Homepage Media → `/admin/homepage-media`
 - Shop Products → `/admin/products`
 - Gallery → `/admin/gallery`
-- Blog Posts → `/admin/blog`
+- Blog Posts → `/admin/posts`
+- Testimonials → `/admin/testimonials`
 - Resources → `/resources`
 - Agreement Document Library → `/admin/documents`
 - Upload Resource → `/admin/upload-resource`

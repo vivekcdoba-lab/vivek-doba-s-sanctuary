@@ -4,7 +4,7 @@ import PublicFooter from './PublicFooter';
 
 export default function PublicLayout() {
   const location = useLocation();
-  return <div className="min-h-screen bg-background flex flex-col">
+  return <div className="public-site min-h-screen bg-background flex flex-col overflow-x-hidden">
     <PublicHeader />
     <main key={location.pathname} className="flex-1 animate-fade-up"><Outlet /></main>
     <PublicFooter />

@@ -69,7 +69,7 @@ const NlpCoach = () => {
         <section>
           <h2 className="text-2xl font-bold text-foreground mb-3">Get Started</h2>
           <p>
-            Book a free 45-minute discovery call to map your current pattern and decide whether NLP coaching is the right next
+            Book a 45-minute session with Vivek for ₹4,999 to map your current pattern and decide whether NLP coaching is the right next
             step. No pressure, no script — just clarity.
           </p>
           <Link

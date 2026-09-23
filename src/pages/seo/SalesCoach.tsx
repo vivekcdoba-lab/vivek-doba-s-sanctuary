@@ -68,7 +68,7 @@ const SalesCoach = () => {
 
         <section>
           <h2 className="text-2xl font-bold text-foreground mb-3">Get Started</h2>
-          <p>Book a free discovery call. We'll review your current pipeline and decide whether 1:1 or team coaching is the right fit.</p>
+          <p>Book a 45-minute session with Vivek for ₹4,999. We will review your current pipeline and identify the right next step.</p>
           <Link to="/book-appointment" className="inline-flex items-center gap-1 mt-3 text-primary font-semibold hover:underline">
             Book your sales coaching call <ChevronRight className="w-4 h-4" />
           </Link>

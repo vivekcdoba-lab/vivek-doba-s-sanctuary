@@ -355,8 +355,8 @@ const App = () => (
             <Route path="/dharma-philosophy" element={<SeoDharmaPhilosophy />} />
             <Route path="/nlp-coach" element={<SeoNlpCoach />} />
             <Route path="/sales-coach" element={<SeoSalesCoach />} />
-            <Route path="/life-coach-in-:location" element={<SeoLifeCoachLocation />} />
-            <Route path="/business-coach-in-:location" element={<SeoBusinessCoachLocation />} />
+            {(['india', 'maharashtra', 'pune', 'mumbai'] as const).map(location => <Route key={`life-${location}`} path={`/life-coach-in-${location}`} element={<SeoLifeCoachLocation forcedLocation={location} />} />)}
+            {(['india', 'maharashtra', 'pune', 'mumbai'] as const).map(location => <Route key={`business-${location}`} path={`/business-coach-in-${location}`} element={<SeoBusinessCoachLocation forcedLocation={location} />} />)}
             <Route path="/sign/:token" element={<SignDocument />} />
 
             {/* Admin Routes */}

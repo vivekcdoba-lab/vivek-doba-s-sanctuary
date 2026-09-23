@@ -5,7 +5,7 @@ export const BUSINESS_NAME = 'Vivek Doba Business Mastery LLP';
 export const BUSINESS_ADDRESS = 'Office Number 228,229, Tower B, second floor, Gera Imperium Gateway, Near Nashik Phata metro station, Mumbai Pune highway, Pune-411034';
 export const BUSINESS_PHONE = '9607050111';
 export const BUSINESS_EMAIL = 'info@vivekdoba.com';
-export const BUSINESS_HOURS = 'Hours: To be confirmed';
+export const BUSINESS_HOURS = '';
 export const SHARE_IMAGE = 'https://storage.googleapis.com/gpt-engineer-file-uploads/zrsITRprJqddVA1fAGWy6EZ8rD62/social-images/social-1776562975511-LGT.webp';
 export const SOCIAL_URLS = [
   'https://www.youtube.com/@VIVEKDOBA',

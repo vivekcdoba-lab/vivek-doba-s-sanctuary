@@ -11,7 +11,6 @@ import {
   Triangle,
   Users,
 } from 'lucide-react';
-import vivekDobaPhoto from '@/assets/vivek-doba.png';
 import vivekDobaBanner from '@/assets/vivek-doba-courses-banner.jpg';
 import vivekDobaTeaching from '@/assets/courses/leadership-vivek-hero.webp';
 import { Button } from '@/components/ui/button';
@@ -20,22 +19,6 @@ import PublicSeo, { breadcrumbSchema, personSchema } from '@/components/public/P
 const diagnosticUrl = `https://wa.me/919607050111?text=${encodeURIComponent('Namaste, I would like to book a diagnostic call.')}`;
 
 const storyChapters = [
-  {
-    label: 'Where I started',
-    text: 'I began coaching business owners in 1998. [ADD WHERE AND HOW VIVEK STARTED]',
-    image: vivekDobaPhoto,
-    alt: 'Portrait of business coach Vivek Doba',
-    width: 500,
-    height: 331,
-  },
-  {
-    label: 'The turning point',
-    text: '[ADD THE TURNING POINT THAT LED VIVEK TO CREATE LIFE’S GOLDEN TRIANGLE™]',
-    image: vivekDobaBanner,
-    alt: 'Vivek Doba standing against a warm sunrise landscape',
-    width: 1376,
-    height: 768,
-  },
   {
     label: 'What I believe',
     text: 'I believe business growth should not cost an owner their health or their family. Lasting success needs Business, Health and Family to support each other.',
@@ -66,8 +49,6 @@ const workingPrinciples = [
 
 const timeline = [
   { year: '1998', title: 'The coaching journey begins', detail: 'Vivek Doba begins coaching business owners.' },
-  { year: '[ADD YEAR]', title: '[ADD KEY PROGRAM LAUNCH]', detail: '[ADD THE MILESTONE AND WHY IT MATTERED]' },
-  { year: '[ADD YEAR]', title: 'Life’s Golden Triangle™ begins', detail: '[ADD THE PROGRAM LAUNCH MILESTONE]' },
   { year: 'Dussehra 2026', title: 'Book launch', detail: 'Life’s Golden Triangle: Book + Workbook set launches.' },
 ];
 
