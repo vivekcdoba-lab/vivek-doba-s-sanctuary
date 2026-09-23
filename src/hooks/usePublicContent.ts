@@ -47,7 +47,8 @@ export function useBlogPost(slug?: string) {
 export function useContentMutation(kind: ContentKind) {
   const client = useQueryClient();
   return useMutation({ mutationFn: async ({ id, values }: { id?: string; values: Record<string, unknown> }) => {
-    const query = id ? supabase.from(kind).update(values).eq('id', id) : supabase.from(kind).insert(values);
+    const table = supabase.from(kind) as any;
+    const query = id ? table.update(values).eq('id', id) : table.insert(values);
     const { data, error } = await query.select().single();
     if (error) throw error;
     return data;
