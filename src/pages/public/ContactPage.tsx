@@ -29,7 +29,7 @@ const faqItems = [
   { question: 'Can I visit without an appointment?', answer: 'Please call or WhatsApp before visiting so the team can confirm that someone is available to meet you.' },
   { question: 'Do you coach online?', answer: 'Selected programs and one-to-one coaching may be available online. Tell us what you need and the team will confirm the suitable option.' },
 ];
-const faqSchema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqItems.map(item => ({ '@type': 'Question', name: item.question, acceptedAnswer: { '@type': 'Answer', text: item.answer })) };
+const faqSchema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqItems.map(item => ({ '@type': 'Question', name: item.question, acceptedAnswer: { '@type': 'Answer', text: item.answer } })) };
 
 export default function ContactPage() {
   const { data: courses = [] } = usePublicCourses();
