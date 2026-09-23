@@ -21,7 +21,10 @@ export type Product = {
   is_active: boolean;
   display_order: number;
 };
-export type GalleryItem = { id: string; title: string; description: string | null; category: 'Events' | 'Seminars' | 'Workshops' | 'Testimonials'; media_type: 'image' | 'video'; media_url: string; thumbnail_url: string | null; is_active: boolean; display_order: number };
+export type GalleryItem = {
+  id: string; title: string; description: string | null; category: string; media_type: 'image' | 'video'; media_url: string; thumbnail_url: string | null; is_active: boolean; display_order: number;
+  image_url: string | null; youtube_id: string | null; caption: string | null; event_name: string | null; program_slug: string | null; city: string | null; date: string | null; sort_order: number; is_published: boolean;
+};
 export type BlogPost = { id: string; title: string; slug: string; excerpt: string | null; content: string; cover_image_url: string | null; status: 'draft' | 'published'; published_at: string | null; created_at: string };
 export type ContentKind = 'products' | 'gallery_items' | 'blog_posts';
 
@@ -45,9 +48,17 @@ export function useProduct(slug?: string) {
 
 export function useGallery(includeInactive = false) {
   return useQuery({ queryKey: ['gallery-items', includeInactive], queryFn: async () => {
-    let query = supabase.from('gallery_items').select('*').order('display_order').order('created_at', { ascending: false });
-    if (!includeInactive) query = query.eq('is_active', true);
+    let query = supabase.from('gallery_items').select('*').order('sort_order').order('date', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+    if (!includeInactive) query = query.eq('is_published', true);
     const { data, error } = await query;
+    if (error) throw error;
+    return (data || []) as GalleryItem[];
+  }});
+}
+
+export function useProgramGallery(programSlug?: string, limit = 4) {
+  return useQuery({ queryKey: ['gallery-items', 'program', programSlug, limit], enabled: Boolean(programSlug), queryFn: async () => {
+    const { data, error } = await supabase.from('gallery_items').select('*').eq('is_published', true).eq('program_slug', programSlug || '').not('image_url', 'is', null).order('date', { ascending: false, nullsFirst: false }).order('sort_order').limit(limit);
     if (error) throw error;
     return (data || []) as GalleryItem[];
   }});
