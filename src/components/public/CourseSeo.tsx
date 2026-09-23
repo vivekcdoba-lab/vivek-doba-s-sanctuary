@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { SITE_URL, type Course } from '@/data/courses';
 
-const SHARE_IMAGE = 'https://storage.googleapis.com/gpt-engineer-file-uploads/zrsITRprJqddVA1fAGWy6EZ8rD62/social-images/social-1776562975511-LGT.webp';
+const SHARE_IMAGE = `${SITE_URL}/vivek-doba.png`;
 
 export function CourseSeo({ title, description, path, schema }: { title: string; description: string; path: string; schema: object[] }) {
   const url = `${SITE_URL}${path}`;

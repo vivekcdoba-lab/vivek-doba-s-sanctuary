@@ -27,7 +27,7 @@ function LadderCard({ course, index, highlighted }: { course: Course; index: num
   const summit = course.slug === 'ram-nirvana';
   return <motion.article id={`step-${course.slug}`} {...reveal} className="relative scroll-mt-36 pl-14 md:pl-24">
     <div className={`absolute left-0 top-8 z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 font-bold md:h-14 md:w-14 ${summit ? 'border-primary bg-course-maroon text-primary-foreground shadow-lg' : 'border-course-saffron bg-course-ivory text-course-saffron'}`}>{course.step}</div>
-    <Link to={`/courses/${course.slug}`} aria-label={`View ${course.name}`} className={`block rounded-[18px] border p-5 shadow-course transition-transform hover:-translate-y-1 md:p-8 ${highlighted ? 'course-glow' : ''} ${summit ? 'border-primary/30 bg-course-maroon text-primary-foreground' : 'border-primary/15 bg-card'}`}>
+    <div role="link" tabIndex={0} aria-label={`View ${course.name}`} onClick={() => { window.location.href = `/courses/${course.slug}`; }} onKeyDown={event => { if (event.key === 'Enter') window.location.href = `/courses/${course.slug}`; }} className={`cursor-pointer rounded-[18px] border p-5 shadow-course transition-transform hover:-translate-y-1 md:p-8 ${highlighted ? 'course-glow' : ''} ${summit ? 'border-primary/30 bg-course-maroon text-primary-foreground' : 'border-primary/15 bg-card'}`}>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div>
           <p className={`text-xs font-semibold uppercase ${summit ? 'text-primary-foreground/70' : 'text-course-saffron'}`}>Step {course.step} · {course.stage}</p>
@@ -36,13 +36,13 @@ function LadderCard({ course, index, highlighted }: { course: Course; index: num
           <div className="mt-5"><Facts course={course} /></div>
           {!summit && <p className="mt-5 border-l-4 border-course-saffron bg-course-ivory px-4 py-3 text-sm leading-6 text-foreground"><strong>Who it’s for:</strong> {course.forWhom}</p>}
         </div>
-        <div className="flex min-w-48 flex-col items-start gap-3 lg:items-end" onClick={event => event.preventDefault()}>
+        <div className="flex min-w-48 flex-col items-start gap-3 lg:items-end" onClick={event => event.stopPropagation()}>
           {!summit && <CoursePrice course={course} align="right" />}
           {course.locked ? <span className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2 text-sm font-semibold text-muted-foreground"><Users className="h-4 w-4" />Graduates only</span> : !summit && <CourseCta course={course} />}
           <Link to={`/courses/${course.slug}`} className={`inline-flex min-h-12 items-center gap-2 text-sm font-semibold underline underline-offset-4 ${summit ? 'text-primary-foreground' : 'text-course-saffron'}`}>{summit ? 'Read the vision' : 'See the full journey'}<ArrowRight className="h-4 w-4" /></Link>
         </div>
       </div>
-    </Link>
+    </div>
   </motion.article>;
 }
 
