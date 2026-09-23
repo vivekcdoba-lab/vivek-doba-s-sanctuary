@@ -27,3 +27,4 @@
 - [ ] Remove unverifiable trust claims and standardize the approved homepage proof points.
 - [ ] Build the four-column footer with exact contact details and complete program/explore links.
 - [ ] Add or review Privacy, Terms, and Refund policy pages and link them from the footer.
+- [x] Redesign the homepage for Pune and PCMC business owners with visual story sections, program ladder, book, FAQ, and diagnostic actions.
