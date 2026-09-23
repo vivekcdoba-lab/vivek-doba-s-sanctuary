@@ -1,6 +1,6 @@
 # Edge Functions
 
-_Generated: 2026-09-23T10:42:30.585Z_
+_Generated: 2026-09-23T11:21:52.545Z_
 
 Total: **29** serverless functions deployed via Lovable Cloud.
 

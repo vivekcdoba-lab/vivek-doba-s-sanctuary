@@ -9,7 +9,7 @@ import { CourseSeo, providerSchema } from '@/components/public/CourseSeo';
 import { SITE_URL, whatsappLink, type Course } from '@/data/courses';
 import { usePublicCourses } from '@/hooks/useDbCourses';
 import { openExternal } from '@/lib/openExternal';
-import vivekDobaCoursesBanner from '@/assets/vivek-doba-courses-banner.jpg';
+import vivekDobaCoursesBanner from '@/assets/vivek-doba-courses-banner.webp';
 
 const faqs = [
   { question: 'Which program should I start with?', answer: 'If you are unsure, start with Know Your Triangle. It costs ₹999 plus 18% GST, takes 2 hours and shows you your Golden Triangle Score. Or book a diagnostic call and we will guide you.' },

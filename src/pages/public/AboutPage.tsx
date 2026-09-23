@@ -11,7 +11,7 @@ import {
   Triangle,
   Users,
 } from 'lucide-react';
-import vivekDobaBanner from '@/assets/vivek-doba-courses-banner.jpg';
+import vivekDobaBanner from '@/assets/vivek-doba-courses-banner.webp';
 import vivekDobaTeaching from '@/assets/courses/leadership-vivek-hero.webp';
 import { Button } from '@/components/ui/button';
 import PublicSeo, { breadcrumbSchema, personSchema } from '@/components/public/PublicSeo';
