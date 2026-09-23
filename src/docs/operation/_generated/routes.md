@@ -1,8 +1,8 @@
 # Routes & Pages
 
-_Generated: 2026-09-23T06:17:09.106Z_
+_Generated: 2026-09-23T07:36:20.582Z_
 
-Total routes: **260**
+Total routes: **263**
 
 ## Admin (71)
 
@@ -235,7 +235,7 @@ Total routes: **260**
 | `/login` | LoginPage |
 | `/register` | RegisterPage |
 
-## Other (49)
+## Other (52)
 
 | Path | Component |
 |---|---|
@@ -255,6 +255,7 @@ Total routes: **260**
 | `/calendar` | CalendarPage |
 | `/contact` | ContactPage |
 | `/courses` | PublicCoursesPage |
+| `/courses/:slug` | CourseDetailPage |
 | `/daily-tracking` | DailyTrackingPage |
 | `/dashboard` | AdminDashboard |
 | `/dharma-philosophy` | SeoDharmaPhilosophy |
@@ -278,6 +279,7 @@ Total routes: **260**
 | `/reset-password` | ResetPassword |
 | `/resources` | ResourcesPage |
 | `/sales-coach` | SeoSalesCoach |
+| `/score` | ScorePage |
 | `/session-templates` | SessionTemplatesPage |
 | `/sessions` | SessionsPage |
 | `/sessions/:id/certify` | SessionCertification |
@@ -287,5 +289,6 @@ Total routes: **260**
 | `/sign/:token` | SignDocument |
 | `/swot` | SwotPage |
 | `/terms` | TermsPage |
+| `/testimonials` | TestimonialsPage |
 | `/worksheet-analytics` | WorksheetAnalyticsPage |
 

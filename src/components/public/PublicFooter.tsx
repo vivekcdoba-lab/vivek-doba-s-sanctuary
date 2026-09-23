@@ -3,8 +3,8 @@ import { Facebook, Instagram, Linkedin, Youtube } from 'lucide-react';
 const socials = [
   { name: 'Instagram', url: 'https://www.instagram.com/vivekdoba/', icon: Instagram },
   { name: 'YouTube', url: 'https://www.youtube.com/@VIVEKDOBA', icon: Youtube },
-  { name: 'LinkedIn', url: 'https://www.linkedin.com/in/vivek-doba-life-nlp-success-business-coach/', icon: Linkedin },
-  { name: 'Facebook', url: 'https://www.facebook.com/askVivekDoba', icon: Facebook },
+  { name: 'LinkedIn', url: 'https://www.linkedin.com/in/vivekdoba/', icon: Linkedin },
+  { name: 'Facebook', url: 'https://www.facebook.com/askVivekDoba/', icon: Facebook },
 ];
 
 export default function PublicFooter() {

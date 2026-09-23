@@ -18,3 +18,8 @@
 - [x] Add Vivek Doba's original photo to the Courses banner and show 28 years of experience.
 - [x] Standardize Vivek Doba's experience to 28 years across all public pages and metadata.
 - [x] Replace generated instructors with Vivek Doba in every teaching and meditation course image.
+- [ ] Add build-time HTML prerendering for all indexable public routes and published dynamic content.
+- [ ] Standardize public metadata, canonical URLs, social tags, breadcrumbs, and structured data.
+- [ ] Add public Testimonials and Golden Triangle Score pages plus noindex 404 links.
+- [ ] Generate sitemap from public routes/content and update crawler rules.
+- [ ] Optimize public images/fonts and verify mobile Lighthouse, rendered source, links, metadata, and errors.

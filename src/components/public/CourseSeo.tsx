@@ -1,27 +1,9 @@
-import { Helmet } from 'react-helmet-async';
-import { SITE_URL, type Course } from '@/data/courses';
-
-const SHARE_IMAGE = `${SITE_URL}/vivek-doba.png`;
+import PublicSeo, { SITE_URL, breadcrumbSchema, organizationSchema } from '@/components/public/PublicSeo';
+import { type Course } from '@/data/courses';
 
 export function CourseSeo({ title, description, path, schema, image }: { title: string; description: string; path: string; schema: object[]; image?: string }) {
-  const url = `${SITE_URL}${path}`;
-  const shareImage = image || SHARE_IMAGE;
-  return <Helmet>
-    <html lang="en" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={url} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={url} />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content={shareImage} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={shareImage} />
-    <script type="application/ld+json">{JSON.stringify(schema)}</script>
-  </Helmet>;
+  const label = path === '/courses' ? 'Courses' : title.split('|')[0]?.trim() || 'Course';
+  return <PublicSeo title={title} description={description} path={path} image={image} schemas={[organizationSchema, breadcrumbSchema([{ name: 'Home', path: '/' }, ...(path === '/courses' ? [] : [{ name: 'Courses', path: '/courses' }]), { name: label, path }]), ...schema]} />;
 }
 
 export const providerSchema = { '@type': 'Organization', name: 'Vivek Doba Business Mastery', url: SITE_URL };

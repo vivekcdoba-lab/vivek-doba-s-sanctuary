@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { SHARE_IMAGE, SITE_URL } from "@/components/public/PublicSeo";
 
 interface DocumentMetaOptions {
   title: string;
@@ -32,11 +33,26 @@ export const useDocumentMeta = ({ title, description, canonicalPath }: DocumentM
     setMeta("description", description);
     setMeta("og:title", title, "property");
     setMeta("og:description", description, "property");
+    setMeta("og:type", "website", "property");
+    setMeta("og:url", `${SITE_URL}${canonicalPath || "/"}`, "property");
+    setMeta("og:image", SHARE_IMAGE, "property");
+    setMeta("og:locale", "en_IN", "property");
+    setMeta("og:site_name", "Vivek Doba Business Mastery", "property");
+    setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", title);
     setMeta("twitter:description", description);
+    setMeta("twitter:image", SHARE_IMAGE);
     if (canonicalPath) {
-      const origin = typeof window !== "undefined" ? window.location.origin : "https://vivekdoba.com";
-      setCanonical(`${origin}${canonicalPath}`);
+      setCanonical(`${SITE_URL}${canonicalPath}`);
+      let breadcrumb = document.head.querySelector<HTMLScriptElement>('script[data-page-breadcrumb]');
+      if (!breadcrumb) {
+        breadcrumb = document.createElement('script');
+        breadcrumb.type = 'application/ld+json';
+        breadcrumb.dataset.pageBreadcrumb = 'true';
+        document.head.appendChild(breadcrumb);
+      }
+      const label = title.split('|')[0]?.trim() || 'Page';
+      breadcrumb.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL }, { '@type': 'ListItem', position: 2, name: label, item: `${SITE_URL}${canonicalPath}` }] });
     }
   }, [title, description, canonicalPath]);
 };

@@ -76,7 +76,7 @@ export default function PublicHeader() {
                     {courseMenu.map(group => <section key={group.group} className="border-b border-border py-3 first:pt-0 last:border-0 md:border-0 md:py-0">
                       <h2 className="mb-2 text-xs font-semibold text-muted-foreground">{group.group}</h2>
                       <div className="space-y-1">{group.items.map(item => { const course = courses.find(entry => `/courses/${entry.slug}` === item.href); return <Link role="menuitem" key={item.href} to={item.href} onClick={() => setCoursesOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                        {course?.cardImageUrl && <img src={course.cardImageUrl} alt="" className="h-11 w-14 shrink-0 rounded object-cover" />}<span><span className="block text-sm font-semibold text-foreground">{course?.name || item.label}</span><span className="block text-xs leading-5 text-muted-foreground">{course?.duration || item.sub}</span></span>
+                        {course?.cardImageUrl && <img src={course.cardImageUrl} alt="" width="1200" height="900" loading="lazy" className="h-11 w-14 shrink-0 rounded object-cover" />}<span><span className="block text-sm font-semibold text-foreground">{course?.name || item.label}</span><span className="block text-xs leading-5 text-muted-foreground">{course?.duration || item.sub}</span></span>
                       </Link>; })}</div>
                     </section>)}
                   </div>
