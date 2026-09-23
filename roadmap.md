@@ -3,8 +3,8 @@
 ## Shared header, footer, and trust consistency
 
 - [x] Update the shared desktop and mobile header without overlap or duplicate actions.
-- [ ] Correct every public review claim to the verified 805+ count.
-- [ ] Rebuild the homepage for Pune and PCMC business owners using the supplied nine-section brief.
+- [x] Correct every public review claim to the verified 805+ count.
+- [x] Rebuild the homepage for Pune and PCMC business owners using the supplied nine-section brief.
 - [x] Update the four-column footer and keep shared business details exact.
 - [x] Align public business JSON-LD with the shared name, address, and phone.
 - [x] Verify links, layouts, claims, and type safety.
