@@ -63,10 +63,10 @@ export default function PublicHeader() {
           <div className="flex min-w-max sm:min-w-0 sm:justify-center sm:divide-x sm:divide-primary/10">
             {tabs.map(({ to, label, icon: Icon }) => to === '/courses' ? (
               <div key={to} ref={coursesRef} className="relative" onMouseEnter={() => window.matchMedia('(min-width: 768px)').matches && setCoursesOpen(true)} onMouseLeave={() => window.matchMedia('(min-width: 768px)').matches && setCoursesOpen(false)}>
-                <Button variant="ghost" aria-expanded={coursesOpen} aria-haspopup="menu" onClick={() => setCoursesOpen(open => !open)} className={`relative h-auto rounded-none px-4 py-3 lg:px-7 text-sm hover:bg-transparent hover:-translate-y-0.5 hover:text-primary ${isCoursesActive ? 'font-bold text-primary after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:gradient-saffron' : 'font-medium text-muted-foreground'}`}>
+                <Button variant="ghost" aria-expanded={coursesOpen} aria-haspopup="menu" onClick={() => setCoursesOpen(open => window.matchMedia('(min-width: 768px)').matches ? true : !open)} className={`relative h-auto rounded-none px-4 py-3 lg:px-7 text-sm hover:bg-transparent hover:-translate-y-0.5 hover:text-primary ${isCoursesActive ? 'font-bold text-primary after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:gradient-saffron' : 'font-medium text-muted-foreground'}`}>
                   <Icon className="w-4 h-4" />{label}<ChevronDown className={`w-3.5 h-3.5 transition-transform ${coursesOpen ? 'rotate-180' : ''}`} />
                 </Button>
-                {coursesOpen && <div role="menu" className="fixed left-3 right-3 top-[113px] md:absolute md:fixed-auto md:left-1/2 md:right-auto md:top-full md:w-[min(94vw,980px)] md:-translate-x-[32%] bg-card border border-primary/20 shadow-xl rounded-md overflow-hidden">
+                {coursesOpen && <div role="menu" className="fixed left-3 right-3 top-[113px] md:left-1/2 md:right-auto md:w-[min(94vw,980px)] md:-translate-x-1/2 bg-card border border-primary/20 shadow-xl rounded-md overflow-hidden">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-0 md:gap-5 p-4 md:p-6 max-h-[65vh] overflow-y-auto">
                     {courseMenu.map(group => <section key={group.group} className="border-b border-border py-3 first:pt-0 last:border-0 md:border-0 md:py-0">
                       <h2 className="mb-2 text-xs font-semibold text-muted-foreground">{group.group}</h2>
