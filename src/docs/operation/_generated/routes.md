@@ -1,6 +1,6 @@
 # Routes & Pages
 
-_Generated: 2026-09-23T11:21:52.545Z_
+_Generated: 2026-09-24T08:18:37.077Z_
 
 Total routes: **265**
 
