@@ -14,7 +14,7 @@ export function openExternal(url: string) {
 }
 
 export const WHATSAPP_SUPPORT_MESSAGE =
-  "Hello, I recently explored your website and program details. I'm really interested and would love to understand how the program works and how it can help transform my life.";
+  "Namaste, I run a business and would like to understand which program fits me.";
 
 export function openWhatsApp(phone = '919607050111', message = WHATSAPP_SUPPORT_MESSAGE) {
   openExternal(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`);
