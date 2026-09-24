@@ -2,13 +2,8 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   BookOpen,
-  BriefcaseBusiness,
   CheckCircle2,
-  HeartPulse,
-  Home,
   Landmark,
-  MessageCircle,
-  Triangle,
   Users,
 } from 'lucide-react';
 import vivekDobaBanner from '@/assets/vivek-doba-courses-banner.webp';
@@ -17,8 +12,9 @@ import vivekDobaWorkshop from '@/assets/courses/udyog-sanjivani-vivek-card.webp'
 import vivekDobaPortrait from '@/assets/vivek-doba.png';
 import { Button } from '@/components/ui/button';
 import PublicSeo, { breadcrumbSchema, personSchema } from '@/components/public/PublicSeo';
-
-const diagnosticUrl = `https://wa.me/919607050111?text=${encodeURIComponent('Namaste, I would like to book a diagnostic call.')}`;
+import FrameworkTriangle from '@/components/public/FrameworkTriangle';
+import DiagnosticCta from '@/components/public/DiagnosticCta';
+import { BRAND_DESCRIPTOR, BRAND_DIFFERENTIATOR, BRAND_TAGLINE, framework } from '@/data/framework';
 
 const storyChapters = [
   {
@@ -39,7 +35,7 @@ const storyChapters = [
   },
   {
     label: 'What I believe',
-    text: 'I believe business growth should not cost an owner their health or their family. Lasting success needs Business, Health and Family to support each other.',
+    text: `I believe business growth should not cost an owner their health or their relationships. ${framework.line}`,
     image: vivekDobaWorkshop,
     alt: 'Vivek Doba with business owners',
     width: 1200,
@@ -50,7 +46,7 @@ const storyChapters = [
 const workingPrinciples = [
   {
     title: 'Indian wisdom, practical business',
-    text: 'Ramayana, Srikrishna and Panchatattva applied to real businesses.',
+    text: `${BRAND_DIFFERENTIATOR}: Ramayana, Srikrishna and Panchatattva applied to real businesses.`,
     Icon: Landmark,
   },
   {
@@ -60,7 +56,7 @@ const workingPrinciples = [
   },
   {
     title: 'Measured by real change, not promises',
-    text: 'The work is measured by real change across Business, Health and Family.',
+    text: 'The work is measured by real change across business, health and relationships.',
     Icon: CheckCircle2,
   },
 ];
@@ -77,15 +73,16 @@ const mediaItems: { image: string; alt: string; title: string }[] = [];
 const aboutPersonSchema = {
   ...personSchema,
   url: 'https://vivekdoba.com/about',
-  description: 'Vivek Doba is a business coach and founder of Life’s Golden Triangle™, helping business owners grow their business without losing their health or family since 1998.',
-  knowsAbout: ['Business coaching', 'Life’s Golden Triangle™', 'Business', 'Health', 'Family'],
+  jobTitle: BRAND_DESCRIPTOR,
+  description: 'Vivek Doba is a Business Transformation Mentor for Entrepreneurs and founder of Life’s Golden Triangle™, helping business owners grow their business without losing their health or relationships since 1998.',
+  knowsAbout: ['Business transformation', 'Life’s Golden Triangle™', 'Dharma · Health, mindset and values', 'Artha · Business, money and growth', 'Kama · Relationships, team and targets', 'Moksha · Legacy and lasting happiness'],
 };
 
 export default function AboutPage() {
   return <div className="bg-background">
     <PublicSeo
       title="About Vivek Doba | Business & Life Coach, Pune"
-      description="Meet Vivek Doba, founder of Life’s Golden Triangle™. Coaching business owners in Pune and PCMC since 1998 to grow business, health and family together."
+       description="Meet Vivek Doba, Business Transformation Mentor for Entrepreneurs and founder of Life’s Golden Triangle™. Ancient Indian wisdom + modern business strategy, since 1998."
       path="/about"
       schemas={[
         aboutPersonSchema,
@@ -98,8 +95,9 @@ export default function AboutPage() {
       <div className="relative mx-auto grid min-h-[620px] max-w-7xl items-center gap-10 px-4 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
         <div className="max-w-3xl">
           <p className="font-course-serif mb-4 text-xl italic sm:text-2xl">Success is a Triangle. Complete it.</p>
-          <h1 className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">About Vivek Doba: Business Coach and Founder of Life’s Golden Triangle™</h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-primary-foreground/90">Helping business owners in Pune and across India grow their business without losing their health or their family, since 1998.</p>
+           <h1 className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">About Vivek Doba: Business Transformation Mentor for Entrepreneurs</h1>
+           <p className="mt-6 max-w-2xl text-lg leading-8 text-primary-foreground/90">Helping business owners in Pune and across India grow their business without losing their health or their relationships, since 1998.</p>
+           <p className="mt-3 max-w-2xl font-semibold text-primary-foreground">{BRAND_TAGLINE}</p>
         </div>
         <div className="homepage-photo-frame mx-auto w-full max-w-xl overflow-hidden rounded-lg border border-primary-foreground/30">
           <img src={vivekDobaBanner} alt="Vivek Doba, business coach and founder of Life’s Golden Triangle" width="1376" height="768" fetchPriority="high" className="aspect-[4/3] w-full object-cover object-center" />
@@ -124,14 +122,8 @@ export default function AboutPage() {
 
     <section className="border-y border-border bg-muted/40 py-16 sm:py-20">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-2">
-        <div className="homepage-triangle mx-auto" aria-label="Golden Triangle with Business, Health and Family at its corners">
-          <div className="homepage-triangle-shape" />
-          <span className="homepage-triangle-point homepage-triangle-business"><BriefcaseBusiness />Business</span>
-          <span className="homepage-triangle-point homepage-triangle-health"><HeartPulse />Health</span>
-          <span className="homepage-triangle-point homepage-triangle-family"><Home />Family</span>
-          <Triangle className="homepage-triangle-mark" />
-        </div>
-        <div><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">The philosophy</p><h2 className="text-3xl font-bold sm:text-4xl">The Golden Triangle</h2><p className="font-course-serif mt-5 text-3xl font-semibold text-course-maroon">Success is a Triangle. Complete it.</p><p className="mt-5 text-lg leading-8 text-muted-foreground">Business, Health and Family are not separate victories. Each side must support the other two.</p></div>
+         <FrameworkTriangle />
+         <div><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">The philosophy</p><h2 className="text-3xl font-bold sm:text-4xl">Life’s Golden Triangle™</h2><p className="font-course-serif mt-5 text-3xl font-semibold text-course-maroon">Success is a Triangle. Complete it.</p><p className="mt-5 text-lg leading-8 text-muted-foreground">{framework.line}</p></div>
       </div>
     </section>
 
@@ -165,8 +157,8 @@ export default function AboutPage() {
 
     <section className="bg-course-maroon py-14 text-secondary-foreground sm:py-16">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-4 lg:flex-row lg:items-center">
-        <div><p className="font-course-serif text-xl italic text-secondary-foreground/80">A practical first step</p><h2 className="mt-2 text-3xl font-bold sm:text-4xl">Build a business without losing what matters.</h2></div>
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row"><Button asChild size="lg" className="bg-course-saffron text-primary-foreground hover:bg-course-saffron/90"><a href={diagnosticUrl} target="_blank" rel="noopener noreferrer">Book a diagnostic <MessageCircle /></a></Button><Button asChild size="lg" variant="outline" className="border-secondary-foreground/50 bg-transparent text-secondary-foreground hover:bg-secondary-foreground hover:text-course-maroon"><Link to="/courses">See the programs <ArrowRight /></Link></Button></div>
+         <div><p className="font-course-serif text-xl italic text-secondary-foreground/80">A practical first step</p><h2 className="mt-2 text-3xl font-bold sm:text-4xl">Build a business without losing what matters.</h2></div>
+         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row"><DiagnosticCta className="bg-course-saffron text-primary-foreground hover:bg-course-saffron/90" noteClassName="text-secondary-foreground/80" /><Button asChild size="lg" variant="outline" className="border-secondary-foreground/50 bg-transparent text-secondary-foreground hover:bg-secondary-foreground hover:text-course-maroon"><Link to="/courses">See the programs <ArrowRight /></Link></Button></div>
       </div>
     </section>
   </div>;
