@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { BRAND_DESCRIPTOR } from '@/data/framework';
 
 export const SITE_URL = 'https://vivekdoba.com';
 export const BUSINESS_NAME = 'Vivek Doba Business Mastery LLP';
@@ -28,7 +29,7 @@ export const organizationSchema = {
 export const personSchema = {
   '@context': 'https://schema.org', '@type': 'Person', '@id': `${SITE_URL}/#vivek-doba`,
   name: 'Vivek Doba', url: SITE_URL, image: SHARE_IMAGE,
-  jobTitle: 'Business Coach, Founder of Life’s Golden Triangle™',
+  jobTitle: BRAND_DESCRIPTOR,
   worksFor: { '@id': `${SITE_URL}/#organization` }, sameAs: SOCIAL_URLS,
 };
 export const professionalServiceSchema = {
