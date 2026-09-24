@@ -10,7 +10,6 @@ import {
   Phone,
   Quote,
   Sparkles,
-  Triangle,
 } from 'lucide-react';
 import vivekDobaPhoto from '@/assets/vivek-doba.png';
 import businessOwnerBusiness from '@/assets/home/business-owner-business.jpg';
@@ -22,9 +21,9 @@ import { formatINR, type Course } from '@/data/courses';
 import { usePublicCourses } from '@/hooks/useDbCourses';
 import { useTestimonials, type Testimonial } from '@/hooks/usePublicContent';
 import PublicSeo, { breadcrumbSchema, organizationSchema, personSchema, professionalServiceSchema } from '@/components/public/PublicSeo';
-
-const diagnosticUrl = `https://wa.me/919607050111?text=${encodeURIComponent('Namaste, I would like to book a diagnostic call.')}`;
-const privateSessionUrl = `https://wa.me/919607050111?text=${encodeURIComponent('Namaste, I would like to book a 45-minute session with Vivek Doba for ₹4,999.')}`;
+import FrameworkTriangle from '@/components/public/FrameworkTriangle';
+import DiagnosticCta from '@/components/public/DiagnosticCta';
+import { BRAND_DESCRIPTOR, BRAND_DIFFERENTIATOR, BRAND_TAGLINE, framework } from '@/data/framework';
 
 const mirrorCards = [
   { title: 'Business', text: 'The business grows, but only when you are in the room.', image: businessOwnerBusiness, Icon: BriefcaseBusiness, alt: 'Indian business owner managing every decision in his Pune workshop' },
@@ -33,9 +32,9 @@ const mirrorCards = [
 ];
 
 const faqItems = [
-  { q: 'Who is Vivek Doba’s coaching for?', a: 'It is for business owners and leaders who want sustainable growth without sacrificing their health or family life.' },
+  { q: 'Who is Vivek Doba’s coaching for?', a: 'It is for business owners and leaders who want sustainable growth without sacrificing their health or relationships.' },
   { q: 'Where are the programs held?', a: 'Programs are held in Pune and Pimpri-Chinchwad, with the location shared for each scheduled batch.' },
-  { q: 'Which program should I start with?', a: 'Start with the ₹999 Know Your Triangle session. It helps you see which side—business, health or family—needs attention first.' },
+  { q: 'Which program should I start with?', a: 'Start with the ₹999 Know Your Triangle session. It helps you see which side of your business, health or relationships needs attention first.' },
   { q: 'Are programs available online?', a: 'Selected programs are available online. Each program page clearly shows whether it is offline, online or offered in both formats.' },
   { q: 'Are fees inclusive of GST?', a: 'No. 18% GST is added to program fees. The Life’s Golden Triangle Book + Workbook set is inclusive of all taxes.' },
 ];
@@ -83,13 +82,13 @@ function TestimonialsSection({ testimonials }: { testimonials: Testimonial[] }) 
 export default function Index() {
   const { data: courses = [] } = usePublicCourses();
   const { data: publishedTestimonials = [] } = useTestimonials();
-  const featuredSlugs = ['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt'];
+  const featuredSlugs = ['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt-platinum'];
   const featuredCourses = featuredSlugs.map(slug => courses.find(course => course.slug === slug)).filter((course): course is Course => Boolean(course));
   const book = courses.find(course => course.slug === 'book');
   const videoTestimonials = publishedTestimonials.filter(item => item.youtube_id).slice(0, 3);
 
   return <div className="bg-background">
-    <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business coach in Pimpri-Chinchwad, Pune for business owners who want growth without losing health and family. Life’s Golden Triangle™ by Vivek Doba. 805+ Google and client reviews, coaching business owners since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, faqSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
+    <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business transformation mentor for entrepreneurs in Pune. Life’s Golden Triangle™: ancient Indian wisdom + modern business strategy. 805+ reviews, since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, faqSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
 
     <section className="gradient-hero relative overflow-hidden text-primary-foreground">
       <div className="homepage-hero-pattern absolute inset-0 pointer-events-none" />
@@ -97,9 +96,11 @@ export default function Index() {
         <div className="max-w-3xl">
           <p className="font-course-serif mb-4 text-xl italic sm:text-2xl">Success is a Triangle. Complete it.</p>
           <h1 className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">Business Coach in Pune for Owners Who Want to Win at Work and at Home</h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-primary-foreground/90"><strong>Ghar bhi jeeto. Bazaar bhi.</strong> Life’s Golden Triangle™ helps you grow your business without losing your health or your family.</p>
+           <p className="mt-6 max-w-2xl text-lg leading-8 text-primary-foreground/90"><strong>Ghar bhi jeeto. Bazaar bhi.</strong> Life’s Golden Triangle™ helps you grow your business without losing your health or your relationships.</p>
+           <p className="mt-3 max-w-2xl font-semibold text-primary-foreground">{BRAND_TAGLINE}</p>
+           <p className="mt-2 max-w-2xl text-base text-primary-foreground/85">{BRAND_DIFFERENTIATOR}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg" className="min-h-12 bg-course-maroon text-secondary-foreground hover:bg-course-maroon/90"><a href={diagnosticUrl} target="_blank" rel="noopener noreferrer">Book a diagnostic <MessageCircle /></a></Button>
+             <DiagnosticCta className="min-h-12 bg-course-maroon text-secondary-foreground hover:bg-course-maroon/90" noteClassName="text-primary-foreground/85" />
             <Button asChild size="lg" variant="outline" className="min-h-12 border-primary-foreground/60 bg-background/10 text-primary-foreground hover:bg-background hover:text-foreground"><Link to="/courses/know-your-triangle">Start here: Know Your Triangle <ArrowRight /></Link></Button>
           </div>
           <p className="mt-8 max-w-2xl border-l border-primary-foreground/40 pl-4 text-base font-semibold text-primary-foreground">805+ reviews · Coaching since 1998 · Pimpri-Chinchwad, Pune</p>
@@ -109,13 +110,11 @@ export default function Index() {
             <img src={vivekDobaPhoto} alt="Business coach Vivek Doba in Pune" width="500" height="331" fetchPriority="high" className="aspect-[4/5] w-full object-cover object-top" />
           </div>
           <div className="absolute bottom-5 left-5 right-5 rounded-md border border-primary-foreground/20 bg-course-maroon/90 px-4 py-3 text-center backdrop-blur-sm">
-            <p className="font-semibold">Vivek Doba</p><p className="text-sm text-secondary-foreground/80">Business Coach · Founder, Life’s Golden Triangle™</p>
+             <p className="font-semibold">Vivek Doba</p><p className="text-sm text-secondary-foreground/80">{BRAND_DESCRIPTOR} · Founder, Life’s Golden Triangle™</p>
           </div>
         </div>
       </div>
     </section>
-
-    <section className="border-y border-border bg-background py-10"><div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-5 px-4 sm:flex-row sm:items-center"><div><p className="font-bold text-course-maroon">Private guidance with Vivek Doba</p><h2 className="mt-1 text-2xl font-bold">Book your 45-minute session with Vivek · ₹4,999</h2></div><Button asChild size="lg"><a href={privateSessionUrl} target="_blank" rel="noopener noreferrer">Book your session <MessageCircle /></a></Button></div></section>
 
     <section className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4">
@@ -126,19 +125,13 @@ export default function Index() {
             <div className="p-6"><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">{title}</p><h3 className="text-xl font-semibold leading-8">{text}</h3></div>
           </article>)}
         </div>
-        <p className="mx-auto mt-10 max-w-3xl text-center font-course-serif text-2xl font-semibold text-course-maroon">When one side breaks, the other two follow. That is the Golden Triangle.</p>
+         <p className="mx-auto mt-10 max-w-3xl text-center font-course-serif text-2xl font-semibold text-course-maroon">{framework.line}</p>
       </div>
     </section>
 
     <section className="border-y border-border bg-muted/40 py-16 sm:py-20">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-2">
-        <div className="homepage-triangle mx-auto" aria-label="Golden Triangle with Business, Health and Family at its corners">
-          <div className="homepage-triangle-shape" />
-          <span className="homepage-triangle-point homepage-triangle-business"><BriefcaseBusiness />Business</span>
-          <span className="homepage-triangle-point homepage-triangle-health"><HeartPulse />Health</span>
-          <span className="homepage-triangle-point homepage-triangle-family"><Home />Family</span>
-          <Triangle className="homepage-triangle-mark" />
-        </div>
+         <FrameworkTriangle />
         <div><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">The framework</p><h2 className="text-3xl font-bold sm:text-4xl">The Golden Triangle, explained</h2><p className="mt-5 text-lg leading-8 text-muted-foreground">Most owners work on one corner. Lasting success needs all three to support each other.</p><Button asChild className="mt-7 bg-course-saffron text-primary-foreground hover:bg-course-saffron/90"><Link to="/score">Take the 3-minute Golden Triangle Score <ArrowRight /></Link></Button></div>
       </div>
     </section>
@@ -158,7 +151,7 @@ export default function Index() {
     <section className="border-y border-border bg-course-ivory py-16 sm:py-20">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-[0.8fr_1.2fr]">
         <img src={vivekDobaPhoto} alt="Vivek Doba, business and life coach" width="500" height="331" loading="lazy" className="mx-auto aspect-square w-full max-w-sm rounded-lg object-cover object-top shadow-course" />
-        <div><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">Meet Vivek Doba</p><h2 className="text-3xl font-bold sm:text-4xl">Business discipline. Inner clarity. A life that stays whole.</h2><div className="mt-6 space-y-4 text-base leading-7 text-muted-foreground"><p className="flex gap-3"><Check className="mt-1 h-5 w-5 shrink-0 text-primary" />He guides entrepreneurs and professionals towards clarity, balance and sustainable achievement.</p><p className="flex gap-3"><Check className="mt-1 h-5 w-5 shrink-0 text-primary" />His approach combines spiritual principles, mindset work and practical business discipline.</p><p className="flex gap-3"><Check className="mt-1 h-5 w-5 shrink-0 text-primary" />He founded Life’s Golden Triangle™ to make success meaningful as well as measurable.</p></div><Button asChild variant="outline" className="mt-7"><Link to="/about">Read his story <ArrowRight /></Link></Button></div>
+         <div><p className="mb-2 text-sm font-bold uppercase tracking-widest text-primary">Meet Vivek Doba</p><h2 className="text-3xl font-bold sm:text-4xl">{BRAND_DESCRIPTOR}</h2><div className="mt-6 space-y-4 text-base leading-7 text-muted-foreground"><p className="flex gap-3"><Check className="mt-1 h-5 w-5 shrink-0 text-primary" />{BRAND_TAGLINE}</p><p className="flex gap-3"><Check className="mt-1 h-5 w-5 shrink-0 text-primary" />{BRAND_DIFFERENTIATOR}.</p><p className="flex gap-3"><Check className="mt-1 h-5 w-5 shrink-0 text-primary" />He founded Life’s Golden Triangle™ to make success meaningful as well as measurable.</p></div><Button asChild variant="outline" className="mt-7"><Link to="/about">Read his story <ArrowRight /></Link></Button></div>
       </div>
     </section>
 
@@ -184,8 +177,8 @@ export default function Index() {
 
     <section className="bg-course-maroon py-14 text-secondary-foreground sm:py-16">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-4 lg:flex-row lg:items-center">
-        <div><h2 className="text-3xl font-bold sm:text-4xl">Not sure where to begin?</h2><p className="mt-3 max-w-2xl text-secondary-foreground/80">Book a diagnostic call. We will understand your business and tell you honestly which step fits you.</p></div>
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row"><Button asChild size="lg" className="bg-course-saffron text-primary-foreground hover:bg-course-saffron/90"><a href={diagnosticUrl} target="_blank" rel="noopener noreferrer">Book a diagnostic <MessageCircle /></a></Button><Button asChild size="lg" variant="outline" className="border-secondary-foreground/50 bg-transparent text-secondary-foreground hover:bg-secondary-foreground hover:text-course-maroon"><a href="tel:9607050111">Call 9607050111 <Phone /></a></Button></div>
+         <div><h2 className="text-3xl font-bold sm:text-4xl">Not sure where to begin?</h2><p className="mt-3 max-w-2xl text-secondary-foreground/80">We will understand your business and tell you honestly which step fits you.</p></div>
+         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row"><DiagnosticCta className="bg-course-saffron text-primary-foreground hover:bg-course-saffron/90" noteClassName="text-secondary-foreground/80" /><Button asChild size="lg" variant="outline" className="border-secondary-foreground/50 bg-transparent text-secondary-foreground hover:bg-secondary-foreground hover:text-course-maroon"><a href="tel:9607050111">Call 9607050111 <Phone /></a></Button></div>
       </div>
     </section>
   </div>;
