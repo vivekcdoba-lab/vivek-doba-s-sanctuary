@@ -1,3 +1,4 @@
+import DiagnosticCta from '@/components/public/DiagnosticCta';
 import { Link } from "react-router-dom";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
@@ -30,7 +31,7 @@ const SalesCoach = () => {
           <h2 className="text-2xl font-bold text-foreground mb-3">A Different Kind of Sales Coach</h2>
           <p>
             Most sales coaching teaches scripts and closes. This one teaches identity and process. As a sales coach for
-            entrepreneurs and small B2B teams, Vivek Doba helps founders move from reluctant selling to confident, ethical
+            entrepreneurs and small B2B teams, Vivek Doba, Business Transformation Mentor for Entrepreneurs, helps founders move from reluctant selling to confident, ethical
             conversations that convert because they create real value — not because of pressure tactics.
           </p>
         </section>
@@ -68,10 +69,8 @@ const SalesCoach = () => {
 
         <section>
           <h2 className="text-2xl font-bold text-foreground mb-3">Get Started</h2>
-          <p>Book a 45-minute session with Vivek for ₹4,999. We will review your current pipeline and identify the right next step.</p>
-          <Link to="/book-appointment" className="inline-flex items-center gap-1 mt-3 text-primary font-semibold hover:underline">
-            Book your sales coaching call <ChevronRight className="w-4 h-4" />
-          </Link>
+          <p>Book a 45-minute Diagnostic with Vivek for ₹4,999 + 18% GST. We will review your current pipeline and identify the right next step.</p>
+          <DiagnosticCta className="mt-3 bg-diagnostic text-primary-foreground hover:bg-diagnostic/90" />
         </section>
       </article>
 

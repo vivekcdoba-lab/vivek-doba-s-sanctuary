@@ -1,3 +1,4 @@
+import DiagnosticCta from '@/components/public/DiagnosticCta';
 import { useParams, Link, Navigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
@@ -24,7 +25,7 @@ const LOCATION_CONTENT: Record<LocationKey, {
     h1: "Life Coach in India for Purpose & Inner Alignment",
     eyebrow: "Pan-India · Online",
     subtitle: "Dharma-based life coaching for seekers across every Indian state — delivered online, with founders' calendars in mind.",
-    intro: "Finding the right life coach in India is hard because most coaching ignores the one thing Indian seekers actually want: meaning. Vivek Doba's practice is built on Dharma, Artha, Kama and Moksha — the four Purushaarthas — translated into modern worksheets, weekly check-ins and measurable outcomes.",
+    intro: "Finding the right life coach in India is hard because most coaching ignores the one thing Indian seekers actually want: meaning. Vivek Doba's practice is built on Dharma · Health & values, Artha · Business, Kama · Relationships & team and Moksha · Legacy — the four Purushaarthas — translated into modern worksheets, weekly check-ins and measurable outcomes.",
     local: "Clients join from Bengaluru, Delhi-NCR, Hyderabad, Chennai, Kolkata, Ahmedabad and tier-2 cities like Indore, Jaipur and Coimbatore. Sessions run online over Google Meet, with WhatsApp support between calls. The methodology travels — whether you're a SaaS founder in Bengaluru or a family-business owner in Surat, the work begins in the same place: inner alignment.",
     areaServed: "India",
   },
@@ -130,10 +131,8 @@ const LifeCoachLocation = ({ forcedLocation }: { forcedLocation?: LocationKey })
 
         <section>
           <h2 className="text-2xl font-bold text-foreground mb-3">Get Started</h2>
-          <p>Book a 45-minute session with Vivek Doba for ₹4,999. Discuss where you are, where you want to be, and the right next step.</p>
-          <Link to="/book-appointment" className="inline-flex items-center gap-1 mt-3 text-primary font-semibold hover:underline">
-            Book your 45-minute session <ChevronRight className="w-4 h-4" />
-          </Link>
+          <p>Book a 45-minute Diagnostic with Vivek Doba for ₹4,999 + 18% GST. Discuss where you are, where you want to be, and the right next step.</p>
+          <DiagnosticCta className="mt-3 bg-diagnostic text-primary-foreground hover:bg-diagnostic/90" />
         </section>
       </article>
 

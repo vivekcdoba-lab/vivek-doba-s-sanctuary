@@ -1,3 +1,4 @@
+import DiagnosticCta from '@/components/public/DiagnosticCta';
 import { Link } from "react-router-dom";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
@@ -30,7 +31,7 @@ const LifeCoaching = () => {
           <h2 className="text-2xl font-bold text-foreground mb-3">What a Life Coach Actually Does</h2>
           <p>
             A life coach helps you uncover the deeper <em>why</em> behind your daily actions and rebuild your routines around it.
-            As a dharma-based life coach, Vivek Doba works with students, professionals, entrepreneurs and seekers of all ages to
+            As a dharma-based life coach, Vivek Doba, Business Transformation Mentor for Entrepreneurs, works with students, professionals, entrepreneurs and seekers of all ages to
             map their life calling and design a life that feels genuinely theirs — quieter mind, clearer decisions, real meaning.
           </p>
         </section>
@@ -47,7 +48,7 @@ const LifeCoaching = () => {
         <section>
           <h2 className="text-2xl font-bold text-foreground mb-3">How the Work Is Structured</h2>
           <h3 className="text-lg font-semibold text-foreground mt-4 mb-2">1. Diagnose</h3>
-          <p>We map your current life across the Wheel of Life, Ikigai and the four Purushaarthas (Dharma, Artha, Kama, Moksha) — and locate where alignment is missing.</p>
+          <p>We map your current life across the Wheel of Life, Ikigai and the four Purushaarthas (Dharma · Health & values, Artha · Business, Kama · Relationships & team, Moksha · Legacy) — and locate where alignment is missing.</p>
           <h3 className="text-lg font-semibold text-foreground mt-4 mb-2">2. Practice</h3>
           <p>Daily worksheets, meditation, journaling and sankalp (intention setting) build new patterns of clarity and emotional regulation.</p>
           <h3 className="text-lg font-semibold text-foreground mt-4 mb-2">3. Integrate</h3>
@@ -69,15 +70,10 @@ const LifeCoaching = () => {
         <section>
           <h2 className="text-2xl font-bold text-foreground mb-3">Get Started</h2>
           <p>
-            Book a 45-minute session with Vivek for ₹4,999 to clarify what you're really seeking. No pressure, no script — just clarity on
+            Book a 45-minute Diagnostic with Vivek for ₹4,999 + 18% GST to clarify what you're really seeking. No pressure, no script — just clarity on
             whether life coaching is the right next step for you.
           </p>
-          <Link
-            to="/book-appointment"
-            className="inline-flex items-center gap-1 mt-3 text-primary font-semibold hover:underline"
-          >
-            Book your discovery call <ChevronRight className="w-4 h-4" />
-          </Link>
+          <DiagnosticCta className="mt-3 bg-diagnostic text-primary-foreground hover:bg-diagnostic/90" />
         </section>
       </article>
 

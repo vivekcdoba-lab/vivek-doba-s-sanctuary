@@ -68,7 +68,7 @@ const InvoiceModal = ({ open, onClose, invoice }: InvoiceModalProps) => {
             <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-lg font-bold" style={{ color: '#B8860B' }}>🪷 VIVEK DOBA TRAINING SOLUTIONS</h2>
-                <p className="text-[11px] text-gray-500">Spiritual Business Coach | Founder of Life's Golden Triangle</p>
+                <p className="text-[11px] text-gray-500">Business Transformation Mentor for Entrepreneurs | Founder of Life’s Golden Triangle™</p>
                 <p className="text-[11px] text-gray-500 mt-0.5">📞 9607050111 | 🌐 vivekdoba.com | 📧 info@vivekdoba.com</p>
               </div>
               <h1 className="text-2xl font-bold" style={{ color: '#800020' }}>INVOICE</h1>

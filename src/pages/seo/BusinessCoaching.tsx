@@ -1,3 +1,4 @@
+import DiagnosticCta from '@/components/public/DiagnosticCta';
 import { Link } from "react-router-dom";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
@@ -30,7 +31,7 @@ const BusinessCoaching = () => {
           <h2 className="text-2xl font-bold text-foreground mb-3">What Business Coaching Actually Solves</h2>
           <p>
             Spiritual business coaching is not chanting before strategy meetings. It's removing the inner blocks — fear, scarcity,
-            identity confusion — that quietly cap your revenue, your team's energy and your own fulfillment. Vivek Doba works with
+            identity confusion — that quietly cap your revenue, your team's energy and your own fulfillment. Vivek Doba, Business Transformation Mentor for Entrepreneurs, works with
             founders, industrialists and senior leaders who want spiritual maturity <em>and</em> hard business results.
           </p>
         </section>
@@ -73,16 +74,11 @@ const BusinessCoaching = () => {
         <section>
           <h2 className="text-2xl font-bold text-foreground mb-3">Get Started</h2>
           <p>
-            The premier 6–12 month{" "}
-            <span className="font-semibold text-primary">Life's Golden Triangle program</span> is our flagship
-            engagement for serious founders. Or book a 45-minute session with Vivek for ₹4,999 to find the right entry point for your business.
+            The premier 6-month{" "}
+            <span className="font-semibold text-primary">LGT Platinum</span> is our flagship
+            engagement for serious founders. Or book a 45-minute Diagnostic with Vivek for ₹4,999 + 18% GST to find the right entry point for your business.
           </p>
-          <Link
-            to="/book-appointment"
-            className="inline-flex items-center gap-1 mt-3 text-primary font-semibold hover:underline"
-          >
-            Book your discovery call <ChevronRight className="w-4 h-4" />
-          </Link>
+          <DiagnosticCta className="mt-3 bg-diagnostic text-primary-foreground hover:bg-diagnostic/90" />
         </section>
       </article>
 

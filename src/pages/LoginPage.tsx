@@ -207,10 +207,10 @@ const LoginPage = () => {
             Vivek Doba Business Mastery
           </h1>
           <p className="text-lg lg:text-xl text-primary-foreground/80 italic mb-2">
-            Transform Your Life Through Ancient Wisdom
+            Build Your Business. Strengthen Your Leadership. Transform Your Life.
           </p>
           <p className="text-sm lg:text-base text-primary-foreground/60">
-            Spiritual Business Coach | Founder of Life's Golden Triangle
+            Business Transformation Mentor for Entrepreneurs | Founder of Life’s Golden Triangle™
           </p>
           <div className="mt-8 hidden lg:block">
             <span className="text-6xl text-primary-foreground/10">ॐ</span>
