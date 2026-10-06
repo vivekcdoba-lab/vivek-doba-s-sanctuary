@@ -346,7 +346,7 @@ const App = () => (
               {(['india', 'maharashtra', 'pune', 'mumbai'] as const).map(location => <Route key={`life-${location}`} path={`/life-coach-in-${location}`} element={<SeoLifeCoachLocation forcedLocation={location} />} />)}
               {(['india', 'maharashtra', 'pune', 'mumbai'] as const).map(location => <Route key={`business-${location}`} path={`/business-coach-in-${location}`} element={<SeoBusinessCoachLocation forcedLocation={location} />} />)}
             </Route>
-            {['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt', 'practitioner', 'ram-nirvana', 'sales-sanjivani', 'leadership', 'book'].map(slug => (
+            {['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt-platinum', 'practitioner', 'ram-nirvana', 'sales-sanjivani', 'leadership', 'book'].map(slug => (
               <Route key={slug} path={`/${slug}`} element={<Navigate to={`/courses/${slug}`} replace />} />
             ))}
             <Route path="/login" element={<LoginPage />} />
