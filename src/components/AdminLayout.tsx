@@ -87,6 +87,7 @@ const adminNav: NavGroup[] = [
        { icon: Newspaper, label: 'Blog Posts', path: '/admin/posts' },
        { icon: Award, label: 'Testimonials', path: '/admin/testimonials' },
       { icon: FileText, label: 'Resources', path: '/resources' },
+      { icon: FileText, label: 'Client Workbook', path: '/admin/client-workbook' },
       { icon: FileText, label: 'Agreement Document Library', path: '/admin/documents' },
       { icon: UserPlus, label: 'Upload Resource', path: '/admin/upload-resource' },
       { icon: FolderOpen, label: 'Categories', path: '/admin/categories' },
