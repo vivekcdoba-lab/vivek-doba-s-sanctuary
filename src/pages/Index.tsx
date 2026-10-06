@@ -101,7 +101,7 @@ export default function Index() {
            <p className="mt-2 max-w-2xl text-base text-primary-foreground/85">{BRAND_DIFFERENTIATOR}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
              <DiagnosticCta className="min-h-12 bg-course-maroon text-secondary-foreground hover:bg-course-maroon/90" noteClassName="text-primary-foreground/85" />
-            <Button asChild size="lg" variant="outline" className="min-h-12 border-primary-foreground/60 bg-background/10 text-primary-foreground hover:bg-background hover:text-foreground"><Link to="/courses/know-your-triangle">Start here: Know Your Triangle <ArrowRight /></Link></Button>
+             <Button asChild size="lg" variant="outline" className="h-auto min-h-12 self-start whitespace-normal border-primary-foreground/60 bg-background/10 text-primary-foreground hover:bg-background hover:text-foreground"><Link to="/courses/know-your-triangle">Start here: Know Your Triangle <ArrowRight /></Link></Button>
           </div>
           <p className="mt-8 max-w-2xl border-l border-primary-foreground/40 pl-4 text-base font-semibold text-primary-foreground">805+ reviews · Coaching since 1998 · Pimpri-Chinchwad, Pune</p>
         </div>
@@ -110,7 +110,7 @@ export default function Index() {
             <img src={vivekDobaPhoto} alt="Business coach Vivek Doba in Pune" width="500" height="331" fetchPriority="high" className="aspect-[4/5] w-full object-cover object-top" />
           </div>
           <div className="absolute bottom-5 left-5 right-5 rounded-md border border-primary-foreground/20 bg-course-maroon/90 px-4 py-3 text-center backdrop-blur-sm">
-             <p className="font-semibold">Vivek Doba</p><p className="text-sm text-secondary-foreground/80">{BRAND_DESCRIPTOR} · Founder, Life’s Golden Triangle™</p>
+              <p className="font-semibold">Vivek Doba</p><p className="text-sm text-secondary-foreground/80">{BRAND_DESCRIPTOR} · Founder, Life’s Golden Triangle</p>
           </div>
         </div>
       </div>

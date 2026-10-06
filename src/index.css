@@ -237,6 +237,8 @@
   .font-course-serif { font-family: 'Cormorant Garamond', serif; }
   .bg-course-ivory { background-color: hsl(var(--course-ivory)); }
   .bg-course-saffron { background-color: hsl(var(--course-saffron)); }
+  .bg-diagnostic { background-color: hsl(var(--diagnostic)); }
+  .hover\:bg-diagnostic\/90:hover { background-color: hsl(var(--diagnostic) / 0.9); }
   .bg-course-maroon { background-color: hsl(var(--course-maroon)); }
   .text-course-saffron { color: hsl(var(--course-saffron)); }
   .text-course-maroon { color: hsl(var(--course-maroon)); }
@@ -271,17 +273,17 @@
   .homepage-triangle-shape::after {
     content: '';
     position: absolute;
-    inset: 10%;
+    inset: 2%;
     background: hsl(var(--muted));
     clip-path: polygon(50% 0, 100% 100%, 0 100%);
   }
   .homepage-triangle-point {
     position: absolute;
     z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.65rem 0.85rem;
+    display: block;
+    max-width: 52%;
+    text-align: center;
+    padding: 0.65rem 0.5rem;
     border-radius: 0.375rem;
     background: hsl(var(--card));
     color: hsl(var(--course-maroon));

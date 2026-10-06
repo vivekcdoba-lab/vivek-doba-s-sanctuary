@@ -44,5 +44,6 @@
 - [x] Correct sitemap date handling and verify robots, 404 noindex, and route exclusions.
 - [x] Audit image delivery, dimensions, lazy loading, hero/font preloads, and removable unused code.
 - [ ] Capture post-change mobile Lighthouse scores and rendered homepage source proof (blocked: installed browser cannot start because a system library is unavailable).
-- [ ] Apply protected positioning, trademark, framework, program-name, diagnostic, and metadata updates
-- [ ] Add minimal protected /admin/client-workbook page and sidebar link; never open or alter the existing workbook.
+- [x] Apply protected positioning, framework, program-name, diagnostic, and metadata updates; report retained legacy program references.
+- [x] Add minimal protected /admin/client-workbook page and sidebar link without opening or altering the workbook.
+- [ ] Display the original client workbook (blocked: public/workbooks/vdbm-client-workbook.html is absent; requires the user's original file).
