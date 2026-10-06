@@ -14,7 +14,7 @@ type DiagnosticCtaProps = {
 
 export default function DiagnosticCta({ className = '', noteClassName = '', compact = false }: DiagnosticCtaProps) {
   return <div className={compact ? 'max-w-sm' : 'max-w-md'}>
-    <Button className={className} onClick={() => openExternal(DIAGNOSTIC_URL)}>
+    <Button className={`h-auto min-h-12 whitespace-normal ${className}`} onClick={() => openExternal(DIAGNOSTIC_URL)}>
       {DIAGNOSTIC_LABEL}<MessageCircle />
     </Button>
     <p className={`mt-2 text-xs leading-5 text-muted-foreground ${noteClassName}`}>{DIAGNOSTIC_NOTE}</p>

@@ -450,7 +450,7 @@ const ApplyLGT = ({ adminMode = false, submissionId, initialData, onAdminSaved, 
       <div className="text-white py-8 px-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #FFD700, #7B1FA2)' }}>
         <div className="max-w-3xl mx-auto relative z-10">
           <Link to="/" className="inline-flex items-center gap-1 text-white/80 hover:text-white text-sm mb-4"><ArrowLeft className="w-4 h-4" /> Back to Home</Link>
-          <h1 className="text-2xl sm:text-3xl font-bold">👑 Apply for Life's Golden Triangle</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">👑 Apply for LGT Platinum</h1>
           <p className="text-white/80 mt-2 text-sm">A 180-day sacred journey of Personal Mastery, Professional Excellence, and Spiritual Wellbeing.</p>
           <p className="text-white/60 mt-1 text-xs">⚡ Limited seats. By application only.</p>
         </div>

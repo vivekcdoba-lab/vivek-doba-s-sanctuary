@@ -17,7 +17,7 @@ export default function TestimonialsPage() {
   const written = filtered.filter(item => item.quote);
   const availablePrograms = courses.filter(course => testimonials.some(item => item.program_slug === course.slug));
   const title = 'Business Owner Stories | Vivek Doba';
-  const description = 'Read client stories from Vivek Doba’s business, leadership and Life’s Golden Triangle coaching programs in Pune and across India.';
+  const description = 'Read client stories from Vivek Doba’s business, leadership and LGT Platinum programs in Pune and across India.';
   return <>
     <PublicSeo title={title} description={description} path="/testimonials" schemas={[breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Testimonials', path: '/testimonials' }])]} />
     <section className="border-b border-border bg-muted/30 px-4 py-16 text-center"><Quote className="mx-auto h-10 w-10 text-primary" /><h1 className="mx-auto mt-4 max-w-4xl text-4xl font-bold sm:text-5xl">Stories from Business Owners Coached by Vivek Doba</h1><p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">Only real client experiences shared with permission are published here.</p></section>

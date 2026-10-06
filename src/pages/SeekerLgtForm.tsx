@@ -111,7 +111,7 @@ const SeekerLgtForm = () => {
         className="px-4 py-4 text-white text-sm text-center"
         style={{ background: 'linear-gradient(135deg, #FFD700, #7B1FA2)' }}
       >
-        🙏 Namaste {p.full_name || 'Seeker'} — Vivek Sir has invited you to complete your <strong>Life's Golden Triangle</strong> application.
+        🙏 Namaste {p.full_name || 'Seeker'} — Vivek Sir has invited you to complete your <strong>LGT Platinum</strong> application.
       </div>
       <ApplyLGT
         tokenMode={{ token: token!, seekerName: p.full_name }}

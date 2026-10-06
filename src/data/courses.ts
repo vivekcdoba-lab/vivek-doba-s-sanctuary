@@ -40,8 +40,8 @@ const IMAGE_BASE = 'https://pobjadmnmfbeydqsymhx.supabase.co/storage/v1/object/p
 const VIVEK_IMAGE_COURSES = new Set(['know-your-triangle', 'loa', 'udyog-sanjivani', 'practitioner', 'sales-sanjivani', 'leadership']);
 const enhancements: Record<string, Pick<Course, 'benefits' | 'method' | 'timeline' | 'deliverables'>> = {
   'know-your-triangle': {
-    benefits: [{ title: 'See your life on one page', text: 'Your business, health and family measured on one Golden Triangle Score.', icon: 'Triangle' }, { title: 'Know where to start', text: 'Find the one side of your life that needs attention first.', icon: 'Compass' }, { title: 'No risk, no pressure', text: 'Free, 2 hours, and no obligation to join anything.', icon: 'ShieldCheck' }],
-    method: [{ title: 'Understand the Golden Triangle', text: 'Why business, health and family rise or fall together.' }, { title: 'Take your score live', text: 'Measure where you stand today, in the room.' }, { title: 'Read your result', text: 'See your strongest and weakest side and what it means.' }, { title: 'Choose your next step', text: 'Know which program on the ladder fits you, if any.' }],
+    benefits: [{ title: 'See your life on one page', text: 'Your business, health and relationships measured on one Golden Triangle Score.', icon: 'Triangle' }, { title: 'Know where to start', text: 'Find the one side of your life that needs attention first.', icon: 'Compass' }, { title: 'No risk, no pressure', text: 'Free, 2 hours, and no obligation to join anything.', icon: 'ShieldCheck' }],
+    method: [{ title: 'Understand the Golden Triangle', text: 'Why business, health and relationships rise or fall together.' }, { title: 'Take your score live', text: 'Measure where you stand today, in the room.' }, { title: 'Read your result', text: 'See your strongest and weakest side and what it means.' }, { title: 'Choose your next step', text: 'Know which program on the ladder fits you, if any.' }],
     timeline: [{ when: 'After 2 hours', what: 'You know your Golden Triangle Score and your weakest side.' }],
     deliverables: ['2-hour live group session', 'Your personal Golden Triangle Score', 'Guidance on your next step'],
   },
@@ -72,8 +72,8 @@ function enrichCourse(course: Course, index: number, side = false): Course {
     benefits: enhancements[course.slug]?.benefits || [], method: enhancements[course.slug]?.method || [],
     timeline: enhancements[course.slug]?.timeline || [], deliverables: enhancements[course.slug]?.deliverables || [],
     sortOrder: index, isSideProgram: side, isPublished: true, generatedImage: true,
-    heroImageUrl: `${IMAGE_BASE}${course.slug}-hero.webp${VIVEK_IMAGE_COURSES.has(course.slug) ? '?v=vivek-20260923' : ''}`,
-    cardImageUrl: `${IMAGE_BASE}${course.slug}-card.webp${VIVEK_IMAGE_COURSES.has(course.slug) ? '?v=vivek-20260923' : ''}`,
+    heroImageUrl: `${IMAGE_BASE}${course.slug === 'lgt-platinum' ? 'lgt' : course.slug}-hero.webp${VIVEK_IMAGE_COURSES.has(course.slug) ? '?v=vivek-20260923' : ''}`,
+    cardImageUrl: `${IMAGE_BASE}${course.slug === 'lgt-platinum' ? 'lgt' : course.slug}-card.webp${VIVEK_IMAGE_COURSES.has(course.slug) ? '?v=vivek-20260923' : ''}`,
     galleryImageUrls: [],
   };
 }

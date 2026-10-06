@@ -5,7 +5,7 @@ import { chromium } from 'playwright';
 
 const SITE_URL = 'https://vivekdoba.com';
 const PORT = 4173;
-const courseSlugs = ['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt', 'practitioner', 'ram-nirvana', 'sales-sanjivani', 'leadership', 'book'];
+const courseSlugs = ['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt-platinum', 'practitioner', 'ram-nirvana', 'sales-sanjivani', 'leadership', 'book'];
 const locations = ['india', 'maharashtra', 'pune', 'mumbai'];
 const routes = [
   '/', '/about', '/courses', ...courseSlugs.map(slug => `/courses/${slug}`),

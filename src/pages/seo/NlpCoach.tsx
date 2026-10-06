@@ -1,3 +1,4 @@
+import DiagnosticCta from '@/components/public/DiagnosticCta';
 import { Link } from "react-router-dom";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
@@ -30,7 +31,7 @@ const NlpCoach = () => {
           <h2 className="text-2xl font-bold text-foreground mb-3">What an NLP Coach Actually Does</h2>
           <p>
             Neuro-Linguistic Programming (NLP) is a practical toolkit for changing how you think, feel and behave under pressure.
-            As an NLP coach in India, Vivek Doba combines classical NLP techniques — anchoring, reframing, timeline work and parts
+            As an NLP coach in India, Vivek Doba, Business Transformation Mentor for Entrepreneurs, combines classical NLP techniques — anchoring, reframing, timeline work and parts
             integration — with dharma-based coaching so transformation is both fast and rooted in purpose. The result is conscious
             leadership: better decisions, calmer responses and aligned action.
           </p>
@@ -69,15 +70,10 @@ const NlpCoach = () => {
         <section>
           <h2 className="text-2xl font-bold text-foreground mb-3">Get Started</h2>
           <p>
-            Book a 45-minute session with Vivek for ₹4,999 to map your current pattern and decide whether NLP coaching is the right next
+            Book a 45-minute Diagnostic with Vivek for ₹4,999 + 18% GST to map your current pattern and decide whether NLP coaching is the right next
             step. No pressure, no script — just clarity.
           </p>
-          <Link
-            to="/book-appointment"
-            className="inline-flex items-center gap-1 mt-3 text-primary font-semibold hover:underline"
-          >
-            Book your discovery call <ChevronRight className="w-4 h-4" />
-          </Link>
+          <DiagnosticCta className="mt-3 bg-diagnostic text-primary-foreground hover:bg-diagnostic/90" />
         </section>
       </article>
 

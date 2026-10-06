@@ -115,6 +115,7 @@ const AdminVideos = lazyWithReload(() => import("./pages/admin/AdminVideos"));
 const AdminAudios = lazyWithReload(() => import("./pages/admin/AdminAudios"));
 const AdminHomepageMedia = lazyWithReload(() => import("./pages/admin/AdminHomepageMedia"));
 const AdminPublicContent = lazyWithReload(() => import("./pages/admin/AdminPublicContent"));
+const ClientWorkbook = lazyWithReload(() => import("./pages/admin/ClientWorkbook"));
 const AdminPostsPage = lazyWithReload(() => import("./pages/admin/AdminPostsPage"));
 const AdminTestimonialsPage = lazyWithReload(() => import("./pages/admin/AdminTestimonialsPage"));
 const AdminUploadResource = lazyWithReload(() => import("./pages/admin/AdminUploadResource"));
@@ -321,6 +322,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/courses" element={<PublicCoursesPage />} />
+              <Route path="/courses/lgt" element={<Navigate to="/courses/lgt-platinum" replace />} />
               <Route path="/courses/:slug" element={<CourseDetailPage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/shop/:slug" element={<ProductDetailPage />} />
@@ -438,6 +440,7 @@ const App = () => (
               <Route path="/admin/products" element={<AdminPublicContent mode="products" />} />
               <Route path="/admin/gallery" element={<AdminPublicContent mode="gallery_items" />} />
               <Route path="/admin/posts" element={<AdminPostsPage />} />
+              <Route path="/admin/client-workbook" element={<ClientWorkbook />} />
               <Route path="/admin/testimonials" element={<AdminTestimonialsPage />} />
               <Route path="/admin/blog" element={<Navigate to="/admin/posts" replace />} />
               <Route path="/admin/upload-resource" element={<AdminUploadResource />} />

@@ -4,7 +4,7 @@ import BackToHome from '@/components/BackToHome';
 import PublicSeo, { breadcrumbSchema } from '@/components/public/PublicSeo';
 
 const faqs = [
-  { q: 'What is the LGT Framework?', a: "Life's Golden Triangle (LGT) is VDBM's proprietary coaching framework built on the four Purusharthas — Dharma (Purpose), Artha (Prosperity), Kama (Fulfillment), and Moksha (Liberation). It provides a holistic approach to transformation." },
+  { q: 'What is the LGT Framework?', a: "Life’s Golden Triangle™ (LGT) is VDBM's proprietary coaching framework built on the four Purusharthas — Dharma · Health, mindset and values, Artha · Business, money and growth, Kama · Relationships, team and targets, and Moksha · Legacy and lasting happiness. It provides a holistic approach to transformation." },
   { q: 'How long is the coaching program?', a: 'Our flagship LGT Platinum program is a 180-day (6-month) structured transformation journey. We also offer shorter programs and workshops.' },
   { q: 'How do I fill the Daily Dharmic Worksheet?', a: 'Navigate to the Worksheet section from your dashboard. Fill in your morning intention, gratitude entries, and priorities. In the evening, complete the reflection section. Aim to submit both morning and evening entries daily.' },
   { q: 'How are assessments used?', a: 'Assessments like the Wheel of Life and LGT Dimension Assessment provide a baseline of your current state. They are retaken periodically to measure your growth and guide your coaching sessions.' },

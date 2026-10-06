@@ -1,3 +1,4 @@
+import DiagnosticCta from '@/components/public/DiagnosticCta';
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Phone, MessageSquare, Lock, ChevronRight, Instagram, Youtube, Linkedin, Facebook } from "lucide-react";
@@ -106,13 +107,7 @@ export const SeoHero = ({ eyebrow, title, subtitle }: { eyebrow: string; title: 
 export const SeoCTA = () => (
   <section className="max-w-5xl mx-auto px-4 py-12">
     <div className="grid sm:grid-cols-2 gap-4">
-      <Link
-        to="/book-appointment"
-        className="flex items-center justify-center gap-2 py-4 rounded-xl text-white font-semibold transition-opacity hover:opacity-90"
-        style={{ background: "linear-gradient(135deg, #2196F3, #00BCD4)" }}
-      >
-        Book a 45-Minute Session · ₹4,999 <ChevronRight className="w-4 h-4" />
-      </Link>
+      <DiagnosticCta className="w-full py-4 bg-diagnostic text-primary-foreground hover:bg-diagnostic/90" />
       <Link
         to="/register-workshop"
         className="flex items-center justify-center gap-2 py-4 rounded-xl text-white font-semibold transition-opacity hover:opacity-90"

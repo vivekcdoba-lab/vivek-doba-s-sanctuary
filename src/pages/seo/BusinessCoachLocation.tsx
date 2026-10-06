@@ -1,3 +1,4 @@
+import DiagnosticCta from '@/components/public/DiagnosticCta';
 import { useParams, Link, Navigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
@@ -46,7 +47,7 @@ const LOCATION_CONTENT: Record<LocationKey, {
     h1: "Business Coach in Pune for Founders & Family Business Owners",
     eyebrow: "Pune · In-person + Online",
     subtitle: "Based in Pune. Coaching IT founders in Hinjawadi, D2C brands in Koregaon Park, and multi-generational family businesses across the city.",
-    intro: "Pune is where this practice is built. As a business coach in Pune, Vivek Doba works with both ends of the city's economy — the venture-backed founders of Hinjawadi and Magarpatta, and the family-owned manufacturers and traders of Sadashiv Peth, Camp and Pimpri-Chinchwad.",
+    intro: "Pune is where this practice is built. As a business coach in Pune, Vivek Doba, Business Transformation Mentor for Entrepreneurs, works with both ends of the city's economy — the venture-backed founders of Hinjawadi and Magarpatta, and the family-owned manufacturers and traders of Sadashiv Peth, Camp and Pimpri-Chinchwad.",
     local: "Specialisations include IT and SaaS founders managing rapid growth, D2C and consumer brands building distribution, and family businesses navigating succession or modernisation. In-person sessions available; cohort workshops hosted quarterly. Marathi, Hindi and English supported equally.",
     areaServed: "Pune, Maharashtra, India",
   },
@@ -126,10 +127,8 @@ const BusinessCoachLocation = ({ forcedLocation }: { forcedLocation?: LocationKe
 
         <section>
           <h2 className="text-2xl font-bold text-foreground mb-3">Get Started</h2>
-          <p>Book a 45-minute session with Vivek Doba for ₹4,999. Diagnose the bottleneck and identify the right next step.</p>
-          <Link to="/book-appointment" className="inline-flex items-center gap-1 mt-3 text-primary font-semibold hover:underline">
-            Book your 45-minute session <ChevronRight className="w-4 h-4" />
-          </Link>
+          <p>Book a 45-minute Diagnostic with Vivek Doba for ₹4,999 + 18% GST. Diagnose the bottleneck and identify the right next step.</p>
+          <DiagnosticCta className="mt-3 bg-diagnostic text-primary-foreground hover:bg-diagnostic/90" />
         </section>
       </article>
 

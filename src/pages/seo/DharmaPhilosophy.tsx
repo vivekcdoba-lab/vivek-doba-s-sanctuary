@@ -41,10 +41,9 @@ const DharmaPhilosophy = () => {
           which is why clients report not just better businesses but richer relationships and deeper peace.
         </p>
 
-        <h3 className="text-xl font-semibold text-foreground mt-8 mb-3">Life's Golden Triangle</h3>
+        <h3 className="text-xl font-semibold text-foreground mt-8 mb-3">Life’s Golden Triangle™</h3>
         <p className="text-muted-foreground leading-relaxed mb-6">
-          LGT — Personal Mastery × Professional Excellence × Spiritual Wellbeing — is Vivek Doba's signature framework
-          for translating Purushaartha philosophy into a 6–12 month transformation. It gives spiritual wisdom a measurable
+          Life’s Golden Triangle is the method created by Vivek Doba, Business Transformation Mentor for Entrepreneurs. Dharma · Health &amp; values, Artha · Business and Kama · Relationships &amp; team support each other, with Moksha · Legacy at the centre. It gives spiritual wisdom a measurable
           structure: assessments, daily worksheets, weekly reviews and milestone certifications.
         </p>
 
