@@ -321,6 +321,7 @@ const App = () => (
             <Route element={<PublicLayout />}>
               <Route path="/" element={<Index />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="/book-appointment" element={<BookAppointment />} />
               <Route path="/courses" element={<PublicCoursesPage />} />
               <Route path="/courses/lgt" element={<Navigate to="/courses/lgt-platinum" replace />} />
               <Route path="/courses/:slug" element={<CourseDetailPage />} />
@@ -351,7 +352,6 @@ const App = () => (
             ))}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/book-appointment" element={<BookAppointment />} />
             <Route path="/register-workshop" element={<RegisterWorkshop />} />
             {/* Legacy public route — now admin-only */}
             <Route path="/apply-lgt" element={<Navigate to="/login" replace />} />
