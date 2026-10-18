@@ -13,7 +13,7 @@ export const SeoNav = () => (
         </span>
       </Link>
       <div className="flex items-center gap-2 sm:gap-3">
-        <a href="tel:9607050111" className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <a href="tel:+919607050111" className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <Phone className="w-4 h-4" /> 9607050111
         </a>
         <a

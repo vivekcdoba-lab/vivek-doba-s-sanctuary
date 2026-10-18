@@ -1,5 +1,11 @@
 # Full-site final audit
 
+## Phone links, FAQ HTML and public navigation
+
+- [x] Normalize phone links without changing displayed numbers.
+- [x] Keep collapsed FAQ answers in HTML and verify opening/closing.
+- [x] Hide empty Blog/Gallery tabs while preserving routes; remove footer Score link.
+
 ## Shared header, footer, and trust consistency
 
 - [x] Update the shared desktop and mobile header without overlap or duplicate actions.

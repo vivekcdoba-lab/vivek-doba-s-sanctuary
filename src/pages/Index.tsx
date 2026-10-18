@@ -178,7 +178,7 @@ export default function Index() {
     <section className="bg-course-maroon py-14 text-secondary-foreground sm:py-16">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-4 lg:flex-row lg:items-center">
          <div><h2 className="text-3xl font-bold sm:text-4xl">Not sure where to begin?</h2><p className="mt-3 max-w-2xl text-secondary-foreground/80">We will understand your business and tell you honestly which step fits you.</p></div>
-         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row"><DiagnosticCta className="bg-course-saffron text-primary-foreground hover:bg-course-saffron/90" noteClassName="text-secondary-foreground/80" /><Button asChild size="lg" variant="outline" className="border-secondary-foreground/50 bg-transparent text-secondary-foreground hover:bg-secondary-foreground hover:text-course-maroon"><a href="tel:9607050111">Call 9607050111 <Phone /></a></Button></div>
+         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row"><DiagnosticCta className="bg-course-saffron text-primary-foreground hover:bg-course-saffron/90" noteClassName="text-secondary-foreground/80" /><Button asChild size="lg" variant="outline" className="border-secondary-foreground/50 bg-transparent text-secondary-foreground hover:bg-secondary-foreground hover:text-course-maroon"><a href="tel:+919607050111">Call 9607050111 <Phone /></a></Button></div>
       </div>
     </section>
   </div>;
