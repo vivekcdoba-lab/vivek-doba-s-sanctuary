@@ -1,10 +1,10 @@
 # Routes & Pages
 
-_Generated: 2026-10-06T11:28:17.678Z_
+_Generated: 2026-10-18T03:50:05.020Z_
 
-Total routes: **265**
+Total routes: **267**
 
-## Admin (73)
+## Admin (74)
 
 | Path | Component |
 |---|---|
@@ -28,6 +28,7 @@ Total routes: **265**
 | `/admin/business-metrics` | AdminBusinessMetrics |
 | `/admin/calendar` | Navigate |
 | `/admin/categories` | AdminCategories |
+| `/admin/client-workbook` | ClientWorkbook |
 | `/admin/coach-performance` | AdminCoachPerformance |
 | `/admin/coach-seekers` | AdminCoachSeekers |
 | `/admin/coaches` | AdminCoaches |
@@ -237,7 +238,7 @@ Total routes: **265**
 | `/login` | LoginPage |
 | `/register` | RegisterPage |
 
-## Other (52)
+## Other (53)
 
 | Path | Component |
 |---|---|
@@ -257,6 +258,7 @@ Total routes: **265**
 | `/contact` | ContactPage |
 | `/courses` | PublicCoursesPage |
 | `/courses/:slug` | CourseDetailPage |
+| `/courses/lgt` | Navigate |
 | `/daily-tracking` | DailyTrackingPage |
 | `/dashboard` | AdminDashboard |
 | `/dharma-philosophy` | SeoDharmaPhilosophy |
