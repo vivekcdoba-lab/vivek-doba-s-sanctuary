@@ -12,12 +12,12 @@ const routes = [
   '/shop', '/shop/lifes-golden-triangle-book-workbook', '/gallery', '/blog', '/contact', '/testimonials', '/score',
   '/life-coaching', '/business-coaching', '/manifestation', '/meditation', '/dharma-philosophy', '/nlp-coach', '/sales-coach',
   ...locations.flatMap(location => [`/life-coach-in-${location}`, `/business-coach-in-${location}`]),
-  '/book-appointment', '/register-workshop', '/help', '/terms', '/privacy', '/refund-policy',
+  '/book-appointment', '/thank-you', '/register-workshop', '/help', '/terms', '/privacy', '/refund-policy',
 ];
 
 const escapeXml = (value: string) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const writeSitemap = (paths: string[]) => {
-  const urls = [...new Set(paths)].filter(path => path !== '/score').map(path => `  <url><loc>${escapeXml(`${SITE_URL}${path}`)}</loc></url>`).join('\n');
+  const urls = [...new Set(paths)].filter(path => path !== '/score' && path !== '/thank-you').map(path => `  <url><loc>${escapeXml(`${SITE_URL}${path}`)}</loc></url>`).join('\n');
   writeFileSync(resolve('public/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
   writeFileSync(resolve('dist/sitemap.xml'), readFileSync(resolve('public/sitemap.xml')));
 };
