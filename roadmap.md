@@ -1,5 +1,13 @@
 # Full-site final audit
 
+## Testimonials and conversion fixes
+
+- [ ] Add supplied real testimonials/photos in one data file, shared cards, homepage/course placements, navigation and review link (blocked: only placeholders supplied; photos and permission missing).
+- [ ] Add the thank-you page and successful contact/appointment redirects.
+- [ ] Point header/homepage diagnostic actions to booking with separate WhatsApp actions.
+- [ ] Place the ₹4,999 session block after homepage testimonials.
+- [ ] Add the mobile Call/WhatsApp/booking bar and hide mobile floating Support; verify flows.
+
 ## Phone links, FAQ HTML and public navigation
 
 - [x] Normalize phone links without changing displayed numbers.
