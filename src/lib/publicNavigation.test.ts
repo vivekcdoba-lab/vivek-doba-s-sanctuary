@@ -13,7 +13,7 @@ describe('published content in top navigation', () => {
   });
 
   it('keeps other tabs visible without published content', () => {
-    for (const path of ['/about', '/courses', '/shop', '/contact']) {
+    for (const path of ['/about', '/courses', '/shop', '/contact', '/testimonials']) {
       expect(isPublicTabVisible(path, { blogCount: 0, galleryCount: 0 })).toBe(true);
     }
   });
