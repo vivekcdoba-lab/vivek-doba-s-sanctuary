@@ -4,7 +4,7 @@ import { allCourses } from '@/data/courses';
 import { BUSINESS_ADDRESS, BUSINESS_EMAIL, BUSINESS_HOURS, BUSINESS_NAME, BUSINESS_PHONE } from './PublicSeo';
 
 const socials = [{ name: 'YouTube', url: 'https://www.youtube.com/@VIVEKDOBA', icon: Youtube }, { name: 'Instagram', url: 'https://www.instagram.com/vivekdoba/', icon: Instagram }, { name: 'Facebook', url: 'https://www.facebook.com/askVivekDoba/', icon: Facebook }, { name: 'LinkedIn', url: 'https://www.linkedin.com/in/vivekdoba/', icon: Linkedin }];
-const explore = [['About Us','/about'],['Shop','/shop'],['Gallery','/gallery'],['Blog','/blog'],['Testimonials','/testimonials'],['Contact Us','/contact'],['Golden Triangle Score','/score']];
+const explore = [['About Us','/about'],['Shop','/shop'],['Gallery','/gallery'],['Blog','/blog'],['Testimonials','/testimonials'],['Contact Us','/contact']];
 const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(BUSINESS_ADDRESS)}`;
 
 export default function PublicFooter() {
