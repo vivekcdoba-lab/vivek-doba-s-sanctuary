@@ -17,7 +17,7 @@ import businessOwnerHealth from '@/assets/home/business-owner-health.jpg';
 import businessOwnerFamily from '@/assets/home/business-owner-family.jpg';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { formatINR, type Course } from '@/data/courses';
+import { formatINR, type Course, BOOK_BUY_URL } from '@/data/courses';
 import { usePublicCourses } from '@/hooks/useDbCourses';
 import { useTestimonials, type Testimonial } from '@/hooks/usePublicContent';
 import PublicSeo, { breadcrumbSchema, organizationSchema, personSchema, professionalServiceSchema } from '@/components/public/PublicSeo';
