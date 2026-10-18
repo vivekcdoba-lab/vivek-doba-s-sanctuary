@@ -1,6 +1,6 @@
 # Sidebar Navigation
 
-_Generated: 2026-10-06T11:28:17.678Z_
+_Generated: 2026-10-18T03:50:05.020Z_
 
 ## Admin (`src/components/AdminLayout.tsx`)
 
@@ -56,6 +56,7 @@ _Generated: 2026-10-06T11:28:17.678Z_
 - Blog Posts → `/admin/posts`
 - Testimonials → `/admin/testimonials`
 - Resources → `/resources`
+- Client Workbook → `/admin/client-workbook`
 - Agreement Document Library → `/admin/documents`
 - Upload Resource → `/admin/upload-resource`
 - Categories → `/admin/categories`
