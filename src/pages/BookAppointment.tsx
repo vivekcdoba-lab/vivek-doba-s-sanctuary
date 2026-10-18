@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, Phone, MessageSquare, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { COURSES } from '@/data/mockData';
@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import CountryStateInput from '@/components/inputs/CountryStateInput';
 import { formatDateDMY } from "@/lib/dateFormat";
 import PublicSeo from '@/components/public/PublicSeo';
+import { submitPublicEnquiry, THANK_YOU_PATH } from '@/lib/publicConversion';
 
 const INDUSTRIES = ['IT & Software','Manufacturing','Education','Healthcare','Retail & E-commerce','Finance & Banking','Real Estate','Government & Politics','Legal','Agriculture','Media & Entertainment','Hospitality','Consulting','NGO/Non-Profit','Other'];
 const REVENUE_RANGES = ['Below ₹10 Lakhs','₹10L - ₹50L','₹50L - ₹1 Crore','₹1Cr - ₹5 Crore','₹5Cr - ₹25 Crore','₹25Cr - ₹100 Crore','₹100 Crore+','Not Applicable (Salaried)','Prefer Not to Say'];
@@ -61,7 +62,7 @@ const inputCls = "w-full px-3 py-2.5 rounded-lg border border-border bg-backgrou
 
 const BookAppointment = () => {
   const { toast } = useToast();
-  const [submitted, setSubmitted] = useState(false);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     fullName: '', mobile: '', email: '', whatsapp: '', sameWhatsapp: true, city: '', address: '',
@@ -108,6 +109,7 @@ const BookAppointment = () => {
     setLoading(true);
     try {
       const formData = { ...form, selectedDate: form.selectedDate?.toISOString() };
+      await submitPublicEnquiry(async () => {
       const { error } = await supabase.from('submissions').insert({
         form_type: 'discovery_call',
         full_name: form.fullName,
@@ -117,8 +119,8 @@ const BookAppointment = () => {
         form_data: formData as any,
       });
       if (error) throw error;
-      // Send admin notification email
-      await supabase.functions.invoke('send-notification', {
+      }, async () => {
+      const { error } = await supabase.functions.invoke('send-notification', {
         body: {
           type: 'new_submission',
           form_type: 'discovery_call',
@@ -128,40 +130,15 @@ const BookAppointment = () => {
           form_data: formData,
         },
       });
-      setSubmitted(true);
+        if (error) throw error;
+      }, () => navigate(THANK_YOU_PATH), () => console.error('Appointment notification failed after the request was saved.'));
     } catch (err) {
       console.error(err);
-      toast({ title: 'Submission saved! Email notification may be delayed.', variant: 'default' });
-      setSubmitted(true);
+      toast({ title: 'Your request could not be saved. Please try again or WhatsApp us.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="bg-card rounded-2xl shadow-xl p-8 max-w-lg w-full text-center border border-border">
-          <div className="text-5xl mb-4">✅</div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">Appointment Request Submitted!</h2>
-          <div className="bg-muted rounded-xl p-4 my-4 text-left">
-            <p className="text-sm text-foreground">📅 {formatDateDMY(form.selectedDate)} at {form.selectedSlot}</p>
-          </div>
-          <div className="text-left text-sm text-muted-foreground space-y-1 mb-6">
-            <p className="font-semibold text-foreground">What happens next:</p>
-            <p>1. Vivek Sir will review your request within 24 hours</p>
-            <p>2. Once approved, you'll receive confirmation via WhatsApp/Email</p>
-            <p>3. A Google Meet link will be shared before the call</p>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">📞 Questions? Call 9607050111</p>
-          <div className="flex gap-3">
-            <Link to="/" className="flex-1 py-2.5 rounded-xl border border-border text-center text-sm font-medium text-foreground hover:bg-muted transition-colors">← Back to Home</Link>
-            <a href={`https://wa.me/919607050111?text=${encodeURIComponent("Hello, I recently explored your website and program details. I'm really interested and would love to understand how the program works and how it can help transform my life.")}`} target="_blank" rel="noopener noreferrer me" className="flex-1 py-2.5 rounded-xl text-center text-sm font-medium text-white" style={{ backgroundColor: '#25D366' }}>💬 WhatsApp Us</a>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">

@@ -6,7 +6,7 @@ import { usePublicCourses } from '@/hooks/useDbCourses';
 import { useTestimonials } from '@/hooks/usePublicContent';
 import { VideoTestimonialCard, WrittenTestimonialCard } from '@/components/public/TestimonialCards';
 
-const GOOGLE_REVIEW_LINK = 'https://www.google.com/search?q=Vivek+Doba+Business+Mastery&stick=H4sIAAAAAAAA_-NgU1I1qDBOSjZKSrM0M0w0T0oDAiuDChNL47SUFDNDU2NzQ3OjNMtFrNJhmWWp2Qou-UmJCk6lxZl5qcXFCr6JxSWpRZUARCKbTkcAAAA&hl=en-GB&mat=Cb6XIapqqfI_ElcBzAmVZig4NQKCcjhZJqhWHsORRPvzRT5bJMnRd2XZaI5rwkWlOfj8fAy5cu3RMhMJpEBp_yVI-rntalsJaDOmxCEysQTPw8mJ0BypI7rclU7DdiLwzX8&authuser=0&ved=1t:350944';
+import { GOOGLE_REVIEW_LINK } from '@/data/clientTestimonials';
 
 export default function TestimonialsPage() {
   const { data: testimonials = [], isLoading } = useTestimonials();

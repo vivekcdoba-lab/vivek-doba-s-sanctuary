@@ -48,6 +48,7 @@ import PublicLayout from "./components/public/PublicLayout";
 // Lazy-loaded routes (split into per-route chunks)
 const RegisterPage = lazyWithReload(() => import("./pages/RegisterPage"));
 const TestimonialsPage = lazyWithReload(() => import("./pages/public/TestimonialsPage"));
+const ThankYouPage = lazyWithReload(() => import("./pages/public/ThankYouPage"));
 const ScorePage = lazyWithReload(() => import("./pages/public/ScorePage"));
 const RefundPolicyPage = lazyWithReload(() => import("./pages/RefundPolicyPage"));
 const BookAppointment = lazyWithReload(() => import("./pages/BookAppointment"));
@@ -322,6 +323,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/book-appointment" element={<BookAppointment />} />
+              <Route path="/thank-you" element={<ThankYouPage />} />
               <Route path="/courses" element={<PublicCoursesPage />} />
               <Route path="/courses/lgt" element={<Navigate to="/courses/lgt-platinum" replace />} />
               <Route path="/courses/:slug" element={<CourseDetailPage />} />

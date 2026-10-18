@@ -14,7 +14,7 @@ export default function WhatsAppSupportButton() {
         e.preventDefault();
         openWhatsApp(phone);
       }}
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-white shadow-lg hover:bg-[#20bd5a] transition-colors print:hidden"
+      className="fixed bottom-6 right-6 z-50 hidden md:flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-white shadow-lg hover:bg-[#20bd5a] transition-colors print:hidden"
       aria-label="WhatsApp Support"
     >
       <MessageCircle className="h-5 w-5" />
