@@ -2,9 +2,9 @@
 
 ## Phone links, FAQ HTML and public navigation
 
-- [ ] Normalize phone links without changing displayed numbers.
-- [ ] Keep collapsed FAQ answers in HTML and verify opening/closing.
-- [ ] Hide empty Blog/Gallery tabs while preserving routes; remove footer Score link.
+- [x] Normalize phone links without changing displayed numbers.
+- [x] Keep collapsed FAQ answers in HTML and verify opening/closing.
+- [x] Hide empty Blog/Gallery tabs while preserving routes; remove footer Score link.
 
 ## Shared header, footer, and trust consistency
 
