@@ -23,6 +23,11 @@ import { useTestimonials, type Testimonial } from '@/hooks/usePublicContent';
 import PublicSeo, { breadcrumbSchema, organizationSchema, personSchema, professionalServiceSchema } from '@/components/public/PublicSeo';
 import FrameworkTriangle from '@/components/public/FrameworkTriangle';
 import DiagnosticCta from '@/components/public/DiagnosticCta';
+import { TestimonialCard, VideoTestimonialCard } from '@/components/public/TestimonialCards';
+import { GOOGLE_REVIEW_LINK } from '@/data/clientTestimonials';
+import { BOOKING_PATH, PUBLIC_WHATSAPP_URL } from '@/lib/publicConversion';
+import { DIAGNOSTIC_URL } from '@/components/public/DiagnosticCta';
+import { DIAGNOSTIC_NOTE } from '@/data/framework';
 import { BRAND_DESCRIPTOR, BRAND_DIFFERENTIATOR, BRAND_TAGLINE, framework } from '@/data/framework';
 
 const mirrorCards = [
@@ -66,13 +71,10 @@ function TestimonialsSection({ testimonials }: { testimonials: Testimonial[] }) 
     <div className="mx-auto max-w-6xl px-4">
       <div className="mb-9 flex items-center gap-3">
         <Quote className="h-7 w-7 text-primary" />
-        <h2 className="text-3xl font-bold">Stories from business owners</h2>
+        <h2 className="text-3xl font-bold">What business owners say</h2>
       </div>
       <div className="grid gap-6 md:grid-cols-3">
-        {testimonials.map(story => <article key={story.id} className="overflow-hidden rounded-lg border border-border bg-card">
-          <iframe className="aspect-video w-full" loading="lazy" src={`https://www.youtube-nocookie.com/embed/${story.youtube_id}`} title={`${story.name} testimonial`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-          <div className="p-4"><p className="font-semibold">{story.name}</p>{story.business && <p className="text-base text-muted-foreground">{story.business}</p>}</div>
-        </article>)}
+        {testimonials.map(story => story.quote ? <TestimonialCard key={story.id} item={story} /> : <VideoTestimonialCard key={story.id} item={story} />)}
       </div>
       <Button asChild variant="outline" className="mt-8"><Link to="/testimonials">More stories <ArrowRight /></Link></Button>
     </div>
@@ -85,7 +87,7 @@ export default function Index() {
   const featuredSlugs = ['know-your-triangle', 'loa', 'udyog-sanjivani', 'lgt-platinum'];
   const featuredCourses = featuredSlugs.map(slug => courses.find(course => course.slug === slug)).filter((course): course is Course => Boolean(course));
   const book = courses.find(course => course.slug === 'book');
-  const videoTestimonials = publishedTestimonials.filter(item => item.youtube_id).slice(0, 3);
+  const featuredTestimonials = publishedTestimonials.filter(item => item.quote || item.youtube_id).slice(0, 3);
 
   return <div className="bg-background">
     <PublicSeo title="Vivek Doba | Business Coach in Pune & PCMC | Life’s Golden Triangle™" description="Business transformation mentor for entrepreneurs in Pune. Life’s Golden Triangle™: ancient Indian wisdom + modern business strategy. 805+ reviews, since 1998." path="/" schemas={[organizationSchema, personSchema, professionalServiceSchema, faqSchema, breadcrumbSchema([{ name: 'Home', path: '/' }])]} />
@@ -100,10 +102,11 @@ export default function Index() {
            <p className="mt-3 max-w-2xl font-semibold text-primary-foreground">{BRAND_TAGLINE}</p>
            <p className="mt-2 max-w-2xl text-base text-primary-foreground/85">{BRAND_DIFFERENTIATOR}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-             <DiagnosticCta className="min-h-12 bg-course-maroon text-secondary-foreground hover:bg-course-maroon/90" noteClassName="text-primary-foreground/85" />
+             <DiagnosticCta to={BOOKING_PATH} className="min-h-12 bg-course-maroon text-secondary-foreground hover:bg-course-maroon/90" noteClassName="text-primary-foreground/85" />
+             <Button asChild size="lg" variant="outline" className="h-auto min-h-12 self-start border-primary-foreground/60 bg-background/10 text-primary-foreground hover:bg-background hover:text-foreground"><a href={PUBLIC_WHATSAPP_URL} target="_blank" rel="noopener noreferrer"><MessageCircle />WhatsApp</a></Button>
              <Button asChild size="lg" variant="outline" className="h-auto min-h-12 self-start whitespace-normal border-primary-foreground/60 bg-background/10 text-primary-foreground hover:bg-background hover:text-foreground"><Link to="/courses/know-your-triangle">Start here: Know Your Triangle <ArrowRight /></Link></Button>
           </div>
-          <p className="mt-8 max-w-2xl border-l border-primary-foreground/40 pl-4 text-base font-semibold text-primary-foreground">805+ reviews · Coaching since 1998 · Pimpri-Chinchwad, Pune</p>
+          <p className="mt-8 max-w-2xl border-l border-primary-foreground/40 pl-4 text-base font-semibold text-primary-foreground"><a href={GOOGLE_REVIEW_LINK} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">805+ reviews</a> · Coaching since 1998 · Pimpri-Chinchwad, Pune</p>
         </div>
         <div className="relative mx-auto w-full max-w-lg self-end">
           <div className="homepage-photo-frame overflow-hidden rounded-lg border border-primary-foreground/30">
@@ -148,6 +151,16 @@ export default function Index() {
       </div>
     </section>
 
+    <TestimonialsSection testimonials={featuredTestimonials} />
+
+    <section className="border-y border-border bg-muted/40 py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4">
+        <h2 className="text-3xl font-bold sm:text-4xl">Book your 45-minute session with Vivek · ₹4,999</h2>
+        <p className="mt-4 text-muted-foreground">{DIAGNOSTIC_NOTE}</p>
+        <Button asChild className="mt-7 bg-course-saffron text-primary-foreground hover:bg-course-saffron/90"><a href={DIAGNOSTIC_URL} target="_blank" rel="noopener noreferrer">Book your session<MessageCircle /></a></Button>
+      </div>
+    </section>
+
     <section className="border-y border-border bg-course-ivory py-16 sm:py-20">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-[0.8fr_1.2fr]">
         <img src={vivekDobaPhoto} alt="Vivek Doba, business and life coach" width="500" height="331" loading="lazy" className="mx-auto aspect-square w-full max-w-sm rounded-lg object-cover object-top shadow-course" />
@@ -155,7 +168,6 @@ export default function Index() {
       </div>
     </section>
 
-    <TestimonialsSection testimonials={videoTestimonials} />
 
     {book && <section className="py-16 sm:py-20">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-2">
