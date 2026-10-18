@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { type Course, formatINR, whatsappLink } from '@/data/courses';
+import { type Course, formatINR, whatsappLink, BOOK_BUY_URL } from '@/data/courses';
 import { openExternal } from '@/lib/openExternal';
 import { DIAGNOSTIC_NOTE } from '@/data/framework';
 
@@ -16,6 +16,7 @@ export function CoursePrice({ course, align = 'left' }: { course: Course; align?
 export function CourseCta({ course, className = '' }: { course: Course; className?: string }) {
   if (course.ctaType === 'none') return null;
   if (course.ctaType === 'read') return <Button asChild className={`min-h-12 bg-course-saffron text-primary-foreground hover:bg-course-saffron/90 ${className}`}><a href={`/courses/${course.slug}`}>{course.cta}<ArrowRight /></a></Button>;
+  if (course.ctaType === 'prebook') return <div className="flex flex-wrap gap-3"><Button asChild className={`min-h-12 bg-course-saffron text-primary-foreground hover:bg-course-saffron/90 ${className}`}><a href={BOOK_BUY_URL} target="_blank" rel="noopener noreferrer">Buy now · ₹999<ArrowRight /></a></Button><Button variant="outline" className="min-h-12" onClick={() => openExternal(whatsappLink(course.name, false))}>Ask on WhatsApp</Button></div>;
   const href = whatsappLink(course.name, course.ctaType === 'diagnostic');
   if (course.ctaType === 'diagnostic') return <div className="max-w-md"><Button className={`min-h-12 bg-course-saffron text-primary-foreground hover:bg-course-saffron/90 ${className}`} onClick={() => openExternal(href)}>{course.cta}<ArrowRight /></Button><p className="mt-2 text-xs leading-5 text-muted-foreground">{DIAGNOSTIC_NOTE}</p></div>;
   return <Button className={`min-h-12 bg-course-saffron text-primary-foreground hover:bg-course-saffron/90 ${className}`} onClick={() => openExternal(href)}>{course.cta}<ArrowRight /></Button>;
