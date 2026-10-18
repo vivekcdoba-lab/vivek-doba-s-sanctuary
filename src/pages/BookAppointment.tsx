@@ -6,6 +6,7 @@ import { COURSES } from '@/data/mockData';
 import { supabase } from '@/integrations/supabase/client';
 import CountryStateInput from '@/components/inputs/CountryStateInput';
 import { formatDateDMY } from "@/lib/dateFormat";
+import PublicSeo from '@/components/public/PublicSeo';
 
 const INDUSTRIES = ['IT & Software','Manufacturing','Education','Healthcare','Retail & E-commerce','Finance & Banking','Real Estate','Government & Politics','Legal','Agriculture','Media & Entertainment','Hospitality','Consulting','NGO/Non-Profit','Other'];
 const REVENUE_RANGES = ['Below ₹10 Lakhs','₹10L - ₹50L','₹50L - ₹1 Crore','₹1Cr - ₹5 Crore','₹5Cr - ₹25 Crore','₹25Cr - ₹100 Crore','₹100 Crore+','Not Applicable (Salaried)','Prefer Not to Say'];
@@ -40,15 +41,10 @@ const generateSlots = () => {
 const getNext14Days = () => {
   const days: { date: Date; label: string; available: boolean }[] = [];
   const now = new Date();
-  for (let i = 1; i <= 14; i++) {
-    const d = new Date(now);
-    d.setDate(now.getDate() + i);
-    const dow = d.getDay();
-    days.push({
-      date: d,
-      label: formatDateDMY(d),
-      available: dow !== 0,
-    });
+  for (let i = 1; days.length < 14; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    if (d.getDay() === 0) continue; // skip Sundays
+    days.push({ date: d, label: formatDateDMY(d), available: true });
   }
   return days;
 };
@@ -106,10 +102,7 @@ const BookAppointment = () => {
     if (!form.email || !isValidEmail(form.email)) {
       toast({ title: 'Please enter a valid email (e.g. xyz@abc.com)', variant: 'destructive' }); return;
     }
-    if (!form.city) {
-      toast({ title: 'Please enter your city', variant: 'destructive' }); return;
-    }
-    if (!form.profession || !form.industry || !form.challenge || !form.source || !form.selectedDate || !form.selectedSlot || !form.consent || form.purposes.length === 0) {
+    if (!form.revenue || !form.challenge) {
       toast({ title: 'Please fill all required fields', variant: 'destructive' }); return;
     }
     setLoading(true);
@@ -172,12 +165,17 @@ const BookAppointment = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <PublicSeo
+        title="Book a Free Diagnostic Call | Vivek Doba"
+        description="A free 20-minute call to understand your business and suggest the right next step. No obligation."
+        path="/book-appointment"
+      />
       {/* Header */}
       <div className="text-white py-8 px-4" style={{ background: 'linear-gradient(135deg, #2196F3, #00BCD4)' }}>
         <div className="max-w-3xl mx-auto">
           <Link to="/" className="inline-flex items-center gap-1 text-white/80 hover:text-white text-sm mb-4 transition-colors"><ArrowLeft className="w-4 h-4" /> Back to Home</Link>
-          <h1 className="text-2xl sm:text-3xl font-bold">📞 Book Your 45-Minute Discovery Call</h1>
-          <p className="text-white/80 mt-2 text-sm">Take the first step toward transformation. This is a FREE, no-obligation call.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">Book Your Free Diagnostic Call</h1>
+          <p className="text-white/80 mt-2 text-sm">A free 20-minute call to understand your business and suggest the right next step. No obligation.</p>
         </div>
       </div>
 
@@ -208,7 +206,7 @@ const BookAppointment = () => {
               {form.email && !isValidEmail(form.email) && <p className="text-xs text-destructive mt-1">Enter a valid email (e.g. xyz@abc.com)</p>}
               <p className="text-xs text-muted-foreground mt-1">{form.email.length}/60 characters</p>
             </Field>
-            <Field label="WhatsApp Number">
+            <div className="hidden"><Field label="WhatsApp Number">
               <div className="flex items-center gap-2 mb-1.5">
                 <input type="checkbox" checked={form.sameWhatsapp} onChange={e => set('sameWhatsapp', e.target.checked)} className="rounded" />
                 <span className="text-xs text-muted-foreground">Same as mobile</span>
@@ -225,12 +223,12 @@ const BookAppointment = () => {
                   <input className={inputCls} value={form.whatsapp} onChange={e => set('whatsapp', sanitizeDigits(e.target.value))} placeholder="WhatsApp number" maxLength={10} />
                 </div>
               )}
-            </Field>
-            <Field label="City" required>
+            </Field></div>
+            <div className="hidden"><Field label="City">
               <input className={inputCls} value={form.city} onChange={e => set('city', sanitizeCity(e.target.value))} placeholder="Your city" maxLength={20} />
               <p className="text-xs text-muted-foreground mt-1">{form.city.length}/20 characters</p>
-            </Field>
-            <div className="md:col-span-2">
+            </Field></div>
+            <div className="hidden">
               <CountryStateInput
                 country={form.country}
                 state={form.state}
@@ -238,18 +236,17 @@ const BookAppointment = () => {
                 onCountryChange={(v) => set('country', v)}
                 onStateChange={(v) => set('state', v)}
                 onPincodeChange={(v) => set('pincode', v)}
-                required
               />
             </div>
-            <Field label="Full Address">
+            <div className="hidden"><Field label="Full Address">
               <textarea className={inputCls} rows={2} value={form.address} onChange={e => set('address', sanitizeAddress(e.target.value))} placeholder="Your complete address (optional)" maxLength={100} />
               <p className="text-xs text-muted-foreground mt-1">{form.address.length}/100 characters</p>
-            </Field>
+            </Field></div>
           </div>
         </div>
 
         {/* Courses Interested In */}
-        <div className="bg-card rounded-xl border-l-4 p-6 shadow-sm" style={{ borderLeftColor: '#FFD700' }}>
+        <div className="hidden bg-card rounded-xl border-l-4 p-6 shadow-sm" style={{ borderLeftColor: '#FFD700' }}>
           <h3 className="font-semibold text-foreground mb-4">Courses / Programs Interested In</h3>
           <p className="text-xs text-muted-foreground mb-3">Select one or more courses you'd like to explore</p>
           <div className="relative">
@@ -292,52 +289,52 @@ const BookAppointment = () => {
         <div className="bg-card rounded-xl border-l-4 p-6 shadow-sm" style={{ borderLeftColor: '#00BCD4' }}>
           <h3 className="font-semibold text-foreground mb-4">About You</h3>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Profession/Designation" required>
+            <div className="hidden"><Field label="Profession/Designation">
               <input className={inputCls} value={form.profession} onChange={e => set('profession', sanitizeProfession(e.target.value))} placeholder="e.g., Business Owner, CEO" maxLength={20} />
               <p className="text-xs text-muted-foreground mt-1">{form.profession.length}/20 characters</p>
-            </Field>
-            <Field label="Company/Business Name">
+            </Field></div>
+            <div className="hidden"><Field label="Company/Business Name">
               <input className={inputCls} value={form.company} onChange={e => set('company', e.target.value.slice(0, 20))} placeholder="Your organization name" maxLength={20} />
               <p className="text-xs text-muted-foreground mt-1">{form.company.length}/20 characters</p>
-            </Field>
-            <Field label="Industry" required>
+            </Field></div>
+            <div className="hidden"><Field label="Industry">
               <select className={inputCls} value={form.industry} onChange={e => set('industry', e.target.value)}>
                 <option value="">Select industry...</option>
                 {INDUSTRIES.map(i => <option key={i} value={i}>{i}</option>)}
               </select>
-            </Field>
+            </Field></div>
             <Field label="Annual Turnover/Revenue" required>
               <select className={inputCls} value={form.revenue} onChange={e => set('revenue', e.target.value)}>
                 <option value="">Select range...</option>
                 {REVENUE_RANGES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </Field>
-            <Field label="Team Size">
+            <div className="hidden"><Field label="Team Size">
               <select className={inputCls} value={form.teamSize} onChange={e => set('teamSize', e.target.value)}>
                 <option value="">Select...</option>
                 {TEAM_SIZES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
-            </Field>
+            </Field></div>
           </div>
         </div>
 
         {/* Section 3: What brings you here */}
         <div className="bg-card rounded-xl border-l-4 p-6 shadow-sm" style={{ borderLeftColor: '#B8860B' }}>
           <h3 className="font-semibold text-foreground mb-4">What Brings You Here</h3>
-          <Field label="What do you need this appointment for?" required>
+          <div className="hidden"><Field label="What do you need this appointment for?">
             <div className="flex flex-wrap gap-2 mt-1">
               {PURPOSES.map(p => (
                 <button key={p} onClick={() => togglePurpose(p)} className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${form.purposes.includes(p) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:border-primary/50'}`}>{p}</button>
               ))}
             </div>
-          </Field>
+          </Field></div>
           <div className="mt-4">
             <Field label="Describe your current challenge or goal" required>
               <textarea className={inputCls} rows={3} value={form.challenge} onChange={e => set('challenge', e.target.value.slice(0, 1000))} placeholder="Tell Vivek Sir what you're going through..." maxLength={1000} />
               <p className="text-xs text-muted-foreground mt-1">{form.challenge.length}/1000 characters</p>
             </Field>
           </div>
-          <div className="grid sm:grid-cols-2 gap-4 mt-4">
+          <div className="hidden">
             <Field label="How did you hear about Vivek Doba?" required>
               <select className={inputCls} value={form.source} onChange={e => set('source', e.target.value)}>
                 <option value="">Select...</option>
@@ -415,7 +412,7 @@ const BookAppointment = () => {
 
         {/* Consent + Submit */}
         <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
-          <label className="flex items-start gap-3 cursor-pointer">
+          <label className="hidden">
             <input type="checkbox" checked={form.consent} onChange={e => set('consent', e.target.checked)} className="mt-1 rounded" />
             <span className="text-sm text-foreground">I understand this is a discovery call to explore coaching possibilities. I commit to attending at the scheduled time. 🙏</span>
           </label>
