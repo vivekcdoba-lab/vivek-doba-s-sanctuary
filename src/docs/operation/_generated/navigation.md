@@ -1,6 +1,6 @@
 # Sidebar Navigation
 
-_Generated: 2026-10-18T05:13:05.059Z_
+_Generated: 2026-10-26T05:24:07.091Z_
 
 ## Admin (`src/components/AdminLayout.tsx`)
 
