@@ -1,5 +1,10 @@
 # Full-site final audit
 
+## Dashboard access check
+
+- [ ] Verify the authenticated Seekers list and individual client profiles without changing client records.
+- [ ] Provide dashboard link and login instructions.
+
 ## Testimonials and conversion fixes
 
 - [x] Prepare one testimonial data file, shared cards, homepage/course placements, navigation and review link without inventing stories.
