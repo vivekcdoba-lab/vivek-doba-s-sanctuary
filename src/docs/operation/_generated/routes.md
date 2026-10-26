@@ -1,8 +1,8 @@
 # Routes & Pages
 
-_Generated: 2026-10-18T05:13:05.059Z_
+_Generated: 2026-10-26T05:24:07.091Z_
 
-Total routes: **267**
+Total routes: **268**
 
 ## Admin (74)
 
@@ -238,7 +238,7 @@ Total routes: **267**
 | `/login` | LoginPage |
 | `/register` | RegisterPage |
 
-## Other (53)
+## Other (54)
 
 | Path | Component |
 |---|---|
@@ -294,5 +294,6 @@ Total routes: **267**
 | `/swot` | SwotPage |
 | `/terms` | TermsPage |
 | `/testimonials` | TestimonialsPage |
+| `/thank-you` | ThankYouPage |
 | `/worksheet-analytics` | WorksheetAnalyticsPage |
 
