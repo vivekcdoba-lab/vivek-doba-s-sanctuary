@@ -2,8 +2,8 @@
 
 ## Dashboard access check
 
-- [ ] Verify the authenticated Seekers list and individual client profiles without changing client records.
-- [ ] Provide dashboard link and login instructions.
+- [x] Verify the authenticated Seekers list and individual client profiles without changing client records (18 records; two profiles, personal/professional details, Sessions and Assessments checked).
+- [x] Provide dashboard link and login instructions.
 
 ## Testimonials and conversion fixes
 
